@@ -27,4 +27,6 @@ pub enum Value {
     // function inject
     // <xxx @click="doClick" />
     Function(String),
+    /// function return ()  as :`fn xxx()->(){}`
+    Void
 }

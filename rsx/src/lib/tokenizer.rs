@@ -1,0 +1,12 @@
+pub const FULL_LABEL_ASCII:&str = "abcdefghijklmnoprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-";
+pub const TAG_START:&str = "<";
+pub const PROPERTY_VALUE_CONTAIN_SIGN:&str = "\"";
+pub const BIND_SIGN:&str = ":";
+pub const FUNCTION_SIGN:&str = "@";
+pub const EQUAL_SIGN:&str = "=";
+pub const SELF_END_SIGN:&str = "/>";
+pub const END_SIGN:&str = ">";
+pub const END_START_SIGN:&str = "</";
+pub const COMMENT_NROMAL:&str = "//";
+pub const COMMENT_FILE:&str = "//!";
+pub const COMMENT_DOCUMENT:&str = "///";

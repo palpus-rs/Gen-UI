@@ -3,6 +3,9 @@ mod parser;
 
 use super::Value;
 
+pub use parser::{parse_label,parse_property,parse_tag_start};
+
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TemplateTag<'a> {
     TagName(&'a str),

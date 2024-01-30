@@ -166,101 +166,22 @@
 //     println!("{:#?}",res);
 // }
 
-use nom::{
-    branch::alt,
-    bytes::complete::{is_a, tag, take_until, take_while},
-    character::complete::{alphanumeric1, multispace0},
-    combinator::{map, opt, recognize},
-    multi::{many0, many1},
-    sequence::{delimited, pair, preceded, terminated, tuple},
-    IResult,
-};
+mod lib;
 
-#[derive(Debug, PartialEq)]
-struct Node {
-    tag_name: String,
-    attributes: Vec<Attribute>,
-    children: Vec<Node>,
-    self_closing: bool,
-}
-
-#[derive(Debug, PartialEq)]
-struct Attribute {
-    key: String,
-    value: String,
-}
-
-// 更多类型和结构可能根据需要添加
-
-// 解析器：解析一个标签的名称
-fn parse_tag_name(input: &str) -> IResult<&str, &str> {
-    dbg!(input);
-    // alphanumeric1(input)
-    alt((
-        recognize(many1(is_a(
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-",
-        ))),
-        alphanumeric1,
-    ))(input)
-}
-
-// 解析器：解析一个键值对形式的属性
-fn parse_attribute(input: &str) -> IResult<&str, Attribute> {
-    dbg!(input);
-    let parse_key = |input|->IResult<&str,&str>{
-        alphanumeric1(input)
-    };
-    // let parse_value = ;
-    let parser = pair(
-        parse_key,
-        preceded(tag("="), delimited(tag("\""), take_until("\""), tag("\""))),
-    );
-    map(parser, |(key, value)| Attribute {
-        key: key.to_string(),
-        value: value.to_string(),
-    })(input)
-}
-
-// 解析器：解析一个标签的所有属性
-fn parse_attributes(input: &str) -> IResult<&str, Vec<Attribute>> {
-    dbg!(input);
-    many0(preceded(multispace0, parse_attribute))(input)
-}
-
-// 解析器：解析一个标签，包括它的名字、属性和子节点
-fn parse_node(input: &str) -> IResult<&str, Node> {
-    let parse_open_tag = delimited(tag("<"), parse_tag_name, tag(">"));
-    let parse_close_tag = delimited(tag("</"), parse_tag_name, tag(">"));
-    let parse_self_closing_tag = delimited(tag("<"), parse_tag_name, tag("/>"));
-    let (input, tag_name) = alt((parse_open_tag, parse_self_closing_tag))(input)?;
-    dbg!(input);
-    let (input, attributes) = parse_attributes(input)?;
-   
-    let (input, children) = many0(parse_node)(input)?;
-    let (input, self_closing) = opt(parse_close_tag)(input)?;
-    Ok((
-        input,
-        Node {
-            tag_name: tag_name.to_string(),
-            attributes,
-            children,
-            self_closing: self_closing.is_none(),
-        },
-    ))
-}
-
-fn main() {
-    let input = r#"<template class="app">
-    <window class="ui">
-        <view class="body">
-            <button value="Hello world" class="button1" @clicked="handle_actions"/>
-            <text-input value="Click to count" class="input1"/>
-            <label :value="`Counter: ${counter}`" class="label1"/>
-        </view>
-    </window>
-</template>"#;
-    match parse_node(input) {
-        Ok((_, node)) => println!("{:#?}", node),
-        Err(e) => println!("Error: {:?}", e),
-    }
+fn main(){
+    let template = r#"
+    //! app.rsx
+    <template class="app">
+        // this is a window
+        <window class="ui">
+            <view class="body">
+                /// button componet
+                <button value="Hello world" class="button1" @clicked="handle_actions"/>
+                <text-input value="Click to count" class="input1"/>
+                <label :value="`Counter: ${counter}`" class="label1"/>
+            </view>
+        </window>
+    </template>
+    "#;
+    dbg!(template);
 }
