@@ -28,7 +28,7 @@ use crate::{
 
 use super::{StyleASTNode, StyleNodeType};
 
-fn parse_style_tag(input: &str) -> IResult<&str, &str> {
+pub fn parse_style_tag(input: &str) -> IResult<&str, &str> {
     let (input, _) = trim(tag(STYLE_START))(input)?;
     let (_, input) = take_until(STYLE_END)(input)?;
     Ok((input, "style"))
@@ -136,11 +136,16 @@ fn parse_single(input: &str) -> IResult<&str, StyleASTNode> {
     Ok((input, ast))
 }
 
-pub fn parse_style(input: &str) -> IResult<&str, StyleASTNode> {
+pub fn parse_style(input: &str) -> IResult<&str, Option<Vec<StyleASTNode>>> {
     // find style tag
     let (input, _) = parse_style_tag(input)?;
-    // find styles
-    parse_single(input)
+    return if input.is_empty() {
+        Ok((input, None))
+    } else {
+        // find styles
+        let (input, ast) = many0(parse_single)(input)?;
+        Ok((input, Some(ast)))
+    };
 }
 
 #[cfg(test)]
