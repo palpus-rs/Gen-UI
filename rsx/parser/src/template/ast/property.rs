@@ -1,21 +1,8 @@
 use std::fmt::Display;
 
-use crate::lib::Value;
+use crate::Value;
 
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub struct PropertyKey<'a> {
-    key: &'a str,
-    key_type: PropertyKeyType,
-}
-
-impl<'a> PropertyKey<'a> {
-    pub fn new(key_type: PropertyKeyType, key: &'a str) -> Self {
-        Self { key, key_type }
-    }
-}
-
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum PropertyKeyType {
     Normal,
     /// :xxx
@@ -25,13 +12,22 @@ pub enum PropertyKeyType {
 }
 
 impl PropertyKeyType {
-    pub fn to_value(&self,value:&str)->Value{
+    pub fn to_value(&self, value: &str) -> Value {
         let value = value.to_string();
         match self {
             PropertyKeyType::Normal => Value::String(value),
             PropertyKeyType::Bind => Value::Bind(value),
-            PropertyKeyType::Function => Value::Function(value),
+            PropertyKeyType::Function => Value::Function(value.into()),
         }
+    }
+    pub fn is_normal(&self) -> bool {
+        matches!(self, Self::Normal)
+    }
+    pub fn is_bind(&self) -> bool {
+        matches!(self, Self::Bind)
+    }
+    pub fn is_function(&self) -> bool {
+        matches!(self, Self::Function)
     }
 }
 

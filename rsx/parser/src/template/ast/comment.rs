@@ -10,6 +10,17 @@ pub enum Comments {
     File,
 }
 
+impl Comments {
+    pub fn is_normal(&self) -> bool {
+        matches!(self,Self::Normal)
+    }
+    pub fn is_document(&self) -> bool {
+        matches!(self,Self::Document)
+    }
+    pub fn is_file(&self) -> bool {
+        matches!(self,Self::File)
+    }
+}
 
 impl Default for Comments {
     fn default() -> Self {

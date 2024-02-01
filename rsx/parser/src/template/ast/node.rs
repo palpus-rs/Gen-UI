@@ -1,17 +1,14 @@
-use super::{Comments, PropertyKey};
-use std::{
-    collections::HashMap,
-    fmt::{write, Display},
-};
+use super::Comments;
+use std::{collections::HashMap, fmt::Display};
 
-use crate::lib::Value;
+use crate::Value;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct TemplateASTNode<'a> {
     node_type: TemplateNodeType,
     tag_name: Option<&'a str>,
     comment: Option<&'a str>,
-    properties: Option<HashMap<PropertyKey<'a>, Value>>,
+    properties: Option<HashMap<&'a str, Value>>,
     children: Option<Vec<TemplateASTNode<'a>>>,
     parent: Option<Box<TemplateASTNode<'a>>>,
 }
@@ -21,20 +18,20 @@ impl<'a> TemplateASTNode<'a> {
     pub fn new(node_type: TemplateNodeType, tag_name: &'a str) -> Self {
         Self {
             node_type,
-            tag_name:Some(tag_name),
+            tag_name: Some(tag_name),
             properties: None,
             children: None,
             parent: None,
             comment: None,
         }
     }
-    pub fn tag(tag_name: &'a str)->Self{
+    pub fn tag(tag_name: &'a str) -> Self {
         Self::new(TemplateNodeType::Tag, tag_name)
     }
-    pub fn comment(comment:&'a str,comment_type:&'a str)->Self{
+    pub fn comment(comment: &'a str, comment_type: &'a str) -> Self {
         Self {
-            node_type:TemplateNodeType::Comment(comment_type.into()),
-            tag_name:None,
+            node_type: TemplateNodeType::Comment(comment_type.into()),
+            tag_name: None,
             properties: None,
             children: None,
             parent: None,
@@ -42,20 +39,25 @@ impl<'a> TemplateASTNode<'a> {
         }
     }
     /// replace properties
-    pub fn properties(&mut self, properties: HashMap<PropertyKey<'a>, Value>) -> () {
+    pub fn properties(&mut self, properties: HashMap<&'a str, Value>) -> () {
         self.properties.replace(properties);
     }
-    pub fn children(&mut self, children:Option<Vec<TemplateASTNode<'a>>>)->(){
+    /// replace children
+    pub fn children(&mut self, children: Option<Vec<TemplateASTNode<'a>>>) -> () {
         self.children = children;
     }
-    pub fn get_tag_name(&self)->Option<&str>{
+    pub fn get_tag_name(&self) -> Option<&str> {
         self.tag_name
     }
-    pub fn is_tag(&self)->bool{
+    /// is TemplateNodeType::Tag
+    pub fn is_tag(&self) -> bool {
         match self.node_type {
             TemplateNodeType::Tag => true,
-            TemplateNodeType::Comment(_) =>false,
+            TemplateNodeType::Comment(_) => false,
         }
+    }
+    pub fn parent(&mut self, parent: TemplateASTNode<'a>) -> () {
+        self.parent.replace(Box::new(parent));
     }
 }
 
@@ -69,6 +71,15 @@ impl<'a> TemplateASTNode<'a> {
 pub enum TemplateNodeType {
     Tag,
     Comment(Comments),
+}
+
+impl TemplateNodeType {
+    pub fn is_tag(&self) -> bool {
+        matches!(self, Self::Tag)
+    }
+    pub fn is_comment(&self) -> bool {
+        matches!(self, Self::Comment(_))
+    }
 }
 
 impl Default for TemplateNodeType {
