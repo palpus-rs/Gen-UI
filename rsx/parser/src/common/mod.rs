@@ -12,3 +12,4 @@ pub use bind::*;
 pub use comment::parse_comment;
 pub use function::*;
 pub use normal::*;
+pub use string::*;

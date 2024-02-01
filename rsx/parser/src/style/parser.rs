@@ -41,6 +41,7 @@ fn parse_style_tag(input: &str) -> IResult<&str, &str> {
 fn parse_ident(input: &str) -> IResult<&str, StyleASTNode> {
     let (input, style_type) = alt((tag(STYLE_CLASS), tag(STYLE_ID), tag(STYLE_PESUDO)))(input)?;
     let (input, name) = alphanumeric1(input)?;
+    // let (input, _) = trim(tag(HOLDER_START))(input)?;
     let style_type: StyleNodeType = style_type.into();
     Ok((input, StyleASTNode::new(style_type, name)))
 }
@@ -107,7 +108,6 @@ fn parse_single(input: &str) -> IResult<&str, StyleASTNode> {
     let (input, children, properties) = match trim(tag(HOLDER_END))(input) {
         Ok((input, _)) => (input, None, None), //end
         Err(_) => {
-            dbg!("ddd------!!!!!!!");
             // parse property
             let (input, properties) = many0(trim(parse_property))(input)?;
             let properties = if properties.is_empty() {
@@ -121,6 +121,8 @@ fn parse_single(input: &str) -> IResult<&str, StyleASTNode> {
             children
                 .iter_mut()
                 .for_each(|child| child.parent(ast.clone()));
+            // remove end `)`
+            let (input, _) = many0(trim(tag(HOLDER_END)))(input)?;
             (input, Some(children), properties)
         }
     };
@@ -175,6 +177,19 @@ mod test_style {
         </style>
         "#;
 
+        let res = parse_style(style).unwrap();
+        dbg!(res);
+    }
+
+    #[test]
+    fn easy_style() {
+        let style = r#"
+        <style>
+            .app{
+                height : 30;
+                width : 100;
+            }
+        </style>"#;
         let res = parse_style(style).unwrap();
         dbg!(res);
     }

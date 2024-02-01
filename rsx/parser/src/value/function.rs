@@ -1,12 +1,13 @@
 use std::fmt::Display;
 
 use nom::{
+    branch::alt,
     bytes::complete::{tag, take_until},
     sequence::delimited,
     IResult,
 };
 
-use crate::style::function as parse_function;
+use crate::{common::parse_value, style::function};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
@@ -61,6 +62,14 @@ impl From<(&str, &str)> for Function {
     }
 }
 
+fn parse_function(input: &str) -> IResult<&str, (&str, (&str, &str))> {
+    fn without_sign(input: &str) -> IResult<&str, (&str, (&str, &str))> {
+        let (input, name) = parse_value(input)?;
+        Ok((input, ("()", (name, "()"))))
+    }
+    alt((function, without_sign))(input)
+}
+
 impl From<&str> for Function {
     fn from(value: &str) -> Self {
         let (input, (_, f)) = parse_function(value).unwrap();
@@ -91,6 +100,12 @@ fn remove_holder(input: &str) -> IResult<&str, &str> {
 #[cfg(test)]
 mod test_func {
     use super::Function;
+    #[test]
+    fn from_str() {
+        let just_name = "hello";
+        let f: Function = just_name.into();
+        dbg!(f);
+    }
 
     #[test]
     fn to_string_easy() {

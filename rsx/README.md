@@ -30,7 +30,7 @@ HTML-LIKE：
 ```
 ## AST
 ``` rust
-[src/lib/template/parser.rs:273] res = (
+[parser\src\template\parser.rs:192] res = (
     "",
     [
         TemplateASTNode {
@@ -157,7 +157,14 @@ HTML-LIKE：
                                                 properties: Some(
                                                     {
                                                         "clicked": Function(
-                                                            "handle_actions",
+                                                            Function {
+                                                                name: "handle_actions",
+                                                                params: Some(
+                                                                    [
+                                                                        "",
+                                                                    ],
+                                                                ),
+                                                            },
                                                         ),
                                                         "value": String(
                                                             "Hello world",
@@ -306,5 +313,5 @@ HTML-LIKE：
             parent: None,
         },
     ],
-) 
+)
 ```

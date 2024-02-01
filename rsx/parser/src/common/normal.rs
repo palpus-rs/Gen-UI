@@ -40,4 +40,18 @@ where
 }
 
 #[cfg(test)]
-mod normal {}
+mod normal {
+    use super::*;
+    #[test]
+    fn test_parse_value() {
+        let simple = "test";
+        let complex = "test_input";
+        let more = "test_input_value";
+        let res1 = parse_value(simple).unwrap();
+        let res2 = parse_value(complex).unwrap();
+        let res3 = parse_value(more).unwrap();
+        assert_eq!(res1, ("", "test"));
+        assert_eq!(res2, ("", "test_input"));
+        assert_eq!(res3, ("", "test_input_value"));
+    }
+}

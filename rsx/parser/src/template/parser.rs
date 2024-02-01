@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    common::{parse_bind_key, parse_comment, parse_function_key, parse_value, trim},
+    common::{parse_bind_key, parse_comment, parse_function_key, parse_string, parse_value, trim},
     Value, END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN, TAG_START,
 };
 use nom::{
@@ -60,7 +60,7 @@ fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
 /// (property_type, property_key, property_value)
 fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> {
     let (input, (key_type, key)) = parse_property_key(input)?;
-    let (input, value) = preceded(tag(EQUAL_SIGN), parse_value)(input)?;
+    let (input, value) = preceded(tag(EQUAL_SIGN), parse_string)(input)?;
     // parse value
     let key_type: PropertyKeyType = key_type.into();
     let value = key_type.to_value(value);
@@ -337,6 +337,7 @@ mod template_parsers {
                 ),
             )
         );
+
         assert_eq!(
             func_res1,
             (
@@ -401,19 +402,6 @@ mod template_parsers {
         let res2 = parse_bind_key(complex).unwrap();
         assert_eq!(res1, ("", (":", "simple")));
         assert_eq!(res2, ("", (":", "complex_test")));
-    }
-
-    #[test]
-    fn test_parse_value() {
-        let simple = "test";
-        let complex = "test_input";
-        let more = "test_input_value";
-        let res1 = parse_value(simple).unwrap();
-        let res2 = parse_value(complex).unwrap();
-        let res3 = parse_value(more).unwrap();
-        assert_eq!(res1, ("", "test"));
-        assert_eq!(res2, ("", "test_input"));
-        assert_eq!(res3, ("", "test_input_value"));
     }
 
     #[test]
