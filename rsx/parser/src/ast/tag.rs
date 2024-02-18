@@ -26,6 +26,16 @@ impl Display for CloseType {
     }
 }
 
+impl From<&str> for CloseType {
+    fn from(value: &str) -> Self {
+        match value {
+            SELF_END_SIGN => CloseType::SelfClosed,
+            END_SIGN => CloseType::Normal,
+            _ => panic!("Invalid close type"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tag {
     name: String,
@@ -33,11 +43,17 @@ pub struct Tag {
 }
 
 impl Tag {
+    pub fn new(name: &str, ty: CloseType) -> Self {
+        Tag {
+            name: name.to_string(),
+            ty,
+        }
+    }
     pub fn get_name(&self) -> &str {
         &self.name
     }
-    pub fn get_type(&self) -> CloseType {
-        self.ty
+    pub fn get_type(&self) -> &CloseType {
+        &self.ty
     }
 }
 
@@ -49,5 +65,11 @@ impl Display for Tag {
             self.get_name(),
             self.get_type().to_string()
         ))
+    }
+}
+
+impl From<(&str, CloseType)> for Tag {
+    fn from(value: (&str, CloseType)) -> Self {
+        Tag::new(value.0, value.1)
     }
 }

@@ -1,76 +1,78 @@
-mod nodes;
 mod comment;
-mod tag;
+mod nodes;
 mod style;
+mod tag;
 
-pub use tag::Tag;
-pub use style::Style;
 use comment::Comments;
+pub use nodes::Nodes;
 use std::{collections::HashMap, fmt::Display};
+pub use style::Style;
+pub use tag::Tag;
 
 use crate::Value;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct TemplateASTNode<'a> {
-    node_type: TemplateNodeType,
-    tag_name: Option<&'a str>,
-    comment: Option<&'a str>,
+pub struct ASTNode<'a> {
+    // node_type: TemplateNodeType,
+    // tag_name: Option<&'a str>,
+    node: Nodes,
     properties: Option<HashMap<&'a str, Value>>,
-    children: Option<Vec<TemplateASTNode<'a>>>,
-    parent: Option<Box<TemplateASTNode<'a>>>,
+    children: Option<Vec<ASTNode<'a>>>,
+    parent: Option<Box<ASTNode<'a>>>,
 }
 
-impl<'a> TemplateASTNode<'a> {
+impl<'a> ASTNode<'a> {
     /// create a new node (tag | comment)
-    pub fn new(node_type: TemplateNodeType, tag_name: &'a str) -> Self {
+    pub fn new(node: Nodes) -> Self {
         Self {
-            node_type,
-            tag_name: Some(tag_name),
+            // node_type,
+            // tag_name: Some(tag_name),
+            node,
             properties: None,
             children: None,
             parent: None,
-            comment: None,
         }
     }
-    pub fn tag(tag_name: &'a str) -> Self {
-        Self::new(TemplateNodeType::Tag, tag_name)
+    pub fn tag(tag: impl Into<Tag>) -> Self {
+        Self::new(Nodes::Tag(tag.into()))
     }
-    pub fn comment(comment: &'a str, comment_type: &'a str) -> Self {
-        Self {
-            node_type: TemplateNodeType::Comment(comment_type.into()),
-            tag_name: None,
-            properties: None,
-            children: None,
-            parent: None,
-            comment: Some(comment),
-        }
+    pub fn comment(comment: impl Into<Comments>) -> Self {
+        Self::new(Nodes::Comment(comment.into()))
+    }
+    pub fn style(style: impl Into<Style>) -> Self {
+        Self::new(Nodes::Style(style.into()))
     }
     /// replace properties
     pub fn properties(&mut self, properties: HashMap<&'a str, Value>) -> () {
         self.properties.replace(properties);
     }
     /// replace children
-    pub fn children(&mut self, children: Option<Vec<TemplateASTNode<'a>>>) -> () {
+    pub fn children(&mut self, children: Option<Vec<ASTNode<'a>>>) -> () {
         self.children = children;
     }
-    pub fn get_tag_name(&self) -> Option<&str> {
-        self.tag_name
+    pub fn get_node(&self) -> &Nodes {
+        &self.node
     }
-    /// is TemplateNodeType::Tag
     pub fn is_tag(&self) -> bool {
-        match self.node_type {
-            TemplateNodeType::Tag => true,
-            TemplateNodeType::Comment(_) => false,
+        match self.get_node() {
+            Nodes::Tag(_) => true,
+            _ => false,
         }
     }
-    pub fn parent(&mut self, parent: TemplateASTNode<'a>) -> () {
+    pub fn is_comment(&self) -> bool {
+        matches!(self.get_node(), Nodes::Comment(_))
+    }
+    pub fn is_style(&self) -> bool {
+        matches!(self.get_node(), Nodes::Style(_))
+    }
+    /// ## set parent
+    pub fn parent(&mut self, parent: ASTNode<'a>) -> () {
         self.parent.replace(Box::new(parent));
     }
 }
 
-// impl<'a> Display for TemplateASTNode<'a> {
+// impl<'a> Display for ASTNode<'a> {
 //     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
 //     }
 // }
-

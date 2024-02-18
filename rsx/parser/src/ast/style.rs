@@ -3,13 +3,13 @@ use std::fmt::Display;
 use crate::{STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub enum StyleType{
-     // class: `.`
-     Class,
-     // id: `#`
-     Id,
-     // Pseudo: `::`
-     Pseudo,
+pub enum StyleType {
+    // class: `.`
+    Class,
+    // id: `#`
+    Id,
+    // Pseudo: `::`
+    Pseudo,
 }
 
 impl Default for StyleType {
@@ -52,9 +52,43 @@ impl Display for StyleType {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
-pub struct Style{
-    name:String,
-    ty:StyleType
+pub struct Style {
+    name: String,
+    ty: StyleType,
+}
+
+impl Style {
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+    pub fn get_type(&self) -> &StyleType {
+        &self.ty
+    }
+}
+
+impl Display for Style {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{}{}",
+            self.get_type().to_string(),
+            self.get_name()
+        ))
+    }
+}
+
+#[cfg(test)]
+mod test_style {
+    use super::StyleType;
+
+    #[test]
+    fn style_type() {
+        let ty_class = StyleType::Class;
+        let ty_id = StyleType::Id;
+        let ty_pseudo = StyleType::Pseudo;
+
+        assert_eq!(ty_class, ".".into());
+        assert_eq!(ty_id, "#".into());
+        assert_eq!(ty_pseudo, "&::".into());
+    }
 }
