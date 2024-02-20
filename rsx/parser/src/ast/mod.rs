@@ -9,7 +9,20 @@ use std::{collections::HashMap, fmt::Display};
 pub use style::Style;
 pub use tag::Tag;
 
-use crate::Value;
+use crate::{Value, SPACE};
+
+pub type Props = Option<HashMap<String, Value>>;
+
+pub fn props_to_string(props: Props) -> String {
+    match props {
+        Some(props) =>  props
+        .into_iter()
+        .map(|(k, v)| format!("{}:{}", k, v.to_string()))
+        .collect::<Vec<String>>()
+        .join(SPACE),
+        None => String::new(),
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ASTNode<'a> {

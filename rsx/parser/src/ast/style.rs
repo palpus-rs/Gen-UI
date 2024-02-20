@@ -18,6 +18,7 @@ impl Default for StyleType {
     }
 }
 
+#[allow(dead_code)]
 impl StyleType {
     pub fn is_class(&self) -> bool {
         matches!(self, Self::Class)
@@ -58,12 +59,19 @@ pub struct Style {
     ty: StyleType,
 }
 
+#[allow(dead_code)]
 impl Style {
+    pub fn new(name: &str, ty: StyleType) -> Self {
+        Style {
+            name: String::from(name),
+            ty,
+        }
+    }
     pub fn get_name(&self) -> &str {
         &self.name
     }
-    pub fn get_type(&self) -> &StyleType {
-        &self.ty
+    pub fn get_type(&self) -> StyleType {
+        self.ty.clone()
     }
 }
 
@@ -79,7 +87,40 @@ impl Display for Style {
 
 #[cfg(test)]
 mod test_style {
-    use super::StyleType;
+    use super::{Style, StyleType};
+
+    #[test]
+    fn get_type() {
+        let style_id = Style::new("app", StyleType::Id);
+        let style_class = Style::new("test", StyleType::Class);
+        let style_pesudo = Style::new("hover", StyleType::Pseudo);
+
+        assert_eq!(style_id.get_type(), StyleType::Id);
+        assert_eq!(style_class.get_type(), StyleType::Class);
+        assert_eq!(style_pesudo.get_type(), StyleType::Pseudo);
+    }
+
+    #[test]
+    fn display() {
+        let style_id = Style::new("app", StyleType::Id);
+        let style_class = Style::new("test", StyleType::Class);
+        let style_pesudo = Style::new("hover", StyleType::Pseudo);
+
+        assert_eq!(style_id.to_string().as_str(), "#app");
+        assert_eq!(style_class.to_string().as_str(), ".test");
+        assert_eq!(style_pesudo.to_string().as_str(), "&::hover");
+    }
+
+    #[test]
+    fn get_name() {
+        let style_id = Style::new("app", StyleType::Id);
+        let style_class = Style::new("test", StyleType::Class);
+        let style_pesudo = Style::new("hover", StyleType::Pseudo);
+
+        assert_eq!(style_id.get_name(), "app");
+        assert_eq!(style_class.get_name(), "test");
+        assert_eq!(style_pesudo.get_name(), "hover");
+    }
 
     #[test]
     fn style_type() {

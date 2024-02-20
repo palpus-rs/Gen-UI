@@ -18,3 +18,4 @@ pub const STYLE_CLASS:&str = ".";
 pub const STYLE_PESUDO:&str="&::";
 pub const HOLDER_START:&str ="{";
 pub const HOLDER_END:&str="}";
+pub const SPACE:&str = " ";
