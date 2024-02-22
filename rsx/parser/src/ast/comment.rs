@@ -1,52 +1,57 @@
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
-pub enum Comments {
+pub enum Comments<'a> {
     /// `//`
-    Normal,
+    Normal(&'a str),
     /// `///`
-    Document,
+    Document(&'a str),
     /// `//!`
-    File,
+    File(&'a str),
 }
 
-impl Comments {
+impl<'a> Comments<'a> {
     pub fn is_normal(&self) -> bool {
-        matches!(self, Self::Normal)
+        matches!(self, Self::Normal(_))
     }
     pub fn is_document(&self) -> bool {
-        matches!(self, Self::Document)
+        matches!(self, Self::Document(_))
     }
     pub fn is_file(&self) -> bool {
-        matches!(self, Self::File)
+        matches!(self, Self::File(_))
     }
 }
 
-impl Default for Comments {
-    fn default() -> Self {
-        Self::Normal
-    }
+impl<'a> Default for Comments<'a> {
+   fn default() -> Self {
+       Comments::Normal("")
+   }
 }
 
-impl From<&str> for Comments {
-    fn from(value: &str) -> Self {
-        match value {
-            "//" => Comments::Normal,
-            "///" => Comments::Document,
-            "//!" => Comments::File,
-            _ => panic!("Invalid comment"),
+impl<'a> From<&'a str> for Comments<'a> {
+    fn from(value: &'a str) -> Self {
+        Comments::Normal(value)
+    }
+}
+impl<'a> From<(&'a str,&'a str)> for Comments<'a> {
+    fn from(value: (&'a str,&'a str)) -> Self {
+        match value.0 {
+            "//"=>Comments::Normal(value.1),
+            "///"=>Comments::Document(value.1),
+            "//!"=>Comments::File(value.1),
+            _=>panic!("Invalid comment")
         }
     }
 }
 
-impl Display for Comments {
+impl<'a> Display for Comments<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let res = match self {
-            Comments::Normal => "normal",
-            Comments::Document => "document",
-            Comments::File => "file",
+            Comments::Normal(n) => format!("// {}",n),
+            Comments::Document(d) => format!("/// {}",d),
+            Comments::File(f) => format!("//! {}",f),
         };
-        f.write_str(res)
+        f.write_str(res.as_str())
     }
 }
 
@@ -56,7 +61,7 @@ mod test_comments {
 
     #[test]
     fn display() {
-        let c = Comments::Document;
-        assert_eq!(c.to_string().as_str(), "document");
+        let c = Comments::Document("hello");
+        assert_eq!(c.to_string().as_str(), "/// hello");
     }
 }

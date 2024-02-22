@@ -1,22 +1,24 @@
 use std::fmt::Display;
+use crate::{error::Error, template::parse_template};
+
 use super::{Tag,Comments,Style};
 
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Nodes {
+pub enum ASTNodes<'a> {
     /// ### template tag 
     /// - <template>
     /// - <script>
     /// - <style>
     /// - <any_component>
     /// - ...
-    Tag(Tag),
+    Tag(Box<Tag<'a>>),
     /// ### Comment
     /// display everywhere
     /// - ///
     /// - //
     /// - //!
-    Comment(Comments),
+    Comment(Comments<'a>),
     /// ### Style (Properties)
     /// - .
     /// - #
@@ -24,7 +26,7 @@ pub enum Nodes {
     Style(Style),
 }
 
-impl Nodes {
+impl<'a> ASTNodes<'a> {
     pub fn is_tag(&self) -> bool {
         matches!(self, Self::Tag(_))
     }
@@ -34,15 +36,21 @@ impl Nodes {
     pub fn is_style(&self) -> bool {
         matches!(self,Self::Style(_))
     }
+    pub fn parse_template(input:&str) -> Vec<ASTNodes>{
+        parse_template(input)
+    }
+    pub fn parse(input:&str)->Result<Vec<ASTNodes>, Error>{
+        
+    }
 }
 
 
-impl Display for Nodes {
+impl<'a> Display for ASTNodes<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let res = match self {
-            Nodes::Tag(t) => t.to_string(),
-            Nodes::Comment(c) => c.to_string(),
-            Nodes::Style(s) => s.to_string(),
+            ASTNodes::Tag(t) => t.to_string(),
+            ASTNodes::Comment(c) => c.to_string(),
+            ASTNodes::Style(s) => s.to_string(),
             
         };
         f.write_str(&res)
