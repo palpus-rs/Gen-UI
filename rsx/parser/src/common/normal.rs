@@ -1,8 +1,8 @@
 use nom::{
-    bytes::complete::{tag, take_while_m_n},
+    bytes::complete::{tag, take_until, take_while_m_n},
     character::complete::{alphanumeric1, multispace0},
     combinator::recognize,
-    sequence::{delimited, pair},
+    sequence::{delimited, pair, tuple},
     IResult,
 };
 
@@ -38,6 +38,16 @@ where
 {
     delimited(multispace0, parser, multispace0)
 }
+
+// pub fn between<'a,PL,PR,O>(mut l:PL,mut r:PR) -> IResult<&'a str,(&'a str,&'a str)>
+// where 
+// PL: FnMut(&'a str) -> IResult<&'a str, O>,
+// PR:FnMut(&'a str) -> IResult<&'a str, O>,
+// {
+    
+//     delimited(, take_until(r), r)
+// }
+
 
 #[cfg(test)]
 mod normal {

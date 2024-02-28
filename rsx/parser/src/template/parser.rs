@@ -33,7 +33,7 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
 /// ### return
 /// TemplateASTNode
 fn parse_tag_start(input: &str) -> IResult<&str, TemplateASTNode> {
-    let (input, value) = preceded(tag(TAG_START), parse_tag_name)(input)?;
+    let (input, value) = preceded(trim(tag(TAG_START)), parse_tag_name)(input)?;
     Ok((input, TemplateASTNode::new(TemplateNodeType::Tag, value)))
 }
 
@@ -406,8 +406,8 @@ mod template_parsers {
 
     #[test]
     fn test_parse_tag_start() {
-        let simple = "<button";
-        let complex = "<text-input";
+        let simple = "< button";
+        let complex = "< text-input";
         let res1 = parse_tag_start(simple).unwrap();
         let res2 = parse_tag_start(complex).unwrap();
         assert_eq!(

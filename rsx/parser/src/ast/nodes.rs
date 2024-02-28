@@ -1,7 +1,9 @@
 use std::fmt::Display;
+use nom::IResult;
+
 use crate::{error::Error, template::parse_template};
 
-use super::{Tag,Comments,Style};
+use super::{Tag,comment::inline::Comments,Style};
 
 
 #[derive(Debug, Clone, PartialEq)]
@@ -36,12 +38,14 @@ impl<'a> ASTNodes<'a> {
     pub fn is_style(&self) -> bool {
         matches!(self,Self::Style(_))
     }
-    pub fn parse_template(input:&str) -> Vec<ASTNodes>{
-        parse_template(input)
-    }
-    pub fn parse(input:&str)->Result<Vec<ASTNodes>, Error>{
+    // pub fn parse_template(input:&str) -> Vec<ASTNodes>{
+    //     parse_template(input)
+    // }
+
+ 
+    // pub fn parse(input:&str)->IResult<Vec<>>{
         
-    }
+    // }
 }
 
 

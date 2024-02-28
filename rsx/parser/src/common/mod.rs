@@ -7,6 +7,7 @@ mod function;
 /// normal parsers
 mod normal;
 mod string;
+mod tag;
 
 pub use bind::*;
 pub use comment::parse_comment;

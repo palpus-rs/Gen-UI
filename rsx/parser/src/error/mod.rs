@@ -1,7 +1,8 @@
-use std::fmt::Display;
+use std::{error, fmt::Display};
 
 #[derive(Debug, PartialEq,Clone)]
 pub enum Error{
+    ParseError(String),
     /// Tag
     TagStart,
     TagName,
@@ -24,6 +25,7 @@ pub enum Error{
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg = match self {
+            Error::ParseError(e)=>e,
             Error::TagStart => "tag start should be: `<`",
             Error::TagName => "tag name should use `-` or `_` for split",
             Error::TagPropsKey => "tag props' key should use `_` for split",
@@ -40,3 +42,4 @@ impl Display for Error {
 }
 
 
+impl error::Error for Error {}
