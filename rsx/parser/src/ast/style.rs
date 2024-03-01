@@ -2,6 +2,8 @@ use std::fmt::Display;
 
 use crate::{STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
 
+use super::{ASTNodes, Props};
+
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum StyleType {
     // class: `.`
@@ -54,17 +56,54 @@ impl Display for StyleType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Style {
-    name: String,
+pub struct Style<'a> {
+    name: &'a str,
     ty: StyleType,
+    props: Props<'a>,
+    children: Option<Vec<ASTNodes<'a>>>,
+    parent: Option<ASTNodes<'a>>,
 }
 
 #[allow(dead_code)]
-impl Style {
-    pub fn new(name: &str, ty: StyleType) -> Self {
+impl<'a> Style<'a> {
+    pub fn new(
+        name: &'a str,
+        props: Props<'a>,
+        ty: StyleType,
+        children: Option<Vec<ASTNodes<'a>>>,
+        parent: Option<ASTNodes<'a>>,
+    ) -> Self {
         Style {
-            name: String::from(name),
+            name,
             ty,
+            props,
+            children,
+            parent,
+        }
+    }
+    pub fn set_name(&mut self, name: &'a str) {
+        self.name = name;
+    }
+    pub fn set_ty(&mut self, ty: StyleType) {
+        self.ty = ty;
+    }
+    pub fn set_props(&mut self, props: Props<'a>) {
+        self.props = props;
+    }
+    pub fn set_children(&mut self, children: Vec<ASTNodes<'a>>) {
+        match self.children {
+            Some(_) => {
+                let _ = self.children.replace(children);
+            }
+            None => self.children = Some(children),
+        }
+    }
+    pub fn set_parent(&mut self, parent: ASTNodes<'a>) {
+        match self.parent {
+            Some(_) => {
+                let _ = self.parent.replace(parent);
+            }
+            None => self.parent = Some(parent),
         }
     }
     pub fn get_name(&self) -> &str {
@@ -75,7 +114,7 @@ impl Style {
     }
 }
 
-impl Display for Style {
+impl<'a> Display for Style<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
             "{}{}",
@@ -91,9 +130,9 @@ mod test_style {
 
     #[test]
     fn get_type() {
-        let style_id = Style::new("app", StyleType::Id);
-        let style_class = Style::new("test", StyleType::Class);
-        let style_pesudo = Style::new("hover", StyleType::Pseudo);
+        let style_id = Style::new("app", None, StyleType::Id, None, None);
+        let style_class = Style::new("test", None, StyleType::Class, None, None);
+        let style_pesudo = Style::new("hover", None, StyleType::Pseudo, None, None);
 
         assert_eq!(style_id.get_type(), StyleType::Id);
         assert_eq!(style_class.get_type(), StyleType::Class);
@@ -102,9 +141,9 @@ mod test_style {
 
     #[test]
     fn display() {
-        let style_id = Style::new("app", StyleType::Id);
-        let style_class = Style::new("test", StyleType::Class);
-        let style_pesudo = Style::new("hover", StyleType::Pseudo);
+        let style_id = Style::new("app", None, StyleType::Id, None, None);
+        let style_class = Style::new("test", None, StyleType::Class, None, None);
+        let style_pesudo = Style::new("hover", None, StyleType::Pseudo, None, None);
 
         assert_eq!(style_id.to_string().as_str(), "#app");
         assert_eq!(style_class.to_string().as_str(), ".test");
@@ -113,9 +152,9 @@ mod test_style {
 
     #[test]
     fn get_name() {
-        let style_id = Style::new("app", StyleType::Id);
-        let style_class = Style::new("test", StyleType::Class);
-        let style_pesudo = Style::new("hover", StyleType::Pseudo);
+        let style_id = Style::new("app", None, StyleType::Id, None, None);
+        let style_class = Style::new("test", None, StyleType::Class, None, None);
+        let style_pesudo = Style::new("hover", None, StyleType::Pseudo, None, None);
 
         assert_eq!(style_id.get_name(), "app");
         assert_eq!(style_class.get_name(), "test");

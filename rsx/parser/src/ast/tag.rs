@@ -64,6 +64,37 @@ impl<'a> Tag<'a> {
             parent,
         }
     }
+    pub fn new_tag_start(name: &'a str)->Self{
+        Self{
+            name,
+            ty: Default::default(),
+            props:None,
+            children: None,
+            parent: None,
+        }
+    }
+    pub fn set_name(&mut self, name: &'a str){
+        self.name = name;
+    }
+    pub fn set_ty(&mut self, ty:CloseType) {
+        self.ty = ty;
+    }
+    pub fn set_props(&mut self, props:Props<'a>) {
+        self.props = props;
+    }
+    pub fn set_children(&mut self, children:Vec<ASTNodes<'a>>){
+       
+        match self.children {
+            Some(_) => {let _ = self.children.replace(children);},
+            None =>  self.children = Some(children),
+        }
+    }
+    pub fn set_parent(&mut self,parent:ASTNodes<'a>){
+        match self.parent {
+            Some(_) => {let _ = self.parent.replace(parent);},
+            None => self.parent = Some(parent),
+        }
+    }
     pub fn get_name(&self) -> &str {
         &self.name
     }
