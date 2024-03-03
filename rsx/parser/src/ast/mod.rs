@@ -1,6 +1,7 @@
 pub mod comment;
 mod nodes;
 mod property;
+pub mod script;
 mod style;
 mod tag;
 
