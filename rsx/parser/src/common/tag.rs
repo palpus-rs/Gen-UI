@@ -73,7 +73,7 @@ pub fn end<'a>(input: &'a str, tag_name: &'a str) -> IResult<&'a str, &'a str> {
     delimited_tag(input, END_START_SIGN, tag_name)
 }
 
-fn until_end<'a>(input: &'a str, tag_name: &'a str) -> IResult<&'a str, &'a str> {
+pub fn until_end<'a>(input: &'a str, tag_name: &'a str) -> IResult<&'a str, &'a str> {
     let mut rest = input;
     let mut remain = "";
 

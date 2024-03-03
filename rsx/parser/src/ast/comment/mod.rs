@@ -27,9 +27,9 @@ impl<'a> Comments<'a> {
 }
 
 impl<'a> Default for Comments<'a> {
-   fn default() -> Self {
-       Comments::Normal("")
-   }
+    fn default() -> Self {
+        Comments::Normal("")
+    }
 }
 
 impl<'a> From<&'a str> for Comments<'a> {
@@ -37,13 +37,13 @@ impl<'a> From<&'a str> for Comments<'a> {
         Comments::Normal(value)
     }
 }
-impl<'a> From<(&'a str,&'a str)> for Comments<'a> {
-    fn from(value: (&'a str,&'a str)) -> Self {
+impl<'a> From<(&'a str, &'a str)> for Comments<'a> {
+    fn from(value: (&'a str, &'a str)) -> Self {
         match value.0 {
-            "//"=>Comments::Normal(value.1),
-            "///"=>Comments::Document(value.1),
-            "//!"=>Comments::File(value.1),
-            _=>panic!("Invalid comment")
+            "//" => Comments::Normal(value.1),
+            "///" => Comments::Document(value.1),
+            "//!" => Comments::File(value.1),
+            _ => panic!("Invalid comment"),
         }
     }
 }
@@ -51,9 +51,9 @@ impl<'a> From<(&'a str,&'a str)> for Comments<'a> {
 impl<'a> Display for Comments<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let res = match self {
-            Comments::Normal(n) => format!("// {}",n),
-            Comments::Document(d) => format!("/// {}",d),
-            Comments::File(f) => format!("//! {}",f),
+            Comments::Normal(n) => format!("// {}", n),
+            Comments::Document(d) => format!("/// {}", d),
+            Comments::File(f) => format!("//! {}", f),
         };
         f.write_str(res.as_str())
     }
@@ -65,7 +65,12 @@ mod test_comments {
 
     #[test]
     fn display() {
-        let c = Comments::Document("hello");
-        assert_eq!(c.to_string().as_str(), "/// hello");
+        let c1 = Comments::Document("hello");
+        let c2 = Comments::File("hello");
+        let c3 = Comments::Normal("hello");
+
+        assert_eq!(c1.to_string().as_str(), "/// hello");
+        assert_eq!(c2.to_string().as_str(), "//! hello");
+        assert_eq!(c3.to_string().as_str(), "// hello");
     }
 }

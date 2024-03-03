@@ -14,4 +14,4 @@ pub use comment::parse_comment;
 pub use function::*;
 pub use normal::*;
 pub use string::*;
-pub use tag::{parse_all,end};
+pub use tag::{end, parse_all, until_end};

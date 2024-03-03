@@ -15,7 +15,7 @@ use nom::{
     bytes::complete::{tag, take_until, take_while_m_n},
     character::complete::alphanumeric1,
     combinator::recognize,
-    multi::many0,
+    multi::{many0, many1},
     sequence::{delimited, pair, preceded},
     IResult,
 };
@@ -27,6 +27,7 @@ use crate::common::parse_normal;
 /// ### example
 /// - parse xxx
 /// - parse xxx-zzz
+#[allow(dead_code)]
 fn parse_tag_name(input: &str) -> IResult<&str, &str> {
     parse_normal(input, '-')
 }
@@ -35,6 +36,7 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
 /// format : `<tag_name`
 /// ### return
 /// TemplateASTNode
+#[allow(dead_code)]
 fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
     let (input, tag_name) = preceded(trim(tag(TAG_START)), parse_tag_name)(input)?;
     Ok((input, Tag::new_tag_start(tag_name).into()))
@@ -45,6 +47,7 @@ fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
 /// - normal: k
 /// - bind: :k
 /// - function: @k
+#[allow(dead_code)]
 fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
     fn parse_normal_key(input: &str) -> IResult<&str, (&str, &str)> {
         let (input, value) = recognize(pair(
@@ -62,6 +65,7 @@ fn parse_property_key(input: &str) -> IResult<&str, (&str, &str)> {
 /// - function: `@k=\"v\"` value depend on function return (Value:Function)
 /// ### return
 /// (property_type, property_key, property_value)
+#[allow(dead_code)]
 fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> {
     let (input, (key_type, key)) = parse_property_key(input)?;
     let (input, value) = preceded(tag(EQUAL_SIGN), parse_string)(input)?;
@@ -72,6 +76,7 @@ fn parse_property(input: &str) -> IResult<&str, (PropertyKeyType, &str, Value)> 
 }
 
 /// ## parse end tag (`</xxx>`)
+#[allow(dead_code)]
 fn parse_end_tag(input: &str) -> IResult<&str, (&str, &str)> {
     let (input, value) = delimited(
         trim(tag(END_START_SIGN)),
@@ -84,10 +89,12 @@ fn parse_end_tag(input: &str) -> IResult<&str, (&str, &str)> {
 /// ## parse tag end 🆗
 /// - self end : `/>`
 /// - more end : `>` after this , may include children nodes , end is tag end `</xxx>`
+#[allow(dead_code)]
 fn parse_tag_end(input: &str) -> IResult<&str, &str> {
     alt((tag(SELF_END_SIGN), tag(END_SIGN)))(input)
 }
 
+#[allow(dead_code)]
 fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
     match parse_common_comment(input) {
         Ok((input, comment)) => Ok((input, comment.into())),
@@ -95,7 +102,41 @@ fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
     }
 }
 
+#[allow(dead_code)]
+fn to_end_tag(input: &str, tag_name: String) -> IResult<&str, &str> {
+    let mut rest = input;
+    let mut remain = "";
+
+    loop {
+        match take_until(END_START_SIGN)(rest) {
+            Ok((new_rest, taken)) => {
+                // 尝试匹配结束标签，如果失败，说明 "</" 不是有效的结束标签的开始
+                match delimited(
+                    trim(tag(END_START_SIGN)),
+                    tag(tag_name.as_str()),
+                    trim(tag(END_SIGN)),
+                )(new_rest)
+                {
+                    Ok((final_rest, _)) => {
+                        //将taken继续放入remain中
+                        remain = &input[..(remain.len() + taken.len())];
+                        // 成功找到结束标签，返回累积的内容和剩余的输入
+                        return Ok((final_rest, remain));
+                    }
+                    Err(_) => {
+                        // 没有找到有效的结束标签，将 "</" 之前的内容加入累积，并继续处理
+                        remain = &input[..input.len() - new_rest.len() + 2]; // 加 2 是为了包括 "</"
+                        rest = &new_rest[2..]; // 跳过 "</"，继续尝试
+                    }
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+
 /// ## parse tag ✅ 🆗
+#[allow(dead_code)]
 pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
     // get tag beginning
     // let (input, mut tag) = delimited(multispace0, parse_tag_start, multispace0)(input)?;
@@ -117,26 +158,28 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
         ast_tag.set_tag_properties(tag_properties);
         // end
         let (input, end) = trim(parse_tag_end)(input)?;
+        ast_tag.set_tag_type(end.into());
         let (input, children) = match end {
             END_SIGN => {
-                let tag_name = format!("</{}>", ast_tag.get_tag_name());
-                // try find util END tag (</xxx>)
-                let (_, middle) = trim(take_until(tag_name.as_str()))(input)?;
+                let (remain, middle) = to_end_tag(input, ast_tag.get_tag_name().to_string())?;
                 match middle {
-                    "" => (middle, None), // no nesting nodes
+                    "" => {
+                        if remain.is_empty() {
+                            (middle, None)
+                        } else {
+                            (remain, None)
+                        }
+                    } // no nesting nodes
                     _ => {
                         // has children
                         let (input, mut children) = many0(parse_tag)(middle)?;
-                        // for mut child in children {
-                        //     child.parent(ast_tag.clone());
-                        // }
                         if children.is_empty() {
                             (input, None)
                         } else {
                             children
                                 .iter_mut()
                                 .for_each(|child| child.set_parent(ast_tag.clone()));
-                            (input, Some(children))
+                            (remain, Some(children))
                         }
                     }
                 }
@@ -161,8 +204,9 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
 
 /// ## parse template Ⓜ️
 /// main template parser
+#[allow(dead_code)]
 pub fn parse_template(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error::Error> {
-    match many0(parse_tag)(input) {
+    match many1(parse_tag)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
                 return Ok((remain, asts));
@@ -176,7 +220,7 @@ pub fn parse_template(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error
 #[cfg(test)]
 mod template_parsers {
 
-    use std::time::Instant;
+    use std::{fs::File, io::Write, time::Instant};
 
     use crate::{ast::PropertyKeyType, template::parser::parse_tag_name, Value};
 
@@ -186,10 +230,20 @@ mod template_parsers {
     };
 
     #[test]
+    fn bad_template3() {
+        let template = r#"
+        
+        "#;
+        // dbg!(parse_template(template));
+        assert!(parse_template(template).is_err())
+    }
+
+    #[test]
     fn bad_template2() {
         let template = r#"
         <input>xxx</input>
         "#;
+        // dbg!(parse_template(template));
         assert!(parse_template(template).is_err())
     }
 
@@ -208,11 +262,15 @@ mod template_parsers {
             <window class="ui">
                 <view class="body">
                     /// button componet
-                    <button value="Hello world" class="button1" @clicked="handle_actions"/>
-                    <text-input value="Click to count" class="input1"/>
-                    <label :value="counter" class="label1"/>
+                    <button value="Hello world" class="button1" @clicked="handle_actions">
+                        <div></div>
+                        <div />
+                    </button>
+                    <text-input value="Click to count" class="input1" />
+                    <label :value="counter" class="label1" />
                 </view>
             </window>
+            <text-input value="Click to count" class="input1" />
         "#;
         let t = Instant::now();
         let res = parse_template(template).unwrap();
@@ -223,6 +281,8 @@ mod template_parsers {
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
             .join("\n");
+        let mut f = File::create("E:/Rust/try/makepad/rsx/parser/t.rsx").unwrap();
+        let _ = f.write(res.as_bytes());
         dbg!(res);
     }
     #[test]
@@ -253,8 +313,7 @@ mod template_parsers {
             <text-input value="Click to count" class="input1"/>
         </view>
         "#;
-        let res = parse_template(tag1).unwrap();
-        dbg!(res);
+        assert!(parse_template(tag1).is_ok())
     }
 
     #[test]
@@ -270,35 +329,6 @@ mod template_parsers {
         let tag1 = r#"<button value="Hello world" class="button1" @clicked="handle_actions"/>"#;
         let res = parse_template(tag1).unwrap();
         dbg!(res);
-    }
-
-    #[test]
-    fn test_comment() {
-        let normal = "// this is a comment\n";
-        let file = "//! this is a file comment\n";
-        let doc = "/// this is a doc comment\n";
-        let res1 = parse_comment(normal).unwrap();
-        let res2 = parse_comment(file).unwrap();
-        let res3 = parse_comment(doc).unwrap();
-        dbg!(res1);
-        // assert_eq!(
-        //     res1,
-        //     ("\n", ASTNodes::Comment(" this is a comment", "//"),)
-        // );
-        // assert_eq!(
-        //     res2,
-        //     (
-        //         "\n",
-        //         TemplateASTNode::comment(" this is a file comment", "//!"),
-        //     )
-        // );
-        // assert_eq!(
-        //     res3,
-        //     (
-        //         "\n",
-        //         TemplateASTNode::comment(" this is a doc comment", "///"),
-        //     )
-        // );
     }
 
     #[test]

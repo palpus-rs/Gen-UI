@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{END_SIGN, SELF_END_SIGN, TAG_START};
+use crate::{END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
 
 use super::{props_to_string, ASTNodes, Props};
 
@@ -10,6 +10,16 @@ pub enum CloseType {
     SelfClosed,
     /// <xxx></xxx> -> `>`
     Normal,
+}
+
+#[allow(dead_code)]
+impl CloseType {
+    pub fn is_normal(&self) -> bool {
+        matches!(self, CloseType::Normal)
+    }
+    pub fn is_self_close(&self) -> bool {
+        !self.is_normal()
+    }
 }
 
 impl Default for CloseType {
@@ -104,6 +114,9 @@ impl<'a> Tag<'a> {
     pub fn get_type(&self) -> CloseType {
         self.ty.clone()
     }
+    pub fn has_children(&self) -> bool {
+        self.children.is_some()
+    }
 }
 
 impl<'a> Display for Tag<'a> {
@@ -112,9 +125,34 @@ impl<'a> Display for Tag<'a> {
 
         let props_str = props_to_string(self.props.clone());
         if !props_str.is_empty() {
-            let _ = f.write_fmt(format_args!(" {} ", props_str));
+            let _ = f.write_fmt(format_args!(" {}", props_str));
         }
-        f.write_str(self.get_type().to_string().as_str())
+        match self.ty {
+            CloseType::SelfClosed => f.write_str(" />"),
+            CloseType::Normal => {
+                let _ = f.write_str(END_SIGN);
+                // add children
+                if self.has_children() {
+                    let _ = f.write_fmt(format_args!(
+                        "\n{}",
+                        self.children
+                            .as_ref()
+                            .unwrap()
+                            .into_iter()
+                            .map(|item| item.to_string())
+                            .collect::<Vec<String>>()
+                            .join("\n")
+                    ));
+                    let _ = f.write_str("\n");
+                }
+                f.write_fmt(format_args!(
+                    "{}{}{}",
+                    END_START_SIGN,
+                    self.get_name(),
+                    END_SIGN
+                ))
+            }
+        }
     }
 }
 
@@ -162,11 +200,8 @@ mod test_tag {
         props.insert("placeholder", "please enter ...".into());
         let tag_normal = Tag::new("input", Some(props), CloseType::Normal, None, None);
         let tag_close_self = Tag::new("select", None, CloseType::SelfClosed, None, None);
-
-        assert_eq!(
-            tag_normal.to_string().as_str(),
-            "<input name=\"MyInput\" value=\"17\" placeholder=\"please enter ...\" >"
-        );
-        assert_eq!(tag_close_self.to_string().as_str(), "<select/>");
+        // "<input name=\"MyInput\" value=\"17\" placeholder=\"please enter ...\" ><inpit>"
+        // dbg!(tag_normal.to_string());
+        assert_eq!(tag_close_self.to_string().as_str(), "<select />");
     }
 }

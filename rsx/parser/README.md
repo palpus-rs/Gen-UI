@@ -2,12 +2,12 @@
 
 ## Parse Plan
 
-1. parse the outer : `&str to Vec<Targets> to ParseTarget` 
+1. parse the outer : `&str to Vec<Targets> to ParseTarget`
 2. parse the inner : `ParseTarget to AST`
 
 ## parse outer
 
-外层采用nom进行直接转换
+外层采用 nom 进行直接转换
 
 outer use nom to parse directly
 
@@ -24,7 +24,7 @@ The aim of outer parsing is to divide the entire file into three main(Ⓜ️) pa
 
 ##### target
 
-``` rust
+```rust
 let input = r#"
         //! This is a comment1
         //! This is a comment2
@@ -58,7 +58,8 @@ let input = r#"
 ```
 
 ##### result
-``` rust
+
+```rust
 [parser/src/ast/mod.rs:310] target = Ok(
     ParseTarget {
         template: Some(
@@ -122,10 +123,9 @@ let input = r#"
 )
 ```
 
-
 #### empty
 
-``` rust
+```rust
 [parser/src/ast/mod.rs:318] target = Err(
     ParseError(
         "The current file has no content. It should be removed to ensure your program has clean file tree!",
@@ -135,13 +135,13 @@ let input = r#"
 
 #### only code
 
-``` rust
+```rust
         let input = r#"
         let a:&str = "trest";
         "#;
 ```
 
-``` rust
+```rust
 [parser/src/ast/mod.rs:328] target = Err(
     ParseError(
         "Parsing file exception. The current file contains content that is not covered by processed tags. If it is a rust script, please wrap it in a `<script>` tag",
@@ -153,10 +153,22 @@ let input = r#"
 
 **Block parsing**
 
-1. no `<template>` tag and no `<style>` tag  -->  parse as rust script (1 thread)
-2. no `<template>` tag and no rust script has `<style>` tag  -->  parse as style (1 thread)
-3. no `<style>` tag and no rust script has `<template>` tag  -->  parse as template (1 thread)
+1. no `<template>` tag and no `<style>` tag --> parse as rust script (1 thread)
+2. no `<template>` tag and no rust script has `<style>` tag --> parse as style (1 thread)
+3. no `<style>` tag and no rust script has `<template>` tag --> parse as template (1 thread)
 4. has `<template>` tag and rust script no `<style>` tag --> parse as template_script (2 thread)
 5. has 3 tag --> parse as whole rsx (3 thread)
 
 <img src="./inner.png">
+
+### parse template
+
+see parse_template.md
+
+### parse_style
+
+see parse_style.md
+
+### parse_script
+
+see parse_script.md

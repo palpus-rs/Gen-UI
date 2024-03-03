@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use super::{comment::Comments, Props, Style, Tag};
+use super::{comment::Comments, tag::CloseType, Props, Style, Tag};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ASTNodes<'a> {
@@ -34,6 +34,12 @@ impl<'a> ASTNodes<'a> {
     }
     pub fn is_style(&self) -> bool {
         matches!(self, Self::Style(_))
+    }
+    pub fn set_tag_type(&mut self, ty: CloseType) {
+        match self {
+            ASTNodes::Tag(t) => t.set_ty(ty),
+            _ => panic!("only ASTNodes::Tag can use `set_tag_type()`"),
+        }
     }
     pub fn set_tag_properties(&mut self, props: Props<'a>) {
         match self {
