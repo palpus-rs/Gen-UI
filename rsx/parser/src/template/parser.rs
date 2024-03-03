@@ -1,27 +1,25 @@
 //! 🆗 : 测试完成
 //! ⚡️ : faster
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
 use crate::{
     ast::{ASTNodes, PropertyKeyType, Tag},
     common::{
-        end, parse_bind_key, parse_comment as parse_common_comment, parse_function_key,
-        parse_string, parse_value, trim,
+        parse_bind_key, parse_comment as parse_common_comment, parse_function_key, parse_string,
+        trim,
     },
-    error::Errors,
     Value, END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN, TAG_START,
 };
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while_m_n},
-    character::complete::{alphanumeric1, multispace0},
+    character::complete::alphanumeric1,
     combinator::recognize,
     multi::many0,
     sequence::{delimited, pair, preceded},
-    Err, IResult,
+    IResult,
 };
 
-use super::ast::{TemplateASTNode, TemplateNodeType};
 use crate::common::parse_normal;
 
 /// ## ⚡️ parse normal label 🆗
@@ -171,9 +169,7 @@ pub fn parse_template(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error
             }
             Err(crate::error::Error::template_parser_remain(remain))
         }
-        Result::Err(_) => Err(
-            crate::error::Error::new("error parsing template")
-        ),
+        Result::Err(_) => Err(crate::error::Error::new("error parsing template")),
     }
 }
 
@@ -182,18 +178,11 @@ mod template_parsers {
 
     use std::time::Instant;
 
-    use crate::{
-        ast::{ASTNodes, PropertyKeyType},
-        template::{
-            ast::{TemplateASTNode, TemplateNodeType},
-            parser::parse_tag_name,
-        },
-        Value,
-    };
+    use crate::{ast::PropertyKeyType, template::parser::parse_tag_name, Value};
 
     use super::{
         parse_bind_key, parse_comment, parse_function_key, parse_property, parse_property_key,
-        parse_tag_end, parse_tag_start, parse_template, parse_value,
+        parse_tag_end, parse_tag_start, parse_template,
     };
 
     #[test]
@@ -228,6 +217,12 @@ mod template_parsers {
         let t = Instant::now();
         let res = parse_template(template).unwrap();
         dbg!(t.elapsed());
+        let res = res
+            .1
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
         dbg!(res);
     }
     #[test]

@@ -55,6 +55,7 @@ impl Display for StyleType {
     }
 }
 
+/// # Style for ASTNodes
 #[derive(Debug, Clone, PartialEq)]
 pub struct Style<'a> {
     name: &'a str,
@@ -79,6 +80,15 @@ impl<'a> Style<'a> {
             props,
             children,
             parent,
+        }
+    }
+    pub fn new_style_start(name: &'a str, ty: StyleType) -> Self {
+        Style {
+            name,
+            ty,
+            props: None,
+            children: None,
+            parent: None,
         }
     }
     pub fn set_name(&mut self, name: &'a str) {

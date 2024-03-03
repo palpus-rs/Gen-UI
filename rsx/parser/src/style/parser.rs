@@ -22,6 +22,7 @@ use nom::{
 // 问题2: 对于 xxx xxx xx 的属性值
 
 use crate::{
+    ast::{ASTNodes, Style},
     common::{parse_value, trim},
     Value, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
@@ -38,12 +39,19 @@ pub fn parse_style_tag(input: &str) -> IResult<&str, &str> {
 /// - class
 /// - id
 /// - pesudo
-fn parse_ident(input: &str) -> IResult<&str, StyleASTNode> {
-    let (input, style_type) = alt((tag(STYLE_CLASS), tag(STYLE_ID), tag(STYLE_PESUDO)))(input)?;
-    let (input, name) = alphanumeric1(input)?;
+fn parse_ident(input: &str) -> IResult<&str, ASTNodes> {
+    let (input, style_type) = alt((
+        trim(tag(STYLE_CLASS)),
+        trim(tag(STYLE_ID)),
+        trim(tag(STYLE_PESUDO)),
+    ))(input)?;
+    // let (input, name) = alphanumeric1(input)?;
+    let (input, name) = parse_value(input)?;
+
     // let (input, _) = trim(tag(HOLDER_START))(input)?;
-    let style_type: StyleNodeType = style_type.into();
-    Ok((input, StyleASTNode::new(style_type, name)))
+    // let style_type: StyleNodeType = style_type.into();
+    let style = Style::new_style_start(name, style_type.into());
+    Ok((input, style.into()))
 }
 
 fn parse_property_key(input: &str) -> IResult<&str, &str> {
@@ -100,7 +108,7 @@ fn parse_property(input: &str) -> IResult<&str, (&str, Value)> {
     };
 }
 
-fn parse_single(input: &str) -> IResult<&str, StyleASTNode> {
+fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
     let (input, mut ast) = trim(parse_ident)(input)?;
     // find open `{`
     let (input, _) = trim(tag(HOLDER_START))(input)?;
@@ -120,7 +128,7 @@ fn parse_single(input: &str) -> IResult<&str, StyleASTNode> {
             // set parent
             children
                 .iter_mut()
-                .for_each(|child| child.parent(ast.clone()));
+                .for_each(|child| child.set_parent(ast.clone()));
             // remove end `)`
             let (input, _) = many0(trim(tag(HOLDER_END)))(input)?;
             (input, Some(children), properties)
@@ -128,62 +136,71 @@ fn parse_single(input: &str) -> IResult<&str, StyleASTNode> {
     };
     //set properties
     match properties {
-        Some(p) => ast.properties(HashMap::from_iter(p.into_iter())),
+        Some(p) => ast.set_properties(Some(HashMap::from_iter(p.into_iter()))),
         None => {}
     };
     // set children
-    ast.children(children);
+    match children {
+        Some(c) => ast.set_children(c),
+        None => {}
+    }
     Ok((input, ast))
 }
 
-pub fn parse_style(input: &str) -> IResult<&str, Option<Vec<StyleASTNode>>> {
-    // find style tag
-    let (input, _) = parse_style_tag(input)?;
-    return if input.is_empty() {
-        Ok((input, None))
-    } else {
-        // find styles
-        let (input, ast) = many0(parse_single)(input)?;
-        Ok((input, Some(ast)))
-    };
+/// ## parse styleⓂ️
+/// main style parser
+pub fn parse_style(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error::Error> {
+    match many0(parse_single)(input) {
+        Ok((remain, asts)) => {
+            if remain.is_empty() {
+                return Ok((remain, asts));
+            }
+            Err(crate::error::Error::template_parser_remain(remain))
+        }
+        Result::Err(_) => Err(crate::error::Error::new("error parsing style")),
+    }
 }
 
 #[cfg(test)]
 mod test_style {
-    use crate::style::StyleASTNode;
+    use crate::ast::{ASTNodes, Style};
 
-    use super::{function, parse_ident, parse_style, parse_style_tag};
+    use super::{function, parse_style, parse_style_tag};
 
     #[test]
     fn test_style_all() {
         let style = r#"
-        <style>
-            .app{
-                .ui{
-                    height : fill;
-                    width : fill;
-                    show_bg : true;
-                    background_color : linear_gradient(180deg, #7, #3); 
-                    .body{
-                        flow : down;
-                        spacing : 20;
-                        align : {x:0.5, y:0.5};
-                        .button1{ }
-                        .input1{
-                            height : 30;
-                            width : 100;
-                        }
-                        .label1{
-                            color : #ffffff;
-                        }
+        .app{
+            .ui_ui{
+                height : fill;
+                width : fill;
+                show_bg : true;
+                background_color : linear_gradient(180deg, #7, #3); 
+                .body{
+                    flow : down;
+                    spacing : 20;
+                    align : 0.5 0.5;
+                    .button1{ }
+                    .input1{
+                        height : 30;
+                        width : 100;
+                    }
+                    .label1{
+                        color : #ffffff;
                     }
                 }
             }
-        </style>
+        }
         "#;
 
         let res = parse_style(style).unwrap();
-        dbg!(res);
+        let st = res
+            .1
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
+        dbg!(st);
     }
 
     #[test]
@@ -220,11 +237,29 @@ mod test_style {
         let ident1 = ".app{}";
         let ident2 = "#app1{}";
         let ident3 = "&::hover{}";
-        let res1 = parse_ident(ident1).unwrap();
-        let res2 = parse_ident(ident2).unwrap();
-        let res3 = parse_ident(ident3).unwrap();
-        assert_eq!(res1, ("{}", StyleASTNode::class("app")));
-        assert_eq!(res2, ("{}", StyleASTNode::id("app1")));
-        assert_eq!(res3, ("{}", StyleASTNode::pseudo("hover")));
+        let res1 = parse_style(ident1).unwrap();
+        let res2 = parse_style(ident2).unwrap();
+        let res3 = parse_style(ident3).unwrap();
+        assert_eq!(
+            res1.1,
+            vec![ASTNodes::Style(Box::new(Style::new_style_start(
+                "app",
+                ".".into()
+            )))]
+        );
+        assert_eq!(
+            res2.1,
+            vec![ASTNodes::Style(Box::new(Style::new_style_start(
+                "app1",
+                "#".into()
+            )))]
+        );
+        assert_eq!(
+            res3.1,
+            vec![ASTNodes::Style(Box::new(Style::new_style_start(
+                "hover",
+                "&::".into()
+            )))]
+        );
     }
 }

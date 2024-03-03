@@ -1,19 +1,21 @@
 pub mod comment;
 mod nodes;
+mod property;
 mod style;
 mod tag;
-mod property;
 
 use comment::offline::OfflineComment;
 pub use nodes::ASTNodes;
 
+pub use property::*;
 use std::{collections::HashMap, fmt::Display};
 pub use style::Style;
 pub use tag::Tag;
-pub use property::*;
 
 use crate::{
-    ast::comment::position::OfflinePosition, common::{parse_all, trim},  Value, SPACE
+    ast::comment::position::OfflinePosition,
+    common::{parse_all, trim},
+    Value, SPACE,
 };
 
 pub type Props<'a> = Option<HashMap<&'a str, Value>>;
@@ -98,6 +100,7 @@ pub struct ParseTarget<'a> {
     comment: Option<Vec<OfflineComment<'a>>>,
 }
 
+#[allow(dead_code)]
 impl<'a> ParseTarget<'a> {
     pub fn set_template(&mut self, template: &'a str) {
         let _ = self.template.replace(template);
@@ -107,6 +110,9 @@ impl<'a> ParseTarget<'a> {
     }
     pub fn set_style(&mut self, style: &'a str) {
         let _ = self.style.replace(style);
+    }
+    pub fn set_comment(&mut self, comment: Vec<OfflineComment<'a>>) {
+        let _ = self.comment.replace(comment);
     }
     pub fn push_comment(&mut self, comment: OfflineComment<'a>) {
         match &mut self.comment {
@@ -178,7 +184,7 @@ impl<'a> ParseTarget<'a> {
     }
     /// Get ParseTarget Convert to AST Strategy
     /// This strategy affects how many threads are used for conversion
-    /// 
+    ///
     /// 1. no <template> tag and no <style> tag  -->  parse as rust script (1 thread)
     /// 2. no <template> tag and no rust script has <style> tag  -->  parse as style (1 thread)
     /// 3. no <style> tag and no rust script has <template> tag  -->  parse as template (1 thread)
@@ -380,9 +386,12 @@ fn is_multi_nodes(t: u32, sc: u32, s: u32) -> bool {
 
 #[cfg(test)]
 mod ast_test {
-    use std::{fs::File, io::Write};
+    // use std::{fs::File, io::Write};
 
-    use super::ParseTarget;
+    use super::{
+        comment::{offline::OfflineComment, position::OfflinePosition, Comments},
+        ParseTarget,
+    };
 
     #[test]
     fn parse_target() {
@@ -411,14 +420,22 @@ mod ast_test {
         .ui{
             height : fill;
             width : fill;
-            show-bg : true;
+            show_bg : true;
         }
         </style>
         // end of line comment
         "#;
 
-        let target = ParseTarget::try_from(input);
-        dbg!(target);
+        let target = ParseTarget::try_from(input).unwrap();
+        let mut parse = ParseTarget::default();
+        parse.set_template("<window class=\"ui\">\n            </window>\n        ");
+        parse.set_script("let mut counter:usize = 0\n\n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        ");
+        parse.set_style(".ui{\n            height : fill;\n            width : fill;\n            show_bg : true;\n        }\n        ");
+        parse.set_comment(vec![OfflineComment::from((
+            vec![Comments::File("This is a comment1")],
+            OfflinePosition::AboveTemplate,
+        ))]);
+        assert_eq!(target, parse);
     }
 
     #[test]

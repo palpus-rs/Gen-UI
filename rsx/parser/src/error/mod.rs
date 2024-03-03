@@ -1,6 +1,7 @@
 use core::str;
 use std::{error, fmt::Display};
 
+#[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Errors<'a> {
     ParseError(&'a str),
@@ -52,6 +53,7 @@ impl<'a> Display for Errors<'a> {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Error<'a>(Errors<'a>);
 
+#[allow(dead_code)]
 impl<'a> Error<'a> {
     pub fn convert(e: Errors<'a>) -> Self {
         Self(e)
@@ -73,6 +75,4 @@ impl<'a> Display for Error<'a> {
     }
 }
 
-impl<'a> error::Error for Error<'a> {
-    
-}
+impl<'a> error::Error for Error<'a> {}

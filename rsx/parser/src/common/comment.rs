@@ -3,18 +3,15 @@ use crate::ast::comment::Comments;
 use crate::ast::Targets;
 use crate::{COMMENT_DOCUMENT, COMMENT_FILE, COMMENT_NROMAL};
 
-use crate::template::TemplateASTNode;
-
 use nom::branch::alt;
 use nom::bytes::complete::take_while;
 use nom::combinator::peek;
-use nom::multi::{many0, many1};
+use nom::multi::many1;
 
 use nom::{bytes::complete::tag, IResult};
 
 use super::tag::parse_tag_check;
 use super::trim;
-
 
 // pub fn parse_comment(input: &str) -> IResult<&str, TemplateASTNode> {
 //     // let (input,value) = recognize(preceded(
@@ -78,7 +75,7 @@ pub fn parse_offline_comment(input: &str) -> IResult<&str, Targets> {
             }
         }
     };
- 
+
     Ok((input, Targets::Comment((comment, position).into())))
 }
 
@@ -98,7 +95,6 @@ mod comment_test {
         };
         assert!(success);
     }
-
 
     #[test]
     fn offline_comment_above_template() {

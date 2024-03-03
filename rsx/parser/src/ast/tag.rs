@@ -64,34 +64,37 @@ impl<'a> Tag<'a> {
             parent,
         }
     }
-    pub fn new_tag_start(name: &'a str)->Self{
-        Self{
+    pub fn new_tag_start(name: &'a str) -> Self {
+        Self {
             name,
             ty: Default::default(),
-            props:None,
+            props: None,
             children: None,
             parent: None,
         }
     }
-    pub fn set_name(&mut self, name: &'a str){
+    pub fn set_name(&mut self, name: &'a str) {
         self.name = name;
     }
-    pub fn set_ty(&mut self, ty:CloseType) {
+    pub fn set_ty(&mut self, ty: CloseType) {
         self.ty = ty;
     }
-    pub fn set_props(&mut self, props:Props<'a>) {
+    pub fn set_props(&mut self, props: Props<'a>) {
         self.props = props;
     }
-    pub fn set_children(&mut self, children:Vec<ASTNodes<'a>>){
-       
+    pub fn set_children(&mut self, children: Vec<ASTNodes<'a>>) {
         match self.children {
-            Some(_) => {let _ = self.children.replace(children);},
-            None =>  self.children = Some(children),
+            Some(_) => {
+                let _ = self.children.replace(children);
+            }
+            None => self.children = Some(children),
         }
     }
-    pub fn set_parent(&mut self,parent:ASTNodes<'a>){
+    pub fn set_parent(&mut self, parent: ASTNodes<'a>) {
         match self.parent {
-            Some(_) => {let _ = self.parent.replace(parent);},
+            Some(_) => {
+                let _ = self.parent.replace(parent);
+            }
             None => self.parent = Some(parent),
         }
     }
@@ -101,8 +104,6 @@ impl<'a> Tag<'a> {
     pub fn get_type(&self) -> CloseType {
         self.ty.clone()
     }
-    
-    
 }
 
 impl<'a> Display for Tag<'a> {
@@ -125,11 +126,8 @@ impl<'a> Display for Tag<'a> {
 
 #[cfg(test)]
 mod test_tag {
-    use std::collections::HashMap;
-
-    use crate::Value;
-
     use super::{CloseType, Tag};
+    use std::collections::HashMap;
 
     #[test]
     fn get_name() {
@@ -165,7 +163,10 @@ mod test_tag {
         let tag_normal = Tag::new("input", Some(props), CloseType::Normal, None, None);
         let tag_close_self = Tag::new("select", None, CloseType::SelfClosed, None, None);
 
-        assert_eq!(tag_normal.to_string().as_str(), "<input name=\"MyInput\" value=\"17\" placeholder=\"please enter ...\" >");
+        assert_eq!(
+            tag_normal.to_string().as_str(),
+            "<input name=\"MyInput\" value=\"17\" placeholder=\"please enter ...\" >"
+        );
         assert_eq!(tag_close_self.to_string().as_str(), "<select/>");
     }
 }

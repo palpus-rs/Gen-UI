@@ -11,6 +11,7 @@ pub enum PropertyKeyType {
     Function,
 }
 
+#[allow(dead_code)]
 impl PropertyKeyType {
     pub fn to_value(&self, value: &str) -> Value {
         let value = value.to_string();

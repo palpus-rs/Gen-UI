@@ -49,16 +49,12 @@
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    combinator::map_res,
     multi::many0,
     sequence::delimited,
     IResult,
 };
 
-use crate::{
-    ast::{ParseTarget, Targets},
-    END_SIGN, END_START_SIGN, SCRIPT, STYLE, TAG_START, TEMPLATE,
-};
+use crate::{ast::Targets, END_SIGN, END_START_SIGN, SCRIPT, STYLE, TAG_START, TEMPLATE};
 
 use super::{comment::parse_offline_comment, trim};
 
@@ -178,7 +174,10 @@ pub fn parse_all(input: &str) -> IResult<&str, Vec<Targets>> {
 mod tag_parser {
     use crate::{
         ast::Targets,
-        common::{tag::{parse_all, parse_script_tag, parse_tag}, trim},
+        common::{
+            tag::{parse_all, parse_script_tag, parse_tag},
+            trim,
+        },
         TEMPLATE,
     };
 
@@ -276,9 +275,8 @@ mod tag_parser {
         </style>
         "#;
         let (remain, inner) = parse_all(input).unwrap();
-        assert_eq!(remain,"");
+        assert_eq!(remain, "");
         dbg!(inner);
-       
     }
 
     #[test]
@@ -314,7 +312,7 @@ mod tag_parser {
         // end of line comment
         "#;
         let (remain, inner) = trim(parse_all)(input).unwrap();
-        assert_eq!(remain,"");
+        assert_eq!(remain, "");
         // [parser/src/common/tag.rs:319] inner = [
         //     Comment(
         //         OfflineComment {
@@ -386,7 +384,7 @@ mod tag_parser {
         let input = r#"
         "#;
         let (remain, inner) = trim(parse_all)(input).unwrap();
-        assert_eq!(remain,"");
+        assert_eq!(remain, "");
         assert!(inner.is_empty())
     }
 }

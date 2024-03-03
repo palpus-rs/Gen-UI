@@ -15,13 +15,16 @@ pub struct OfflineComment<'a> {
 }
 
 impl<'a> OfflineComment<'a> {
+    /// ## get the comment value
+    /// ### return
+    /// `&Vec<Comments>`
     pub fn value(&self) -> &Vec<Comments> {
         &self.value
     }
+    /// ## get the position
     pub fn position(&self) -> OfflinePosition {
         self.position.clone()
     }
-    
 }
 
 impl<'a> From<(Vec<Comments<'a>>, OfflinePosition)> for OfflineComment<'a> {
