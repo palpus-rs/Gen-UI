@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use crate::{STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
+use crate::{BIND_SIGN, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
 
-use super::{ASTNodes, Props};
+use super::{props_to_string, ASTNodes, Props};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum StyleType {
@@ -122,15 +122,42 @@ impl<'a> Style<'a> {
     pub fn get_type(&self) -> StyleType {
         self.ty.clone()
     }
+    pub fn has_children(&self) -> bool {
+        self.children.is_some()
+    }
 }
 
 impl<'a> Display for Style<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!(
-            "{}{}",
+        // name and type
+        let _ = f.write_fmt(format_args!(
+            "{}{}{}",
             self.get_type().to_string(),
-            self.get_name()
-        ))
+            self.get_name(),
+            HOLDER_START
+        ));
+
+        // properties
+        let props_str = props_to_string(self.props.clone(), BIND_SIGN);
+        if !props_str.is_empty() {
+            let _ = f.write_fmt(format_args!("{}", props_str));
+        }
+        // children
+
+        if self.has_children() {
+            let _ = f.write_fmt(format_args!(
+                "\n{}",
+                self.children
+                    .as_ref()
+                    .unwrap()
+                    .into_iter()
+                    .map(|item| item.to_string())
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            ));
+            let _ = f.write_str("\n");
+        }
+        f.write_str(HOLDER_END)
     }
 }
 

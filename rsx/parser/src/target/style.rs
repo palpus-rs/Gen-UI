@@ -3,12 +3,10 @@ use std::collections::HashMap;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_until1},
-    character::complete::{alphanumeric0, alphanumeric1, anychar, char},
     combinator::recognize,
-    error::ErrorKind,
-    multi::many0,
-    sequence::{delimited, pair, preceded, separated_pair, terminated},
-    Err, IResult,
+    multi::{many0, many1},
+    sequence::{delimited, pair},
+    IResult,
 };
 
 //问题1: function字段分割(开始前去除())
@@ -27,8 +25,7 @@ use crate::{
     Value, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
 
-use super::{StyleASTNode, StyleNodeType};
-
+#[allow(dead_code)]
 pub fn parse_style_tag(input: &str) -> IResult<&str, &str> {
     let (input, _) = trim(tag(STYLE_START))(input)?;
     let (_, input) = take_until(STYLE_END)(input)?;
@@ -149,8 +146,9 @@ fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
 
 /// ## parse styleⓂ️
 /// main style parser
+#[allow(dead_code)]
 pub fn parse_style(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error::Error> {
-    match many0(parse_single)(input) {
+    match many1(parse_single)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
                 return Ok((remain, asts));
@@ -163,6 +161,8 @@ pub fn parse_style(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error::E
 
 #[cfg(test)]
 mod test_style {
+    use std::{fs::File, io::Write};
+
     use crate::ast::{ASTNodes, Style};
 
     use super::{function, parse_style, parse_style_tag};
@@ -200,7 +200,11 @@ mod test_style {
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
             .join("\n");
-        dbg!(st);
+        // dbg!(st);
+
+        let mut f = File::create("E:/Rust/try/makepad/rsx/parser/t.css").unwrap();
+        let _ = f.write(st.as_bytes());
+        // dbg!(res);
     }
 
     #[test]

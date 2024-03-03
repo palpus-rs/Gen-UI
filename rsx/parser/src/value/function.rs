@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 
-use crate::{common::parse_value, style::function};
+use crate::{common::parse_value, target::function};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {

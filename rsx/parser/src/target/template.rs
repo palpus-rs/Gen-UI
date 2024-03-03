@@ -222,11 +222,11 @@ mod template_parsers {
 
     use std::{fs::File, io::Write, time::Instant};
 
-    use crate::{ast::PropertyKeyType, template::parser::parse_tag_name, Value};
+    use crate::{ast::PropertyKeyType, target::template::parse_tag_name, Value};
 
     use super::{
-        parse_bind_key, parse_comment, parse_function_key, parse_property, parse_property_key,
-        parse_tag_end, parse_tag_start, parse_template,
+        parse_bind_key, parse_function_key, parse_property, parse_property_key, parse_tag_end,
+        parse_tag_start, parse_template,
     };
 
     #[test]
@@ -283,7 +283,7 @@ mod template_parsers {
             .join("\n");
         let mut f = File::create("E:/Rust/try/makepad/rsx/parser/t.rsx").unwrap();
         let _ = f.write(res.as_bytes());
-        dbg!(res);
+        // dbg!(res);
     }
     #[test]
     fn test_parse_template_multi() {

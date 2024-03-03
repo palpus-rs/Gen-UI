@@ -2,8 +2,7 @@ mod ast;
 mod common;
 mod error;
 mod script;
-mod style;
-mod template;
+mod target;
 mod tokenizer;
 mod value;
 
