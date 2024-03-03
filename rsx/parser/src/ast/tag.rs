@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use crate::{END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN, TAG_START};
+use crate::{END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
 
-use super::{props_to_string, ASTNodes, Props};
+use super::{props_to_template_string, ASTNodes, Props};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum CloseType {
@@ -123,7 +123,7 @@ impl<'a> Display for Tag<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let _ = f.write_fmt(format_args!("{}{}", TAG_START, self.get_name(),));
 
-        let props_str = props_to_string(self.props.clone(), EQUAL_SIGN);
+        let props_str = props_to_template_string(self.props.clone());
         if !props_str.is_empty() {
             let _ = f.write_fmt(format_args!(" {}", props_str));
         }

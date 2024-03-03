@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use crate::{BIND_SIGN, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
+use crate::{HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
 
-use super::{props_to_string, ASTNodes, Props};
+use super::{props_to_style_string, ASTNodes, Props};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum StyleType {
@@ -138,7 +138,7 @@ impl<'a> Display for Style<'a> {
         ));
 
         // properties
-        let props_str = props_to_string(self.props.clone(), BIND_SIGN);
+        let props_str = props_to_style_string(self.props.clone());
         if !props_str.is_empty() {
             let _ = f.write_fmt(format_args!("{}", props_str));
         }

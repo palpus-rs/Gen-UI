@@ -35,7 +35,7 @@
                 ty: Normal,
                 props: Some(
                     {
-                        "class": String(
+                        "class": UnKnown(
                             "ui",
                         ),
                     },
@@ -48,7 +48,7 @@
                                 ty: Normal,
                                 props: Some(
                                     {
-                                        "class": String(
+                                        "class": UnKnown(
                                             "body",
                                         ),
                                     },
@@ -66,6 +66,9 @@
                                                 ty: Normal,
                                                 props: Some(
                                                     {
+                                                        "class": UnKnown(
+                                                            "button1",
+                                                        ),
                                                         "clicked": Function(
                                                             Function {
                                                                 name: "handle_actions",
@@ -76,11 +79,8 @@
                                                                 ),
                                                             },
                                                         ),
-                                                        "value": String(
+                                                        "value": UnKnown(
                                                             "Hello world",
-                                                        ),
-                                                        "class": String(
-                                                            "button1",
                                                         ),
                                                     },
                                                 ),
@@ -99,6 +99,9 @@
                                                                             ty: Normal,
                                                                             props: Some(
                                                                                 {
+                                                                                    "class": UnKnown(
+                                                                                        "button1",
+                                                                                    ),
                                                                                     "clicked": Function(
                                                                                         Function {
                                                                                             name: "handle_actions",
@@ -109,11 +112,8 @@
                                                                                             ),
                                                                                         },
                                                                                     ),
-                                                                                    "value": String(
+                                                                                    "value": UnKnown(
                                                                                         "Hello world",
-                                                                                    ),
-                                                                                    "class": String(
-                                                                                        "button1",
                                                                                     ),
                                                                                 },
                                                                             ),
@@ -137,6 +137,9 @@
                                                                             ty: Normal,
                                                                             props: Some(
                                                                                 {
+                                                                                    "class": UnKnown(
+                                                                                        "button1",
+                                                                                    ),
                                                                                     "clicked": Function(
                                                                                         Function {
                                                                                             name: "handle_actions",
@@ -147,11 +150,8 @@
                                                                                             ),
                                                                                         },
                                                                                     ),
-                                                                                    "value": String(
+                                                                                    "value": UnKnown(
                                                                                         "Hello world",
-                                                                                    ),
-                                                                                    "class": String(
-                                                                                        "button1",
                                                                                     ),
                                                                                 },
                                                                             ),
@@ -171,7 +171,7 @@
                                                             ty: Normal,
                                                             props: Some(
                                                                 {
-                                                                    "class": String(
+                                                                    "class": UnKnown(
                                                                         "body",
                                                                     ),
                                                                 },
@@ -189,11 +189,11 @@
                                                 ty: SelfClosed,
                                                 props: Some(
                                                     {
-                                                        "class": String(
-                                                            "input1",
-                                                        ),
-                                                        "value": String(
+                                                        "value": UnKnown(
                                                             "Click to count",
+                                                        ),
+                                                        "class": UnKnown(
+                                                            "input1",
                                                         ),
                                                     },
                                                 ),
@@ -205,7 +205,7 @@
                                                             ty: Normal,
                                                             props: Some(
                                                                 {
-                                                                    "class": String(
+                                                                    "class": UnKnown(
                                                                         "body",
                                                                     ),
                                                                 },
@@ -223,11 +223,11 @@
                                                 ty: SelfClosed,
                                                 props: Some(
                                                     {
-                                                        "class": String(
-                                                            "label1",
-                                                        ),
                                                         "value": Bind(
                                                             "counter",
+                                                        ),
+                                                        "class": UnKnown(
+                                                            "label1",
                                                         ),
                                                     },
                                                 ),
@@ -239,7 +239,7 @@
                                                             ty: Normal,
                                                             props: Some(
                                                                 {
-                                                                    "class": String(
+                                                                    "class": UnKnown(
                                                                         "body",
                                                                     ),
                                                                 },
@@ -260,7 +260,7 @@
                                             ty: Normal,
                                             props: Some(
                                                 {
-                                                    "class": String(
+                                                    "class": UnKnown(
                                                         "ui",
                                                     ),
                                                 },
@@ -283,10 +283,10 @@
                 ty: SelfClosed,
                 props: Some(
                     {
-                        "value": String(
+                        "value": UnKnown(
                             "Click to count",
                         ),
-                        "class": String(
+                        "class": UnKnown(
                             "input1",
                         ),
                     },

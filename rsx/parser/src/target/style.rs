@@ -93,7 +93,7 @@ fn parse_property(input: &str) -> IResult<&str, (&str, Value)> {
     return if remain.is_empty() {
         // match sign
         let value = match sign {
-            "" => Value::String(name.to_string()),
+            "" => Value::UnKnown(name.to_string()),
             "()" => Value::Function((name, params).into()),
             ":" => Value::Bind(name.to_string()),
             _ => panic!("Invalid Value:{}", sign),
@@ -200,11 +200,10 @@ mod test_style {
             .map(|x| x.to_string())
             .collect::<Vec<String>>()
             .join("\n");
-        // dbg!(st);
 
         let mut f = File::create("E:/Rust/try/makepad/rsx/parser/t.css").unwrap();
         let _ = f.write(st.as_bytes());
-        // dbg!(res);
+        // dbg!(res.1);
     }
 
     #[test]

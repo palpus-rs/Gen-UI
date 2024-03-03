@@ -43,6 +43,7 @@ pub enum Value {
     /// - rgb color: rgb(211,23,255)
     /// - rgba color: rgba(255,255,87,0.4)
     Color(Color),
+    UnKnown(String),
 }
 
 impl Value {
@@ -177,6 +178,7 @@ impl Display for Value {
                     .map(|x| x.to_string())
                     .collect::<Vec<String>>()
             ),
+            Value::UnKnown(u) => u.to_string(),
         };
 
         f.write_str(&res)

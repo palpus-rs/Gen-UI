@@ -16,7 +16,7 @@ impl PropertyKeyType {
     pub fn to_value(&self, value: &str) -> Value {
         let value = value.to_string();
         match self {
-            PropertyKeyType::Normal => Value::String(value),
+            PropertyKeyType::Normal => Value::UnKnown(value),
             PropertyKeyType::Bind => Value::Bind(value),
             PropertyKeyType::Function => Value::Function(value.into()),
         }

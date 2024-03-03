@@ -20,20 +20,27 @@ use crate::{
 
 pub type Props<'a> = Option<HashMap<&'a str, Value>>;
 
-pub fn props_to_string(props: Props, link_sign: &str) -> String {
+pub fn props_to_string<F>(props: Props, format: F) -> String
+where
+    F: FnMut((&str, Value)) -> String,
+{
     match props {
         Some(props) => props
             .into_iter()
-            .map(|(k, v)| format!(r#"{}{}"{}""#, k, link_sign, v.to_string()))
+            .map(format)
             .collect::<Vec<String>>()
             .join(SPACE),
         None => String::new(),
     }
 }
 
-// pub fn props_to_style_string(props: Props) -> String {
-//     props_to_string(props, link_sign)
-// }
+pub fn props_to_template_string(props: Props) -> String {
+    props_to_string(props, |(k, v)| format!(r#"{}="{}""#, k, v.to_string()))
+}
+
+pub fn props_to_style_string(props: Props) -> String {
+    props_to_string(props, |(k, v)| format!(r#"{}: {};"#, k, v.to_string()))
+}
 
 /// Parse Strategy
 /// Convert ParseTarget To AST
