@@ -1,38 +1,71 @@
 //! mode:
-//! - variable: let variable_name: variable_type = variable_value;
+//! - variable: let | const variable_name: variable_type = variable_value;
 //! - funcation: let function_name: function_type = ||{ function_handle };
 
-use nom::{branch::alt, bytes::complete::tag, IResult};
-
-use crate::{ast::script::VariableType, common::trim, CONST, LET};
+use proc_macro2::TokenStream;
+use syn::{parse2, Block};
 
 #[allow(dead_code)]
-fn parse_var_type(input: &str) -> IResult<&str, VariableType> {
-    match alt((trim(tag(LET)), trim(tag(CONST))))(input) {
-        Ok((input, ty)) => {
-            let ty = VariableType::from(ty);
-            Ok((input, ty))
+pub fn parse_script(input: &str) -> Result<Block, crate::error::Error> {
+    let input = format!("{{ {} }}", input);
+    // make input to TokenStream
+    let token = match input.parse::<TokenStream>() {
+        Ok(t) => t,
+        Err(_) => {
+            return Err(crate::error::Error::parse_error(
+                "cannot parse rsx script to rust TokenStream!",
+            ));
         }
-        Err(e) => Err(e),
+    };
+    // token to ast
+    match parse2::<Block>(token) {
+        Ok(ast) => Ok(ast),
+        Err(_) => Err(crate::error::Error::parse_error(
+            "cannot convert TokenStream to rust Block!",
+        )),
     }
 }
 
 #[cfg(test)]
 mod test_script_parse {
-    use crate::ast::script::VariableType;
-
-    use super::parse_var_type;
+    use proc_macro2::TokenStream;
+    use syn::{parse2, parse_str, Block, Expr, Stmt};
 
     #[test]
-    fn test_parse_var_type() {
-        let input = r#"let a: &str = "hello""#;
-        let input2 = r#"const B: &str = "world""#;
+    fn test_syn_parse_var() {
+        let rsx_code_var = r#"let counter: usize = 0_usize;"#;
 
-        let (remain1, ty1) = parse_var_type(input).unwrap();
-        let (remain2, ty2) = parse_var_type(input2).unwrap();
-        assert_eq!(remain1, r#"a: &str = "hello""#);
-        assert_eq!(remain2, r#"B: &str = "world""#);
-        assert_eq!(ty1, VariableType::Let);
-        assert_eq!(ty2, VariableType::Const);
+        let ast_var = parse_str::<Stmt>(rsx_code_var).unwrap();
+        dbg!(ast_var);
+    }
+
+    #[test]
+    fn test_syn_parse_fn() {
+        let rsx_code_fn = r#"
+        let mut btn_click = ||{
+            log!("BUTTON CLICKED {}", counter);
+            counter += 1;
+          }
+        "#;
+
+        let ast_fn = parse_str::<Expr>(rsx_code_fn).unwrap();
+        dbg!(ast_fn);
+    }
+
+    #[test]
+    fn test_parse_mixin() {
+        let code = r#"
+        let mut counter:usize = 0_usize;
+
+        let mut click = ||{
+            counter += 1;
+        };
+        "#;
+        // to tokenStream
+        let token: TokenStream = format!("{{ {} }}", code).parse().expect("error token");
+
+        // to ast -> Block
+        let ast = parse2::<Block>(token).expect("ast  error");
+        dbg!(ast);
     }
 }

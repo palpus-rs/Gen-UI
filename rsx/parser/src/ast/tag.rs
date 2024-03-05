@@ -1,9 +1,16 @@
-use std::fmt::Display;
+use std::{borrow::Cow, fmt::Display};
 
 use crate::{END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
 
 use super::{props_to_template_string, ASTNodes, Props};
 
+/// # CloseType for Tag
+/// - SelfClosed
+/// - Normal
+/// ## SelfClosed
+/// `<input />`
+/// ## Normal
+/// `<input></input>`
 #[derive(Debug, Clone, PartialEq)]
 pub enum CloseType {
     /// <xxx /> -> `/>`
@@ -49,50 +56,55 @@ impl From<&str> for CloseType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Tag<'a> {
-    name: &'a str,
+pub struct Tag {
+    name: String,
     ty: CloseType,
-    props: Props<'a>,
-    children: Option<Vec<ASTNodes<'a>>>,
-    parent: Option<ASTNodes<'a>>,
+    props: Props,
+    children: Option<Vec<ASTNodes>>,
+    parent: Option<Box<ASTNodes>>,
 }
 
 #[allow(dead_code)]
-impl<'a> Tag<'a> {
+impl Tag {
     pub fn new(
-        name: &'a str,
-        props: Props<'a>,
+        name: &str,
+        props: Props,
         ty: CloseType,
-        children: Option<Vec<ASTNodes<'a>>>,
-        parent: Option<ASTNodes<'a>>,
+        children: Option<Vec<ASTNodes>>,
+        parent: Option<ASTNodes>,
     ) -> Self {
+        let name = name.to_string();
+        let parent = match parent {
+            Some(p) => Some(Box::new(p)),
+            None => None,
+        };
         Tag {
-            name,
+            name: name.to_string(),
             ty,
             props,
             children,
             parent,
         }
     }
-    pub fn new_tag_start(name: &'a str) -> Self {
+    pub fn new_tag_start(name: &str) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             ty: Default::default(),
             props: None,
             children: None,
             parent: None,
         }
     }
-    pub fn set_name(&mut self, name: &'a str) {
-        self.name = name;
+    pub fn set_name(&mut self, name: &str) {
+        self.name = name.to_string();
     }
     pub fn set_ty(&mut self, ty: CloseType) {
         self.ty = ty;
     }
-    pub fn set_props(&mut self, props: Props<'a>) {
+    pub fn set_props(&mut self, props: Props) {
         self.props = props;
     }
-    pub fn set_children(&mut self, children: Vec<ASTNodes<'a>>) {
+    pub fn set_children(&mut self, children: Vec<ASTNodes>) {
         match self.children {
             Some(_) => {
                 let _ = self.children.replace(children);
@@ -100,12 +112,12 @@ impl<'a> Tag<'a> {
             None => self.children = Some(children),
         }
     }
-    pub fn set_parent(&mut self, parent: ASTNodes<'a>) {
+    pub fn set_parent(&mut self, parent: ASTNodes) {
         match self.parent {
             Some(_) => {
-                let _ = self.parent.replace(parent);
+                let _ = self.parent.replace(Box::new(parent));
             }
-            None => self.parent = Some(parent),
+            None => self.parent = Some(Box::new(parent)),
         }
     }
     pub fn get_name(&self) -> &str {
@@ -119,7 +131,7 @@ impl<'a> Tag<'a> {
     }
 }
 
-impl<'a> Display for Tag<'a> {
+impl Display for Tag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let _ = f.write_fmt(format_args!("{}{}", TAG_START, self.get_name(),));
 
@@ -164,6 +176,8 @@ impl<'a> Display for Tag<'a> {
 
 #[cfg(test)]
 mod test_tag {
+    use crate::ast::{PropertyKeyType, PropsKey};
+
     use super::{CloseType, Tag};
     use std::collections::HashMap;
 
@@ -188,20 +202,29 @@ mod test_tag {
         let tag_normal = Tag::new("input", None, CloseType::Normal, None, None);
         let tag_close_self = Tag::new("select", None, CloseType::SelfClosed, None, None);
 
-        assert_eq!(tag_normal.to_string().as_str(), "<input>");
-        assert_eq!(tag_close_self.to_string().as_str(), "<select/>");
+        assert_eq!(tag_normal.to_string().as_str(), "<input></input>");
+        assert_eq!(tag_close_self.to_string().as_str(), "<select />");
     }
 
     #[test]
     fn display_complex() {
         let mut props = HashMap::new();
-        props.insert("name", "MyInput".into());
-        props.insert("value", "17".into());
-        props.insert("placeholder", "please enter ...".into());
-        let tag_normal = Tag::new("input", Some(props), CloseType::Normal, None, None);
+        props.insert(
+            PropsKey::new("name", false, PropertyKeyType::Normal),
+            "MyInput".into(),
+        );
+        props.insert(
+            PropsKey::new("value", false, PropertyKeyType::Bind),
+            "17".into(),
+        );
+        props.insert(
+            PropsKey::new("placeholder", false, PropertyKeyType::Normal),
+            "please enter ...".into(),
+        );
+        let _tag_normal = Tag::new("input", Some(props), CloseType::Normal, None, None);
         let tag_close_self = Tag::new("select", None, CloseType::SelfClosed, None, None);
-        // "<input name=\"MyInput\" value=\"17\" placeholder=\"please enter ...\" ><inpit>"
-        // dbg!(tag_normal.to_string());
+        // "<input placeholder=\"please enter ...\" name=\"MyInput\" :value=\"17\"></input>"
+        dbg!(_tag_normal.to_string());
         assert_eq!(tag_close_self.to_string().as_str(), "<select />");
     }
 }

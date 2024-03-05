@@ -32,7 +32,7 @@
 ### result
 
 ```rust
-[parser\src\target\style.rs:207] res.1 = [
+[parser/src/target/style.rs:212] res.1 = [
     Style(
         Style {
             name: "app",
@@ -46,7 +46,18 @@
                             ty: Class,
                             props: Some(
                                 {
-                                    "background_color": Function(
+                                    PropsKey {
+                                        name: "height",
+                                        is_style: true,
+                                        ty: Normal,
+                                    }: UnKnown(
+                                        "fill",
+                                    ),
+                                    PropsKey {
+                                        name: "background_color",
+                                        is_style: true,
+                                        ty: Function,
+                                    }: Function(
                                         Function {
                                             name: "linear_gradient",
                                             params: Some(
@@ -56,15 +67,21 @@
                                                     "#3",
                                                 ],
                                             ),
+                                            is_style: true,
                                         },
                                     ),
-                                    "width": UnKnown(
-                                        "fill",
-                                    ),
-                                    "show_bg": UnKnown(
+                                    PropsKey {
+                                        name: "show_bg",
+                                        is_style: true,
+                                        ty: Normal,
+                                    }: UnKnown(
                                         "true",
                                     ),
-                                    "height": UnKnown(
+                                    PropsKey {
+                                        name: "width",
+                                        is_style: true,
+                                        ty: Normal,
+                                    }: UnKnown(
                                         "fill",
                                     ),
                                 },
@@ -77,14 +94,26 @@
                                             ty: Class,
                                             props: Some(
                                                 {
-                                                    "align": UnKnown(
-                                                        "0.5 0.5",
+                                                    PropsKey {
+                                                        name: "flow",
+                                                        is_style: true,
+                                                        ty: Normal,
+                                                    }: UnKnown(
+                                                        "down",
                                                     ),
-                                                    "spacing": UnKnown(
+                                                    PropsKey {
+                                                        name: "spacing",
+                                                        is_style: true,
+                                                        ty: Normal,
+                                                    }: UnKnown(
                                                         "20",
                                                     ),
-                                                    "flow": UnKnown(
-                                                        "down",
+                                                    PropsKey {
+                                                        name: "align",
+                                                        is_style: true,
+                                                        ty: Normal,
+                                                    }: UnKnown(
+                                                        "0.5 0.5",
                                                     ),
                                                 },
                                             ),
@@ -115,11 +144,19 @@
                                                             ty: Class,
                                                             props: Some(
                                                                 {
-                                                                    "height": UnKnown(
-                                                                        "30",
-                                                                    ),
-                                                                    "width": UnKnown(
+                                                                    PropsKey {
+                                                                        name: "width",
+                                                                        is_style: true,
+                                                                        ty: Normal,
+                                                                    }: UnKnown(
                                                                         "100",
+                                                                    ),
+                                                                    PropsKey {
+                                                                        name: "height",
+                                                                        is_style: true,
+                                                                        ty: Normal,
+                                                                    }: UnKnown(
+                                                                        "30",
                                                                     ),
                                                                 },
                                                             ),
@@ -145,7 +182,11 @@
                                                             ty: Class,
                                                             props: Some(
                                                                 {
-                                                                    "color": UnKnown(
+                                                                    PropsKey {
+                                                                        name: "color",
+                                                                        is_style: true,
+                                                                        ty: Normal,
+                                                                    }: UnKnown(
                                                                         "#ffffff",
                                                                     ),
                                                                 },

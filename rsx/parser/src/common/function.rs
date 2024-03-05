@@ -1,11 +1,6 @@
 use super::parse_sign_key;
 use crate::FUNCTION_SIGN;
-use nom::{
-    bytes::complete::{tag, take_until},
-    combinator::recognize,
-    sequence::delimited,
-    IResult,
-};
+use nom::IResult;
 
 /// ## parse property function key 🆗
 /// - `@xxx`

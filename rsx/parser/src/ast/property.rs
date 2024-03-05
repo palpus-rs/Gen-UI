@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
-use crate::Value;
+use crate::{Value, SPACE};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum PropertyKeyType {
@@ -58,4 +58,77 @@ impl From<&str> for PropertyKeyType {
             _ => panic!("Invalid property key"),
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PropsKey {
+    name: String,
+    /// same as function
+    /// judge the use place (template|style)
+    /// has behave differently
+    is_style: bool,
+    ty: PropertyKeyType,
+}
+
+impl PropsKey {
+    pub fn new(name: &str, is_style: bool, ty: PropertyKeyType) -> Self {
+        PropsKey {
+            name: name.to_string(),
+            is_style,
+            ty,
+        }
+    }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl Display for PropsKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.ty {
+            PropertyKeyType::Normal => f.write_str(self.name()),
+            PropertyKeyType::Bind => {
+                if self.is_style {
+                    f.write_str(self.name())
+                } else {
+                    f.write_fmt(format_args!(":{}", self.name()))
+                }
+            }
+            PropertyKeyType::Function => {
+                if self.is_style {
+                    f.write_str(self.name())
+                } else {
+                    f.write_fmt(format_args!("@{}", self.name()))
+                }
+            }
+        }
+    }
+}
+
+pub type Props = Option<HashMap<PropsKey, Value>>;
+
+pub fn props_to_string<'a, F>(props: Props, format: F) -> String
+where
+    F: FnMut((PropsKey, Value)) -> String,
+{
+    match props {
+        Some(props) => props
+            .into_iter()
+            .map(format)
+            .collect::<Vec<String>>()
+            .join(SPACE),
+        None => String::new(),
+    }
+}
+
+pub fn props_to_template_string(props: Props) -> String {
+    props_to_string(props, |(k, v)| {
+        format!(r#"{}="{}""#, k.to_string(), v.to_string())
+    })
+}
+
+pub fn props_to_style_string(props: Props) -> String {
+    props_to_string(props, |(k, v)| {
+        format!(r#"{}: {};"#, k.to_string(), v.to_string())
+    })
 }

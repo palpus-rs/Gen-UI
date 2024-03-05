@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    ast::{ASTNodes, PropertyKeyType, Tag},
+    ast::{ASTNodes, PropertyKeyType, PropsKey, Tag},
     common::{
         parse_bind_key, parse_comment as parse_common_comment, parse_function_key, parse_string,
         trim,
@@ -149,9 +149,9 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
         let tag_properties = if properties.is_empty() {
             None
         } else {
-            let mut property_map: HashMap<&str, Value> = HashMap::new();
-            for (_key_type, key, value) in properties {
-                property_map.insert(key, value);
+            let mut property_map = HashMap::new();
+            for (key_type, key, value) in properties {
+                property_map.insert(PropsKey::new(key, false, key_type), value);
             }
             Some(property_map)
         };
@@ -205,11 +205,11 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse_template(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error::Error> {
+pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, crate::error::Error> {
     match many1(parse_tag)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
-                return Ok((remain, asts));
+                return Ok(asts);
             }
             Err(crate::error::Error::template_parser_remain(remain))
         }
@@ -274,15 +274,17 @@ mod template_parsers {
         "#;
         let t = Instant::now();
         let res = parse_template(template).unwrap();
+        // about 470µs
         dbg!(t.elapsed());
-        let res = res
-            .1
-            .into_iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>()
-            .join("\n");
-        let mut f = File::create("E:/Rust/try/makepad/rsx/parser/t.rsx").unwrap();
-        let _ = f.write(res.as_bytes());
+        // let res = res
+        //     .into_iter()
+        //     .map(|x| x.to_string())
+        //     .collect::<Vec<String>>()
+        //     .join("\n");
+        // //E:/Rust/try/makepad/rsx/parser/t.rsx
+        // let mut f =
+        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/t.html").unwrap();
+        // let _ = f.write(res.as_bytes());
         // dbg!(res);
     }
     #[test]
@@ -473,8 +475,8 @@ mod template_parsers {
     fn test_parse_tag_start() {
         let simple = "< button";
         let complex = "< text-input";
-        let res1 = parse_tag_start(simple).unwrap();
-        let res2 = parse_tag_start(complex).unwrap();
+        let _res1 = parse_tag_start(simple).unwrap();
+        let _res2 = parse_tag_start(complex).unwrap();
         // assert_eq!(
         //     res1,
         //     ("", TemplateASTNode::new(TemplateNodeType::Tag, "button"))

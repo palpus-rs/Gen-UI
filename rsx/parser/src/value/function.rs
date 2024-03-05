@@ -13,13 +13,29 @@ use crate::{common::parse_value, target::function};
 pub struct Function {
     name: String,
     params: Option<Vec<String>>,
+    /// use to recognize the function is used on the `template` or `style`
+    /// if is `style`: `()` should be exist in the function when the function is called (although no args)
+    is_style: bool,
 }
 
 impl Function {
-    pub fn new(name: &str, params: Vec<String>) -> Self {
+    pub fn new(name: &str, params: Option<Vec<String>>, is_style: bool) -> Self {
+        // check params
+        let params = match params {
+            Some(p) => {
+                if p.is_empty() {
+                    None
+                } else {
+                    Some(p)
+                }
+            }
+            None => None,
+        };
+
         Function {
             name: String::from(name),
-            params: Some(params),
+            params,
+            is_style,
         }
     }
     pub fn get_name(&self) -> &str {
@@ -28,53 +44,92 @@ impl Function {
     pub fn get_params(&self) -> &Option<Vec<String>> {
         &self.params
     }
+    fn to_params_str(&self) -> Option<String> {
+        match self.get_params() {
+            Some(params) => Some(params.join(", ")),
+            None => None,
+        }
+    }
 }
 
 impl Display for Function {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let name = self.get_name();
-        let params = match self.get_params() {
-            Some(params) => params.join(", "),
-            None => "()".to_string(),
-        };
-        write!(f, "{}({})", name, params)
+        let params = self.to_params_str();
+        if self.is_style {
+            match params {
+                Some(p) => write!(f, "{}({})", name, p),
+                None => f.write_fmt(format_args!("{}()", name)),
+            }
+        } else {
+            // when is template function be called , no args means without `()`
+            match params {
+                Some(p) => write!(f, "{}({})", name, p),
+                None => f.write_str(name),
+            }
+        }
     }
 }
 
-impl From<(&str, Vec<&str>)> for Function {
-    fn from(value: (&str, Vec<&str>)) -> Self {
-        let params = value
-            .1
-            .into_iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>();
-        Function::new(value.0, params)
+impl From<(&str, Option<Vec<&str>>)> for Function {
+    fn from(value: (&str, Option<Vec<&str>>)) -> Self {
+        (value.0, value.1, true).into()
     }
 }
 
-impl From<(&str, &str)> for Function {
-    fn from(value: (&str, &str)) -> Self {
+impl From<(&str, Option<Vec<&str>>, bool)> for Function {
+    fn from(value: (&str, Option<Vec<&str>>, bool)) -> Self {
+        match value.1 {
+            Some(params) => {
+                if params.is_empty() {
+                    Function::new(value.0, None, value.2)
+                } else {
+                    let params = params
+                        .into_iter()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<String>>();
+                    Function::new(value.0, Some(params), value.2)
+                }
+            }
+            None => Function::new(value.0, None, value.2),
+        }
+    }
+}
+
+impl From<(&str, &str, bool)> for Function {
+    fn from(value: (&str, &str, bool)) -> Self {
         // try split &str
         // remove `()`
         let (_, params) = remove_holder(value.1).unwrap();
-        let params = params.split(",").map(|x| x.trim()).collect::<Vec<&str>>();
-        (value.0, params).into()
+        if params.is_empty() {
+            (value.0, None, value.2).into()
+        } else {
+            let params = params.split(",").map(|x| x.trim()).collect::<Vec<&str>>();
+            (value.0, Some(params), value.2).into()
+        }
     }
 }
 
-fn parse_function(input: &str) -> IResult<&str, (&str, (&str, &str))> {
-    fn without_sign(input: &str) -> IResult<&str, (&str, (&str, &str))> {
+fn parse_function(input: &str) -> IResult<&str, (&str, &str, bool)> {
+    /// not include `()` sign
+    fn without_sign(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
         let (input, name) = parse_value(input)?;
-        Ok((input, ("()", (name, "()"))))
+        // here input mut be empty
+        Ok((input, ("()", (name, "()", Some(false)))))
     }
-    alt((function, without_sign))(input)
+    match alt((function, without_sign))(input) {
+        Ok((input, (_, (name, params, is_style)))) => {
+            Ok((input, (name, params, is_style.unwrap())))
+        }
+        Err(e) => Err(e),
+    }
 }
 
 impl From<&str> for Function {
     fn from(value: &str) -> Self {
-        let (input, (_, f)) = parse_function(value).unwrap();
+        let (input, f) = parse_function(value).unwrap();
         if input.is_empty() {
-            return f.into();
+            f.into()
         } else {
             panic!("still has input can be parse:{}", input);
         }
@@ -104,7 +159,10 @@ mod test_func {
     fn from_str() {
         let just_name = "hello";
         let f: Function = just_name.into();
-        dbg!(f);
+        let name = "hello(15)";
+        let f2: Function = name.into();
+        assert_eq!(f.to_string().as_str(), "hello");
+        assert_eq!(f2.to_string().as_str(), "hello(15)");
     }
 
     #[test]

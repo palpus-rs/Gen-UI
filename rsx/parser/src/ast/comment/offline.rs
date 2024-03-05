@@ -9,12 +9,12 @@ use super::{position::OfflinePosition, Comments};
 /// </template>
 /// ```
 #[derive(Debug, Clone, PartialEq)]
-pub struct OfflineComment<'a> {
-    value: Vec<Comments<'a>>,
+pub struct OfflineComment {
+    value: Vec<Comments>,
     position: OfflinePosition,
 }
 
-impl<'a> OfflineComment<'a> {
+impl OfflineComment {
     /// ## get the comment value
     /// ### return
     /// `&Vec<Comments>`
@@ -27,8 +27,8 @@ impl<'a> OfflineComment<'a> {
     }
 }
 
-impl<'a> From<(Vec<Comments<'a>>, OfflinePosition)> for OfflineComment<'a> {
-    fn from(value: (Vec<Comments<'a>>, OfflinePosition)) -> Self {
+impl From<(Vec<Comments>, OfflinePosition)> for OfflineComment {
+    fn from(value: (Vec<Comments>, OfflinePosition)) -> Self {
         OfflineComment {
             value: value.0,
             position: value.1,
@@ -36,7 +36,7 @@ impl<'a> From<(Vec<Comments<'a>>, OfflinePosition)> for OfflineComment<'a> {
     }
 }
 
-impl<'a> ToString for OfflineComment<'a> {
+impl ToString for OfflineComment {
     fn to_string(&self) -> String {
         self.value()
             .into_iter()

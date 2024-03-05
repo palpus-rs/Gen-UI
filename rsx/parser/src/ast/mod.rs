@@ -1,7 +1,8 @@
 pub mod comment;
 mod nodes;
 mod property;
-pub mod script;
+mod result;
+mod script;
 mod style;
 mod tag;
 
@@ -9,39 +10,18 @@ use comment::offline::OfflineComment;
 pub use nodes::ASTNodes;
 
 pub use property::*;
-use std::{collections::HashMap, fmt::Display};
+pub use script::Script;
+use std::fmt::Display;
 pub use style::Style;
 pub use tag::Tag;
+pub use result::ParseResult;
 
 use crate::{
     ast::comment::position::OfflinePosition,
-    common::{parse_all, trim},
-    Value, SPACE,
+    common::{parse_all, trim}, 
 };
 
-pub type Props<'a> = Option<HashMap<&'a str, Value>>;
-
-pub fn props_to_string<F>(props: Props, format: F) -> String
-where
-    F: FnMut((&str, Value)) -> String,
-{
-    match props {
-        Some(props) => props
-            .into_iter()
-            .map(format)
-            .collect::<Vec<String>>()
-            .join(SPACE),
-        None => String::new(),
-    }
-}
-
-pub fn props_to_template_string(props: Props) -> String {
-    props_to_string(props, |(k, v)| format!(r#"{}="{}""#, k, v.to_string()))
-}
-
-pub fn props_to_style_string(props: Props) -> String {
-    props_to_string(props, |(k, v)| format!(r#"{}: {};"#, k, v.to_string()))
-}
+use self::nodes::asts_to_string;
 
 /// Parse Strategy
 /// Convert ParseTarget To AST
@@ -69,7 +49,7 @@ pub enum Strategy {
     StyleComment,
     TemplateScriptComment,
     TemplateStyleComment,
-    /// has all
+    /// has all means: TemplateScriptStyle
     All,
     Error(String),
 }
@@ -79,12 +59,107 @@ pub enum Targets<'a> {
     Template(&'a str),
     Script(&'a str),
     Style(&'a str),
-    Comment(OfflineComment<'a>),
+    Comment(OfflineComment),
 }
 
+#[allow(dead_code)]
 impl<'a> Targets<'a> {
     pub fn is_template(&self) -> bool {
         matches!(self, Targets::Template(_))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct ParseCore{
+    /// content of template tag
+    template: Option<String>,
+    /// content of script tag
+    script: Option<String>,
+    /// content of style tag
+    style: Option<String>,
+}
+
+impl From<ParseTarget> for ParseCore {
+    fn from(value: ParseTarget) -> Self {
+        value.core
+    }
+}
+
+#[allow(dead_code)]
+impl ParseCore{
+    pub fn template(&self) -> Option<&String> {
+        self.template.as_ref()
+    }
+    pub fn script(&self) -> Option<&String> {
+        self.script.as_ref()
+    }
+    pub fn style(&self) -> Option<&String> {
+        self.style.as_ref()
+    }
+    pub fn has_template(&self) -> (bool, bool) {
+        has_target(self.template())
+    }
+    pub fn has_script(&self) -> (bool, bool) {
+        has_target(self.script())
+    }
+    pub fn has_style(&self) -> (bool, bool) {
+        has_target(self.style())
+    }
+    pub fn set_template_directly(&mut self, template: String) {
+        let _ = self.template.replace(template);
+    }
+    pub fn set_script_directly(&mut self, script:String) {
+        let _ = self.script.replace(script);
+    }
+    pub fn set_style_directly(&mut self, style: String) {
+        let _ = self.style.replace(style);
+    }
+    pub fn set_template(&mut self, template: &str) {
+        let _ = self.template.replace(template.to_owned());
+    }
+    pub fn set_script(&mut self, script: &str) {
+        let _ = self.script.replace(script.to_owned());
+    }
+    pub fn set_style(&mut self, style: &str) {
+        let _ = self.style.replace(style.to_owned());
+    }
+    pub fn has(&self) -> (bool, bool, bool) {
+        (
+            self.has_template().0,
+            self.has_script().0,
+            self.has_style().0,
+            
+        )
+    }
+    pub fn target_strategy(&self) -> Strategy {
+        match self.has() {
+            (true, true, true) => Strategy::All,
+            (true, true, false) => Strategy::TemplateScript,
+            (true, false, true) => Strategy::TemplateStyle,
+            (true, false, false) => Strategy::SingleTemplate,
+            (false, true, true) => Strategy::Error(String::from(
+                "RSX Parse Strategy Error: There is no such strategy `Script` + `Style`",
+            )),
+            (false, true, false) => Strategy::SingleScript,
+            (false, false, true) => Strategy::SingleStyle,
+            (false, false, false) => Strategy::None,
+        }
+    }
+}
+
+impl From<ParseResult> for ParseCore {
+    fn from(value: ParseResult) -> Self {
+        let mut result = ParseCore::default();
+        if let Some(t) = value.template(){
+           let _ =  result.set_template_directly(asts_to_string(t));
+        }
+        if let Some(sc) = value.script(){
+            let _ =  result.set_script_directly(sc.to_string());
+         }
+         if let Some(s) = value.style(){
+            let _ =  result.set_style_directly(asts_to_string(s));
+         }
+        result
     }
 }
 
@@ -99,34 +174,29 @@ impl<'a> Targets<'a> {
 /// When calling to determine the existence of fields in the parsing target, the actual content will be determined to be empty or not
 /// > reject cheat syntax
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct ParseTarget<'a> {
-    /// content of template tag
-    template: Option<&'a str>,
-    /// content of script tag
-    script: Option<&'a str>,
-    /// content of style tag
-    style: Option<&'a str>,
+pub struct ParseTarget {
+    core: ParseCore,
     /// after parse the core 3 tag parser will consider the other remains are comment
     /// try to use comment parser to parse the remains
     /// if not have any allowed comment signatures --> panic!
-    comment: Option<Vec<OfflineComment<'a>>>,
+    comment: Option<Vec<OfflineComment>>,
 }
 
 #[allow(dead_code)]
-impl<'a> ParseTarget<'a> {
-    pub fn set_template(&mut self, template: &'a str) {
-        let _ = self.template.replace(template);
+impl ParseTarget {
+    pub fn set_template(&mut self, template: &str) {
+        let _ = self.core.template.replace(template.to_owned());
     }
-    pub fn set_script(&mut self, script: &'a str) {
-        let _ = self.script.replace(script);
+    pub fn set_script(&mut self, script: &str) {
+        let _ = self.core.script.replace(script.to_owned());
     }
-    pub fn set_style(&mut self, style: &'a str) {
-        let _ = self.style.replace(style);
+    pub fn set_style(&mut self, style: &str) {
+        let _ = self.core.style.replace(style.to_owned());
     }
-    pub fn set_comment(&mut self, comment: Vec<OfflineComment<'a>>) {
+    pub fn set_comment(&mut self, comment: Vec<OfflineComment>) {
         let _ = self.comment.replace(comment);
     }
-    pub fn push_comment(&mut self, comment: OfflineComment<'a>) {
+    pub fn push_comment(&mut self, comment: OfflineComment) {
         match &mut self.comment {
             Some(c) => c.push(comment),
             None => {
@@ -134,14 +204,14 @@ impl<'a> ParseTarget<'a> {
             }
         }
     }
-    pub fn template(&self) -> Option<&'a str> {
-        self.template
+    pub fn template(&self) -> Option<&String> {
+        self.core.template.as_ref()
     }
-    pub fn script(&self) -> Option<&'a str> {
-        self.script
+    pub fn script(&self) -> Option<&String> {
+        self.core.script.as_ref()
     }
-    pub fn style(&self) -> Option<&'a str> {
-        self.style
+    pub fn style(&self) -> Option<&String> {
+        self.core.style.as_ref()
     }
     pub fn comment(&self) -> Option<&Vec<OfflineComment>> {
         self.comment.as_ref()
@@ -177,19 +247,19 @@ impl<'a> ParseTarget<'a> {
     pub fn handle_self(&mut self) {
         match self.has_template() {
             (false, false) => {
-                self.template = None;
+                self.core.template = None;
             }
             _ => {}
         }
         match self.has_script() {
             (false, false) => {
-                self.script = None;
+                self.core.script = None;
             }
             _ => {}
         }
         match self.has_style() {
             (false, false) => {
-                self.style = None;
+                self.core.style = None;
             }
             _ => {}
         }
@@ -224,13 +294,23 @@ impl<'a> ParseTarget<'a> {
             (false, false, false, false) => Strategy::None,
         }
     }
+    
+}
+
+impl From<ParseCore> for ParseTarget {
+    fn from(value: ParseCore) -> Self {
+        ParseTarget{
+            core: value,
+            comment: None,
+        }
+    }
 }
 
 /// parse whole rsx file from `Vec<Targets>` to `ParseTarget`
-impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget<'a> {
-    type Error = crate::error::Error<'a>;
+impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
+    type Error = crate::error::Error;
 
-    fn try_from(value: Vec<Targets<'a>>) -> Result<Self, Self::Error> {
+    fn try_from(value: Vec<Targets>) -> Result<Self, Self::Error> {
         return if value.is_empty() {
             Err(crate::error::Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
         } else {
@@ -267,10 +347,10 @@ impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget<'a> {
 
 /// parse whole rsx file from `&str` to `ParseTarget`
 /// recommended to use this method to parse rsx file directly
-impl<'a> TryFrom<&'a str> for ParseTarget<'a> {
-    type Error = crate::error::Error<'a>;
+impl TryFrom<&str> for ParseTarget {
+    type Error = crate::error::Error;
 
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         return if value.trim().is_empty() {
             Err(crate::error::Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
         } else {
@@ -285,7 +365,7 @@ impl<'a> TryFrom<&'a str> for ParseTarget<'a> {
     }
 }
 
-impl<'a> Display for ParseTarget<'a> {
+impl Display for ParseTarget {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let has_comment = self.has_comment().0;
         if has_comment {
@@ -303,7 +383,7 @@ impl<'a> Display for ParseTarget<'a> {
         }
         if self.has_template().0 {
             let _ = f.write_fmt(format_args!(
-                "<template>\n{}\n</template>\n",
+                "<template>\n{}</template>\n",
                 self.template().unwrap()
             ));
         }
@@ -322,7 +402,7 @@ impl<'a> Display for ParseTarget<'a> {
         }
         if self.has_script().0 {
             let _ = f.write_fmt(format_args!(
-                "\n<script>\n{}\n</script>\n",
+                "\n<script>\n{}</script>\n",
                 self.script().unwrap()
             ));
         }
@@ -341,7 +421,7 @@ impl<'a> Display for ParseTarget<'a> {
         }
         if self.has_style().0 {
             let _ = f.write_fmt(format_args!(
-                "\n<style>\n{}\n</style>\n",
+                "\n<style>\n{}</style>\n",
                 self.style().unwrap()
             ));
         }
@@ -366,7 +446,7 @@ impl<'a> Display for ParseTarget<'a> {
 /// `(bool, bool)` means:
 /// 1. bool: is empty?
 /// 2. bool: is Option::None?
-fn has_target(target: Option<&str>) -> (bool, bool) {
+fn has_target(target: Option<&String>) -> (bool, bool) {
     match target {
         Some(v) => (!v.is_empty(), false),
         None => (false, true),
@@ -376,10 +456,6 @@ fn has_target(target: Option<&str>) -> (bool, bool) {
 fn is_multi_nodes(t: u32, sc: u32, s: u32) -> bool {
     (t <= 1) && (sc <= 1) && (s <= 1)
 }
-
-// fn offline_comments_to_string(comments:Vec<&OfflineComment>)->String{
-//     comments.i
-// }
 
 /// parse whole rsx file
 /// 1. use nom to get the part of the rsx file (parse to ParseTarget)
@@ -399,6 +475,8 @@ fn is_multi_nodes(t: u32, sc: u32, s: u32) -> bool {
 #[cfg(test)]
 mod ast_test {
     // use std::{fs::File, io::Write};
+
+    use std::{fs::File, io::Write};
 
     use super::{
         comment::{offline::OfflineComment, position::OfflinePosition, Comments},
@@ -444,7 +522,7 @@ mod ast_test {
         parse.set_script("let mut counter:usize = 0\n\n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        ");
         parse.set_style(".ui{\n            height : fill;\n            width : fill;\n            show_bg : true;\n        }\n        ");
         parse.set_comment(vec![OfflineComment::from((
-            vec![Comments::File("This is a comment1")],
+            vec![Comments::File("This is a comment1".to_string())],
             OfflinePosition::AboveTemplate,
         ))]);
         assert_eq!(target, parse);
@@ -495,10 +573,10 @@ mod ast_test {
         "#;
 
         let target = ParseTarget::try_from(input).unwrap();
-        // let mut f =
-        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/template.rsx")
-        //         .unwrap();
-        // let _ = f.write_all(target.to_string().as_bytes());
+        let mut f =
+            File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/template.vue")
+                .unwrap();
+        let _ = f.write_all(target.to_string().as_bytes());
         dbg!(target.to_string());
     }
 
@@ -529,7 +607,7 @@ mod ast_test {
         //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/template.rsx")
         //         .unwrap();
         // let _ = f.write_all(target.to_string().as_bytes());
-        assert_eq!(target.to_string().as_str(),"//! This is a comment1\n//! This is a comment2\n//! This is a comment3\n// This is line comment\n\n/// This is a doc comment\n/// hello\n<script>\nlet mut counter:usize = 0\n        \n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        \n</script>\n\n// This is line comment2\n// end of line comment\n");
+        assert_eq!(target.to_string().as_str(),"//! This is a comment1\n//! This is a comment2\n//! This is a comment3\n// This is line comment\n\n/// This is a doc comment\n/// hello\n<script>\nlet mut counter:usize = 0\n        \n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        </script>\n\n// This is line comment2\n// end of line comment\n");
     }
 
     #[test]
@@ -553,76 +631,3 @@ mod ast_test {
         // let _ = f.write_all(target.to_string().as_bytes());
     }
 }
-
-// impl Display for ParseTarget {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         /// <template>\n{}\n</template>\n\n<script>\n{}\n</script>\n\n<style>{}</style>
-//         f.write_fmt(format_args!("",))
-//     }
-// }
-
-// #[derive(Debug, Clone, PartialEq)]
-// pub struct ASTNode<'a> {
-//     // node_type: TemplateNodeType,
-//     // tag_name: Option<&'a str>,
-//     node: Nodes,
-//     properties: Option<HashMap<&'a str, Value>>,
-//     children: Option<Vec<ASTNode<'a>>>,
-//     parent: Option<Box<ASTNode<'a>>>,
-// }
-
-// impl<'a> ASTNode<'a> {
-//     /// create a new node (tag | comment)
-//     pub fn new(node: Nodes) -> Self {
-//         Self {
-//             // node_type,
-//             // tag_name: Some(tag_name),
-//             node,
-//             properties: None,
-//             children: None,
-//             parent: None,
-//         }
-//     }
-//     pub fn tag(tag: impl Into<Tag>) -> Self {
-//         Self::new(Nodes::Tag(tag.into()))
-//     }
-//     pub fn comment(comment: impl Into<Comments>) -> Self {
-//         Self::new(Nodes::Comment(comment.into()))
-//     }
-//     pub fn style(style: impl Into<Style>) -> Self {
-//         Self::new(Nodes::Style(style.into()))
-//     }
-//     /// replace properties
-//     pub fn properties(&mut self, properties: HashMap<&'a str, Value>) -> () {
-//         self.properties.replace(properties);
-//     }
-//     /// replace children
-//     pub fn children(&mut self, children: Option<Vec<ASTNode<'a>>>) -> () {
-//         self.children = children;
-//     }
-//     pub fn get_node(&self) -> &Nodes {
-//         &self.node
-//     }
-//     pub fn is_tag(&self) -> bool {
-//         match self.get_node() {
-//             Nodes::Tag(_) => true,
-//             _ => false,
-//         }
-//     }
-//     pub fn is_comment(&self) -> bool {
-//         matches!(self.get_node(), Nodes::Comment(_))
-//     }
-//     pub fn is_style(&self) -> bool {
-//         matches!(self.get_node(), Nodes::Style(_))
-//     }
-//     /// ## set parent
-//     pub fn parent(&mut self, parent: ASTNode<'a>) -> () {
-//         self.parent.replace(Box::new(parent));
-//     }
-// }
-
-// // impl<'a> Display for ASTNode<'a> {
-// //     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-
-// //     }
-// // }

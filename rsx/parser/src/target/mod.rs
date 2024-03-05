@@ -4,3 +4,4 @@ mod template;
 
 pub use style::{function, parse_style};
 pub use template::parse_template;
+pub use script::parse_script;

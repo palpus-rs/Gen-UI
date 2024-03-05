@@ -1,7 +1,6 @@
 use crate::PROPERTY_VALUE_CONTAIN_SIGN;
 use nom::{
     bytes::complete::{tag, take_until},
-    combinator::recognize,
     sequence::delimited,
     IResult,
 };

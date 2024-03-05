@@ -57,50 +57,50 @@ impl Display for StyleType {
 
 /// # Style for ASTNodes
 #[derive(Debug, Clone, PartialEq)]
-pub struct Style<'a> {
-    name: &'a str,
+pub struct Style {
+    name: String,
     ty: StyleType,
-    props: Props<'a>,
-    children: Option<Vec<ASTNodes<'a>>>,
-    parent: Option<ASTNodes<'a>>,
+    props: Props,
+    children: Option<Vec<ASTNodes>>,
+    parent: Option<ASTNodes>,
 }
 
 #[allow(dead_code)]
-impl<'a> Style<'a> {
+impl Style {
     pub fn new(
-        name: &'a str,
-        props: Props<'a>,
+        name: &str,
+        props: Props,
         ty: StyleType,
-        children: Option<Vec<ASTNodes<'a>>>,
-        parent: Option<ASTNodes<'a>>,
+        children: Option<Vec<ASTNodes>>,
+        parent: Option<ASTNodes>,
     ) -> Self {
         Style {
-            name,
+            name:name.to_string(),
             ty,
             props,
             children,
             parent,
         }
     }
-    pub fn new_style_start(name: &'a str, ty: StyleType) -> Self {
+    pub fn new_style_start(name: &str, ty: StyleType) -> Self {
         Style {
-            name,
+            name:name.to_string(),
             ty,
             props: None,
             children: None,
             parent: None,
         }
     }
-    pub fn set_name(&mut self, name: &'a str) {
-        self.name = name;
+    pub fn set_name(&mut self, name: &str) {
+        self.name = name.to_string();
     }
     pub fn set_ty(&mut self, ty: StyleType) {
         self.ty = ty;
     }
-    pub fn set_props(&mut self, props: Props<'a>) {
+    pub fn set_props(&mut self, props: Props) {
         self.props = props;
     }
-    pub fn set_children(&mut self, children: Vec<ASTNodes<'a>>) {
+    pub fn set_children(&mut self, children: Vec<ASTNodes>) {
         match self.children {
             Some(_) => {
                 let _ = self.children.replace(children);
@@ -108,7 +108,7 @@ impl<'a> Style<'a> {
             None => self.children = Some(children),
         }
     }
-    pub fn set_parent(&mut self, parent: ASTNodes<'a>) {
+    pub fn set_parent(&mut self, parent: ASTNodes) {
         match self.parent {
             Some(_) => {
                 let _ = self.parent.replace(parent);
@@ -127,7 +127,7 @@ impl<'a> Style<'a> {
     }
 }
 
-impl<'a> Display for Style<'a> {
+impl Display for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // name and type
         let _ = f.write_fmt(format_args!(

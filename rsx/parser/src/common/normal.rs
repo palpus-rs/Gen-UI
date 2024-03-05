@@ -1,8 +1,8 @@
 use nom::{
-    bytes::complete::{tag, take_until, take_while_m_n},
+    bytes::complete::{tag, take_while_m_n},
     character::complete::{alphanumeric1, multispace0},
     combinator::recognize,
-    sequence::{delimited, pair, tuple},
+    sequence::{delimited, pair},
     IResult,
 };
 
@@ -16,7 +16,7 @@ pub fn parse_normal(input: &str, sign: char) -> IResult<&str, &str> {
 }
 
 /// ## ⚡️ parse normal value 🆗
-/// use in property | value
+/// use in property | value | script variable name
 /// - parse xxx
 /// - parse xxx_zzz
 pub fn parse_value(input: &str) -> IResult<&str, &str> {
@@ -40,14 +40,13 @@ where
 }
 
 // pub fn between<'a,PL,PR,O>(mut l:PL,mut r:PR) -> IResult<&'a str,(&'a str,&'a str)>
-// where 
+// where
 // PL: FnMut(&'a str) -> IResult<&'a str, O>,
 // PR:FnMut(&'a str) -> IResult<&'a str, O>,
 // {
-    
+
 //     delimited(, take_until(r), r)
 // }
-
 
 #[cfg(test)]
 mod normal {

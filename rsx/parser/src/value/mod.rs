@@ -55,8 +55,8 @@ impl Value {
     }
 }
 
-impl From<(&str, Vec<&str>)> for Value {
-    fn from(value: (&str, Vec<&str>)) -> Self {
+impl From<(&str, Option<Vec<&str>>, bool)> for Value {
+    fn from(value: (&str, Option<Vec<&str>>, bool)) -> Self {
         Value::Function(value.into())
     }
 }

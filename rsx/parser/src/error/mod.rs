@@ -3,9 +3,11 @@ use std::{error, fmt::Display};
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
-pub enum Errors<'a> {
-    ParseError(&'a str),
-    TemplateParseRemain(&'a str),
+pub enum Errors {
+    ParseError(String),
+    TemplateParseRemain(String),
+    ParseTargetEmpty,
+    ParseTargetError(String),
     /// Tag
     TagStart,
     TagName,
@@ -26,7 +28,7 @@ pub enum Errors<'a> {
     CommentType,
 }
 
-impl<'a> Display for Errors<'a> {
+impl Display for Errors {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg = match self {
             Errors::ParseError(e) => e.to_string(),
@@ -45,34 +47,36 @@ impl<'a> Display for Errors<'a> {
                 "template parse still has remain: {}. Not in compliance with standard writing",
                 remain
             ),
+            Errors::ParseTargetEmpty => "`ParseTarget` is empty which means the current rsx file is empty, do not need to convert to AST".to_string(),
+            Errors::ParseTargetError(e) => e.to_string(),
         };
         f.write_str(&msg)
     }
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Error<'a>(Errors<'a>);
+pub struct Error(Errors);
 
 #[allow(dead_code)]
-impl<'a> Error<'a> {
-    pub fn convert(e: Errors<'a>) -> Self {
+impl Error {
+    pub fn convert(e: Errors) -> Self {
         Self(e)
     }
-    pub fn new(msg: &'a str) -> Self {
-        Error(Errors::ParseError(msg))
+    pub fn new(msg: &str) -> Self {
+        Error(Errors::ParseError(msg.to_string()))
     }
-    pub fn parse_error(msg: &'a str) -> Self {
-        Error(Errors::ParseError(msg))
+    pub fn parse_error(msg: &str) -> Self {
+        Error(Errors::ParseError(msg.to_string()))
     }
-    pub fn template_parser_remain(remain: &'a str) -> Self {
-        Error(Errors::TemplateParseRemain(remain))
+    pub fn template_parser_remain(remain: &str) -> Self {
+        Error(Errors::TemplateParseRemain(remain.to_string()))
     }
 }
 
-impl<'a> Display for Error<'a> {
+impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("Parse Error:\n{}", self.0.to_string()))
     }
 }
 
-impl<'a> error::Error for Error<'a> {}
+impl error::Error for Error {}

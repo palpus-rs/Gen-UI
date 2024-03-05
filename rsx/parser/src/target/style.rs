@@ -9,7 +9,7 @@ use nom::{
     IResult,
 };
 
-//问题1: function字段分割(开始前去除())
+//问题1: function字段分割(开始前去除()) (solve)
 // params: Some(
 //     [
 //         "(180deg",
@@ -20,7 +20,7 @@ use nom::{
 // 问题2: 对于 xxx xxx xx 的属性值
 
 use crate::{
-    ast::{ASTNodes, Style},
+    ast::{ASTNodes, PropertyKeyType, PropsKey, Style},
     common::{parse_value, trim},
     Value, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
@@ -42,11 +42,7 @@ fn parse_ident(input: &str) -> IResult<&str, ASTNodes> {
         trim(tag(STYLE_ID)),
         trim(tag(STYLE_PESUDO)),
     ))(input)?;
-    // let (input, name) = alphanumeric1(input)?;
     let (input, name) = parse_value(input)?;
-
-    // let (input, _) = trim(tag(HOLDER_START))(input)?;
-    // let style_type: StyleNodeType = style_type.into();
     let style = Style::new_style_start(name, style_type.into());
     Ok((input, style.into()))
 }
@@ -56,46 +52,55 @@ fn parse_property_key(input: &str) -> IResult<&str, &str> {
 }
 
 // begin $ `(input , (sign,name))`
-fn bind(input: &str) -> IResult<&str, (&str, (&str, &str))> {
+fn bind(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
     let (input, (sign, name)) = pair(tag("$"), parse_property_key)(input)?;
-    Ok((input, (sign, (name, ""))))
+    Ok((input, (sign, (name, "", None))))
 }
 
 /// end () `(type, (name,params))`
-pub fn function(input: &str) -> IResult<&str, (&str, (&str, &str))> {
+pub fn function(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
     let (input, (name, params)) = pair(
         parse_property_key,
         recognize(delimited(tag("("), take_until(")"), tag(")"))),
     )(input)?;
-    Ok((input, ("()", (name, params))))
+    Ok((input, ("()", (name, params, Some(true)))))
 }
 
-fn normal(input: &str) -> IResult<&str, (&str, (&str, &str))> {
+fn normal(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
     // TODO:
     // 增加解析对象类型 `{}`
     // 增加解析数组类型 `[]`
     // let (input, value) = (input)?;
-    Ok(("", ("", (input, ""))))
+    Ok(("", ("", (input, "", None))))
 }
 
 /// ## parse style property
 /// - normal : `xxx:zzz;`
 /// - bind : `xxx:$zzz;`
 /// - function : `xxx:zzz();`
-fn parse_property(input: &str) -> IResult<&str, (&str, Value)> {
+fn parse_property(input: &str) -> IResult<&str, (PropsKey, Value)> {
     let (input, key) = parse_property_key(input)?;
     let (input, _) = trim(tag(":"))(input)?;
     let (input, value) = take_until1(";")(input)?;
     //remove `;`
     let (input, _) = trim(tag(";"))(input)?;
-    let (remain, (sign, (name, params))) = alt((bind, function, normal))(value)?;
+    let (remain, (sign, (name, params, is_style))) = alt((bind, function, normal))(value)?;
     //check remain is empty ,or should panic
     return if remain.is_empty() {
         // match sign
-        let value = match sign {
-            "" => Value::UnKnown(name.to_string()),
-            "()" => Value::Function((name, params).into()),
-            ":" => Value::Bind(name.to_string()),
+        let (key, value) = match sign {
+            "" => (
+                PropsKey::new(key, true, PropertyKeyType::Normal),
+                Value::UnKnown(name.to_string()),
+            ),
+            "()" => (
+                PropsKey::new(key, true, PropertyKeyType::Function),
+                Value::Function((name, params, is_style.unwrap()).into()),
+            ), //do not afraid to panic cause only function has is_style
+            "$" => (
+                PropsKey::new(key, true, PropertyKeyType::Bind),
+                Value::Bind(name.to_string()),
+            ),
             _ => panic!("Invalid Value:{}", sign),
         };
 
@@ -147,11 +152,11 @@ fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
 /// ## parse styleⓂ️
 /// main style parser
 #[allow(dead_code)]
-pub fn parse_style(input: &str) -> Result<(&str, Vec<ASTNodes>), crate::error::Error> {
+pub fn parse_style(input: &str) -> Result<Vec<ASTNodes>, crate::error::Error> {
     match many1(parse_single)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
-                return Ok((remain, asts));
+                return Ok(asts);
             }
             Err(crate::error::Error::template_parser_remain(remain))
         }
@@ -194,16 +199,16 @@ mod test_style {
         "#;
 
         let res = parse_style(style).unwrap();
-        let st = res
-            .1
-            .into_iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<String>>()
-            .join("\n");
-
-        let mut f = File::create("E:/Rust/try/makepad/rsx/parser/t.css").unwrap();
-        let _ = f.write(st.as_bytes());
-        // dbg!(res.1);
+        // let st = res
+        //     .into_iter()
+        //     .map(|x| x.to_string())
+        //     .collect::<Vec<String>>()
+        //     .join("\n");
+        // // "E:/Rust/try/makepad/rsx/parser/c.css"
+        // let mut f =
+        //     File::create("/Users/user/Downloads/beyond-framework-main/rsx/parser/c.css").unwrap();
+        // let _ = f.write(st.as_bytes());
+        dbg!(res);
     }
 
     #[test]
@@ -244,21 +249,21 @@ mod test_style {
         let res2 = parse_style(ident2).unwrap();
         let res3 = parse_style(ident3).unwrap();
         assert_eq!(
-            res1.1,
+            res1,
             vec![ASTNodes::Style(Box::new(Style::new_style_start(
                 "app",
                 ".".into()
             )))]
         );
         assert_eq!(
-            res2.1,
+            res2,
             vec![ASTNodes::Style(Box::new(Style::new_style_start(
                 "app1",
                 "#".into()
             )))]
         );
         assert_eq!(
-            res3.1,
+            res3,
             vec![ASTNodes::Style(Box::new(Style::new_style_start(
                 "hover",
                 "&::".into()

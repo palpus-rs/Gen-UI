@@ -2,3 +2,5 @@
 /rsx/target
 /rsx/.vscode
 /*/*.zip
+/*/node_modules/*
+/tests

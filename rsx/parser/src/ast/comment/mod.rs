@@ -5,16 +5,17 @@ pub mod position;
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
-pub enum Comments<'a> {
+pub enum Comments {
     /// `//`
-    Normal(&'a str),
+    Normal(String),
     /// `///`
-    Document(&'a str),
+    Document(String),
     /// `//!`
-    File(&'a str),
+    File(String),
 }
 
-impl<'a> Comments<'a> {
+#[allow(dead_code)]
+impl Comments {
     pub fn is_normal(&self) -> bool {
         matches!(self, Self::Normal(_))
     }
@@ -26,29 +27,29 @@ impl<'a> Comments<'a> {
     }
 }
 
-impl<'a> Default for Comments<'a> {
+impl Default for Comments {
     fn default() -> Self {
-        Comments::Normal("")
+        Comments::Normal(String::new())
     }
 }
 
-impl<'a> From<&'a str> for Comments<'a> {
-    fn from(value: &'a str) -> Self {
-        Comments::Normal(value)
+impl From<&str> for Comments {
+    fn from(value: &str) -> Self {
+        Comments::Normal(value.to_string())
     }
 }
-impl<'a> From<(&'a str, &'a str)> for Comments<'a> {
-    fn from(value: (&'a str, &'a str)) -> Self {
+impl From<(&str, &str)> for Comments {
+    fn from(value: (&str, &str)) -> Self {
         match value.0 {
-            "//" => Comments::Normal(value.1),
-            "///" => Comments::Document(value.1),
-            "//!" => Comments::File(value.1),
+            "//" => Comments::Normal(value.1.to_owned()),
+            "///" => Comments::Document(value.1.to_owned()),
+            "//!" => Comments::File(value.1.to_owned()),
             _ => panic!("Invalid comment"),
         }
     }
 }
 
-impl<'a> Display for Comments<'a> {
+impl Display for Comments {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let res = match self {
             Comments::Normal(n) => format!("// {}", n),
@@ -65,9 +66,9 @@ mod test_comments {
 
     #[test]
     fn display() {
-        let c1 = Comments::Document("hello");
-        let c2 = Comments::File("hello");
-        let c3 = Comments::Normal("hello");
+        let c1 = Comments::Document("hello".to_string());
+        let c2 = Comments::File("hello".to_string());
+        let c3 = Comments::Normal("hello".to_string());
 
         assert_eq!(c1.to_string().as_str(), "/// hello");
         assert_eq!(c2.to_string().as_str(), "//! hello");

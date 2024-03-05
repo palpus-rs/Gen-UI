@@ -1,10 +1,5 @@
 use super::parse_sign_key;
-use nom::{
-    bytes::complete::{tag, take_until},
-    combinator::recognize,
-    sequence::delimited,
-    IResult,
-};
+use nom::IResult;
 
 use crate::BIND_SIGN;
 
