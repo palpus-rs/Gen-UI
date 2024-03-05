@@ -138,6 +138,6 @@ impl Display for ASTNodes {
 }
 
 /// convert Vec<ASTNodes> to String
-pub fn asts_to_string(asts:&Vec<ASTNodes>)->String{
-    asts.into_iter().map(|x|x.to_string()).collect::<String>()
+pub fn asts_to_string(asts: &Vec<ASTNodes>) -> String {
+    asts.into_iter().map(|x| x.to_string()).collect::<String>()
 }

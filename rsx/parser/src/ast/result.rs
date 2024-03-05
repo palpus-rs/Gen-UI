@@ -24,13 +24,13 @@ impl ParseResult {
     pub fn set_style(&mut self, s: Vec<ASTNodes>) {
         let _ = self.style.replace(s);
     }
-    pub fn template(&self) -> Option<&Vec<ASTNodes>>{
+    pub fn template(&self) -> Option<&Vec<ASTNodes>> {
         self.template.as_ref()
     }
-    pub fn style(&self) -> Option<&Vec<ASTNodes>>{
+    pub fn style(&self) -> Option<&Vec<ASTNodes>> {
         self.style.as_ref()
     }
-    pub fn script(&self) -> Option<&Script>{
+    pub fn script(&self) -> Option<&Script> {
         self.script.as_ref()
     }
 }
@@ -168,10 +168,13 @@ impl TryFrom<ParseCore> for ParseResult {
 impl Display for ParseResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // only need to convert back ParseCore
-        write!(f,"{}",ParseTarget::from(ParseCore::from(self.clone())).to_string())
+        write!(
+            f,
+            "{}",
+            ParseTarget::from(ParseCore::from(self.clone())).to_string()
+        )
     }
 }
-
 
 fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), error::Error> {
     match parse_template(input) {
@@ -203,13 +206,13 @@ fn handle_style(result: &mut ParseResult, input: &str) -> Result<(), error::Erro
 }
 
 #[cfg(test)]
-mod test_result{
+mod test_result {
     use std::{fs::File, io::Write, time::Instant};
 
     use crate::ast::{ParseResult, ParseTarget};
 
     #[test]
-    fn test_result(){
+    fn test_result() {
         let input = r#"
         <template>
             <window class="ui">
@@ -231,25 +234,23 @@ mod test_result{
         </script>
 
         <style>
-        .app {
-            .ui {
-              height: fill;
-              width: fill;
-              show_bg: true;
-              background_color: linear_gradient(180deg, #7, #3);
-              .body {
-                flow: down;
-                spacing: 20;
-                align: 0.5 0.5;
-                .button1 {
-                }
-                .input1 {
-                  height: 30;
-                  width: 100;
-                }
-                .label1 {
-                  color: #ffffff;
-                }
+        .ui {
+            height: fill;
+            width: fill;
+            show_bg: true;
+            background_color: linear_gradient(180deg, #7, #3);
+            .body {
+              flow: down;
+              spacing: 20;
+              align: 0.5 0.5;
+              .button1 {
+              }
+              .input1 {
+                height: 30;
+                width: 100;
+              }
+              .label1 {
+                color: #ffffff;
               }
             }
           }
