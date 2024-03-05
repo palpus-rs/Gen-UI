@@ -1,7 +1,8 @@
 # Parse Result
 
 ## test machine 1
-cpu:2.2 GHz 四核Intel Core i7
+
+cpu: 2.2 GHz 四核 Intel Core i7
 
 rsx:
 
@@ -22,7 +23,25 @@ vue:
 - 7.046ms
 
 ## test machine 2
-wait testing...
+
+cpu: Intel(R) Core(TM) i5-10200H CPU @ 2.40GHz 2.40 GHz
+
+rsx:
+
+- 1.4491ms
+- 1.2271ms
+- 1.6149ms
+- 1.6475ms
+- 1.4695ms
+
+vue:
+
+- 6.196ms
+- 6.012ms
+- 6.209ms
+- 6.319ms
+- 6.447ms
+
 ## rsx
 
 ```vue
