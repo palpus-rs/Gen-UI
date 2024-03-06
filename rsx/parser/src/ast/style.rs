@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
 
@@ -75,7 +75,7 @@ impl Style {
         parent: Option<ASTNodes>,
     ) -> Self {
         Style {
-            name:name.to_string(),
+            name: name.to_string(),
             ty,
             props,
             children,
@@ -84,7 +84,7 @@ impl Style {
     }
     pub fn new_style_start(name: &str, ty: StyleType) -> Self {
         Style {
-            name:name.to_string(),
+            name: name.to_string(),
             ty,
             props: None,
             children: None,
@@ -124,6 +124,12 @@ impl Style {
     }
     pub fn has_children(&self) -> bool {
         self.children.is_some()
+    }
+    pub fn has_props(&self) -> bool {
+        self.props.is_some()
+    }
+    pub fn get_props(&self) -> Option<&HashMap<crate::PropsKey, crate::Value>> {
+        self.props.as_ref()
     }
 }
 

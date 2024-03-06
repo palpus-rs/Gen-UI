@@ -1,13 +1,23 @@
 use std::collections::HashMap;
 
+use parser::{PropsKey, Value};
+
 use crate::error::Errors;
 
-use super::PropRole;
+use super::{value::MakepadPropValue, PropRole};
 
-type StyleProps = HashMap<String,Option<PropRole>>;
+pub type StyleProps = HashMap<String, Vec<PropRole>>;
 
-pub fn style_class()->Result<StyleProps,Errors>{
-    
+/// expand props directly 
+/// then when it in the widget -> convert
+pub fn style_props_expand(props: &HashMap<PropsKey, Value>) -> Vec<> {
+    for (k, v) in props {
+        match k.ty() {
+            parser::PropertyKeyType::Normal => ,
+            parser::PropertyKeyType::Bind => todo!(),
+            parser::PropertyKeyType::Function => todo!(),
+        }
+    }
 }
 
-pub fn style_id()->Result<StyleProps,Errors>{}
+pub fn style_id() -> Result<StyleProps, Errors> {}
