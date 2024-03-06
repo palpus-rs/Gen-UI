@@ -81,6 +81,9 @@ impl PropsKey {
     pub fn name(&self) -> &str {
         &self.name
     }
+    pub fn ty(&self)->&PropertyKeyType{
+        &self.ty
+    }
 }
 
 impl Display for PropsKey {

@@ -53,6 +53,12 @@ impl Value {
     pub fn void() -> Self {
         Self::Void
     }
+    pub fn is_unknown_and_get(&self) -> Option<&String> {
+        match self {
+            Value::UnKnown(s) => Some(s),
+            _=>None
+        }
+    }
 }
 
 impl From<(&str, Option<Vec<&str>>, bool)> for Value {

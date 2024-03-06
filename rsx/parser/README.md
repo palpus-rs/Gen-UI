@@ -159,7 +159,7 @@ let input = r#"
 4. has `<template>` tag and rust script no `<style>` tag --> parse as template_script (2 thread)
 5. has 3 tag --> parse as whole rsx (3 thread)
 
-<img src="./inner.png">
+<img src="./wiki/inner.png">
 
 ### parse template
 

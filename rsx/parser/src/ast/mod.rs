@@ -12,8 +12,8 @@ pub use nodes::ASTNodes;
 pub use property::*;
 pub use script::Script;
 use std::fmt::Display;
-pub use style::Style;
-pub use tag::Tag;
+pub use style::{Style,StyleType};
+pub use tag::{Tag,CloseType};
 pub use result::ParseResult;
 
 use crate::{

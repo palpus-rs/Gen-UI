@@ -1,6 +1,6 @@
-use std::{borrow::Cow, fmt::Display};
+use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
-use crate::{END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
+use crate::{PropsKey, Value, END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
 
 use super::{props_to_template_string, ASTNodes, Props};
 
@@ -128,6 +128,15 @@ impl Tag {
     }
     pub fn has_children(&self) -> bool {
         self.children.is_some()
+    }
+    pub fn get_children(&self) ->Option<&Vec<ASTNodes>>{
+        self.children.as_ref()
+    }
+    pub fn has_props(&self)->bool{
+        self.props.is_some()
+    }
+    pub fn get_props(&self) -> Option<&HashMap<PropsKey, Value>>{
+        self.props.as_ref()
     }
 }
 
