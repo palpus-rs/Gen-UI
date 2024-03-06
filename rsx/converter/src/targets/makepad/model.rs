@@ -66,12 +66,11 @@ impl Display for MakepadModel {
                 let _ = f.write_fmt(format_args!("{} = ", self.special.as_ref().unwrap()));
             }
         } else {
-
         }
         // add tag
         let _ = f.write_fmt(format_args!("<{}>", &self.tag));
         // add props
-        let _ = 
+        // let _ =
         write!(f, "")
     }
 }

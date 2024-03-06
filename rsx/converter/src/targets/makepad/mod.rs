@@ -69,22 +69,19 @@ impl Visitor for MakepadConverter {
     }
 
     fn convert_style(
-        &self,
         s: &parser::ASTNodes,
     ) -> Result<HashMap<&str, &HashMap<PropsKey, Value>>, Errors> {
         match s {
-            parser::ASTNodes::Style(s) => match handle_style(s) {
-                Some(styles) => Ok(styles),
-                None => {}
-            },
+            parser::ASTNodes::Style(s) => handle_style(s),
             _ => Err(Errors::UnAcceptConvertRange),
         }
     }
 }
 
 /// 平展样式
-fn handle_style(s: &Box<Style>) -> Option<HashMap<&str, &HashMap<PropsKey, Value>>> {
+fn handle_style(s: &Box<Style>) -> Result<HashMap<&str, &HashMap<PropsKey, Value>>, Errors> {
     let mut res = HashMap::new();
+    // handle props
     if s.has_props() {
         let style_name = s.get_name();
         let props = s.get_props().unwrap();
@@ -93,11 +90,23 @@ fn handle_style(s: &Box<Style>) -> Option<HashMap<&str, &HashMap<PropsKey, Value
             parser::StyleType::Pseudo => {
                 // find the parent and set maybe here need to do something special
                 // so write todo to watch
-                todo!("style pseudo")
+                todo!("style pseudo");
             }
+        };
+    }
+    // handle children
+    if s.has_children() {
+        for item in s.get_children().unwrap() {
+            match MakepadConverter::convert_style(item) {
+                Ok(styles) => {
+                    let _ = res.extend(styles);
+                }
+                Err(e) => return Err(e),
+            };
         }
     }
-    Some(res)
+
+    Ok(res)
 }
 
 fn handle_tag(t: &Box<Tag>, is_ref: bool) -> Result<MakepadModel, crate::error::Errors> {
@@ -158,10 +167,11 @@ mod test_makepad {
         <script>
         let mut btn_click = || {
             println!("CLICKED!");
-        }
+        };
         </script>
         "#;
+
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-        let _ = MakepadConverter::convert(&ast, "App");
+        dbg!(MakepadConverter::convert(&ast, "App"));
     }
 }

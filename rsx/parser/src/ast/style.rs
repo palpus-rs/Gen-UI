@@ -125,6 +125,9 @@ impl Style {
     pub fn has_children(&self) -> bool {
         self.children.is_some()
     }
+    pub fn get_children(&self) -> Option<&Vec<ASTNodes>> {
+        self.children.as_ref()
+    }
     pub fn has_props(&self) -> bool {
         self.props.is_some()
     }

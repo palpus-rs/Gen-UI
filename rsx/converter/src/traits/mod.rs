@@ -19,8 +19,5 @@ pub trait Visitor {
     // - Bind
     // - Function
     // - Normal
-    fn convert_style(
-        &self,
-        s: &ASTNodes,
-    ) -> Result<HashMap<&str, &HashMap<PropsKey, Value>>, Errors>;
+    fn convert_style(s: &ASTNodes) -> Result<HashMap<&str, &HashMap<PropsKey, Value>>, Errors>;
 }
