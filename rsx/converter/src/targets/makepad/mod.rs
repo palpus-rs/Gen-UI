@@ -37,6 +37,7 @@ use self::{
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
 pub enum ConvertScript {
     Rust(String),
     /// need to join('\n')
@@ -66,17 +67,15 @@ pub struct MakepadConverter<'a> {
 }
 
 impl<'a> MakepadConverter<'a> {
-    pub fn has_template(&self) ->bool{
+    pub fn has_template(&self) -> bool {
         self.template.is_some()
     }
-    pub fn has_script(&self) -> bool{
+    pub fn has_script(&self) -> bool {
         self.script.is_some()
     }
-    pub fn has_style(&self) -> bool{
+    pub fn has_style(&self) -> bool {
         self.template.is_some()
     }
-
-
 
     fn convert(ast: &'a parser::ParseResult, source_name: &str) -> Self {
         let mut converter = MakepadConverter::default();
@@ -128,11 +127,16 @@ impl<'a> MakepadConverter<'a> {
     }
 }
 
-
 impl<'a> Display for MakepadConverter<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-       let t = self.template.as_ref().unwrap().into_iter().map(|t|t.to_string()).collect::<String>();
-       f.write_str(&t)
+        let t = self
+            .template
+            .as_ref()
+            .unwrap()
+            .into_iter()
+            .map(|t| t.to_string())
+            .collect::<String>();
+        f.write_str(&t)
     }
 }
 
@@ -354,6 +358,23 @@ mod test_makepad {
     use crate::traits::Visitor;
 
     use super::MakepadConverter;
+
+    #[test]
+    fn convert_single_t() {
+        // example for: window single button
+        // <button id="my_button" text="Hello, World" @clicked="btn_click"></button>
+        let input = r#"
+        <template>
+            <window id="ui">
+               
+            </window>
+        </template>
+        "#;
+
+        let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
+        let convert = MakepadConverter::convert(&ast, "App");
+        dbg!(convert.to_string());
+    }
 
     #[test]
     fn convert_style() {
