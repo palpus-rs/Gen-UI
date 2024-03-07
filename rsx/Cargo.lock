@@ -7,6 +7,9 @@ name = "converter"
 version = "0.1.0"
 dependencies = [
  "parser",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

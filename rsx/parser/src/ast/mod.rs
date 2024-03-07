@@ -128,7 +128,6 @@ impl ParseCore{
             self.has_template().0,
             self.has_script().0,
             self.has_style().0,
-            
         )
     }
     pub fn target_strategy(&self) -> Strategy {

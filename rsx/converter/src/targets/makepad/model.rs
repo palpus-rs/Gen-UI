@@ -1,7 +1,11 @@
-use std::fmt::{write, Display};
+use std::fmt::Display;
+
+use crate::context::{LEFT_HOLDER, RIGHT_HOLDER};
 
 use super::PropRole;
 
+/// # The Model of Makepad
+/// Model includes all built-in widgets
 #[derive(Debug, Clone, PartialEq)]
 pub struct MakepadModel {
     special: Option<String>,
@@ -25,6 +29,9 @@ impl MakepadModel {
         if !special.is_empty() {
             self.special.replace(special);
         }
+    }
+    pub fn has_props(&self) -> bool {
+        self.props.is_some()
     }
     pub fn has_special(&self) -> bool {
         self.special.is_some()
@@ -51,6 +58,9 @@ impl MakepadModel {
     pub fn set_children(&mut self, children: Vec<MakepadModel>) -> () {
         let _ = self.children.replace(children);
     }
+    pub fn has_children(&self) -> bool {
+        self.children.is_some()
+    }
 }
 
 impl Display for MakepadModel {
@@ -68,10 +78,32 @@ impl Display for MakepadModel {
         } else {
         }
         // add tag
-        let _ = f.write_fmt(format_args!("<{}>", &self.tag));
+        let _ = f.write_fmt(format_args!("<{}>{}", &self.tag, LEFT_HOLDER));
         // add props
-        // let _ =
-        write!(f, "")
+        if self.has_props() {
+            let props = self
+                .props
+                .as_ref()
+                .unwrap()
+                .into_iter()
+                .map(|prop| prop.to_string())
+                .collect::<String>();
+            let _ = f.write_str(&props);
+        }
+        // add children
+        if self.has_children() {
+            let children = self
+                .children
+                .as_ref()
+                .unwrap()
+                .into_iter()
+                .map(|child| child.to_string())
+                .collect::<Vec<String>>()
+                .join(" ");
+            let _ = f.write_fmt(format_args!(" {} ", &children));
+        }
+
+        f.write_str(RIGHT_HOLDER)
     }
 }
 
@@ -84,7 +116,10 @@ pub fn models_to_string(models: Vec<MakepadModel>) -> String {
 
 #[cfg(test)]
 mod test_mk_model {
-    use crate::targets::makepad::{value::MakepadPropValue, PropRole};
+    use crate::targets::makepad::{
+        value::{MakepadPropValue, Size},
+        PropRole,
+    };
 
     use super::MakepadModel;
 
@@ -92,11 +127,22 @@ mod test_mk_model {
     fn test_display() {
         let mut model = MakepadModel::new("Window", true);
         model.set_special("my_ui".to_string());
-        model.push_prop(PropRole::Special(String::from("my_ui")));
+
         model.push_prop(PropRole::Normal(
             "height".to_string(),
-            MakepadPropValue::F64(180.0),
+            MakepadPropValue::Size(Size::Fixed(180.0)),
         ));
+
+        model.push_prop(PropRole::Normal(
+            "width".to_string(),
+            MakepadPropValue::Size(Size::Fill),
+        ));
+
+        model.push_child(MakepadModel::new("Button", false));
+
+        let mut nesting = MakepadModel::new("View", false);
+        nesting.push_child(MakepadModel::new("Button", false));
+        model.push_child(nesting);
 
         dbg!(model.to_string());
     }

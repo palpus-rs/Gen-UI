@@ -33,6 +33,36 @@ impl ParseResult {
     pub fn script(&self) -> Option<&Script> {
         self.script.as_ref()
     }
+    pub fn has_template(&self) -> bool {
+        self.template().is_some()
+    }
+    pub fn has_script(&self) -> bool {
+        self.script().is_some()
+    }
+    pub fn has_style(&self) -> bool {
+        self.style().is_some()
+    }
+     fn has(&self) -> (bool, bool, bool) {
+        (
+            self.has_template(),
+            self.has_script(),
+            self.has_style(),
+        )
+    }
+    pub fn strategy(&self) -> Strategy{
+        match self.has() {
+            (true, true, true) => Strategy::All,
+            (true, true, false) => Strategy::TemplateScript,
+            (true, false, true) => Strategy::TemplateStyle,
+            (true, false, false) => Strategy::SingleTemplate,
+            (false, true, true) => Strategy::Error(String::from(
+                "RSX Parse Strategy Error: There is no such strategy `Script` + `Style`",
+            )),
+            (false, true, false) => Strategy::SingleScript,
+            (false, false, true) => Strategy::SingleStyle,
+            (false, false, false) => Strategy::None,
+        }
+    }
 }
 
 impl TryFrom<ParseTarget> for ParseResult {
@@ -257,7 +287,8 @@ mod test_result {
         </style>
         "#;
         let t = Instant::now();
-        let _ = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
+        let res = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
+        dbg!(res.script());
         // cpu:2.2 GHz 四核Intel Core i7
         // 1.332564ms
         // 1.203039ms

@@ -13,7 +13,7 @@ use crate::{
 /// - convert_style
 pub trait Visitor {
     fn convert(ast: &ParseResult, source_name: &str) -> Result<String, Errors>;
-    fn convert_template(t: &ASTNodes, is_ref: bool) -> Result<MakepadModel, Errors>;
+    fn convert_template(t: &ASTNodes, is_ref: bool,is_single:bool) -> Result<MakepadModel, Errors>;
     fn convert_script(&self, sc: Script);
     // style just need to get the kv
     // - Bind

@@ -33,11 +33,11 @@ impl PropRole {
 impl Display for PropRole {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PropRole::Normal(k, v) => todo!(),
+            PropRole::Normal(k, v) => f.write_fmt(format_args!("{}: {},",k,v.to_string())),
             PropRole::Bind(k) => todo!(),
             PropRole::Function => todo!(),
             PropRole::Context(c) => todo!(),
-            PropRole::Special(s) => todo!(),
+            PropRole::Special(s) => f.write_str(s),
         }
     }
 }
