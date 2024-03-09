@@ -9,6 +9,7 @@ use super::PropRole;
 #[derive(Debug, Clone, PartialEq)]
 pub struct MakepadModel {
     special: Option<String>,
+    contexts: Option<Vec<String>>,
     tag: String,
     props: Option<Vec<PropRole>>,
     children: Option<Vec<MakepadModel>>,
@@ -23,18 +24,62 @@ impl MakepadModel {
             props: None,
             children: None,
             is_ref,
+            contexts: None,
         }
+    }
+    pub fn get_contexts(&self) -> Option<&Vec<String>> {
+        self.contexts.as_ref()
+    }
+    pub fn set_contexts(&mut self, context: &Vec<String>) -> () {
+        self.contexts.replace(context.clone());
+    }
+    pub fn push_context(&mut self, item: String) {
+        match &mut self.contexts {
+            Some(c) => {
+                let _ = c.push(item);
+            }
+            None => {
+                let _ = self.contexts.replace(vec![item]);
+            }
+        };
+    }
+    pub fn push_context_ref(&mut self, item: &str) {
+        self.push_context(item.to_string())
+    }
+    pub fn has_contexts(&self) -> bool {
+        self.contexts.is_some()
+    }
+    pub fn has_links(&self) -> bool {
+        self.has_contexts() || self.has_special()
+    }
+    pub fn get_links(&self) -> Option<Vec<String>> {
+        match (self.has_special(), self.has_contexts()) {
+            (true, true) => {
+                let mut res = self.get_contexts().unwrap().clone();
+                res.push(self.get_special().unwrap().to_string());
+                Some(res)
+            }
+            (true, false) => Some(vec![self.get_special().unwrap().to_string()]),
+            (false, true) => Some(self.get_contexts().unwrap().clone()),
+            (false, false) => None,
+        }
+    }
+    pub fn get_special(&self) -> Option<&String> {
+        self.special.as_ref()
     }
     pub fn set_special(&mut self, special: String) {
         if !special.is_empty() {
             self.special.replace(special);
         }
     }
-    pub fn has_props(&self) -> bool {
-        self.props.is_some()
-    }
     pub fn has_special(&self) -> bool {
         self.special.is_some()
+    }
+    pub fn get_props(&self) -> Option<&Vec<PropRole>> {
+        self.props.as_ref()
+    }
+    pub fn has_props(&self) -> bool {
+        self.props.is_some()
     }
     pub fn push_prop(&mut self, item: PropRole) -> () {
         match &mut self.props {

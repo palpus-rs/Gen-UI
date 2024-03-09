@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
-use crate::targets::makepad::constants::{ALL, FILL, FIT};
+use crate::{
+    error::Errors,
+    targets::makepad::constants::{ALL, FILL, FIT},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Size {
@@ -8,6 +11,33 @@ pub enum Size {
     Fixed(f64),
     Fit,
     All,
+}
+
+impl TryFrom<&str> for Size {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value.parse::<f64>() {
+            Ok(number) => Ok(Size::Fixed(number)),
+            Err(_) => match value {
+                FILL => Ok(Size::Fill),
+                ALL => Ok(Size::All),
+                FIT => Ok(Size::Fit),
+                _ => Err(Errors::PropConvertFail(format!(
+                    "value: {} can not convert to Makepad Size",
+                    value
+                ))),
+            },
+        }
+    }
+}
+
+impl TryFrom<&String> for Size {
+    type Error = Errors;
+
+    fn try_from(value: &String) -> Result<Self, Self::Error> {
+        value.as_str().try_into()
+    }
 }
 
 impl Display for Size {

@@ -6,7 +6,8 @@ pub enum Errors{
     UnMatchedWidget,
     UnMatchedProp(String,String),
     KnownPropType,
-    UnAcceptConvertRange
+    UnAcceptConvertRange,
+    PropConvertFail(String)
 }
 
 impl Errors {
@@ -26,6 +27,8 @@ impl Display for Errors {
                 )),
                 Errors::KnownPropType =>f.write_str("This prop type is not unknown"),
                 Errors::UnAcceptConvertRange => f.write_str("Unacceptable conversion for this range"),
+                Errors::PropConvertFail(s) =>f.write_fmt(format_args!("Cannot convert the value: {}",s)),
+                
             }
     }
 }

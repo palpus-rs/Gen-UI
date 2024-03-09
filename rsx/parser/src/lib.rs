@@ -29,7 +29,7 @@
 
 
 mod ast;
-mod common;
+pub mod common;
 mod error;
 mod target;
 mod tokenizer;

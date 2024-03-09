@@ -12,27 +12,13 @@ pub use style::*;
 use syn::{parse_quote, Local, Stmt};
 pub use widget::*;
 
-use std::{
-    borrow::Cow,
-    collections::HashMap,
-    fmt::{format, Display},
-    sync::mpsc,
-    thread,
-};
+use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
-use parser::{PropsKey, Style, Tag, Value};
+use parser::{PropsKey, Style,  Value};
 
-use crate::{
-    context::{LEFT_ANGLE_BRACKET, RIGHT_ANGLE_BRACKET},
-    error::Errors,
-    traits::Visitor,
-    utils::alphabetic::{surround, uppercase_title},
-};
+use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
 
-use self::{
-    constants::BIND_IMPORT,
-    model::{models_to_string, MakepadModel},
-};
+use self::model::MakepadModel;
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 
@@ -61,11 +47,13 @@ impl Display for ConvertScript {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct MakepadConverter<'a> {
+    root: Cow<'a, str>,
     template: Option<Vec<MakepadModel>>,
     script: Option<ConvertScript>,
     style: Option<ConvertStyle<'a>>,
 }
 
+#[allow(dead_code)]
 impl<'a> MakepadConverter<'a> {
     pub fn has_template(&self) -> bool {
         self.template.is_some()
@@ -76,9 +64,13 @@ impl<'a> MakepadConverter<'a> {
     pub fn has_style(&self) -> bool {
         self.template.is_some()
     }
+    pub fn set_root(&mut self, root: &'a str) {
+        self.root = Cow::Borrowed(root);
+    }
 
-    fn convert(ast: &'a parser::ParseResult, source_name: &str) -> Self {
+    fn convert(ast: &'a parser::ParseResult, root: &'a str) -> Self {
         let mut converter = MakepadConverter::default();
+        converter.set_root(root);
 
         let strategy = ast.strategy();
         // use strategy to convert makepad code
@@ -110,7 +102,11 @@ impl<'a> MakepadConverter<'a> {
         converter
     }
 
-    fn convert_template(&self, t: &parser::ASTNodes, is_ref: bool) -> Option<MakepadModel> {
+    fn convert_template(
+        &self,
+        t: &parser::ASTNodes,
+        is_ref: bool,
+    ) -> Result<Option<MakepadModel>, Errors> {
         handle_tag(t, self.style.as_ref(), is_ref)
     }
 
@@ -129,6 +125,7 @@ impl<'a> MakepadConverter<'a> {
 
 impl<'a> Display for MakepadConverter<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // inner live_design! template
         let t = self
             .template
             .as_ref()
@@ -136,7 +133,12 @@ impl<'a> Display for MakepadConverter<'a> {
             .into_iter()
             .map(|t| t.to_string())
             .collect::<String>();
-        f.write_str(&t)
+        f.write_fmt(format_args!(
+            "{} = {}{}{}{{ {} }}",
+            self.root, "{{", self.root, "}}", &t
+        ))
+
+        // f.write_str(&t)
     }
 }
 
@@ -156,7 +158,7 @@ fn handle_template(converter: &MakepadConverter, ast: &parser::ParseResult) -> V
     let mut is_ref = true;
     let mut models = Vec::new();
     for template in ast.template().unwrap() {
-        if let Some(model) = converter.convert_template(template, is_ref) {
+        if let Ok(Some(model)) = converter.convert_template(template, is_ref) {
             models.push(model);
         }
         is_ref = false;
@@ -296,7 +298,7 @@ fn handle_tag(
     t: &parser::ASTNodes,
     styles: Option<&ConvertStyle>,
     is_ref: bool,
-) -> Option<MakepadModel> {
+) -> Result<Option<MakepadModel>, Errors> {
     match t {
         parser::ASTNodes::Tag(t) => {
             // 1. uppercase the first title case of the tag
@@ -308,10 +310,15 @@ fn handle_tag(
             // check props
             if t.has_props() {
                 for prop in t.get_props().unwrap() {
-                    match prop_match(&tag_name, prop) {
+                    match PropRole::try_from((tag_name.as_str(), prop)) {
                         Ok(p) => {
                             if p.is_special() {
                                 tag_model.set_special(p.to_special());
+                            } else if p.is_context() {
+                                let _ = p
+                                    .to_context()
+                                    .into_iter()
+                                    .for_each(|x| tag_model.push_context(x));
                             } else {
                                 tag_model.push_prop(p);
                             }
@@ -324,38 +331,56 @@ fn handle_tag(
             // true: do not need to associate with styles
             // false: need if style exists
             if styles.is_some() {
-                // new thread to handle styles
+                let styles = styles.unwrap();
+                // when special and context means link , need to patch
+                // check special
+                // if tag_model.has_special() {
+
+                // }
+                if let Some(links) = tag_model.get_links() {
+                    for link in links {
+                        // let special = tag_model.get_special().unwrap();
+                        // check and then convert
+                        // dbg!(&link);
+                        if let Some(sheets) = styles.get(&Cow::Borrowed(link.as_str())) {
+                            let _ = sheets.iter().try_for_each(|kv| {
+                                PropRole::try_from((&tag_name, kv))
+                                    .map(|item| tag_model.push_prop(item))
+                            });
+                        }
+                    }
+                }
             }
             // children
             if t.has_children() {
                 for child in t.get_children().unwrap() {
-                    if let Some(child_template) = handle_tag(child, styles, false) {
+                    if let Ok(Some(child_template)) = handle_tag(child, styles, false) {
                         let _ = tag_model.push_child(child_template);
                     }
                 }
             }
 
-            Some(tag_model)
+            Ok(Some(tag_model))
         }
-        parser::ASTNodes::Comment(c) => None,
+        parser::ASTNodes::Comment(c) => Ok(None),
         parser::ASTNodes::Style(s) => panic!("{}", Errors::UnAcceptConvertRange.to_string()),
     }
 }
 
 /// Match properties based on the existing components in the current makepad widgets
-fn prop_match(tag: &str, prop: (&PropsKey, &Value)) -> Result<PropRole, Errors> {
-    match tag {
-        "Window" => window(prop.0, prop.1),
-        "Button" => button(prop.0, prop.1),
-        _ => Err(Errors::UnMatchedWidget),
-    }
-}
+// fn prop_match(tag: &str, prop: (&PropsKey, &Value)) -> Result<PropRole, Errors> {
+//     match tag {
+//         "Window" => window(prop.0, prop.1),
+//         "Button" => button(prop.0, prop.1),
+//         _ => Err(Errors::UnMatchedWidget),
+//     }
+// }
 
 #[cfg(test)]
 mod test_makepad {
-    use parser::{ParseCore, ParseResult, ParseTarget};
+    use std::time::Instant;
 
-    use crate::traits::Visitor;
+    use parser::{ParseResult, ParseTarget};
 
     use super::MakepadConverter;
 
@@ -365,14 +390,34 @@ mod test_makepad {
         // <button id="my_button" text="Hello, World" @clicked="btn_click"></button>
         let input = r#"
         <template>
-            <window id="ui">
-               
+            <window id="ui" class="my_ui my_ui2">
+               <view id="body" class="my_ui2"/>
             </window>
         </template>
+        <style>
+        #ui{
+            padding: 10 16;
+            height: 178.9;
+            line_spacing: 32.9;
+            clip_x: true;
+            clip_y: false;
+        }
+        .my_ui{
+            width: Fill;
+            background_color: #000;
+            background_visible: false;
+        }
+        .my_ui2{
+            margin: 1 3 5 7;
+            spacing: 18;
+        }
+        </style>
         "#;
-
+        let t = Instant::now();
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
         let convert = MakepadConverter::convert(&ast, "App");
+        dbg!(t.elapsed());
+        // dbg!(&convert);
         dbg!(convert.to_string());
     }
 

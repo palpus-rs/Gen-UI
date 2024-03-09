@@ -39,15 +39,6 @@ where
     delimited(multispace0, parser, multispace0)
 }
 
-// pub fn between<'a,PL,PR,O>(mut l:PL,mut r:PR) -> IResult<&'a str,(&'a str,&'a str)>
-// where
-// PL: FnMut(&'a str) -> IResult<&'a str, O>,
-// PR:FnMut(&'a str) -> IResult<&'a str, O>,
-// {
-
-//     delimited(, take_until(r), r)
-// }
-
 #[cfg(test)]
 mod normal {
     use super::*;
