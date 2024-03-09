@@ -82,11 +82,7 @@ mod test_result_mk {
         </template>
         <style>
         #ui{
-            padding: 10 16;
-            height: 178.9;
-            line_spacing: 32.9;
-            clip_x: true;
-            clip_y: false;
+            align_x: 16;
         }
         .my_ui{
             width: Fill;
@@ -103,7 +99,8 @@ mod test_result_mk {
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
-        let mut f = File::create("/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs").unwrap();
+        //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
+        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }

@@ -14,7 +14,7 @@ pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
-use parser::{PropsKey, Style,  Value};
+use parser::{PropsKey, Style, Value};
 
 use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
 
@@ -388,12 +388,14 @@ mod test_makepad {
     fn convert_single_t() {
         // example for: window single button
         // <button id="my_button" text="Hello, World" @clicked="btn_click"></button>
+
         let input = r#"
         <template>
             <window id="ui" class="my_ui my_ui2">
                <view id="body" class="my_ui2"/>
             </window>
         </template>
+
         <style>
         #ui{
             padding: 10 16;
@@ -406,6 +408,7 @@ mod test_makepad {
             width: Fill;
             background_color: #000;
             background_visible: false;
+            align_y: 16;
         }
         .my_ui2{
             margin: 1 3 5 7;
@@ -417,7 +420,7 @@ mod test_makepad {
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
         let convert = MakepadConverter::convert(&ast, "App");
         dbg!(t.elapsed());
-        // dbg!(&convert);
+        // dbg!(&ast.style());
         dbg!(convert.to_string());
     }
 

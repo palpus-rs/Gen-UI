@@ -1,20 +1,22 @@
+mod align;
 mod bg;
+mod clip;
 mod link;
 mod margin;
 mod padding;
 mod size;
 mod spacing;
 mod text;
-mod clip;
 
+pub use align::*;
 pub use bg::*;
+pub use clip::*;
 pub use link::*;
 pub use margin::*;
 pub use padding::*;
 pub use size::*;
 pub use spacing::*;
 pub use text::*;
-pub use clip::*;
 
 use std::fmt::Display;
 

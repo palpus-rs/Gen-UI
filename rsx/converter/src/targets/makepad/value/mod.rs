@@ -1,8 +1,10 @@
+mod align;
 mod color;
 mod margin;
 mod padding;
 mod size;
 
+pub use align::{Align, DAlign};
 pub use color::Color;
 pub use margin::Margin;
 pub use padding::Padding;
@@ -19,7 +21,7 @@ pub enum MakepadPropValue {
     Bool(bool),
     Margin(Margin),
     Padding(Padding),
-    
+    Align(Align),
 }
 
 impl Display for MakepadPropValue {
@@ -34,6 +36,7 @@ impl Display for MakepadPropValue {
             MakepadPropValue::Margin(m) => f.write_str(m.to_string().as_str()),
             MakepadPropValue::Padding(p) => f.write_str(p.to_string().as_str()),
             MakepadPropValue::F64(num) => f.write_str(num.to_string().as_str()),
+            MakepadPropValue::Align(a) => f.write_str(a.to_string().as_str()),
         }
     }
 }
