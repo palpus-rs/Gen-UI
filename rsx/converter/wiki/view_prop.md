@@ -28,6 +28,14 @@
     /* makepad: abs_pos */
     /* absolute_position: 16.5; */
     absolute_position: 16.5 23;
+    /* same as absolute_position */
+    scroll: 12.6 8.0;
+    /* view optimize */
+    /* None | Texture | DrawList */
+    optimize: Texture;
+    /* Up | Down (List wait todo!) */
+    event_order: Up;
+    visible: false;
 }
 </style>
 ```

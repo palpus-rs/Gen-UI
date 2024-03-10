@@ -3,9 +3,9 @@ use parser::{PropsKey, Value};
 use crate::{
     error::Errors,
     targets::makepad::{
-        prop_abs_prop, prop_align, prop_bg, prop_class, prop_clip_x, prop_clip_y, prop_flow,
-        prop_height, prop_id, prop_line_spacing, prop_margin, prop_padding, prop_show_bg,
-        prop_spacing, prop_width, PropRole,
+        prop_abs_prop, prop_align, prop_bg, prop_class, prop_clip_x, prop_clip_y, prop_event_order,
+        prop_flow, prop_height, prop_id, prop_line_spacing, prop_margin, prop_padding, prop_scroll,
+        prop_show_bg, prop_spacing, prop_view_optimize, prop_visible, prop_width, PropRole,
     },
 };
 
@@ -54,6 +54,12 @@ fn normal_window(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         "align" => prop_align(v),
         // from Layout
         "flow" => prop_flow(v),
+        // from Layout
+        "scroll" => prop_scroll(v),
+        // view private properties
+        "optimize" => prop_view_optimize(v),
+        "event_order" => prop_event_order(v),
+        "visible" => prop_visible(v),
         _ => Err(Errors::unmatched_prop(prop_name, Widgets::Window)),
     }
 }

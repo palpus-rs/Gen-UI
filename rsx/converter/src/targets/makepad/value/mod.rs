@@ -1,15 +1,19 @@
 mod align;
 mod color;
+mod event;
 mod flow;
 mod margin;
+mod optimize;
 mod padding;
 mod size;
 mod vecs;
 
 pub use align::{Align, DAlign};
 pub use color::Color;
+pub use event::EventOrder;
 pub use flow::Flow;
 pub use margin::Margin;
+pub use optimize::Optimize;
 pub use padding::Padding;
 pub use size::Size;
 pub use vecs::DVec2;
@@ -28,6 +32,8 @@ pub enum MakepadPropValue {
     Align(Align),
     Flow(Flow),
     DVec2(DVec2),
+    Optimize(Optimize),
+    EventOrder(EventOrder),
 }
 
 impl Display for MakepadPropValue {
@@ -45,6 +51,8 @@ impl Display for MakepadPropValue {
             MakepadPropValue::Align(a) => f.write_str(a.to_string().as_str()),
             MakepadPropValue::Flow(flow) => f.write_str(flow.to_string().as_str()),
             MakepadPropValue::DVec2(dv) => f.write_str(dv.to_string().as_str()),
+            MakepadPropValue::Optimize(o) => f.write_str(o.to_string().as_str()),
+            MakepadPropValue::EventOrder(eo) => f.write_str(eo.to_string().as_str()),
         }
     }
 }
