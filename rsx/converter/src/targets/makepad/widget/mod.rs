@@ -12,6 +12,7 @@ pub use window::window;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Widgets {
+    /// most of the props in the window widget is from view widget
     Window,
     View,
     Button,
@@ -28,4 +29,4 @@ impl Display for Widgets {
 }
 
 // remain props:
-// - Walk::abs_pos
+// - Layout::scroll

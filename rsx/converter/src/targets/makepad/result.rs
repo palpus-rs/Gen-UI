@@ -82,6 +82,7 @@ mod test_result_mk {
         <style>
         #ui{
             flow: RightWrap;
+            absolute_position: 16.5 23;
         }
         </style>
         "#;

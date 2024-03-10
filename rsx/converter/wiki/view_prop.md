@@ -25,6 +25,9 @@
     align: 16;
     /* Right | Down | Overlay | RightWrap */
     flow: Down;
+    /* makepad: abs_pos */
+    /* absolute_position: 16.5; */
+    absolute_position: 16.5 23;
 }
 </style>
 ```

@@ -4,6 +4,7 @@ mod flow;
 mod margin;
 mod padding;
 mod size;
+mod vecs;
 
 pub use align::{Align, DAlign};
 pub use color::Color;
@@ -11,6 +12,7 @@ pub use flow::Flow;
 pub use margin::Margin;
 pub use padding::Padding;
 pub use size::Size;
+pub use vecs::DVec2;
 
 use std::fmt::Display;
 
@@ -25,6 +27,7 @@ pub enum MakepadPropValue {
     Padding(Padding),
     Align(Align),
     Flow(Flow),
+    DVec2(DVec2),
 }
 
 impl Display for MakepadPropValue {
@@ -41,6 +44,7 @@ impl Display for MakepadPropValue {
             MakepadPropValue::F64(num) => f.write_str(num.to_string().as_str()),
             MakepadPropValue::Align(a) => f.write_str(a.to_string().as_str()),
             MakepadPropValue::Flow(flow) => f.write_str(flow.to_string().as_str()),
+            MakepadPropValue::DVec2(dv) => f.write_str(dv.to_string().as_str()),
         }
     }
 }
