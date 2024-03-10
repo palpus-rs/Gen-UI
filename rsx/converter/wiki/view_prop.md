@@ -38,6 +38,8 @@
     visible: false;
     block_signal_event:true;
     grab_key_focus: false;
+    /* Hidden | Default | Hand | Move | ... see Makepad::MouseCursor  */
+    cursor:Hidden;
 }
 </style>
 ```

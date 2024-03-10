@@ -1,9 +1,6 @@
 use parser::Value;
 
-use crate::{
-    error::Errors,
-    targets::makepad::value::{MakepadPropValue, Optimize},
-};
+use crate::{error::Errors, targets::makepad::value::MakepadPropValue};
 
 use super::PropRole;
 

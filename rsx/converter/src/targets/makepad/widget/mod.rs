@@ -30,3 +30,20 @@ impl Display for Widgets {
 
 // remain props:
 // - event_order::list ❓
+// - scroll_bars:<ScrollBars> {show_scroll_x: false, show_scroll_y: true}
+// - animator
+// ```makepad
+// animator: {
+//     selected = {
+//         default: off
+//         off = {
+//             from: {all: Forward {duration: 0.1}}
+//             apply: {draw_check: {selected: 0.0}}
+//         }
+//         on = {
+//             from: {all: Forward {duration: 0.1}}
+//             apply: {draw_check: {selected: 1.0}}
+//         }
+//     }
+// }
+// ```

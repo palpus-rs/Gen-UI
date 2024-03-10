@@ -1,6 +1,7 @@
 mod align;
 mod bg;
 mod clip;
+mod cursor;
 mod display;
 mod event;
 mod flow;
@@ -17,6 +18,7 @@ mod text;
 pub use align::*;
 pub use bg::*;
 pub use clip::*;
+pub use cursor::*;
 pub use display::*;
 pub use event::*;
 pub use flow::*;

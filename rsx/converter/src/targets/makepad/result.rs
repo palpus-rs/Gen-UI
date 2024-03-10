@@ -82,9 +82,8 @@ mod test_result_mk {
         <style>
         #ui{
             flow: RightWrap;
-            visible:false;
-            block_signal_event:true;
-            grab_key_focus: false;
+            
+            cursor:Hidden;
         }
         </style>
         "#;

@@ -4,9 +4,9 @@ use crate::{
     error::Errors,
     targets::makepad::{
         prop_abs_prop, prop_align, prop_bg, prop_block_signal_event, prop_class, prop_clip_x,
-        prop_clip_y, prop_event_order, prop_flow, prop_grab_key_focus, prop_height, prop_id,
-        prop_line_spacing, prop_margin, prop_padding, prop_scroll, prop_show_bg, prop_spacing,
-        prop_view_optimize, prop_visible, prop_width, PropRole,
+        prop_clip_y, prop_cursor, prop_event_order, prop_flow, prop_grab_key_focus, prop_height,
+        prop_id, prop_line_spacing, prop_margin, prop_padding, prop_scroll, prop_show_bg,
+        prop_spacing, prop_view_optimize, prop_visible, prop_width, PropRole,
     },
 };
 
@@ -63,6 +63,8 @@ fn normal_window(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         "visible" => prop_visible(v),
         "grab_key_focus" => prop_grab_key_focus(v),
         "block_signal_event" => prop_block_signal_event(v),
+        "cursor" => prop_cursor(v),
+        // "scroll_bars"=> prop_scroll_bars(v),
         _ => Err(Errors::unmatched_prop(prop_name, Widgets::Window)),
     }
 }
