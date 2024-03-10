@@ -1,13 +1,18 @@
 use std::{fmt::Display, num::ParseFloatError};
 
-use crate::error::Errors;
+use crate::{error::Errors, str_to_string_try_from};
 
 /// # Makepad Padding
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
+/// Represents padding values for an widget.
 pub struct Padding {
+    /// The left padding value.
     pub left: f64,
+    /// The top padding value.
     pub top: f64,
+    /// The right padding value.
     pub right: f64,
+    /// The bottom padding value.
     pub bottom: f64,
 }
 
@@ -68,13 +73,7 @@ impl TryFrom<&str> for Padding {
     }
 }
 
-impl TryFrom<&String> for Padding {
-    type Error = Errors;
-
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
-        value.as_str().try_into()
-    }
-}
+str_to_string_try_from! {Padding}
 
 impl Display for Padding {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

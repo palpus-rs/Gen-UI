@@ -76,23 +76,12 @@ mod test_result_mk {
     fn test_main() {
         let input = r#"
         <template>
-            <window id="ui" class="my_ui my_ui2">
-               <view id="body" class="my_ui2"/>
+            <window id="ui">
             </window>
         </template>
         <style>
         #ui{
-            align_x: 16;
-            align_x:32;
-        }
-        .my_ui{
-            width: Fill;
-            background_color: #000;
-            background_visible: false;
-        }
-        .my_ui2{
-            margin: 1 3 5 7;
-            spacing: 18;
+            flow: RightWrap;
         }
         </style>
         "#;

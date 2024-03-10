@@ -2,13 +2,21 @@ use std::fmt::Display;
 
 use crate::{
     error::Errors,
+    str_to_string_try_from,
     targets::makepad::constants::{ALL, FILL, FIT},
 };
 
+/// # Makepad Size
+/// the size of props
+/// - height
+/// - width
 #[derive(Debug, Clone, PartialEq)]
 pub enum Size {
+    /// Fill the size of the parent widget
     Fill,
+    /// detail size of the current widget
     Fixed(f64),
+    /// Fit content
     Fit,
     All,
 }
@@ -32,13 +40,7 @@ impl TryFrom<&str> for Size {
     }
 }
 
-impl TryFrom<&String> for Size {
-    type Error = Errors;
-
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
-        value.as_str().try_into()
-    }
-}
+str_to_string_try_from! {Size}
 
 impl Display for Size {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

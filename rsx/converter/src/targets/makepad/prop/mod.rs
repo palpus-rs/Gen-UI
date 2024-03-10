@@ -1,6 +1,7 @@
 mod align;
 mod bg;
 mod clip;
+mod flow;
 mod link;
 mod margin;
 mod padding;
@@ -11,6 +12,7 @@ mod text;
 pub use align::*;
 pub use bg::*;
 pub use clip::*;
+pub use flow::*;
 pub use link::*;
 pub use margin::*;
 pub use padding::*;

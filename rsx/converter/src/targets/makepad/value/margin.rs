@@ -1,8 +1,8 @@
 use std::{fmt::Display, num::ParseFloatError};
 
-use crate::error::Errors;
+use crate::{error::Errors, str_to_string_try_from};
 
-#[derive(Debug, Clone, Copy, Default,PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Margin {
     pub left: f64,
     pub top: f64,
@@ -29,7 +29,6 @@ impl Margin {
         Margin::new(left, top, right, bottom)
     }
 }
-
 
 impl TryFrom<&str> for Margin {
     type Error = Errors;
@@ -58,14 +57,7 @@ impl TryFrom<&str> for Margin {
     }
 }
 
-impl TryFrom<&String> for Margin {
-    type Error = Errors;
-
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
-        value.as_str().try_into()
-    }
-}
-
+str_to_string_try_from! {Margin}
 
 impl Display for Margin {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

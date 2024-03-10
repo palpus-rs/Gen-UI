@@ -11,10 +11,12 @@ pub fn prop_align(value: &Value) -> Result<PropRole, Errors> {
     prop_common_align(value, DAlign::All)
 }
 
+#[allow(dead_code)]
 pub fn prop_align_x(value: &Value) -> Result<PropRole, Errors> {
     prop_common_align(value, DAlign::X)
 }
 
+#[allow(dead_code)]
 pub fn prop_align_y(value: &Value) -> Result<PropRole, Errors> {
     prop_common_align(value, DAlign::Y)
 }

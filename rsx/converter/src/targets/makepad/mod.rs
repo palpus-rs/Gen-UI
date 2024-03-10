@@ -408,7 +408,7 @@ mod test_makepad {
             width: Fill;
             background_color: #000;
             background_visible: false;
-            align_y: 16;
+            flow: Overlay;
         }
         .my_ui2{
             margin: 1 3 5 7;

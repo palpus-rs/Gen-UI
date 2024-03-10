@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use parser::common::parse_hex_color;
 
-use crate::error::Errors;
+use crate::{error::Errors, str_to_string_try_from};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Color {
@@ -32,13 +32,7 @@ impl TryFrom<&str> for Color {
     }
 }
 
-impl TryFrom<&String> for Color {
-    type Error = Errors;
-
-    fn try_from(value: &String) -> Result<Self, Self::Error> {
-        value.as_str().try_into()
-    }
-}
+str_to_string_try_from! {Color}
 
 impl Display for Color {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
