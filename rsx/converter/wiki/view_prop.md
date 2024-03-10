@@ -36,6 +36,8 @@
     /* Up | Down (List wait todo!) */
     event_order: Up;
     visible: false;
+    block_signal_event:true;
+    grab_key_focus: false;
 }
 </style>
 ```
