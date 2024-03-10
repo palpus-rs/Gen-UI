@@ -14,11 +14,14 @@ pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
-use parser::{PropsKey, Style, Value};
+use parser::{PropsKey, Style, Value, HOLDER_END};
 
 use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
 
-use self::model::MakepadModel;
+use self::{
+    constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
+    model::MakepadModel,
+};
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 
@@ -51,6 +54,7 @@ pub struct MakepadConverter<'a> {
     template: Option<Vec<MakepadModel>>,
     script: Option<ConvertScript>,
     style: Option<ConvertStyle<'a>>,
+    widget_ref: Option<Cow<'a, str>>,
 }
 
 #[allow(dead_code)]
@@ -66,6 +70,17 @@ impl<'a> MakepadConverter<'a> {
     }
     pub fn set_root(&mut self, root: &'a str) {
         self.root = Cow::Borrowed(root);
+    }
+
+    pub fn set_widget_ref(&mut self) -> () {
+        if let Some(t) = &self.template {
+            match t[0].get_special() {
+                Some(ref_ui_name) => {
+                    let _ = self.widget_ref.replace(Cow::Owned(ref_ui_name.to_string()));
+                }
+                None => todo!("set default special name as widget ref"),
+            }
+        }
     }
 
     fn convert(ast: &'a parser::ParseResult, root: &'a str) -> Self {
@@ -93,6 +108,7 @@ impl<'a> MakepadConverter<'a> {
                 converter.style = style;
                 let template = handle_template(&converter, ast);
                 converter.template.replace(template);
+                converter.set_widget_ref();
             }
             parser::Strategy::All => todo!("handle_all wait to build"),
             // parser::Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),
@@ -133,11 +149,26 @@ impl<'a> Display for MakepadConverter<'a> {
             .into_iter()
             .map(|t| t.to_string())
             .collect::<String>();
+        let t_fmt = format!("{} = {}{}{}{{ {} }}", self.root, "{{", self.root, "}}", &t);
+        // write live_design code
+        let _ = f.write_fmt(format_args!("{}\n{}\n{}", BIND_IMPORT, t_fmt, HOLDER_END));
+        match &self.widget_ref {
+            Some(name) => {
+                let _ = f.write_fmt(format_args!(
+                    "\n#[derive(Live, LiveHook)]\npub struct App {{ #[live] {}: WidgetRef }}",
+                    name
+                ));
+            }
+            None => {}
+        }
+        let _ = f.write_fmt(format_args!(
+            "\nimpl LiveRegister for {} {{ {} }}",
+            self.root, LIVE_REGISTER
+        ));
         f.write_fmt(format_args!(
-            "{} = {}{}{}{{ {} }}",
-            self.root, "{{", self.root, "}}", &t
+            "impl AppMain for {} {{ {} {{}} }}",
+            self.root, APP_MAIN
         ))
-
         // f.write_str(&t)
     }
 }
@@ -351,6 +382,7 @@ fn handle_tag(
                     }
                 }
             }
+
             // children
             if t.has_children() {
                 for child in t.get_children().unwrap() {

@@ -40,3 +40,6 @@ pub const COL_RESIZE: &str = "ColResize";
 pub const ROW_RESIZE: &str = "RowResize";
 //-------------[for Makepad live design macro bind]--------------------------------
 pub const BIND_IMPORT:&str = "use makepad_widgets::*;\nlive_design!{\nimport makepad_widgets::base::*;\nimport makepad_widgets::theme_desktop_dark::*;";
+pub const LIVE_REGISTER: &str =
+    "fn live_register(cx: &mut Cx) {crate::makepad_widgets::live_design(cx);}";
+pub const APP_MAIN: &str = "fn handle_event(&mut self, cx: &mut Cx, event: &Event)";

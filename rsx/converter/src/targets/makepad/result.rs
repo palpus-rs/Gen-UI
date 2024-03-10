@@ -49,17 +49,16 @@ impl MakepadConvertResult {
 
 impl Display for MakepadConvertResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // write live_design code
-        let _ = f.write_fmt(format_args!(
-            "{}\n{}\n{}",
-            BIND_IMPORT,
-            self.code.as_ref().unwrap(),
-            HOLDER_END
-        ));
+        match &self.code {
+            Some(c) => {
+                let _ = f.write_str(c);
+                if self.is_root {
+                    let _ = f.write_fmt(format_args!("\napp_main!({});", self.file_name));
+                }
+            }
+            None => {}
+        };
 
-        if self.is_root {
-            let _ = f.write_fmt(format_args!("\napp_main!({});", self.file_name));
-        }
         write!(f, "{}", "\n")
     }
 }
@@ -77,6 +76,7 @@ mod test_result_mk {
         let input = r#"
         <template>
             <window id="ui">
+                
             </window>
         </template>
         <style>
@@ -84,6 +84,37 @@ mod test_result_mk {
             flow: RightWrap;
             
             cursor:Hidden;
+        }
+        </style>
+        "#;
+        let t = Instant::now();
+        let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
+        let result = MakepadConvertResult::new(true, "App", ast);
+        dbg!(t.elapsed());
+        //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
+        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+        let _ = f.write(result.to_string().as_bytes());
+    }
+
+    #[test]
+    fn test_simple() {
+        let input = r#"
+        <template>
+            <window id="ui">
+                <view id="body" />
+            </window>
+        </template>
+        <style>
+        #ui{
+            background_visible: true;
+            width: Fill;
+            height: Fill;
+            background_color: #7733ff;
+            #body{
+                flow: Down;
+                spacing: 20;
+                align: 0.5 0.5;
+            }
         }
         </style>
         "#;
