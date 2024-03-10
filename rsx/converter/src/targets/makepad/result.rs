@@ -83,6 +83,7 @@ mod test_result_mk {
         <style>
         #ui{
             align_x: 16;
+            align_x:32;
         }
         .my_ui{
             width: Fill;

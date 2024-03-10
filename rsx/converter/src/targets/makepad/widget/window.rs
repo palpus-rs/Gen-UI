@@ -46,9 +46,10 @@ fn normal_window(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         // from Layout
         "clip_y" => prop_clip_y(v),
         // from Layout
+        // "align_x" => prop_align_x(v),
+        // "align_y" => prop_align_y(v),
+        // template do not use align_x or align_y
         "align" => prop_align(v),
-        "align_x" => prop_align_x(v),
-        "align_y" => prop_align_y(v),
         _ => Err(Errors::unmatched_prop(prop_name, Widgets::Window)),
     }
 }
