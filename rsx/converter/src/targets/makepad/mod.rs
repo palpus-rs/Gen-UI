@@ -166,8 +166,8 @@ impl<'a> Display for MakepadConverter<'a> {
             self.root, LIVE_REGISTER
         ));
         f.write_fmt(format_args!(
-            "impl AppMain for {} {{ {} {{}} }}",
-            self.root, APP_MAIN
+            "impl AppMain for {} {{ {} {{ {} }} }}",
+            self.root, APP_MAIN, "self.ui.handle_event(cx, event, &mut Scope::empty());"
         ))
         // f.write_str(&t)
     }
