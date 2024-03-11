@@ -115,7 +115,7 @@ mod test_result_mk {
         </template>
         
         <script>
-        let no_init:String;
+        let no_init:String = String::from("hello");
         </script>
         
         <style>

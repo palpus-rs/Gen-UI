@@ -31,7 +31,7 @@ type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>
 pub struct MakepadConverter<'a> {
     root: Cow<'a, str>,
     template: Option<Vec<MakepadModel>>,
-    script: Option<ConvertScript<'a>>,
+    script: Option<ConvertScript>,
     style: Option<ConvertStyle<'a>>,
     widget_ref: Option<Cow<'a, str>>,
 }
@@ -178,7 +178,7 @@ fn handle_style(ast: &parser::ParseResult) -> Option<ConvertStyle> {
 fn handle_template(converter: &MakepadConverter, ast: &parser::ParseResult) -> Vec<MakepadModel> {
     let mut is_ref = true;
     let mut models = Vec::new();
-    dbg!(converter.script.as_ref());
+    // dbg!(converter.script.as_ref());
     for template in ast.template().unwrap() {
         if let Ok(Some(model)) = converter.convert_template(template, is_ref) {
             models.push(model);
@@ -222,9 +222,9 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
 }
 
 fn handle_variable(local: &Local) -> ScriptNode {
-    dbg!(local);
+    // dbg!(local);
     // get init
-    let init = local.init.as_ref();
+    let init = local.init.clone();
 
     let stmt = match &local.pat {
         syn::Pat::Type(t) => {
@@ -236,6 +236,7 @@ fn handle_variable(local: &Local) -> ScriptNode {
             let ty_token = quote! {#ty}.to_string();
 
             let node = NodeVariable::new_unwrap(ident_token, ty_token, init);
+            dbg!(node.init_to_string());
             node
         }
         syn::Pat::Ident(i) => {
