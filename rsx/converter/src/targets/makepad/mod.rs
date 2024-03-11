@@ -2,14 +2,14 @@ pub mod constants;
 pub mod model;
 mod prop;
 pub mod result;
+mod script;
 mod style;
 pub mod value;
 mod widget;
-mod script;
 
-pub use script::*;
 pub use prop::*;
 use quote::quote;
+pub use script::*;
 pub use style::*;
 use syn::{parse_quote, Local, Stmt};
 pub use widget::*;
@@ -26,8 +26,6 @@ use self::{
 };
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
-
-
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct MakepadConverter<'a> {
@@ -98,11 +96,11 @@ impl<'a> MakepadConverter<'a> {
                 converter.script.replace(script);
 
                 let style = handle_style(ast);
-                converter.style = style;                
+                converter.style = style;
                 let template = handle_template(&converter, ast);
                 converter.template.replace(template);
                 converter.set_widget_ref();
-            },
+            }
             // parser::Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),
             _ => panic!("{}", Errors::UnAcceptConvertRange.to_string()),
         }
@@ -231,42 +229,19 @@ fn handle_variable(local: &Local) -> ScriptNode {
     let stmt = match &local.pat {
         syn::Pat::Type(t) => {
             // get pat
-            let ident = match &*t.pat {
-                syn::Pat::Ident(i) => &i.ident,
-                _ => todo!(
-                    "Handle in pat:Ident! inner! handle variable syn later, see future needed"
-                ),
-            };
-            
+            let ident = &*t.pat;
+            let ident_token = quote! {#ident}.to_string();
             // get ty
-            dbg!(&*t.ty);
-            // let ty =match &*t.ty{
-            //     syn::Type::Array(_) => todo!(),
-            //     syn::Type::BareFn(_) => todo!(),
-            //     syn::Type::Group(_) => todo!(),
-            //     syn::Type::ImplTrait(_) => todo!(),
-            //     syn::Type::Infer(_) => todo!(),
-            //     syn::Type::Macro(_) => todo!(),
-            //     syn::Type::Never(_) => todo!(),
-            //     syn::Type::Paren(_) => todo!(),
-            //     syn::Type::Path(_) => todo!(),
-            //     syn::Type::Ptr(_) => todo!(),
-            //     syn::Type::Reference(_) => todo!(),
-            //     syn::Type::Slice(_) => todo!(),
-            //     syn::Type::TraitObject(_) => todo!(),
-            //     syn::Type::Tuple(_) => todo!(),
-            //     syn::Type::Verbatim(_) => todo!(),
-            //     _ => todo!(),
-            // };
-            
+            let ty = &*t.ty;
+            let ty_token = quote! {#ty}.to_string();
 
-            let node = NodeVariable::new_unwrap(ident.to_string(), String::new(),init);
+            let node = NodeVariable::new_unwrap(ident_token, ty_token, init);
             node
         }
         syn::Pat::Ident(i) => {
             dbg!(i);
             todo!("script ident")
-        },
+        }
         _ => todo!("handle variable syn later, see future needed"),
     };
 
@@ -331,12 +306,11 @@ fn handle_tag(
                                 PropRole::Bind(_, _) => {
                                     // if is bind need to get real value from script
                                     todo!("script handler")
-                                },
+                                }
                                 PropRole::Function => todo!("function do!!!!"),
                                 PropRole::Context(c) => {
-                                    c.into_iter()
-                                    .for_each(|x| tag_model.push_context(x));
-                                },
+                                    c.into_iter().for_each(|x| tag_model.push_context(x));
+                                }
                                 PropRole::Special(s) => tag_model.set_special(s),
                             }
                         }
@@ -372,7 +346,7 @@ fn handle_tag(
             }
 
             Ok(Some(tag_model))
-        },
+        }
         parser::ASTNodes::Comment(c) => Ok(None),
         parser::ASTNodes::Style(s) => panic!("{}", Errors::UnAcceptConvertRange.to_string()),
     }

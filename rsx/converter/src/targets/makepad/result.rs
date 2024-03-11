@@ -93,7 +93,10 @@ mod test_result_mk {
         dbg!(t.elapsed());
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
         //E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f = File::create("/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs").unwrap();
+        let mut f = File::create(
+            "/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs",
+        )
+        .unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 
@@ -112,7 +115,7 @@ mod test_result_mk {
         </template>
         
         <script>
-        let no_init:&str;
+        let no_init:String;
         </script>
         
         <style>
@@ -134,7 +137,7 @@ mod test_result_mk {
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
-        let mut f = File::create("/Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs").unwrap();
-        let _ = f.write(result.to_string().as_bytes());
+        // let mut f = File::create("/Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs").unwrap();
+        // let _ = f.write(result.to_string().as_bytes());
     }
 }
