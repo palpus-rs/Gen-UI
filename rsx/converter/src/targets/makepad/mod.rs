@@ -5,7 +5,9 @@ pub mod result;
 mod style;
 pub mod value;
 mod widget;
+mod script;
 
+pub use script::*;
 pub use prop::*;
 use quote::quote;
 pub use style::*;
@@ -25,34 +27,13 @@ use self::{
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 
-#[derive(Debug, Clone, PartialEq)]
-#[allow(dead_code)]
-pub enum ConvertScript {
-    Rust(String),
-    /// need to join('\n')
-    MakepadRS(Vec<Stmt>),
-}
 
-impl Display for ConvertScript {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ConvertScript::Rust(rs) => f.write_str(rs),
-            ConvertScript::MakepadRS(stmts) => {
-                let block = stmts
-                    .into_iter()
-                    .map(|stmt| quote! { #stmt }.to_string())
-                    .collect::<String>();
-                f.write_fmt(format_args!("{}", block))
-            }
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct MakepadConverter<'a> {
     root: Cow<'a, str>,
     template: Option<Vec<MakepadModel>>,
-    script: Option<ConvertScript>,
+    script: Option<ConvertScript<'a>>,
     style: Option<ConvertStyle<'a>>,
     widget_ref: Option<Cow<'a, str>>,
 }
@@ -110,7 +91,18 @@ impl<'a> MakepadConverter<'a> {
                 converter.template.replace(template);
                 converter.set_widget_ref();
             }
-            parser::Strategy::All => todo!("handle_all wait to build"),
+            parser::Strategy::All => {
+                // should associate the style with template
+                // new a thread to handle style
+                let script = handle_script(ast, false);
+                converter.script.replace(script);
+
+                let style = handle_style(ast);
+                converter.style = style;                
+                let template = handle_template(&converter, ast);
+                converter.template.replace(template);
+                converter.set_widget_ref();
+            },
             // parser::Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),
             _ => panic!("{}", Errors::UnAcceptConvertRange.to_string()),
         }
@@ -188,6 +180,7 @@ fn handle_style(ast: &parser::ParseResult) -> Option<ConvertStyle> {
 fn handle_template(converter: &MakepadConverter, ast: &parser::ParseResult) -> Vec<MakepadModel> {
     let mut is_ref = true;
     let mut models = Vec::new();
+    dbg!(converter.script.as_ref());
     for template in ast.template().unwrap() {
         if let Ok(Some(model)) = converter.convert_template(template, is_ref) {
             models.push(model);
@@ -196,38 +189,6 @@ fn handle_template(converter: &MakepadConverter, ast: &parser::ParseResult) -> V
     }
     models
 }
-
-// fn handle_template(
-//     ast: &parser::ParseResult,
-//     source_name: &str,
-//     is_single: bool,
-// ) -> Option<String> {
-//     let mut f = String::new();
-//     let mut ref_tag = true;
-//     let templates = ast.template().unwrap();
-//     let template_res = templates
-//         .into_iter()
-//         .map(|t| {
-//             let handled_template = MakepadConverter::convert_template(t, ref_tag, is_single);
-//             ref_tag = false;
-//             return handled_template;
-//         })
-//         .collect::<Result<Vec<MakepadModel>, Errors>>();
-//     match template_res {
-//         Ok(t) => {
-//             let template_app = format!(
-//                 "{} = {{ {} }}{{ \n{}\n }} }}",
-//                 source_name,
-//                 source_name,
-//                 models_to_string(t)
-//             );
-//             f.push_str(BIND_IMPORT);
-//             f.push_str(&template_app);
-//             Some(f)
-//         }
-//         Err(_) => None,
-//     }
-// }
 
 fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
     // is_single:
@@ -262,7 +223,8 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
     }
 }
 
-fn handle_variable(local: &Local) -> Stmt {
+fn handle_variable(local: &Local) -> ScriptNode {
+    dbg!(local);
     // get init
     let init = local.init.as_ref();
 
@@ -275,19 +237,40 @@ fn handle_variable(local: &Local) -> Stmt {
                     "Handle in pat:Ident! inner! handle variable syn later, see future needed"
                 ),
             };
+            
             // get ty
-            let ty = &*t.ty;
+            dbg!(&*t.ty);
+            // let ty =match &*t.ty{
+            //     syn::Type::Array(_) => todo!(),
+            //     syn::Type::BareFn(_) => todo!(),
+            //     syn::Type::Group(_) => todo!(),
+            //     syn::Type::ImplTrait(_) => todo!(),
+            //     syn::Type::Infer(_) => todo!(),
+            //     syn::Type::Macro(_) => todo!(),
+            //     syn::Type::Never(_) => todo!(),
+            //     syn::Type::Paren(_) => todo!(),
+            //     syn::Type::Path(_) => todo!(),
+            //     syn::Type::Ptr(_) => todo!(),
+            //     syn::Type::Reference(_) => todo!(),
+            //     syn::Type::Slice(_) => todo!(),
+            //     syn::Type::TraitObject(_) => todo!(),
+            //     syn::Type::Tuple(_) => todo!(),
+            //     syn::Type::Verbatim(_) => todo!(),
+            //     _ => todo!(),
+            // };
+            
 
-            let new_stmt: Stmt = parse_quote! {
-                #[rust] #ident: #ty
-            };
-            new_stmt
+            let node = NodeVariable::new_unwrap(ident.to_string(), String::new(),init);
+            node
         }
-        syn::Pat::Ident(i) => todo!(),
+        syn::Pat::Ident(i) => {
+            dbg!(i);
+            todo!("script ident")
+        },
         _ => todo!("handle variable syn later, see future needed"),
     };
 
-    stmt
+    ScriptNode::Variable(stmt)
 }
 
 /// 平展样式
@@ -343,15 +326,18 @@ fn handle_tag(
                 for prop in t.get_props().unwrap() {
                     match PropRole::try_from((tag_name.as_str(), prop)) {
                         Ok(p) => {
-                            if p.is_special() {
-                                tag_model.set_special(p.to_special());
-                            } else if p.is_context() {
-                                let _ = p
-                                    .to_context()
-                                    .into_iter()
+                            match p {
+                                PropRole::Normal(_, _) => tag_model.push_prop(p),
+                                PropRole::Bind(_, _) => {
+                                    // if is bind need to get real value from script
+                                    todo!("script handler")
+                                },
+                                PropRole::Function => todo!("function do!!!!"),
+                                PropRole::Context(c) => {
+                                    c.into_iter()
                                     .for_each(|x| tag_model.push_context(x));
-                            } else {
-                                tag_model.push_prop(p);
+                                },
+                                PropRole::Special(s) => tag_model.set_special(s),
                             }
                         }
                         Err(e) => panic!("{}", e.to_string()),
@@ -364,15 +350,8 @@ fn handle_tag(
             if styles.is_some() {
                 let styles = styles.unwrap();
                 // when special and context means link , need to patch
-                // check special
-                // if tag_model.has_special() {
-
-                // }
                 if let Some(links) = tag_model.get_links() {
                     for link in links {
-                        // let special = tag_model.get_special().unwrap();
-                        // check and then convert
-                        // dbg!(&link);
                         if let Some(sheets) = styles.get(&Cow::Borrowed(link.as_str())) {
                             let _ = sheets.iter().try_for_each(|kv| {
                                 PropRole::try_from((&tag_name, kv))
@@ -393,7 +372,7 @@ fn handle_tag(
             }
 
             Ok(Some(tag_model))
-        }
+        },
         parser::ASTNodes::Comment(c) => Ok(None),
         parser::ASTNodes::Style(s) => panic!("{}", Errors::UnAcceptConvertRange.to_string()),
     }

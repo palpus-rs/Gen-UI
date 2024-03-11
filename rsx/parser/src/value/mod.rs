@@ -56,7 +56,19 @@ impl Value {
     pub fn is_unknown_and_get(&self) -> Option<&String> {
         match self {
             Value::UnKnown(s) => Some(s),
-            _=>None
+            _ => None,
+        }
+    }
+    pub fn is_bind_and_get(&self) -> Option<&String> {
+        match self {
+            Value::Bind(b) => Some(b),
+            _ => None,
+        }
+    }
+    pub fn is_fn_and_get(&self) -> Option<&Function> {
+        match self {
+            Value::Function(f) => Some(f),
+            _ => None,
         }
     }
 }

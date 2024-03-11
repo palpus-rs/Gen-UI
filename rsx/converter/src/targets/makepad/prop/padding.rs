@@ -24,6 +24,11 @@ pub fn prop_padding(value: &Value) -> Result<PropRole,Errors>{
                 Err(e) => Err(e),
             }
         },
-        None => Err(Errors::KnownPropType),
+        None => {
+            match value.is_bind_and_get(){
+                Some(b) => Ok(PropRole::bind("draw_bg", MakepadPropValue::bind_without_value(b))),
+                None => todo!(),
+            }
+        },
     }
 }

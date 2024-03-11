@@ -22,7 +22,13 @@ pub fn prop_bg(value: &Value) -> Result<PropRole, Errors> {
             Ok(color) => Ok(PropRole::normal("draw_bg", MakepadPropValue::Color(color))),
             Err(e) => Err(e),
         },
-        None => Err(Errors::KnownPropType),
+        None => {
+            todo!("color bind and function")
+            // match value.is_bind_and_get(){
+            //     Some(b) => Ok(PropRole::bind("draw_bg", MakepadPropValue::Bind(Box::new(x)))),
+            //     None => todo!(),
+            // }
+        },
     }
 }
 

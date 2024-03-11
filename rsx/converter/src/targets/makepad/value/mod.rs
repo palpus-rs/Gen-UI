@@ -37,7 +37,18 @@ pub enum MakepadPropValue {
     Optimize(Optimize),
     EventOrder(EventOrder),
     Cursor(Cursor),
+    Bind(String, Option<Box<MakepadPropValue>>)
 }
+
+impl MakepadPropValue {
+    pub fn bind(k:&str, v:Option<Box<MakepadPropValue>>)->Self{
+        MakepadPropValue::Bind(k.to_string(), v)
+    }
+    pub fn bind_without_value(k:&str)->Self{
+        Self::bind(k, None)
+    }
+}
+
 
 impl Display for MakepadPropValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -57,6 +68,7 @@ impl Display for MakepadPropValue {
             MakepadPropValue::Optimize(o) => f.write_str(o.to_string().as_str()),
             MakepadPropValue::EventOrder(eo) => f.write_str(eo.to_string().as_str()),
             MakepadPropValue::Cursor(c) => f.write_str(c.to_string().as_str()),
+            MakepadPropValue::Bind(_k,v) => f.write_str(v.clone().unwrap().to_string().as_str()),
         }
     }
 }

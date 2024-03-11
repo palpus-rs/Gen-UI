@@ -92,18 +92,29 @@ mod test_result_mk {
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
-        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+        //E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
+        let mut f = File::create("/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 
     #[test]
     fn test_simple() {
+        //let no_init:&str;
+        // let win_pad = "10";
+        // let click_me = ||->(){
+        //     println!("clicked!");
+        // };
         let input = r#"
         <template>
-            <window id="ui">
+            <window id="ui" :padding="win_pad">
                 <view id="body" />
             </window>
         </template>
+        
+        <script>
+        let no_init:&str;
+        </script>
+        
         <style>
         #ui{
             background_visible: true;
@@ -123,7 +134,7 @@ mod test_result_mk {
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
-        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+        let mut f = File::create("/Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }

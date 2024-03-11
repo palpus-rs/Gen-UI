@@ -2,19 +2,7 @@ use makepad_widgets::*;
 live_design! {
 import makepad_widgets::base::*;
 import makepad_widgets::theme_desktop_dark::*;
-  App = {{App}}{
-    ui: <Window>{
-      height: Fill,
-      show_bg: true,
-      width: Fill,
-      draw_bg: { color: #7733ff },
-      body = <View>{
-        flow: Down,
-        spacing: 20,
-        align: {x: 0.5, y: 0.5},
-      }
-    }
-  }
+App = {{App}}{ ui: <Window>{flow: RightWrap, cursor: Hidden, } }
 }
 #[derive(Live, LiveHook)]
 pub struct App {
@@ -27,6 +15,8 @@ impl LiveRegister for App {
     }
 }
 impl AppMain for App {
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event) {}
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
+        self.ui.handle_event(cx, event, &mut Scope::empty());
+    }
 }
 app_main!(App);

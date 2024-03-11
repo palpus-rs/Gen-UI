@@ -14,21 +14,33 @@ mod scroll;
 mod size;
 mod spacing;
 mod text;
+mod groups;
 
+pub use groups::*;
+#[allow(unused)]
 pub use align::*;
 pub use bg::*;
+#[allow(unused)]
 pub use clip::*;
 pub use cursor::*;
 pub use display::*;
 pub use event::*;
+#[allow(unused)]
 pub use flow::*;
+#[allow(unused)]
 pub use link::*;
+#[allow(unused)]
 pub use margin::*;
 pub use optimize::*;
+#[allow(unused)]
 pub use padding::*;
+#[allow(unused)]
 pub use position::*;
+#[allow(unused)]
 pub use scroll::*;
+#[allow(unused)]
 pub use size::*;
+#[allow(unused)]
 pub use spacing::*;
 pub use text::*;
 
@@ -47,7 +59,7 @@ use super::{
 #[derive(Debug, PartialEq, Clone)]
 pub enum PropRole {
     Normal(String, MakepadPropValue),
-    Bind(String),
+    Bind(String,MakepadPropValue),
     Function,
     // this means: the current prop is id or class which can link to style properties  (class)
     Context(Vec<String>),
@@ -58,6 +70,18 @@ pub enum PropRole {
 impl PropRole {
     pub fn normal(k: &str, v: MakepadPropValue) -> Self {
         PropRole::Normal(k.to_string(), v)
+    }
+    pub fn bind(k: &str, v: MakepadPropValue) -> Self{
+        PropRole::Bind(k.to_string(), v)
+    }
+    pub fn is_bind(&self) -> bool {
+        matches!(self,PropRole::Bind(..))
+    }
+    pub fn is_bind_and_get(&self) -> Option<(&str,&MakepadPropValue)> {
+        match self {
+            PropRole::Bind(k, v) => Some((k,v)),
+          _ => None
+        }
     }
     pub fn is_special(&self) -> bool {
         matches!(self, PropRole::Special(_))
@@ -116,7 +140,7 @@ impl Display for PropRole {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PropRole::Normal(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
-            PropRole::Bind(k) => todo!(),
+            PropRole::Bind(k,v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Function => todo!(),
             PropRole::Context(c) => todo!(),
             PropRole::Special(s) => f.write_str(s),

@@ -9,11 +9,11 @@ use super::PropRole;
 /// - `height: Full`
 /// - `height: Fit`
 /// - `height: All`
-pub fn prop_height(key: &str,value: &Value) -> Result<PropRole,Errors>{
-    prop_size(key, value)
+pub fn prop_height(value: &Value) -> Result<PropRole,Errors>{
+    prop_size("height", value)
 }
-pub fn prop_width(key: &str,value: &Value)-> Result<PropRole,Errors> {
-    prop_size(key, value)
+pub fn prop_width(value: &Value)-> Result<PropRole,Errors> {
+    prop_size("width", value)
 }
 
 /// Convert to Makepad unified Size 
