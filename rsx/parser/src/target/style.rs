@@ -21,7 +21,7 @@ use nom::{
 
 use crate::{
     ast::{ASTNodes, PropertyKeyType, PropsKey, Style},
-    common::{parse_value, trim},
+    common::{parse_comment as parse_common_comment, parse_value, trim},
     Value, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
 
@@ -110,43 +110,55 @@ fn parse_property(input: &str) -> IResult<&str, (PropsKey, Value)> {
     };
 }
 
-fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
-    let (input, mut ast) = trim(parse_ident)(input)?;
-    // find open `{`
-    let (input, _) = trim(tag(HOLDER_START))(input)?;
-
-    let (input, children, properties) = match trim(tag(HOLDER_END))(input) {
-        Ok((input, _)) => (input, None, None), //end
-        Err(_) => {
-            // parse property
-            let (input, properties) = many0(trim(parse_property))(input)?;
-            let properties = if properties.is_empty() {
-                None
-            } else {
-                Some(properties)
-            };
-            // nesting parse
-            let (input, mut children) = many0(parse_single)(input)?;
-            // set parent
-            children
-                .iter_mut()
-                .for_each(|child| child.set_parent(ast.clone()));
-            // remove end `)`
-            let (input, _) = many0(trim(tag(HOLDER_END)))(input)?;
-            (input, Some(children), properties)
-        }
-    };
-    //set properties
-    match properties {
-        Some(p) => ast.set_properties(Some(HashMap::from_iter(p.into_iter()))),
-        None => {}
-    };
-    // set children
-    match children {
-        Some(c) => ast.set_children(c),
-        None => {}
+#[allow(dead_code)]
+fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
+    match parse_common_comment(input) {
+        Ok((input, comment)) => Ok((input, comment.into())),
+        Err(e) => Err(e),
     }
-    Ok((input, ast))
+}
+
+fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
+    let (input, mut ast) = trim(alt((parse_ident, parse_comment)))(input)?;
+    return if ast.is_style() {
+        // find open `{`
+        let (input, _) = trim(tag(HOLDER_START))(input)?;
+
+        let (input, children, properties) = match trim(tag(HOLDER_END))(input) {
+            Ok((input, _)) => (input, None, None), //end
+            Err(_) => {
+                // parse property
+                let (input, properties) = many0(trim(parse_property))(input)?;
+                let properties = if properties.is_empty() {
+                    None
+                } else {
+                    Some(properties)
+                };
+                // nesting parse
+                let (input, mut children) = many0(parse_single)(input)?;
+                // set parent
+                children
+                    .iter_mut()
+                    .for_each(|child| child.set_parent(ast.clone()));
+                // remove end `)`
+                let (input, _) = many0(trim(tag(HOLDER_END)))(input)?;
+                (input, Some(children), properties)
+            }
+        };
+        //set properties
+        match properties {
+            Some(p) => ast.set_properties(Some(HashMap::from_iter(p.into_iter()))),
+            None => {}
+        };
+        // set children
+        match children {
+            Some(c) => ast.set_children(c),
+            None => {}
+        }
+        Ok((input, ast))
+    } else {
+        Ok((input, ast))
+    };
 }
 
 /// ## parse styleⓂ️
@@ -176,11 +188,13 @@ mod test_style {
     fn test_style_all() {
         let style = r#"
         .app{
+            // yysyd
             .ui_ui{
                 height : fill;
                 width : fill;
                 show_bg : true;
                 background_color : linear_gradient(180deg, #7, #3); 
+                // background_col
                 .body{
                     flow : down;
                     spacing : 20;
