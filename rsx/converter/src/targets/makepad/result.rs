@@ -115,7 +115,9 @@ mod test_result_mk {
         </template>
         
         <script>
-        let win_pad:&str = "16";
+        // let win_pad = "10 16"; ❌
+        // let win_pad:String = String::from("10 16"); ❌
+        let win_pad:&str = "10 16";
         </script>
         
         <style>

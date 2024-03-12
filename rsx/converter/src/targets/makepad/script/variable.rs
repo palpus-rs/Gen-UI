@@ -153,6 +153,7 @@ impl From<NodeVariable> for Value {
         match ty.as_str() {
             "String" | "& str" => {
                 let s = syn::parse2::<syn::LitStr>(init).unwrap();
+
                 Value::String(s.value())
             }
             _ => panic!("unexpected value type: {:?}", &ty),

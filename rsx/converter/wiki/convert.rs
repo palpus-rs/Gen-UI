@@ -2,7 +2,7 @@ use makepad_widgets::*;
 live_design!{
 import makepad_widgets::base::*;
 import makepad_widgets::theme_desktop_dark::*;
-App = {{App}}{ ui: <Window>{padding: {top: 16, right: 16, bottom: 16, left: 16}, width: Fill, show_bg: true, draw_bg: { color: #7733ff }, height: Fill,  body = <View>{spacing: 20, flow: Down, align: {x: 0.5, y: 0.5}, } } }
+App = {{App}}{ ui: <Window>{padding: {top: 10, right: 16, bottom: 10, left: 16}, width: Fill, show_bg: true, height: Fill, draw_bg: { color: #7733ff },  body = <View>{spacing: 20, align: {x: 0.5, y: 0.5}, flow: Down, } } }
 }
 #[derive(Live, LiveHook)]
 pub struct App { #[live] ui: WidgetRef }
