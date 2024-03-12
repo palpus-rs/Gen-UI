@@ -22,7 +22,8 @@ use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
 
 use self::{
     constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
-    model::MakepadModel, value::MakepadPropValue,
+    model::MakepadModel,
+    value::MakepadPropValue,
 };
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
@@ -232,11 +233,11 @@ fn handle_variable(local: &Local) -> ScriptNode {
             let ident = &*t.pat;
             let ident_token = quote! {#ident}.to_string();
             // get ty
-            let ty = *t.ty;
+            let ty = &*t.ty;
 
             // let ty_token = quote! {#ty}.to_string();
 
-            let node = NodeVariable::new_unwrap(ident_token, ty, init);
+            let node = NodeVariable::new_unwrap(ident_token, ty.clone(), init);
             // dbg!(node.init_to_string());
             node
         }
@@ -313,13 +314,15 @@ fn handle_tag(
                                     match script.unwrap().get_makepad_vars() {
                                         Some(sc) => {
                                             let var_name = v.get_bind_key();
-                                            let mut is_found = false;
+                                            // let mut is_found = false;
                                             for var in sc {
                                                 if var.get_name() == var_name {
-
-                                                    v.set_bind_value(MakepadPropValue)
-                                                    tag_model.push_prop();
-                                                    is_found = true;
+                                                    v.set_bind_value(
+                                                        var.init_to_mk_value().unwrap(),
+                                                    );
+                                                    dbg!(&v);
+                                                    tag_model.push_prop(PropRole::Bind(k, v));
+                                                    // is_found = true;
                                                     break;
                                                 }
                                             }
@@ -329,6 +332,7 @@ fn handle_tag(
                                             k
                                         ),
                                     }
+                                    dbg!(&tag_model);
                                 }
                                 PropRole::Function => todo!("function do!!!!"),
                                 PropRole::Context(c) => {

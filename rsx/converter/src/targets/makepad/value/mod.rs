@@ -15,15 +15,12 @@ pub use cursor::Cursor;
 pub use event::EventOrder;
 pub use flow::Flow;
 pub use margin::Margin;
-pub use optimize::Optimize;
+pub use optimize::{Optimize, ViewOptimize};
 pub use padding::Padding;
 pub use size::Size;
 pub use vecs::DVec2;
 
 use std::fmt::Display;
-use syn::parse::Parse;
-
-use self::optimize::ViewOptimize;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum MakepadPropValue {
@@ -62,71 +59,23 @@ impl MakepadPropValue {
         }
         panic!("not a bind MakepadPropValue")
     }
+    // pub fn rs_to_mkpad_value(ty: &str, input: syn::parse::ParseStream) -> Result<Self, syn::Error> {
+    //     let value = match ty {
+
+    //     };
+    //     Ok(value)
+    // }
 }
 
-impl Parse for MakepadPropValue {
-    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let ident = input.parse::<syn::Ident>()?;
-        let _ = input.parse::<syn::Token![:]>();
-        let value = match ident.to_string().as_str() {
-            "String" => {
-                let s = input.parse::<syn::LitStr>()?;
-                MakepadPropValue::String(s.value())
-            }
-            "f64" => {
-                let f = input.parse::<syn::LitFloat>()?;
-                MakepadPropValue::F64(f.base10_parse::<f64>().unwrap())
-            }
-            "Size" => {
-                let s = input.parse::<Size>()?;
-                MakepadPropValue::Size(s)
-            }
-            "Color" => {
-                let c = input.parse::<Color>()?;
-                MakepadPropValue::Color(c)
-            }
-            "bool" => {
-                let b = input.parse::<syn::LitBool>()?;
-                MakepadPropValue::Bool(b.value)
-            }
-            "Margin" => {
-                let m = input.parse::<Margin>()?;
-                MakepadPropValue::Margin(m)
-            }
-            "Padding" => {
-                let p = input.parse::<Padding>()?;
-                MakepadPropValue::Padding(p)
-            }
-            "Align" => {
-                let a = input.parse::<Align>()?;
-                MakepadPropValue::Align(a)
-            }
-            "Flow" => {
-                let f = input.parse::<Flow>()?;
-                MakepadPropValue::Flow(f)
-            }
-            "DVec2" => {
-                let dv = input.parse::<DVec2>()?;
-                MakepadPropValue::DVec2(dv)
-            }
-            "Optimize" => {
-                // template just write for ViewOptimize
-                let o = input.parse::<ViewOptimize>()?;
-                MakepadPropValue::Optimize(Optimize::View(o))
-            }
-            "EventOrder" => {
-                let eo = input.parse::<EventOrder>()?;
-                MakepadPropValue::EventOrder(eo)
-            }
-            "Cursor" => {
-                let c = input.parse::<Cursor>()?;
-                MakepadPropValue::Cursor(c)
-            }
-            _ => panic!("not support type waiting to implement"),
-        };
-        Ok(value)
-    }
-}
+// impl Parse for MakepadPropValue {
+//     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+//         let ident = input.parse::<syn::Ident>()?;
+//         dbg!(&ident.to_string());
+//         let _ = input.parse::<syn::Token![:]>();
+
+//         Ok(value)
+//     }
+// }
 
 impl Display for MakepadPropValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

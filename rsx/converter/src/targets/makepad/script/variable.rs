@@ -1,9 +1,18 @@
 use std::fmt::Display;
 
 use quote::{quote, ToTokens};
-use syn::{parse, LocalInit, Type};
+use syn::{
+    parse::{self, ParseStream},
+    LocalInit, Type,
+};
 
-use crate::targets::makepad::value::MakepadPropValue;
+use crate::{
+    error::Errors,
+    targets::makepad::value::{
+        Align, Color, Cursor, DVec2, EventOrder, Flow, MakepadPropValue, Margin, Optimize, Padding,
+        Size, ViewOptimize,
+    },
+};
 use syn::parse::Parse;
 
 /// 编译时设置（转换时设置）（init）
@@ -25,7 +34,7 @@ pub struct NodeVariable {
 #[allow(dead_code)]
 impl NodeVariable {
     pub fn new(name: &str, ty: &Type, init: Option<LocalInit>) -> Self {
-        Self::new_unwrap(name.to_string(), *ty, init)
+        Self::new_unwrap(name.to_string(), ty.clone(), init)
     }
     pub fn new_unwrap(name: String, ty: Type, init: Option<LocalInit>) -> Self {
         NodeVariable { name, ty, init }
@@ -46,24 +55,76 @@ impl NodeVariable {
     pub fn get_ty(&self) -> &Type {
         &self.ty
     }
-    pub fn convert_init_to<T>(&self) -> T
-    where
-        T: Default + Parse,
-    {
-        match self.init {
+    pub fn init_to_mk_value(&self) -> Result<MakepadPropValue, syn::Error> {
+        match &self.init {
             Some(init) => {
                 let expr = &*init.expr;
-                let init_token = quote! {#expr};
-                syn::parse2::<T>(init_token).unwrap()
+                let input = quote! {#expr};
+
+                let value = match self.get_ty().to_token_stream().to_string().as_str() {
+                    "String" | "&str" => {
+                        let s = syn::parse2::<syn::LitStr>(input)?;
+                        MakepadPropValue::String(s.value())
+                    }
+                    "f64" => {
+                        let f = syn::parse2::<syn::LitFloat>(input)?;
+                        MakepadPropValue::F64(f.base10_parse::<f64>().unwrap())
+                    }
+                    "Size" => {
+                        let s = syn::parse2::<Size>(input)?;
+                        MakepadPropValue::Size(s)
+                    }
+                    "Color" => {
+                        let c = syn::parse2::<Color>(input)?;
+                        MakepadPropValue::Color(c)
+                    }
+                    "bool" => {
+                        let b = syn::parse2::<syn::LitBool>(input)?;
+                        MakepadPropValue::Bool(b.value)
+                    }
+                    "Margin" => {
+                        let m = syn::parse2::<Margin>(input)?;
+                        MakepadPropValue::Margin(m)
+                    }
+                    "Padding" => {
+                        let p = syn::parse2::<Padding>(input)?;
+                        MakepadPropValue::Padding(p)
+                    }
+                    "Align" => {
+                        let a = syn::parse2::<Align>(input)?;
+                        MakepadPropValue::Align(a)
+                    }
+                    "Flow" => {
+                        let f = syn::parse2::<Flow>(input)?;
+                        MakepadPropValue::Flow(f)
+                    }
+                    "DVec2" => {
+                        let dv = syn::parse2::<DVec2>(input)?;
+                        MakepadPropValue::DVec2(dv)
+                    }
+                    "Optimize" => {
+                        // template just write for ViewOptimize
+                        let o = syn::parse2::<ViewOptimize>(input)?;
+                        MakepadPropValue::Optimize(Optimize::View(o))
+                    }
+                    "EventOrder" => {
+                        let eo = syn::parse2::<EventOrder>(input)?;
+                        MakepadPropValue::EventOrder(eo)
+                    }
+                    "Cursor" => {
+                        let c = syn::parse2::<Cursor>(input)?;
+                        MakepadPropValue::Cursor(c)
+                    }
+                    _ => {
+                        return Err(syn::Error::new_spanned(
+                            self.get_ty(),
+                            "unsupported type for init_to_mk_value",
+                        ))
+                    }
+                };
+                Ok(value)
             }
-            None => T::default(),
-        }
-    }
-    pub fn to_makepad_value(&self) -> MakepadPropValue {
-        match self.get_ty().to_token_stream().to_string().as_str() {
-            "String" => ,
-            "f64" =>,
-            _ => panic!("not support type waiting to implement"),
+            None => panic!("init is None"),
         }
     }
 }
