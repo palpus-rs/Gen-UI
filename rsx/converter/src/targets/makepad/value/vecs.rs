@@ -1,5 +1,7 @@
 use std::{fmt::Display, num::ParseFloatError};
 
+use syn::parse::Parse;
+
 use crate::{error::Errors, str_to_string_try_from};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -54,5 +56,19 @@ str_to_string_try_from! {DVec2}
 impl Display for DVec2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("vec2({}, {})", self.x, self.y))
+    }
+}
+
+impl Parse for DVec2 {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<syn::Ident>()?;
+        let value = ident.to_string();
+        match value.as_str().try_into() {
+            Ok(vec2) => Ok(vec2),
+            Err(_) => Err(syn::Error::new(
+                ident.span(),
+                format!("value: {} can not convert to Makepad DVec2", value),
+            )),
+        }
     }
 }

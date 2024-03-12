@@ -23,6 +23,8 @@ pub use vecs::DVec2;
 use std::fmt::Display;
 use syn::parse::Parse;
 
+use self::optimize::ViewOptimize;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum MakepadPropValue {
     String(String),
@@ -108,8 +110,9 @@ impl Parse for MakepadPropValue {
                 MakepadPropValue::DVec2(dv)
             }
             "Optimize" => {
-                let o = input.parse::<Optimize>()?;
-                MakepadPropValue::Optimize(o)
+                // template just write for ViewOptimize
+                let o = input.parse::<ViewOptimize>()?;
+                MakepadPropValue::Optimize(Optimize::View(o))
             }
             "EventOrder" => {
                 let eo = input.parse::<EventOrder>()?;

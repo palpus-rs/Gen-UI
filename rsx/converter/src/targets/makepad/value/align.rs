@@ -1,5 +1,7 @@
 use std::{fmt::Display, num::ParseFloatError};
 
+use syn::parse::Parse;
+
 use crate::error::Errors;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -72,8 +74,48 @@ impl TryFrom<(&String, DAlign)> for Align {
     }
 }
 
+impl TryFrom<&str> for Align {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value
+            .split(' ')
+            .map(|x| x.parse::<f64>())
+            .collect::<Result<Vec<f64>, ParseFloatError>>()
+        {
+            Ok(aligns) => match aligns.len() {
+                1 => Ok(Align::new(aligns[0], aligns[0])),
+                2 => Ok(Align::new(aligns[0], aligns[1])),
+                _ => Err(Errors::PropConvertFail(format!(
+                    "{} cannot be converted to Makepad::Align!",
+                    value
+                ))),
+            },
+            Err(_) => Err(Errors::PropConvertFail(format!(
+                "{} cannot be converted to Makepad::Align!",
+                value
+            ))),
+        }
+    }
+}
+
 impl Display for Align {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{{x: {}, y: {}}}", self.x, self.y))
+    }
+}
+
+impl Parse for Align {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<syn::Ident>()?;
+        let value = ident.to_string();
+
+        match value.as_str().try_into() {
+            Ok(v) => Ok(v),
+            Err(_) => Err(syn::Error::new(
+                ident.span(),
+                format!("value: {} can not convert to Makepad Align", value),
+            )),
+        }
     }
 }

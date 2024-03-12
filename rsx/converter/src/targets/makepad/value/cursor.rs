@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use syn::parse::Parse;
+
 use crate::{
     error::Errors,
     str_to_string_try_from,
@@ -106,5 +108,19 @@ impl Display for Cursor {
             Cursor::ColResize => COL_RESIZE,
             Cursor::RowResize => ROW_RESIZE,
         })
+    }
+}
+
+impl Parse for Cursor {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<syn::Ident>()?;
+        let ident_str = ident.to_string();
+        match ident_str.as_str().try_into() {
+            Ok(v) => Ok(v),
+            Err(_) => Err(syn::Error::new(
+                ident.span(),
+                format!("{} cannot be converted to Makepad::Cursor!", ident_str),
+            )),
+        }
     }
 }

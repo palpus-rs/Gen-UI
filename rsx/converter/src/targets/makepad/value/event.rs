@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use syn::parse::Parse;
+
 use crate::{
     error::Errors,
     str_to_string_try_from,
@@ -37,6 +39,20 @@ impl Display for EventOrder {
             EventOrder::Down => f.write_str(DOWN),
             EventOrder::Up => f.write_str(UP),
             // EventOrder::List(l) => todo!("EventOrder::List"),
+        }
+    }
+}
+
+impl Parse for EventOrder {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<syn::Ident>()?;
+        let ident_str = ident.to_string();
+        match ident_str.as_str().try_into() {
+            Ok(v) => Ok(v),
+            Err(_) => Err(syn::Error::new(
+                ident.span(),
+                format!("{} cannot be converted to EventOrder!", ident_str),
+            )),
         }
     }
 }

@@ -59,17 +59,24 @@ impl Parse for Size {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let ident = input.parse::<syn::Ident>()?;
         let value = ident.to_string();
-        match value.parse::<f64>() {
-            Ok(number) => Ok(Size::Fixed(number)),
-            Err(_) => match value.as_str() {
-                FILL => Ok(Size::Fill),
-                ALL => Ok(Size::All),
-                FIT => Ok(Size::Fit),
-                _ => Err(syn::Error::new(
-                    ident.span(),
-                    format!("value: {} can not convert to Makepad Size", value),
-                )),
-            },
+        // match value.parse::<f64>() {
+        //     Ok(number) => Ok(Size::Fixed(number)),
+        //     Err(_) => match value.as_str() {
+        //         FILL => Ok(Size::Fill),
+        //         ALL => Ok(Size::All),
+        //         FIT => Ok(Size::Fit),
+        //         _ => Err(syn::Error::new(
+        //             ident.span(),
+        //             format!("value: {} can not convert to Makepad Size", value),
+        //         )),
+        //     },
+        // }
+        match value.as_str().try_into() {
+            Ok(v) => Ok(v),
+            Err(_) => Err(syn::Error::new(
+                ident.span(),
+                format!("value: {} can not convert to Makepad Size", value),
+            )),
         }
     }
 }
