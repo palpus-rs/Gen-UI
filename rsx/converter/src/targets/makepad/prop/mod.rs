@@ -134,6 +134,16 @@ impl TryFrom<(&str, (&str, &NodeVariable))> for PropRole {
 
     fn try_from(value: (&str, (&str, &NodeVariable))) -> Result<Self, Self::Error> {
         let prop_key = PropsKey::new(value.1 .0, false, PropertyKeyType::Normal);
+        let prop_value = value.1 .1.clone().into();
+        (value.0, (&prop_key, &prop_value)).try_into()
+    }
+}
+
+impl TryFrom<(&String, (&String, &NodeVariable))> for PropRole {
+    type Error = Errors;
+
+    fn try_from(value: (&String, (&String, &NodeVariable))) -> Result<Self, Self::Error> {
+        (value.0.as_str(), (value.1 .0.as_str(), value.1 .1)).try_into()
     }
 }
 

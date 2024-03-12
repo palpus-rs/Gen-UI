@@ -56,8 +56,8 @@ impl NodeVariable {
     pub fn get_ty(&self) -> &Type {
         &self.ty
     }
-    pub fn get_ty_str(&self) -> &str {
-        &self.ty.to_token_stream().to_string()
+    pub fn get_ty_str(&self) -> String {
+        self.ty.to_token_stream().to_string()
     }
     /// ensure init exist (Some)
     pub fn init_to_mk_value(&self) -> Result<MakepadPropValue, syn::Error> {
@@ -149,12 +149,13 @@ impl From<NodeVariable> for Value {
     fn from(value: NodeVariable) -> Self {
         let expr = value.init.unwrap().expr;
         let init = quote! {#expr};
-
-        match value.get_ty_str() {
+        let ty = value.ty.to_token_stream().to_string();
+        match ty.as_str() {
             "String" | "& str" => {
                 let s = syn::parse2::<syn::LitStr>(init).unwrap();
                 Value::String(s.value())
             }
+            _ => panic!("unexpected value type: {:?}", &ty),
         }
     }
 }

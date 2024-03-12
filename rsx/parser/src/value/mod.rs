@@ -71,6 +71,12 @@ impl Value {
             _ => None,
         }
     }
+    pub fn is_string_and_get(&self) -> Option<&String> {
+        match self {
+            Value::String(s) => Some(s),
+            _ => None,
+        }
+    }
 }
 
 impl From<(&str, Option<Vec<&str>>, bool)> for Value {

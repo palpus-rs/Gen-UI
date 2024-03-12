@@ -20,6 +20,7 @@ pub use padding::Padding;
 pub use size::Size;
 pub use vecs::DVec2;
 
+use super::PropRole;
 use std::fmt::Display;
 
 // pub enum MakepadPropValueType {
@@ -72,8 +73,9 @@ impl MakepadPropValue {
     pub fn set_bind_value(&mut self, v: MakepadPropValue) -> () {
         if let MakepadPropValue::Bind(_, ref mut value) = self {
             let _ = value.replace(Box::new(v));
+        } else {
+            panic!("not a bind MakepadPropValue");
         }
-        panic!("not a bind MakepadPropValue")
     }
     // pub fn rs_to_mkpad_value(ty: &str, input: syn::parse::ParseStream) -> Result<Self, syn::Error> {
     //     let value = match ty {
@@ -112,6 +114,18 @@ impl Display for MakepadPropValue {
             MakepadPropValue::EventOrder(eo) => f.write_str(eo.to_string().as_str()),
             MakepadPropValue::Cursor(c) => f.write_str(c.to_string().as_str()),
             MakepadPropValue::Bind(_k, v) => f.write_str(v.clone().unwrap().to_string().as_str()),
+        }
+    }
+}
+
+impl From<PropRole> for MakepadPropValue {
+    fn from(value: PropRole) -> Self {
+        match value {
+            PropRole::Normal(_, v) => v,
+            PropRole::Bind(_, v) => v,
+            PropRole::Function => todo!(),
+            PropRole::Context(_) => todo!(),
+            PropRole::Special(_) => todo!(),
         }
     }
 }

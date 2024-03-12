@@ -320,13 +320,15 @@ fn handle_tag(
                                             for var in sc {
                                                 if var.get_name() == &var_name {
                                                     // do value check for data
-                                                    (&tag_name, (&k, var))
-
-                                                    // v.set_bind_value(
-                                                    //     var.init_to_mk_value(&k).unwrap(),
-                                                    // );
-                                                    dbg!(&v);
-                                                    tag_model.push_prop(PropRole::Bind(k, v));
+                                                    // dbg!(&v);
+                                                    v.set_bind_value(
+                                                        PropRole::try_from((&tag_name, (&k, var)))
+                                                            .unwrap()
+                                                            .into(),
+                                                    );
+                                                    // todo!("set_bind_value");
+                                                    // dbg!(&p);
+                                                    tag_model.push_prop(PropRole::bind(&k, v));
                                                     is_found = true;
                                                     break;
                                                 }
@@ -343,7 +345,7 @@ fn handle_tag(
                                             k
                                         ),
                                     }
-                                    dbg!(&tag_model);
+                                    // dbg!(&tag_model);
                                 }
                                 PropRole::Function => todo!("function do!!!!"),
                                 PropRole::Context(c) => {
