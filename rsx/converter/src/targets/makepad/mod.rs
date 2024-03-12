@@ -22,7 +22,7 @@ use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
 
 use self::{
     constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
-    model::MakepadModel,
+    model::MakepadModel, value::MakepadPropValue,
 };
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
@@ -113,7 +113,7 @@ impl<'a> MakepadConverter<'a> {
         t: &parser::ASTNodes,
         is_ref: bool,
     ) -> Result<Option<MakepadModel>, Errors> {
-        handle_tag(t, self.style.as_ref(), is_ref)
+        handle_tag(t, self.script.as_ref(), self.style.as_ref(), is_ref)
     }
 
     fn convert_script(&self, sc: parser::Script) {
@@ -194,8 +194,8 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
     // false: try to convert the script link to makepad script
     // example
     // ```
-    // rsx:          let mut counter:u8 = 0;
-    // makepad:      pub struct App { #[rust] counter: u8 }
+    // rsx:          let mut counter: u8 = 0;
+    // makepad:      #[rust] counter: u8
     // ```
     if is_single {
         ConvertScript::Rust(ast.script().unwrap().to_string())
@@ -232,11 +232,12 @@ fn handle_variable(local: &Local) -> ScriptNode {
             let ident = &*t.pat;
             let ident_token = quote! {#ident}.to_string();
             // get ty
-            let ty = &*t.ty;
-            let ty_token = quote! {#ty}.to_string();
+            let ty = *t.ty;
 
-            let node = NodeVariable::new_unwrap(ident_token, ty_token, init);
-            dbg!(node.init_to_string());
+            // let ty_token = quote! {#ty}.to_string();
+
+            let node = NodeVariable::new_unwrap(ident_token, ty, init);
+            // dbg!(node.init_to_string());
             node
         }
         syn::Pat::Ident(i) => {
@@ -284,8 +285,11 @@ fn expand_style(s: &Box<Style>) -> Option<ConvertStyle> {
     Some(res)
 }
 
+/// acturally if the handle_tag() function can run
+/// it must have ConvertScript
 fn handle_tag(
     t: &parser::ASTNodes,
+    script: Option<&ConvertScript>,
     styles: Option<&ConvertStyle>,
     is_ref: bool,
 ) -> Result<Option<MakepadModel>, Errors> {
@@ -304,9 +308,27 @@ fn handle_tag(
                         Ok(p) => {
                             match p {
                                 PropRole::Normal(_, _) => tag_model.push_prop(p),
-                                PropRole::Bind(_, _) => {
+                                PropRole::Bind(k, mut v) => {
                                     // if is bind need to get real value from script
-                                    todo!("script handler")
+                                    match script.unwrap().get_makepad_vars() {
+                                        Some(sc) => {
+                                            let var_name = v.get_bind_key();
+                                            let mut is_found = false;
+                                            for var in sc {
+                                                if var.get_name() == var_name {
+
+                                                    v.set_bind_value(MakepadPropValue)
+                                                    tag_model.push_prop();
+                                                    is_found = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        None => panic!(
+                                            "prop: {} is a bind prop, which lack of binding value",
+                                            k
+                                        ),
+                                    }
                                 }
                                 PropRole::Function => todo!("function do!!!!"),
                                 PropRole::Context(c) => {
@@ -340,7 +362,7 @@ fn handle_tag(
             // children
             if t.has_children() {
                 for child in t.get_children().unwrap() {
-                    if let Ok(Some(child_template)) = handle_tag(child, styles, false) {
+                    if let Ok(Some(child_template)) = handle_tag(child, script, styles, false) {
                         let _ = tag_model.push_child(child_template);
                     }
                 }

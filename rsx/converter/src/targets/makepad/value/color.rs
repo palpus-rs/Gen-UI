@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use parser::common::parse_hex_color;
+use syn::parse::Parse;
 
 use crate::{error::Errors, str_to_string_try_from};
 
@@ -40,6 +41,15 @@ impl Display for Color {
             Color::Normal(color) => f.write_fmt(format_args!("#{}", color)),
             Color::LinearGradient => todo!("wait to handle color linear gradient"),
         }
+    }
+}
+
+impl Parse for Color {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<syn::Ident>()?;
+        let ident_str = ident.to_string();
+        dbg!(ident_str);
+        todo!("Color parse  waiting to impl syn::parse::Parse")
     }
 }
 

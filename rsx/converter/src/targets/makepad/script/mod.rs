@@ -13,6 +13,27 @@ pub enum ConvertScript {
     MakepadRS(Vec<ScriptNode>),
 }
 
+impl ConvertScript {
+    pub fn get_makepad_vars(&self) -> Option<Vec<&NodeVariable>> {
+        if let ConvertScript::MakepadRS(mrss) = self {
+            let mut vars = vec![];
+            for mr in mrss {
+                if let ScriptNode::Variable(var) = mr {
+                    vars.push(var);
+                }
+            }
+            return if vars.is_empty() { None } else { Some(vars) };
+        }
+        panic!("not a MakepadRS")
+    }
+    pub fn get_makepad_rs(&self) -> Vec<&ScriptNode> {
+        if let ConvertScript::MakepadRS(mrss) = self {
+            return mrss.iter().collect();
+        }
+        panic!("not a MakepadRS")
+    }
+}
+
 impl Display for ConvertScript {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

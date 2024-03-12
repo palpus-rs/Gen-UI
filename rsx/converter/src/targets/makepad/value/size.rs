@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use syn::parse::Parse;
+
 use crate::{
     error::Errors,
     str_to_string_try_from,
@@ -49,6 +51,25 @@ impl Display for Size {
             Size::Fixed(num) => f.write_str(num.to_string().as_str()),
             Size::Fit => f.write_str(FIT),
             Size::All => f.write_str(ALL),
+        }
+    }
+}
+
+impl Parse for Size {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let ident = input.parse::<syn::Ident>()?;
+        let value = ident.to_string();
+        match value.parse::<f64>() {
+            Ok(number) => Ok(Size::Fixed(number)),
+            Err(_) => match value.as_str() {
+                FILL => Ok(Size::Fill),
+                ALL => Ok(Size::All),
+                FIT => Ok(Size::Fit),
+                _ => Err(syn::Error::new(
+                    ident.span(),
+                    format!("value: {} can not convert to Makepad Size", value),
+                )),
+            },
         }
     }
 }

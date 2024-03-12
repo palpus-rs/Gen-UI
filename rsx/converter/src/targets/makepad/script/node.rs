@@ -8,6 +8,15 @@ pub enum ScriptNode {
     Function(String),
 }
 
+impl ScriptNode {
+    pub fn get_var(&self) -> Option<&NodeVariable> {
+        match self {
+            ScriptNode::Variable(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
 impl Display for ScriptNode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
