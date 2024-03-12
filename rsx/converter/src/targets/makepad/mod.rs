@@ -307,24 +307,35 @@ fn handle_tag(
                 for prop in t.get_props().unwrap() {
                     match PropRole::try_from((tag_name.as_str(), prop)) {
                         Ok(p) => {
+                            // dbg!(&p);
                             match p {
                                 PropRole::Normal(_, _) => tag_model.push_prop(p),
                                 PropRole::Bind(k, mut v) => {
                                     // if is bind need to get real value from script
+                                    // should use k as the judge condition
                                     match script.unwrap().get_makepad_vars() {
                                         Some(sc) => {
-                                            let var_name = v.get_bind_key();
-                                            // let mut is_found = false;
+                                            let var_name = v.get_bind_key().to_string();
+                                            let mut is_found = false;
                                             for var in sc {
-                                                if var.get_name() == var_name {
-                                                    v.set_bind_value(
-                                                        var.init_to_mk_value().unwrap(),
-                                                    );
+                                                if var.get_name() == &var_name {
+                                                    // do value check for data
+                                                    (&tag_name, (&k, var))
+
+                                                    // v.set_bind_value(
+                                                    //     var.init_to_mk_value(&k).unwrap(),
+                                                    // );
                                                     dbg!(&v);
                                                     tag_model.push_prop(PropRole::Bind(k, v));
-                                                    // is_found = true;
+                                                    is_found = true;
                                                     break;
                                                 }
+                                            }
+                                            if !is_found {
+                                                panic!(
+                                                    "Could not find bind key:{} in script",
+                                                    &var_name
+                                                );
                                             }
                                         }
                                         None => panic!(

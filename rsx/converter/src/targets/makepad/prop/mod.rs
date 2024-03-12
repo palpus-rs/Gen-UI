@@ -5,6 +5,7 @@ mod cursor;
 mod display;
 mod event;
 mod flow;
+mod groups;
 mod link;
 mod margin;
 mod optimize;
@@ -14,9 +15,7 @@ mod scroll;
 mod size;
 mod spacing;
 mod text;
-mod groups;
 
-pub use groups::*;
 #[allow(unused)]
 pub use align::*;
 pub use bg::*;
@@ -27,6 +26,7 @@ pub use display::*;
 pub use event::*;
 #[allow(unused)]
 pub use flow::*;
+pub use groups::*;
 #[allow(unused)]
 pub use link::*;
 #[allow(unused)]
@@ -46,20 +46,20 @@ pub use text::*;
 
 use std::fmt::Display;
 
-use parser::{PropsKey, Value};
+use parser::{PropertyKeyType, PropsKey, Value};
 
 use crate::error::Errors;
 
 use super::{
     button,
     value::{MakepadPropValue, Size},
-    view, window,
+    view, window, NodeVariable,
 };
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PropRole {
     Normal(String, MakepadPropValue),
-    Bind(String,MakepadPropValue),
+    Bind(String, MakepadPropValue),
     Function,
     // this means: the current prop is id or class which can link to style properties  (class)
     Context(Vec<String>),
@@ -71,16 +71,16 @@ impl PropRole {
     pub fn normal(k: &str, v: MakepadPropValue) -> Self {
         PropRole::Normal(k.to_string(), v)
     }
-    pub fn bind(k: &str, v: MakepadPropValue) -> Self{
+    pub fn bind(k: &str, v: MakepadPropValue) -> Self {
         PropRole::Bind(k.to_string(), v)
     }
     pub fn is_bind(&self) -> bool {
-        matches!(self,PropRole::Bind(..))
+        matches!(self, PropRole::Bind(..))
     }
-    pub fn is_bind_and_get(&self) -> Option<(&str,&MakepadPropValue)> {
+    pub fn is_bind_and_get(&self) -> Option<(&str, &MakepadPropValue)> {
         match self {
-            PropRole::Bind(k, v) => Some((k,v)),
-          _ => None
+            PropRole::Bind(k, v) => Some((k, v)),
+            _ => None,
         }
     }
     pub fn is_special(&self) -> bool {
@@ -128,6 +128,15 @@ impl TryFrom<(&str, (&PropsKey, &Value))> for PropRole {
     }
 }
 
+///  Convert `(tag_name, (prop_name, value))`
+impl TryFrom<(&str, (&str, &NodeVariable))> for PropRole {
+    type Error = Errors;
+
+    fn try_from(value: (&str, (&str, &NodeVariable))) -> Result<Self, Self::Error> {
+        let prop_key = PropsKey::new(value.1 .0, false, PropertyKeyType::Normal);
+    }
+}
+
 impl TryFrom<(&String, (&PropsKey, &Value))> for PropRole {
     type Error = Errors;
 
@@ -140,7 +149,7 @@ impl Display for PropRole {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             PropRole::Normal(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
-            PropRole::Bind(k,v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
+            PropRole::Bind(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Function => todo!(),
             PropRole::Context(c) => todo!(),
             PropRole::Special(s) => f.write_str(s),

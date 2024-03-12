@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use parser::Value;
 use quote::{quote, ToTokens};
 use syn::{
     parse::{self, ParseStream},
@@ -55,14 +56,19 @@ impl NodeVariable {
     pub fn get_ty(&self) -> &Type {
         &self.ty
     }
+    pub fn get_ty_str(&self) -> &str {
+        &self.ty.to_token_stream().to_string()
+    }
+    /// ensure init exist (Some)
     pub fn init_to_mk_value(&self) -> Result<MakepadPropValue, syn::Error> {
         match &self.init {
             Some(init) => {
                 let expr = &*init.expr;
                 let input = quote! {#expr};
+                let ty = self.get_ty().to_token_stream().to_string();
 
-                let value = match self.get_ty().to_token_stream().to_string().as_str() {
-                    "String" | "&str" => {
+                let value = match ty.as_str() {
+                    "String" | "& str" => {
                         let s = syn::parse2::<syn::LitStr>(input)?;
                         MakepadPropValue::String(s.value())
                     }
@@ -135,5 +141,20 @@ impl Display for NodeVariable {
         let ty_token = quote! {#ty}.to_string();
 
         f.write_fmt(format_args!("#[rust] {}: {}", self.name, ty_token))
+    }
+}
+
+/// init value mut be exist
+impl From<NodeVariable> for Value {
+    fn from(value: NodeVariable) -> Self {
+        let expr = value.init.unwrap().expr;
+        let init = quote! {#expr};
+
+        match value.get_ty_str() {
+            "String" | "& str" => {
+                let s = syn::parse2::<syn::LitStr>(init).unwrap();
+                Value::String(s.value())
+            }
+        }
     }
 }

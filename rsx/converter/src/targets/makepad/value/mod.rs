@@ -22,6 +22,22 @@ pub use vecs::DVec2;
 
 use std::fmt::Display;
 
+// pub enum MakepadPropValueType {
+//     String(String),
+//     F64(f64),
+//     Size(Size),
+//     Color,
+//     Bool,
+//     Margin,
+//     Padding,
+//     Align,
+//     Flow,
+//     DVec2,
+//     Optimize,
+//     EventOrder,
+//     Cursor,
+// }
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum MakepadPropValue {
     String(String),

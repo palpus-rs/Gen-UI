@@ -115,7 +115,7 @@ mod test_result_mk {
         </template>
         
         <script>
-        let no_init:String = String::from("hello");
+        let win_pad:&str = "16";
         </script>
         
         <style>
@@ -136,7 +136,7 @@ mod test_result_mk {
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
-        dbg!(result);
+        // dbg!(result);
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
         // let mut f =
         //     File::create("/Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs")
