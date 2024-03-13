@@ -45,7 +45,8 @@ impl Display for ConvertScript {
                 let block = stmts
                     .into_iter()
                     .map(|stmt| stmt.to_string())
-                    .collect::<String>();
+                    .collect::<Vec<String>>()
+                    .join(", ");
                 f.write_fmt(format_args!("{}", block))
             }
         }

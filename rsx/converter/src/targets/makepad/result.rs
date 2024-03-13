@@ -145,7 +145,6 @@ mod test_result_mk {
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
-        // dbg!(result);
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
         //
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs

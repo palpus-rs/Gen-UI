@@ -143,15 +143,27 @@ impl<'a> Display for MakepadConverter<'a> {
         let t_fmt = format!("{} = {}{}{}{{ {} }}", self.root, "{{", self.root, "}}", &t);
         // write live_design code
         let _ = f.write_fmt(format_args!("{}\n{}\n{}", BIND_IMPORT, t_fmt, HOLDER_END));
+
+        // dbg!(self.script.as_ref().unwrap().to_string());
+
         match &self.widget_ref {
             Some(name) => {
                 let _ = f.write_fmt(format_args!(
-                    "\n#[derive(Live, LiveHook)]\npub struct App {{ #[live] {}: WidgetRef }}",
-                    name
+                    "\n#[derive(Live, LiveHook)]\npub struct App {{ #[live] {}: WidgetRef",
+                    name,
                 ));
+                if self.has_script() {
+                    let _ = f.write_fmt(format_args!(
+                        ", {} }}",
+                        self.script.as_ref().unwrap().to_string()
+                    ));
+                } else {
+                    let _ = f.write_str(HOLDER_END);
+                }
             }
             None => {}
         }
+
         let _ = f.write_fmt(format_args!(
             "\nimpl LiveRegister for {} {{ {} }}",
             self.root, LIVE_REGISTER
