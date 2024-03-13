@@ -108,34 +108,35 @@ mod test_result_mk {
         //     println!("clicked!");
         // };
         //:margin="view_margin"
+        // background_visible: true;
+        // width: Fill;
+        // height: Fill;
+        // background_color: #7733ff;
+        // spacing: 20;
+        // align: 0.5 0.5;
         let input = r#"
         <template>
-            <window id="ui" :padding="win_pad">
-                <view id="body" />
+            <window id="ui" :width="view_width">
+                <view id="body" :height="view_hei"/>
             </window>
         </template>
         
         <script>
-        let win_pad = "10 16";
+        // let win_pad = "10 16";
         // let win_pad = 17; 
         // let win_pad = String::from("89 16"); ✅
         // let win_pad:String = String::from("32 24"); ✅
         // let win_pad:&str = "10 16"; ✅ 👍
         // let win_pad = "10 16"; ✅ 👍
         // let win_pad:String = String::from("10 16");
-        let view_margin = "32";
+        let view_hei = 170.2;
+        let view_width = "All";
         </script>
         
         <style>
         #ui{
-            background_visible: true;
-            width: Fill;
-            height: Fill;
-            background_color: #7733ff;
             #body{
                 flow: Down;
-                spacing: 20;
-                align: 0.5 0.5;
             }
         }
         </style>

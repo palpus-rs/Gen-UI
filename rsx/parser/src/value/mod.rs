@@ -77,6 +77,12 @@ impl Value {
             _ => None,
         }
     }
+    pub fn is_double_and_get(&self) -> Option<f64> {
+        match self {
+            Value::Double(d) => Some(*d),
+            _ => None,
+        }
+    }
 }
 
 impl From<(&str, Option<Vec<&str>>, bool)> for Value {

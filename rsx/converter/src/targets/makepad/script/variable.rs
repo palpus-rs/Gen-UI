@@ -169,21 +169,20 @@ impl From<NodeVariable> for Value {
                         };
                         Value::String(s)
                     })
-
-                // if let Ok(s) = syn::parse2::<syn::LitStr>(init.clone()) {
-                //     Value::String(s.value())
-                // } else {
-                //     let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
-                //     let s = match &expr.args[0] {
-                //         syn::Expr::Lit(syn::ExprLit {
-                //             lit: syn::Lit::Str(lit_str),
-                //             ..
-                //         }) => lit_str.value(),
-                //         _ => panic!("expected string literal"),
-                //     };
-                //     Value::String(s)
-                // }
             }
+            "f64" => syn::parse2::<syn::LitFloat>(init.clone())
+                .and_then(|f| Ok(Value::Double(f.base10_parse::<f64>().unwrap())))
+                .unwrap_or_else(|_| {
+                    let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
+                    let f = match &expr.args[0] {
+                        syn::Expr::Lit(syn::ExprLit {
+                            lit: syn::Lit::Float(lit_float),
+                            ..
+                        }) => lit_float.base10_parse::<f64>().unwrap(),
+                        _ => panic!("expected float literal"),
+                    };
+                    Value::Double(f)
+                }),
 
             _ => panic!("unexpected value type: {:?}", &ty),
         }

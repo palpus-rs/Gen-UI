@@ -15,10 +15,14 @@ use super::PropRole;
 /// - rsx:      `padding: 10 20 0 29`
 /// - makepad:  `padding: {top: 10, right: 20, bottom: 0, left: 29}`
 pub fn prop_padding(value: &Value) -> Result<PropRole, Errors> {
-    if let Some(s) = value.is_unknown_and_get() {
+    let handle = |s: &String| {
         s.try_into()
             .map(|padding| PropRole::normal("padding", MakepadPropValue::Padding(padding)))
             .map_err(Into::into)
+    };
+
+    if let Some(s) = value.is_unknown_and_get() {
+        handle(s)
     } else if let Some(b) = value.is_bind_and_get() {
         Ok(PropRole::bind(
             "padding",
@@ -27,11 +31,7 @@ pub fn prop_padding(value: &Value) -> Result<PropRole, Errors> {
     } else {
         value
             .is_string_and_get()
-            .map(|s| {
-                s.try_into()
-                    .map(|padding| PropRole::normal("padding", MakepadPropValue::Padding(padding)))
-                    .map_err(Into::into)
-            })
+            .map(|s| handle(s))
             .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
     }
 }

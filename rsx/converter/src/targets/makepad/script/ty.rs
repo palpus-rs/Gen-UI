@@ -41,7 +41,7 @@ fn handle_expr(expr: Expr, init: Option<LocalInit>) -> (Type, Option<LocalInit>)
             syn::Lit::Byte(b) => todo!(),
             syn::Lit::Char(c) => todo!(),
             syn::Lit::Int(i) => todo!(),
-            syn::Lit::Float(f) => todo!(),
+            syn::Lit::Float(f) => (ty_float(), init),
             syn::Lit::Bool(b) => todo!(),
             syn::Lit::Verbatim(v) => todo!(),
             _ => panic!("unexpect lit type in this script"),
@@ -79,8 +79,17 @@ fn handle_expr(expr: Expr, init: Option<LocalInit>) -> (Type, Option<LocalInit>)
 
 /// generate syn::Type for String
 fn ty_string() -> Type {
+    generate_ty("String")
+}
+
+fn ty_float() -> Type {
+    generate_ty("f64")
+}
+
+/// generate syn::Type for dyn type
+fn generate_ty(ty: &str) -> Type {
     let seg = PathSegment {
-        ident: Ident::new("String", Span::call_site()),
+        ident: Ident::new(ty, Span::call_site()),
         arguments: PathArguments::None,
     };
     let mut p = Punctuated::new();

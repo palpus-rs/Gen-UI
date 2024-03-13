@@ -44,6 +44,12 @@ impl TryFrom<&str> for Size {
 
 str_to_string_try_from! {Size}
 
+impl From<f64> for Size {
+    fn from(value: f64) -> Self {
+        Size::Fixed(value)
+    }
+}
+
 impl Display for Size {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
