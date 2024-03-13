@@ -116,7 +116,7 @@ mod test_result_mk {
         // align: 0.5 0.5;
         let input = r#"
         <template>
-            <window id="ui" :width="view_width" :flow="f1">
+            <window id="ui" :width="view_width" :flow="f1" :clip_x="cx" :cursor="c_hand">
                 <view id="body" :height="view_hei" :line_spacing="line_s"/>
             </window>
         </template>
@@ -133,6 +133,8 @@ mod test_result_mk {
         let view_width = "All";
         let f1 = "Down";
         let line_s:f64 = 20;
+        let cx = true;
+        let c_hand:String = "Hand".to_string();
         </script>
         
         <style>
@@ -148,11 +150,10 @@ mod test_result_mk {
         let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
-        //
+        // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
         let mut f =
-            File::create("/Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs")
-                .unwrap();
+            File::create("E:/Rust/learn/makepad/makepad-rik/examples/rsx/easy/src/app.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }

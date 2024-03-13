@@ -36,13 +36,13 @@ fn handle_expr(expr: Expr, init: Option<LocalInit>) -> (Type, Option<LocalInit>)
         syn::Expr::Infer(_) => todo!(),
         syn::Expr::Let(_) => todo!(),
         syn::Expr::Lit(lit) => match lit.lit {
-            syn::Lit::Str(s) => (ty_string(), init),
+            syn::Lit::Str(_) => (ty_string(), init),
             syn::Lit::ByteStr(bs) => todo!(),
             syn::Lit::Byte(b) => todo!(),
             syn::Lit::Char(c) => todo!(),
             syn::Lit::Int(i) => todo!(),
-            syn::Lit::Float(f) => (ty_float(), init),
-            syn::Lit::Bool(b) => todo!(),
+            syn::Lit::Float(_) => (ty_float(), init),
+            syn::Lit::Bool(_) => (ty_bool(), init),
             syn::Lit::Verbatim(v) => todo!(),
             _ => panic!("unexpect lit type in this script"),
         },
@@ -84,6 +84,10 @@ fn ty_string() -> Type {
 
 fn ty_float() -> Type {
     generate_ty("f64")
+}
+
+fn ty_bool() -> Type {
+    generate_ty("bool")
 }
 
 /// generate syn::Type for dyn type

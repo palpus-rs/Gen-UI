@@ -154,11 +154,12 @@ impl From<NodeVariable> for Value {
         let init = quote! {#expr};
         let ty = value.ty.to_token_stream().to_string();
         match ty.as_str() {
-            "String" | "& str" | "String :: from" => {
+            "String" | "String :: from" => {
                 // dbg!(&init);
                 syn::parse2::<syn::LitStr>(init.clone())
                     .and_then(|s| Ok(Value::String(s.value())))
                     .unwrap_or_else(|_| {
+                        dbg!(&init);
                         let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
                         let s = match &expr.args[0] {
                             syn::Expr::Lit(syn::ExprLit {
@@ -169,6 +170,9 @@ impl From<NodeVariable> for Value {
                         };
                         Value::String(s)
                     })
+            }
+            "& str" => {
+                panic!("immutable var type:&str , expected String")
             }
             "f64" => syn::parse2::<syn::LitFloat>(init.clone())
                 .and_then(|f| Ok(Value::Double(f.base10_parse::<f64>().unwrap())))
@@ -190,7 +194,25 @@ impl From<NodeVariable> for Value {
                     };
                     Value::Double(f)
                 }),
-
+            "bool" => syn::parse2::<syn::LitBool>(init.clone())
+                .and_then(|b| Ok(Value::Bool(b.value())))
+                .or_else(|_| {
+                    syn::parse2::<syn::Lit>(init.clone()).and_then(|b| match b {
+                        syn::Lit::Bool(lb) => Ok(Value::Bool(lb.value())),
+                        _ => panic!("expected bool literal"),
+                    })
+                })
+                .unwrap_or_else(|_| {
+                    let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
+                    let b = match &expr.args[0] {
+                        syn::Expr::Lit(syn::ExprLit {
+                            lit: syn::Lit::Bool(lit_bool),
+                            ..
+                        }) => lit_bool.value(),
+                        _ => panic!("expected bool literal"),
+                    };
+                    Value::Bool(b)
+                }),
             _ => panic!("unexpected value type: {:?}", &ty),
         }
     }

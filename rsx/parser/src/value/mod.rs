@@ -83,6 +83,12 @@ impl Value {
             _ => None,
         }
     }
+    pub fn is_bool_and_get(&self) -> Option<bool> {
+        match self {
+            Value::Bool(b) => Some(*b),
+            _ => None,
+        }
+    }
 }
 
 impl From<(&str, Option<Vec<&str>>, bool)> for Value {
