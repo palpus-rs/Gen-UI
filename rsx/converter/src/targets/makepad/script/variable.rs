@@ -172,6 +172,13 @@ impl From<NodeVariable> for Value {
             }
             "f64" => syn::parse2::<syn::LitFloat>(init.clone())
                 .and_then(|f| Ok(Value::Double(f.base10_parse::<f64>().unwrap())))
+                .or_else(|_| {
+                    syn::parse2::<syn::Lit>(init.clone()).and_then(|f| match f {
+                        syn::Lit::Int(i) => Ok(Value::Double(i.base10_parse::<f64>().unwrap())),
+                        syn::Lit::Float(f) => Ok(Value::Double(f.base10_parse::<f64>().unwrap())),
+                        _ => panic!("expected float literal"),
+                    })
+                })
                 .unwrap_or_else(|_| {
                     let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
                     let f = match &expr.args[0] {

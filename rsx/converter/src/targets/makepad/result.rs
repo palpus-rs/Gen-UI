@@ -116,8 +116,8 @@ mod test_result_mk {
         // align: 0.5 0.5;
         let input = r#"
         <template>
-            <window id="ui" :width="view_width">
-                <view id="body" :height="view_hei"/>
+            <window id="ui" :width="view_width" :flow="f1">
+                <view id="body" :height="view_hei" :line_spacing="line_s"/>
             </window>
         </template>
         
@@ -131,12 +131,14 @@ mod test_result_mk {
         // let win_pad:String = String::from("10 16");
         let view_hei = 170.2;
         let view_width = "All";
+        let f1 = "Down";
+        let line_s:f64 = 20;
         </script>
         
         <style>
         #ui{
             #body{
-                flow: Down;
+               
             }
         }
         </style>
