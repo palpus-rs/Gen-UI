@@ -1,9 +1,6 @@
 use parser::Value;
 
-use crate::{
-    error::Errors,
-    targets::makepad::value::{MakepadPropValue, Padding},
-};
+use crate::{error::Errors, targets::makepad::value::MakepadPropValue};
 
 use super::PropRole;
 
@@ -36,26 +33,5 @@ pub fn prop_padding(value: &Value) -> Result<PropRole, Errors> {
                     .map_err(Into::into)
             })
             .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
-        //
     }
-
-    // match value.is_unknown_and_get() {
-    //     Some(s) => match s.try_into() {
-    //         Ok(padding) => Ok(PropRole::normal(
-    //             "padding",
-    //             MakepadPropValue::Padding(padding),
-    //         )),
-    //         Err(e) => Err(e),
-    //     },
-    //     None => {
-    //         value.is_bind_and_get().map_or_else(default, f)
-    //         // match value.is_bind_and_get() {
-    //         //     Some(b) => Ok(PropRole::bind(
-    //         //         "padding",
-    //         //         MakepadPropValue::bind_without_value(b),
-    //         //     )),
-    //         //     None => ,
-    //         // }
-    //     },
-    // }
 }

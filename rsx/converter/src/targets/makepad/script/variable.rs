@@ -59,80 +59,80 @@ impl NodeVariable {
     pub fn get_ty_str(&self) -> String {
         self.ty.to_token_stream().to_string()
     }
-    /// ensure init exist (Some)
-    pub fn init_to_mk_value(&self) -> Result<MakepadPropValue, syn::Error> {
-        match &self.init {
-            Some(init) => {
-                let expr = &*init.expr;
-                let input = quote! {#expr};
-                let ty = self.get_ty().to_token_stream().to_string();
+    // ensure init exist (Some)
+    // pub fn init_to_mk_value(&self) -> Result<MakepadPropValue, syn::Error> {
+    //     match &self.init {
+    //         Some(init) => {
+    //             let expr = &*init.expr;
+    //             let input = quote! {#expr};
+    //             let ty = self.get_ty().to_token_stream().to_string();
 
-                let value = match ty.as_str() {
-                    "String" | "& str" => {
-                        let s = syn::parse2::<syn::LitStr>(input)?;
-                        MakepadPropValue::String(s.value())
-                    }
-                    "f64" => {
-                        let f = syn::parse2::<syn::LitFloat>(input)?;
-                        MakepadPropValue::F64(f.base10_parse::<f64>().unwrap())
-                    }
-                    "Size" => {
-                        let s = syn::parse2::<Size>(input)?;
-                        MakepadPropValue::Size(s)
-                    }
-                    "Color" => {
-                        let c = syn::parse2::<Color>(input)?;
-                        MakepadPropValue::Color(c)
-                    }
-                    "bool" => {
-                        let b = syn::parse2::<syn::LitBool>(input)?;
-                        MakepadPropValue::Bool(b.value)
-                    }
-                    "Margin" => {
-                        let m = syn::parse2::<Margin>(input)?;
-                        MakepadPropValue::Margin(m)
-                    }
-                    "Padding" => {
-                        let p = syn::parse2::<Padding>(input)?;
-                        MakepadPropValue::Padding(p)
-                    }
-                    "Align" => {
-                        let a = syn::parse2::<Align>(input)?;
-                        MakepadPropValue::Align(a)
-                    }
-                    "Flow" => {
-                        let f = syn::parse2::<Flow>(input)?;
-                        MakepadPropValue::Flow(f)
-                    }
-                    "DVec2" => {
-                        let dv = syn::parse2::<DVec2>(input)?;
-                        MakepadPropValue::DVec2(dv)
-                    }
-                    "Optimize" => {
-                        // template just write for ViewOptimize
-                        let o = syn::parse2::<ViewOptimize>(input)?;
-                        MakepadPropValue::Optimize(Optimize::View(o))
-                    }
-                    "EventOrder" => {
-                        let eo = syn::parse2::<EventOrder>(input)?;
-                        MakepadPropValue::EventOrder(eo)
-                    }
-                    "Cursor" => {
-                        let c = syn::parse2::<Cursor>(input)?;
-                        MakepadPropValue::Cursor(c)
-                    }
-                    _ => {
-                        return Err(syn::Error::new_spanned(
-                            self.get_ty(),
-                            "unsupported type for init_to_mk_value",
-                        ))
-                    }
-                };
-                Ok(value)
-            }
-            None => panic!("init is None"),
-        }
-    }
+    //             let value = match ty.as_str() {
+    //                 "String" | "& str" => {
+    //                     let s = syn::parse2::<syn::LitStr>(input)?;
+    //                     MakepadPropValue::String(s.value())
+    //                 }
+    //                 "f64" => {
+    //                     let f = syn::parse2::<syn::LitFloat>(input)?;
+    //                     MakepadPropValue::F64(f.base10_parse::<f64>().unwrap())
+    //                 }
+    //                 "Size" => {
+    //                     let s = syn::parse2::<Size>(input)?;
+    //                     MakepadPropValue::Size(s)
+    //                 }
+    //                 "Color" => {
+    //                     let c = syn::parse2::<Color>(input)?;
+    //                     MakepadPropValue::Color(c)
+    //                 }
+    //                 "bool" => {
+    //                     let b = syn::parse2::<syn::LitBool>(input)?;
+    //                     MakepadPropValue::Bool(b.value)
+    //                 }
+    //                 "Margin" => {
+    //                     let m = syn::parse2::<Margin>(input)?;
+    //                     MakepadPropValue::Margin(m)
+    //                 }
+    //                 "Padding" => {
+    //                     let p = syn::parse2::<Padding>(input)?;
+    //                     MakepadPropValue::Padding(p)
+    //                 }
+    //                 "Align" => {
+    //                     let a = syn::parse2::<Align>(input)?;
+    //                     MakepadPropValue::Align(a)
+    //                 }
+    //                 "Flow" => {
+    //                     let f = syn::parse2::<Flow>(input)?;
+    //                     MakepadPropValue::Flow(f)
+    //                 }
+    //                 "DVec2" => {
+    //                     let dv = syn::parse2::<DVec2>(input)?;
+    //                     MakepadPropValue::DVec2(dv)
+    //                 }
+    //                 "Optimize" => {
+    //                     // template just write for ViewOptimize
+    //                     let o = syn::parse2::<ViewOptimize>(input)?;
+    //                     MakepadPropValue::Optimize(Optimize::View(o))
+    //                 }
+    //                 "EventOrder" => {
+    //                     let eo = syn::parse2::<EventOrder>(input)?;
+    //                     MakepadPropValue::EventOrder(eo)
+    //                 }
+    //                 "Cursor" => {
+    //                     let c = syn::parse2::<Cursor>(input)?;
+    //                     MakepadPropValue::Cursor(c)
+    //                 }
+    //                 _ => {
+    //                     return Err(syn::Error::new_spanned(
+    //                         self.get_ty(),
+    //                         "unsupported type for init_to_mk_value",
+    //                     ))
+    //                 }
+    //             };
+    //             Ok(value)
+    //         }
+    //         None => panic!("init is None"),
+    //     }
+    // }
 }
 
 impl Display for NodeVariable {
@@ -147,15 +147,44 @@ impl Display for NodeVariable {
 /// init value mut be exist
 impl From<NodeVariable> for Value {
     fn from(value: NodeVariable) -> Self {
-        let expr = value.init.unwrap().expr;
+        let expr = value
+            .init
+            .unwrap_or_else(|| panic!("init cannot be None"))
+            .expr;
         let init = quote! {#expr};
         let ty = value.ty.to_token_stream().to_string();
         match ty.as_str() {
-            "String" | "& str" => {
-                let s = syn::parse2::<syn::LitStr>(init).unwrap();
+            "String" | "& str" | "String :: from" => {
+                // dbg!(&init);
+                syn::parse2::<syn::LitStr>(init.clone())
+                    .and_then(|s| Ok(Value::String(s.value())))
+                    .unwrap_or_else(|_| {
+                        let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
+                        let s = match &expr.args[0] {
+                            syn::Expr::Lit(syn::ExprLit {
+                                lit: syn::Lit::Str(lit_str),
+                                ..
+                            }) => lit_str.value(),
+                            _ => panic!("expected string literal"),
+                        };
+                        Value::String(s)
+                    })
 
-                Value::String(s.value())
+                // if let Ok(s) = syn::parse2::<syn::LitStr>(init.clone()) {
+                //     Value::String(s.value())
+                // } else {
+                //     let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
+                //     let s = match &expr.args[0] {
+                //         syn::Expr::Lit(syn::ExprLit {
+                //             lit: syn::Lit::Str(lit_str),
+                //             ..
+                //         }) => lit_str.value(),
+                //         _ => panic!("expected string literal"),
+                //     };
+                //     Value::String(s)
+                // }
             }
+
             _ => panic!("unexpected value type: {:?}", &ty),
         }
     }

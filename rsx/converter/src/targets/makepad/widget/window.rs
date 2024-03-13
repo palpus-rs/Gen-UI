@@ -12,7 +12,7 @@ use crate::{
 use super::Widgets;
 
 pub fn window(k: &PropsKey, v: &Value) -> Result<PropRole, Errors> {
-    let ty = k.ty();
+    // let ty = k.ty();
     let prop_name = k.name();
     normal_window(prop_name, v)
     // match ty {
@@ -39,6 +39,6 @@ fn normal_window(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         _ => prop_link(prop_name, v)
             .or_else(|_| prop_walk(prop_name, v))
             .or_else(|_| prop_layout(prop_name, v))
-            .or_else(|_| Err(Errors::unmatched_prop(prop_name, Widgets::View)))
+            .or_else(|_| Err(Errors::unmatched_prop(prop_name, Widgets::View))),
     }
 }

@@ -8,10 +8,10 @@ pub mod value;
 mod widget;
 
 pub use prop::*;
-use quote::quote;
+use quote::{quote, ToTokens};
 pub use script::*;
 pub use style::*;
-use syn::{parse_quote, Local, Stmt};
+use syn::{parse_quote, Local, LocalInit, Stmt, Type};
 pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
@@ -223,10 +223,9 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
 }
 
 fn handle_variable(local: &Local) -> ScriptNode {
-    // dbg!(local);
     // get init
     let init = local.init.clone();
-
+    // dbg!(&local);
     let stmt = match &local.pat {
         syn::Pat::Type(t) => {
             // get pat
@@ -234,16 +233,12 @@ fn handle_variable(local: &Local) -> ScriptNode {
             let ident_token = quote! {#ident}.to_string();
             // get ty
             let ty = &*t.ty;
-
-            // let ty_token = quote! {#ty}.to_string();
-
-            let node = NodeVariable::new_unwrap(ident_token, ty.clone(), init);
-            // dbg!(node.init_to_string());
-            node
+            NodeVariable::new_unwrap(ident_token, ty.clone(), init)
         }
         syn::Pat::Ident(i) => {
-            dbg!(i);
-            todo!("script ident")
+            let name = i.ident.to_string();
+            let (ty, init) = parse_init_type(init);
+            NodeVariable::new_unwrap(name, ty, init)
         }
         _ => todo!("handle variable syn later, see future needed"),
     };
@@ -321,12 +316,11 @@ fn handle_tag(
                                                 if var.get_name() == &var_name {
                                                     // do value check for data
                                                     // dbg!(&v);
-                                                    v.set_bind_value(
+                                                    let _ = v.set_bind_value(
                                                         PropRole::try_from((&tag_name, (&k, var)))
                                                             .unwrap()
                                                             .into(),
                                                     );
-                                                    // todo!("set_bind_value");
                                                     // dbg!(&p);
                                                     tag_model.push_prop(PropRole::bind(&k, v));
                                                     is_found = true;
