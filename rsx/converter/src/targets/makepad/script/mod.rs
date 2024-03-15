@@ -1,9 +1,11 @@
 mod node;
 mod ty;
+mod utils;
 mod variable;
 
 pub use node::*;
 pub use ty::*;
+pub use utils::*;
 pub use variable::*;
 
 use std::fmt::Display;

@@ -11,12 +11,12 @@ pub use prop::*;
 use quote::{quote, ToTokens};
 pub use script::*;
 pub use style::*;
-use syn::{parse_quote, Local, LocalInit, Stmt, Type};
+use syn::{parse_quote, token::Mut, Local, LocalInit, Stmt, Type};
 pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
-use parser::{PropsKey, Style, Value, HOLDER_END};
+use parser::{ASTNodes, PropsKey, Style, Tag, Value, HOLDER_END};
 
 use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
 
@@ -27,14 +27,17 @@ use self::{
 };
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
-
+/// `(tag_name, (prop_name, prop_value))`
+pub type BindProp = (String, (String, MakepadPropValue));
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct MakepadConverter<'a> {
     root: Cow<'a, str>,
-    template: Option<Vec<MakepadModel>>,
+    // single model
+    template: Option<MakepadModel>,
     script: Option<ConvertScript>,
     style: Option<ConvertStyle<'a>>,
     widget_ref: Option<Cow<'a, str>>,
+    bind_props: Option<Vec<BindProp>>,
 }
 
 #[allow(dead_code)]
@@ -54,7 +57,7 @@ impl<'a> MakepadConverter<'a> {
 
     pub fn set_widget_ref(&mut self) -> () {
         if let Some(t) = &self.template {
-            match t[0].get_special() {
+            match t.get_special() {
                 Some(ref_ui_name) => {
                     let _ = self.widget_ref.replace(Cow::Owned(ref_ui_name.to_string()));
                 }
@@ -72,8 +75,7 @@ impl<'a> MakepadConverter<'a> {
         match strategy {
             parser::Strategy::None => {}
             parser::Strategy::SingleTemplate => {
-                let template = handle_template(&converter, ast);
-                converter.template.replace(template);
+                converter.convert_template(&ast.template().unwrap()[0])
             }
             parser::Strategy::SingleScript => {
                 let script = handle_script(ast, true);
@@ -86,8 +88,8 @@ impl<'a> MakepadConverter<'a> {
                 // new a thread to handle style
                 let style = handle_style(ast);
                 converter.style = style;
-                let template = handle_template(&converter, ast);
-                converter.template.replace(template);
+                converter.convert_template(&ast.template().unwrap()[0]);
+
                 converter.set_widget_ref();
             }
             parser::Strategy::All => {
@@ -98,8 +100,9 @@ impl<'a> MakepadConverter<'a> {
 
                 let style = handle_style(ast);
                 converter.style = style;
-                let template = handle_template(&converter, ast);
-                converter.template.replace(template);
+                // let template = handle_template(&converter, ast);
+                converter.convert_template(&ast.template().unwrap()[0]);
+                // converter.template.replace(template);
                 converter.set_widget_ref();
             }
             // parser::Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),
@@ -109,12 +112,16 @@ impl<'a> MakepadConverter<'a> {
         converter
     }
 
-    fn convert_template(
-        &self,
-        t: &parser::ASTNodes,
-        is_ref: bool,
-    ) -> Result<Option<MakepadModel>, Errors> {
-        handle_tag(t, self.script.as_ref(), self.style.as_ref(), is_ref)
+    fn convert_template(&mut self, t: &ASTNodes) -> () {
+        match t {
+            ASTNodes::Tag(t) => {
+                let (model, binds) = handle_tag(*&t, self.style.as_ref(), true);
+                let _ = self.template.replace(model);
+                let _ = self.bind_props.replace(binds);
+            }
+            ASTNodes::Comment(_) => todo!(),
+            ASTNodes::Style(_) => todo!(),
+        }
     }
 
     fn convert_script(&self, sc: parser::Script) {
@@ -133,13 +140,7 @@ impl<'a> MakepadConverter<'a> {
 impl<'a> Display for MakepadConverter<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // inner live_design! template
-        let t = self
-            .template
-            .as_ref()
-            .unwrap()
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect::<String>();
+        let t = self.template.as_ref().unwrap().to_string();
         let t_fmt = format!("{} = {}{}{}{{ {} }}", self.root, "{{", self.root, "}}", &t);
         // write live_design code
         let _ = f.write_fmt(format_args!("{}\n{}\n{}", BIND_IMPORT, t_fmt, HOLDER_END));
@@ -153,10 +154,19 @@ impl<'a> Display for MakepadConverter<'a> {
                     name,
                 ));
                 if self.has_script() {
-                    let _ = f.write_fmt(format_args!(
-                        ", {} }}",
-                        self.script.as_ref().unwrap().to_string()
-                    ));
+                    let sc = self.script.as_ref().unwrap();
+                    match sc.get_makepad_vars() {
+                        Some(vars) => {
+                            // get bind props
+                            let binds = self.bind_props.as_ref().unwrap();
+                            let bind_instance = vars_to_string(vars, binds);
+                        }
+                        None => {}
+                    }
+                    // let _ = f.write_fmt(format_args!(
+                    //     ", {} }}",
+                    //     self.script.as_ref().unwrap().to_string()
+                    // ));
                 } else {
                     let _ = f.write_str(HOLDER_END);
                 }
@@ -186,19 +196,6 @@ fn handle_style(ast: &parser::ParseResult) -> Option<ConvertStyle> {
         };
     }
     Some(res)
-}
-
-fn handle_template(converter: &MakepadConverter, ast: &parser::ParseResult) -> Vec<MakepadModel> {
-    let mut is_ref = true;
-    let mut models = Vec::new();
-    // dbg!(converter.script.as_ref());
-    for template in ast.template().unwrap() {
-        if let Ok(Some(model)) = converter.convert_template(template, is_ref) {
-            models.push(model);
-        }
-        is_ref = false;
-    }
-    models
 }
 
 fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
@@ -241,16 +238,19 @@ fn handle_variable(local: &Local) -> ScriptNode {
     let stmt = match &local.pat {
         syn::Pat::Type(t) => {
             // get pat
-            let ident = &*t.pat;
-            let ident_token = quote! {#ident}.to_string();
+            let (name, is_mut) = match &*t.pat {
+                syn::Pat::Ident(i) => (i.ident.to_string(), i.mutability.is_some()),
+                _ => panic!("unexpect pat type in this script"),
+            };
             // get ty
             let ty = &*t.ty;
-            NodeVariable::new_unwrap(ident_token, ty.clone(), init)
+            NodeVariable::new_unwrap(name, ty.clone(), init, is_mut)
         }
         syn::Pat::Ident(i) => {
             let name = i.ident.to_string();
+            let is_mut = i.mutability.is_some();
             let (ty, init) = parse_init_type(init);
-            NodeVariable::new_unwrap(name, ty, init)
+            NodeVariable::new_unwrap(name, ty, init, is_mut)
         }
         _ => todo!("handle variable syn later, see future needed"),
     };
@@ -296,106 +296,106 @@ fn expand_style(s: &Box<Style>) -> Option<ConvertStyle> {
 /// acturally if the handle_tag() function can run
 /// it must have ConvertScript
 fn handle_tag(
-    t: &parser::ASTNodes,
-    script: Option<&ConvertScript>,
+    t: &Tag,
     styles: Option<&ConvertStyle>,
     is_ref: bool,
-) -> Result<Option<MakepadModel>, Errors> {
-    match t {
-        parser::ASTNodes::Tag(t) => {
-            // 1. uppercase the first title case of the tag
-            // 2. add `<` `>` surround the tag
-            // 3. add `{` `}` after the tag
-            let tag_name =
-                uppercase_title(t.get_name()).expect(&Errors::UppercaseTitleFail.to_string());
-            let mut tag_model = MakepadModel::new(&tag_name, is_ref);
-            // check props
-            if t.has_props() {
-                for prop in t.get_props().unwrap() {
-                    match PropRole::try_from((tag_name.as_str(), prop)) {
-                        Ok(p) => {
-                            // dbg!(&p);
-                            match p {
-                                PropRole::Normal(_, _) => tag_model.push_prop(p),
-                                PropRole::Bind(k, mut v) => {
-                                    // if is bind need to get real value from script
-                                    // should use k as the judge condition
-                                    match script.unwrap().get_makepad_vars() {
-                                        Some(sc) => {
-                                            let var_name = v.get_bind_key().to_string();
-                                            let mut is_found = false;
-                                            for var in sc {
-                                                if var.get_name() == &var_name {
-                                                    // do value check for data
-                                                    // dbg!(&v);
-                                                    let _ = v.set_bind_value(
-                                                        PropRole::try_from((&tag_name, (&k, var)))
-                                                            .unwrap()
-                                                            .into(),
-                                                    );
-                                                    // dbg!(&p);
-                                                    tag_model.push_prop(PropRole::bind(&k, v));
-                                                    is_found = true;
-                                                    break;
-                                                }
-                                            }
-                                            if !is_found {
-                                                panic!(
-                                                    "Could not find bind key:{} in script",
-                                                    &var_name
-                                                );
-                                            }
-                                        }
-                                        None => panic!(
-                                            "prop: {} is a bind prop, which lack of binding value",
-                                            k
-                                        ),
-                                    }
-                                    // dbg!(&tag_model);
-                                }
-                                PropRole::Function => todo!("function do!!!!"),
-                                PropRole::Context(c) => {
-                                    c.into_iter().for_each(|x| tag_model.push_context(x));
-                                }
-                                PropRole::Special(s) => tag_model.set_special(s),
-                            }
+) -> (MakepadModel, Vec<BindProp>) {
+    // 1. uppercase the first title case of the tag
+    // if can not upper - panic!
+    let tag_name = uppercase_title(t.get_name()).unwrap();
+    // 2. add `<` `>` surround the tag
+    // 3. add `{` `}` after the tag
+    let mut tag_model = MakepadModel::new(&tag_name, is_ref);
+    let mut binds = Vec::new();
+    // check props
+    if t.has_props() {
+        for prop in t.get_props().unwrap() {
+            match PropRole::try_from((tag_name.as_str(), prop)) {
+                Ok(p) => {
+                    // dbg!(&p);
+                    match p {
+                        PropRole::Normal(_, _) => tag_model.push_prop(p),
+                        PropRole::Bind(k, v) => {
+                            binds.push((tag_name.clone(), (k, v)));
+                            // if is bind need to get real value from script
+                            // should use k as the judge condition
+                            // match script.unwrap().get_makepad_vars() {
+                            //     Some(sc) => {
+                            //         let var_name = v.get_bind_key().to_string();
+                            //         let mut is_found = false;
+                            //         for var in sc {
+                            //             if var.get_name() == &var_name {
+                            //                 // do value check for data
+                            //                 // dbg!(&v);
+                            //                 let _ = v.set_bind_value(
+                            //                     PropRole::try_from((&tag_name, (&k, var)))
+                            //                         .unwrap()
+                            //                         .into(),
+                            //                 );
+                            //                 // dbg!(&p);
+                            //                 tag_model.push_prop(PropRole::bind(&k, v));
+                            //                 is_found = true;
+                            //                 break;
+                            //             }
+                            //         }
+                            //         if !is_found {
+                            //             panic!(
+                            //                 "Could not find bind key:{} in script",
+                            //                 &var_name
+                            //             );
+                            //         }
+                            //     }
+                            //     None => panic!(
+                            //         "prop: {} is a bind prop, which lack of binding value",
+                            //         k
+                            //     ),
+                            // }
+                            // dbg!(&tag_model);
                         }
-                        Err(e) => panic!("{}", e.to_string()),
-                    };
-                }
-            }
-            // have styles
-            // true: do not need to associate with styles
-            // false: need if style exists
-            if styles.is_some() {
-                let styles = styles.unwrap();
-                // when special and context means link , need to patch
-                if let Some(links) = tag_model.get_links() {
-                    for link in links {
-                        if let Some(sheets) = styles.get(&Cow::Borrowed(link.as_str())) {
-                            let _ = sheets.iter().try_for_each(|kv| {
-                                PropRole::try_from((&tag_name, kv))
-                                    .map(|item| tag_model.push_prop(item))
-                            });
+                        PropRole::Function => todo!("function do!!!!"),
+                        PropRole::Context(c) => {
+                            c.into_iter().for_each(|x| tag_model.push_context(x));
                         }
+                        PropRole::Special(s) => tag_model.set_special(s),
                     }
                 }
-            }
-
-            // children
-            if t.has_children() {
-                for child in t.get_children().unwrap() {
-                    if let Ok(Some(child_template)) = handle_tag(child, script, styles, false) {
-                        let _ = tag_model.push_child(child_template);
-                    }
-                }
-            }
-
-            Ok(Some(tag_model))
+                Err(e) => panic!("{}", e.to_string()),
+            };
         }
-        parser::ASTNodes::Comment(c) => Ok(None),
-        parser::ASTNodes::Style(s) => panic!("{}", Errors::UnAcceptConvertRange.to_string()),
     }
+    // have styles
+    // true: do not need to associate with styles
+    // false: need if style exists
+    if styles.is_some() {
+        let styles = styles.unwrap();
+        // when special and context means link , need to patch
+        if let Some(links) = tag_model.get_links() {
+            for link in links {
+                if let Some(sheets) = styles.get(&Cow::Borrowed(link.as_str())) {
+                    let _ = sheets.iter().try_for_each(|kv| {
+                        PropRole::try_from((&tag_name, kv)).map(|item| tag_model.push_prop(item))
+                    });
+                }
+            }
+        }
+    }
+
+    // children
+    if t.has_children() {
+        for child_node in t.get_children().unwrap() {
+            match child_node {
+                ASTNodes::Tag(child) => {
+                    let (child_model, child_binds) = handle_tag(*&child, styles, false);
+                    tag_model.push_child(child_model);
+                    binds.extend(child_binds);
+                }
+                ASTNodes::Comment(_) => (),
+                ASTNodes::Style(_) => panic!("{}", "cannot write styles in template node"),
+            }
+        }
+    }
+
+    (tag_model, binds)
 }
 
 /// Match properties based on the existing components in the current makepad widgets

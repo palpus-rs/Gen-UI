@@ -78,6 +78,26 @@ impl MakepadModel {
     pub fn get_props(&self) -> Option<&Vec<PropRole>> {
         self.props.as_ref()
     }
+    pub fn get_bind_props(&self) -> Option<Vec<PropRole>> {
+        if let Some(props) = self.get_props() {
+            let mut res = vec![];
+            for prop in props {
+                match prop {
+                    PropRole::Bind(_, _) => {
+                        res.push(prop.clone());
+                    }
+                    _ => {}
+                }
+            }
+            if res.is_empty() {
+                None
+            } else {
+                Some(res)
+            }
+        } else {
+            None
+        }
+    }
     pub fn has_props(&self) -> bool {
         self.props.is_some()
     }

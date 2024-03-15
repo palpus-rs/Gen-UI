@@ -11,18 +11,7 @@ use crate::{
 
 use super::Widgets;
 
-pub fn view(k: &PropsKey, v: &Value) -> Result<PropRole, Errors> {
-    let ty = k.ty();
-    let prop_name = k.name();
-    normal_view(prop_name, v)
-    // match ty {
-    //     parser::PropertyKeyType::Normal => ,
-    //     parser::PropertyKeyType::Bind => todo!(),
-    //     parser::PropertyKeyType::Function => todo!(),
-    // }
-}
-
-fn normal_view(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
+pub fn view(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     match prop_name {
         // match to `draw_bg`
         "background_color" => prop_bg(v),

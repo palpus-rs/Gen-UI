@@ -69,7 +69,7 @@ mod test_result_mk {
 
     use parser::{ParseResult, ParseTarget};
 
-    use crate::targets::makepad::result::MakepadConvertResult;
+    use crate::targets::makepad::{result::MakepadConvertResult, MakepadConverter};
 
     #[test]
     fn test_main() {
@@ -116,12 +116,13 @@ mod test_result_mk {
         // align: 0.5 0.5;
         let input = r#"
         <template>
-            <window id="ui" :width="view_width" :flow="f1" :clip_x="cx" :cursor="c_hand">
+            <window id="ui"  :flow="f1" :clip_x="cx" :cursor="c_hand">
                 <view id="body" :height="view_hei" :line_spacing="line_s"/>
             </window>
         </template>
         
         <script>
+        // use rsx::on_start_up;
         // let win_pad = "10 16";
         // let win_pad = 17; 
         // let win_pad = String::from("89 16"); ✅
@@ -129,16 +130,21 @@ mod test_result_mk {
         // let win_pad:&str = "10 16"; ✅ 👍
         // let win_pad = "10 16"; ✅ 👍
         // let win_pad:String = String::from("10 16");
-        let view_hei = 170.2;
+        let mut view_hei:String = "Fit";
         let view_width = "All";
-        let f1 = "Down";
-        let line_s:f64 = 20;
-        let cx = true;
-        let c_hand:String = "Hand".to_string();
+        // let f1 = "Down";
+        // let line_s:f64 = 20;
+        // let cx = true;
+        // let c_hand:String = "Hand".to_string();
+
+        // on_start_up(||{
+        //     view_hei = "Fill";
+        // })
         </script>
         
         <style>
         #ui{
+            width: All;
             #body{
                
             }
@@ -147,13 +153,17 @@ mod test_result_mk {
         "#;
         let t = Instant::now();
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-        let result = MakepadConvertResult::new(true, "App", ast);
+        let result = MakepadConverter::convert(&ast, "App");
+        // let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
+        // dbg!(result.to_string());
         //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f =
-            File::create("E:/Rust/learn/makepad/makepad-rik/examples/rsx/easy/src/app.rs").unwrap();
+        let mut f = File::create(
+            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
+        )
+        .unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }

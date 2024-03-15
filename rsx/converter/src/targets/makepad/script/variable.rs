@@ -30,15 +30,24 @@ pub struct NodeVariable {
     name: String,
     ty: Type,
     init: Option<LocalInit>,
+    is_mut: bool,
 }
 
 #[allow(dead_code)]
 impl NodeVariable {
-    pub fn new(name: &str, ty: &Type, init: Option<LocalInit>) -> Self {
-        Self::new_unwrap(name.to_string(), ty.clone(), init)
+    pub fn new(name: &str, ty: &Type, init: Option<LocalInit>, is_mut: bool) -> Self {
+        Self::new_unwrap(name.to_string(), ty.clone(), init, is_mut)
     }
-    pub fn new_unwrap(name: String, ty: Type, init: Option<LocalInit>) -> Self {
-        NodeVariable { name, ty, init }
+    pub fn new_unwrap(name: String, ty: Type, init: Option<LocalInit>, is_mut: bool) -> Self {
+        NodeVariable {
+            name,
+            ty,
+            init,
+            is_mut,
+        }
+    }
+    pub fn is_mut(&self) -> bool {
+        self.is_mut
     }
     pub fn init_to_string(&self) -> Option<String> {
         match &self.init {
@@ -140,7 +149,7 @@ impl Display for NodeVariable {
         let ty = self.get_ty();
         let ty_token = quote! {#ty}.to_string();
 
-        f.write_fmt(format_args!("#[rust] {}: {}", self.name, ty_token))
+        f.write_fmt(format_args!("{}: {}", self.name, ty_token))
     }
 }
 

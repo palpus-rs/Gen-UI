@@ -83,6 +83,18 @@ impl PropRole {
             _ => None,
         }
     }
+    pub fn is_normal_and_get(&self) -> Option<(&str, &MakepadPropValue)> {
+        match self {
+            PropRole::Normal(k, v) => Some((k, v)),
+            _ => None,
+        }
+    }
+    pub fn to_normal_value(self) -> MakepadPropValue {
+        match self {
+            PropRole::Normal(_, v) => v,
+            _ => panic!("Only PropRole::Normal can use this function!"),
+        }
+    }
     pub fn is_special(&self) -> bool {
         matches!(self, PropRole::Special(_))
     }
@@ -114,15 +126,29 @@ impl PropRole {
 ///     - Value: style property value
 ///
 /// match tag_name and use special handle functions
-impl TryFrom<(&str, (&PropsKey, &Value))> for PropRole {
+impl TryFrom<(&str, (&str, &Value))> for PropRole {
     type Error = Errors;
 
-    fn try_from(value: (&str, (&PropsKey, &Value))) -> Result<Self, Self::Error> {
+    fn try_from(value: (&str, (&str, &Value))) -> Result<Self, Self::Error> {
         // let k = value.0.name();
         match value.0 {
             "Window" => window(value.1 .0, value.1 .1),
             "Button" => button(value.1 .0, value.1 .1),
             "View" => view(value.1 .0, value.1 .1),
+            _ => Err(Errors::UnMatchedWidget),
+        }
+    }
+}
+
+impl TryFrom<(&str, (&PropsKey, &Value))> for PropRole {
+    type Error = Errors;
+
+    fn try_from(value: (&str, (&PropsKey, &Value))) -> Result<Self, Self::Error> {
+        let k = value.1 .0.name();
+        match value.0 {
+            "Window" => window(k, value.1 .1),
+            "Button" => button(k, value.1 .1),
+            "View" => view(k, value.1 .1),
             _ => Err(Errors::UnMatchedWidget),
         }
     }

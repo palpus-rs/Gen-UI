@@ -11,18 +11,7 @@ use crate::{
 
 use super::Widgets;
 
-pub fn window(k: &PropsKey, v: &Value) -> Result<PropRole, Errors> {
-    // let ty = k.ty();
-    let prop_name = k.name();
-    normal_window(prop_name, v)
-    // match ty {
-    //     parser::PropertyKeyType::Normal => normal_window(prop_name, v),
-    //     parser::PropertyKeyType::Bind => ,
-    //     parser::PropertyKeyType::Function => todo!(),
-    // }
-}
-
-fn normal_window(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
+pub fn window(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     match prop_name {
         // match to `draw_bg`
         "background_color" => prop_bg(v),
