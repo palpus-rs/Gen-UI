@@ -4,7 +4,7 @@ use quote::quote;
 
 use crate::{
     targets::makepad::{value::MakepadPropValue, BindProp, PropRole},
-    utils::alphabetic::camel_to_snake,
+    utils::alphabetic::{camel_to_snake, remove_expr_link},
 };
 
 use super::NodeVariable;
@@ -31,7 +31,7 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
 
                     instance_fields.push((
                         var.get_name(),
-                        var.get_ty_str(),
+                        remove_expr_link(var.get_ty_str()),
                         r.to_normal_value(),
                         tag,
                         prop,

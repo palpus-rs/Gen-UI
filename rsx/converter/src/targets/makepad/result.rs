@@ -116,37 +116,24 @@ mod test_result_mk {
         // align: 0.5 0.5;
         let input = r#"
         <template>
-            <window id="ui"  :flow="f1" :clip_x="cx" :cursor="c_hand">
-                <view id="body" :height="view_hei" :line_spacing="line_s"/>
+            <window id="ui" background_visible="true">
+                <view id="body" :spacing="view_space" :flow="view_flow" />
             </window>
         </template>
         
         <script>
-        // use rsx::on_start_up;
-        // let win_pad = "10 16";
-        // let win_pad = 17; 
-        // let win_pad = String::from("89 16"); ✅
-        // let win_pad:String = String::from("32 24"); ✅
-        // let win_pad:&str = "10 16"; ✅ 👍
-        // let win_pad = "10 16"; ✅ 👍
-        // let win_pad:String = String::from("10 16");
-        let mut view_hei:String = String::from("Fit");
-        // let view_width = "All";
-        let f1 = "Down";
-        // let line_s:f64 = 20;
-        // let cx = true;
-        // let c_hand:String = "Hand".to_string();
-
-        // on_start_up(||{
-        //     view_hei = "Fill";
-        // })
+        let view_space = 20.0;
+        let mut view_flow = String::from("Down");
+       
         </script>
         
         <style>
         #ui{
-            width: All;
+            width: Fill;
+            height: Fill;
+            background_color: #96CEF8;
             #body{
-               
+               align: 0.5;
             }
         }
         </style>

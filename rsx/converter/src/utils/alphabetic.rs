@@ -45,3 +45,13 @@ pub fn camel_to_snake(s: &str) -> String {
 
     result
 }
+
+/// remove the link from type expr
+/// find :: and remove the following
+/// String::from => String
+/// Type::link => Type
+pub fn remove_expr_link(expr: String) -> String {
+    expr.contains("::")
+        .then(|| expr.split("::").next().unwrap().to_string())
+        .unwrap_or(expr)
+}

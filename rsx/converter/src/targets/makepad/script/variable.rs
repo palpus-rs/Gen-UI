@@ -4,7 +4,8 @@ use parser::Value;
 use quote::{quote, ToTokens};
 use syn::{
     parse::{self, ParseStream},
-    LocalInit, Type,
+    spanned::Spanned,
+    Error, LocalInit, Type,
 };
 
 use crate::{
@@ -166,23 +167,35 @@ impl From<NodeVariable> for Value {
         let init = quote! {#expr};
         let ty = value.ty.to_token_stream().to_string();
         match ty.as_str() {
-            "String" | "String :: from" => {
-                // dbg!(&init);
-                syn::parse2::<syn::LitStr>(init.clone())
-                    .and_then(|s| Ok(Value::String(s.value())))
-                    .unwrap_or_else(|_| {
-                        dbg!(&init);
-                        let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
-                        let s = match &expr.args[0] {
-                            syn::Expr::Lit(syn::ExprLit {
-                                lit: syn::Lit::Str(lit_str),
-                                ..
-                            }) => lit_str.value(),
-                            _ => panic!("expected string literal"),
-                        };
-                        Value::String(s)
+            "String" | "String :: from" => syn::parse2::<syn::LitStr>(init.clone())
+                .and_then(|s| Ok(Value::String(s.value())))
+                .or_else(|_| {
+                    syn::parse2::<syn::ExprCall>(init.clone()).and_then(|expr| {
+                        if let syn::Expr::Lit(syn::ExprLit {
+                            lit: syn::Lit::Str(lit_str),
+                            ..
+                        }) = &expr.args[0]
+                        {
+                            Ok(Value::String(lit_str.value()))
+                        } else {
+                            Err(syn::Error::new(expr.span(), "expected string literal"))
+                        }
                     })
-            }
+                })
+                .or_else(|_| {
+                    syn::parse2::<syn::ExprMethodCall>(init).and_then(|expr| {
+                        if let syn::Expr::Lit(syn::ExprLit {
+                            lit: syn::Lit::Str(lit_str),
+                            ..
+                        }) = &*expr.receiver
+                        {
+                            Ok(Value::String(lit_str.value()))
+                        } else {
+                            Err(syn::Error::new(expr.span(), "expected string literal"))
+                        }
+                    })
+                })
+                .unwrap(),
             "& str" => {
                 panic!("immutable var type:&str , expected String")
             }

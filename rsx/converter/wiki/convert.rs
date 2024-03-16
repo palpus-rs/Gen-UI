@@ -2,7 +2,7 @@ use makepad_widgets::*;
 live_design! {
 import makepad_widgets::base::*;
 import makepad_widgets::theme_desktop_dark::*;
-App = {{App}}{ ui: <Window>{width: All,  body = <View>{} } }
+App = {{App}}{ ui: <Window>{show_bg: true, draw_bg: { color: #96CEF8 }, width: Fill, height: Fill,  body = <View>{align: {x: 0.5, y: 0.5}, } } }
 }
 #[derive(Live, LiveHook)]
 pub struct App {
@@ -13,28 +13,28 @@ pub struct App {
 }
 #[derive(Debug, Clone, Default)]
 struct Instance {
-    pub view_hei: String,
+    pub view_flow: String,
 }
 impl Instance {
     pub fn new() -> Self {
         Self {
-            view_hei: String::from("Fit"),
+            view_flow: String::from("Down"),
         }
     }
-    pub fn get_view_hei(&self) -> &String {
-        &self.view_hei
+    pub fn get_view_flow(&self) -> &String {
+        &self.view_flow
     }
-    pub fn set_view_hei(&mut self, view_hei: String) {
-        self.view_hei = view_hei
+    pub fn set_view_flow(&mut self, view_flow: String) {
+        self.view_flow = view_flow
     }
 }
 impl App {
     fn start_up(&mut self, cx: &mut Cx) {
         self.instance = Instance::new();
         let view_body = self.ui.view(id!(body));
-        view_body.apply_over_and_redraw(cx, live! { height: Fit });
-        let window_ui = self.ui.window(id!(ui));
-        window_ui.apply_over_and_redraw(cx, live! { flow: Down });
+        view_body.apply_over_and_redraw(cx, live! { flow: Down });
+        let view_body = self.ui.view(id!(body));
+        view_body.apply_over_and_redraw(cx, live! { spacing: 20 });
     }
 }
 impl LiveRegister for App {
