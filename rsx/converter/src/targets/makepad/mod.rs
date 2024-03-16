@@ -8,17 +8,17 @@ pub mod value;
 mod widget;
 
 pub use prop::*;
-use quote::{quote, ToTokens};
+
 pub use script::*;
 pub use style::*;
-use syn::{parse_quote, token::Mut, Local, LocalInit, Stmt, Type};
+use syn::Local;
 pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
 use parser::{ASTNodes, PropsKey, Style, Tag, Value, HOLDER_END};
 
-use crate::{error::Errors, traits::Visitor, utils::alphabetic::uppercase_title};
+use crate::{error::Errors, utils::alphabetic::uppercase_title};
 
 use self::{
     constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
@@ -27,8 +27,8 @@ use self::{
 };
 
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
-/// `(tag_name, (prop_name, prop_value))`
-pub type BindProp = (String, (String, MakepadPropValue));
+/// `(tag_name, id, (prop_name, prop_value))`
+pub type BindProp = (String, String, (String, MakepadPropValue));
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct MakepadConverter<'a> {
     root: Cow<'a, str>,
@@ -97,7 +97,6 @@ impl<'a> MakepadConverter<'a> {
                 // new a thread to handle style
                 let script = handle_script(ast, false);
                 converter.script.replace(script);
-
                 let style = handle_style(ast);
                 converter.style = style;
                 // let template = handle_template(&converter, ast);
@@ -146,20 +145,23 @@ impl<'a> Display for MakepadConverter<'a> {
         let _ = f.write_fmt(format_args!("{}\n{}\n{}", BIND_IMPORT, t_fmt, HOLDER_END));
 
         // dbg!(self.script.as_ref().unwrap().to_string());
-
+        let mut start_up = false;
         match &self.widget_ref {
             Some(name) => {
                 let _ = f.write_fmt(format_args!(
-                    "\n#[derive(Live, LiveHook)]\npub struct App {{ #[live] {}: WidgetRef",
+                    "\n#[derive(Live, LiveHook)]\npub struct App {{ #[live] {}: WidgetRef, #[rust] instance: Instance,}}\n",
                     name,
                 ));
                 if self.has_script() {
+                    start_up = true;
                     let sc = self.script.as_ref().unwrap();
                     match sc.get_makepad_vars() {
                         Some(vars) => {
                             // get bind props
                             let binds = self.bind_props.as_ref().unwrap();
-                            let bind_instance = vars_to_string(vars, binds);
+                            let name = self.root.to_string();
+                            let bind_instance = vars_to_string(name, vars, binds);
+                            let _ = f.write_str(&bind_instance);
                         }
                         None => {}
                     }
@@ -178,10 +180,14 @@ impl<'a> Display for MakepadConverter<'a> {
             "\nimpl LiveRegister for {} {{ {} }}",
             self.root, LIVE_REGISTER
         ));
-        f.write_fmt(format_args!(
-            "impl AppMain for {} {{ {} {{ {} }} }}",
-            self.root, APP_MAIN, "self.ui.handle_event(cx, event, &mut Scope::empty());"
-        ))
+        let _ = f.write_fmt(format_args!(
+            "impl AppMain for {} {{ {} {{ ",
+            self.root, APP_MAIN
+        ));
+        if start_up {
+            let _ = f.write_str("match event{ Event::Startup => self.start_up(cx), _ =>() }");
+        }
+        f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }")
         // f.write_str(&t)
     }
 }
@@ -309,6 +315,7 @@ fn handle_tag(
     let mut binds = Vec::new();
     // check props
     if t.has_props() {
+        let mut has_bind = false;
         for prop in t.get_props().unwrap() {
             match PropRole::try_from((tag_name.as_str(), prop)) {
                 Ok(p) => {
@@ -316,41 +323,8 @@ fn handle_tag(
                     match p {
                         PropRole::Normal(_, _) => tag_model.push_prop(p),
                         PropRole::Bind(k, v) => {
-                            binds.push((tag_name.clone(), (k, v)));
-                            // if is bind need to get real value from script
-                            // should use k as the judge condition
-                            // match script.unwrap().get_makepad_vars() {
-                            //     Some(sc) => {
-                            //         let var_name = v.get_bind_key().to_string();
-                            //         let mut is_found = false;
-                            //         for var in sc {
-                            //             if var.get_name() == &var_name {
-                            //                 // do value check for data
-                            //                 // dbg!(&v);
-                            //                 let _ = v.set_bind_value(
-                            //                     PropRole::try_from((&tag_name, (&k, var)))
-                            //                         .unwrap()
-                            //                         .into(),
-                            //                 );
-                            //                 // dbg!(&p);
-                            //                 tag_model.push_prop(PropRole::bind(&k, v));
-                            //                 is_found = true;
-                            //                 break;
-                            //             }
-                            //         }
-                            //         if !is_found {
-                            //             panic!(
-                            //                 "Could not find bind key:{} in script",
-                            //                 &var_name
-                            //             );
-                            //         }
-                            //     }
-                            //     None => panic!(
-                            //         "prop: {} is a bind prop, which lack of binding value",
-                            //         k
-                            //     ),
-                            // }
-                            // dbg!(&tag_model);
+                            has_bind = true;
+                            binds.push((tag_name.clone(), String::new(), (k, v)));
                         }
                         PropRole::Function => todo!("function do!!!!"),
                         PropRole::Context(c) => {
@@ -361,6 +335,17 @@ fn handle_tag(
                 }
                 Err(e) => panic!("{}", e.to_string()),
             };
+        }
+        // add special for all binds
+        if has_bind {
+            match tag_model.get_special() {
+                Some(special) => {
+                    let _ = binds
+                        .iter_mut()
+                        .for_each(|bind| bind.1 = special.to_string());
+                }
+                None => panic!("the widget which has binds need to add special id"),
+            }
         }
     }
     // have styles

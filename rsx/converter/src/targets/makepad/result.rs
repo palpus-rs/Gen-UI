@@ -131,7 +131,7 @@ mod test_result_mk {
         // let win_pad = "10 16"; ✅ 👍
         // let win_pad:String = String::from("10 16");
         let mut view_hei:String = "Fit";
-        let view_width = "All";
+        // let view_width = "All";
         // let f1 = "Down";
         // let line_s:f64 = 20;
         // let cx = true;
@@ -157,13 +157,10 @@ mod test_result_mk {
         // let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
         // dbg!(result.to_string());
-        //"/Users/user/Downloads/beyond-framework-main/rsx/converter/wiki/convert.rs"
+        //"/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs"
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f = File::create(
-            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
-        )
-        .unwrap();
+        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }
