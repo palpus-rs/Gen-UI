@@ -5,13 +5,6 @@ use crate::{error::Errors, targets::makepad::value::MakepadPropValue};
 use super::PropRole;
 
 pub fn prop_flow(value: &Value) -> Result<PropRole, Errors> {
-    // match value.is_unknown_and_get() {
-    //     Some(s) => match (s).try_into() {
-    //         Ok(flow) => Ok(PropRole::normal("flow", MakepadPropValue::Flow(flow))),
-    //         Err(e) => Err(e),
-    //     },
-    //     None => Err(Errors::KnownPropType),
-    // }
     let handle = |s: &String| {
         s.try_into()
             .map(|flow| PropRole::normal("flow", MakepadPropValue::Flow(flow)))

@@ -91,7 +91,7 @@ fn ty_bool() -> Type {
 }
 
 fn ty_int() -> Type {
-    generate_ty("int")
+    generate_ty("usize")
 }
 
 /// generate syn::Type for dyn type

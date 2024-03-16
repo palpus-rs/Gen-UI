@@ -17,18 +17,29 @@ use super::PropRole;
 ///                 return mix(color1, color2, self.pos.y);
 ///             }`
 pub fn prop_bg(value: &Value) -> Result<PropRole, Errors> {
-    match value.is_unknown_and_get() {
-        Some(s) => match s.try_into() {
-            Ok(color) => Ok(PropRole::normal("draw_bg", MakepadPropValue::Color(color))),
-            Err(e) => Err(e),
-        },
-        None => {
-            todo!("color bind and function")
-            // match value.is_bind_and_get(){
-            //     Some(b) => Ok(PropRole::bind("draw_bg", MakepadPropValue::Bind(Box::new(x)))),
-            //     None => todo!(),
-            // }
-        },
+    let handle = |s: &String| {
+        s.try_into()
+            .map(|draw_bg| PropRole::normal("draw_bg", MakepadPropValue::Color(draw_bg)))
+            .map_err(Into::into)
+    };
+
+    if let Some(s) = value.is_unknown_and_get() {
+        handle(s)
+    } else if let Some(b) = value.is_bind_and_get() {
+        Ok(PropRole::bind(
+            "draw_bg",
+            MakepadPropValue::bind_without_value(b),
+        ))
+    } else {
+        value
+            .is_string_and_get()
+            .map(|s| handle(s))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to draw_bg",
+                    value
+                )))
+            })
     }
 }
 
@@ -36,14 +47,28 @@ pub fn prop_bg(value: &Value) -> Result<PropRole, Errors> {
 /// - true
 /// - false
 pub fn prop_show_bg(value: &Value) -> Result<PropRole, Errors> {
-    match value.is_unknown_and_get() {
-        Some(s) => match s.parse::<bool>() {
+    if let Some(s) = value.is_unknown_and_get() {
+        match s.parse::<bool>() {
             Ok(b) => Ok(PropRole::normal("show_bg", MakepadPropValue::Bool(b))),
             Err(_) => Err(Errors::PropConvertFail(format!(
-                "{} can not convert to bool",
+                "{} can not convert to show_bg",
                 s
             ))),
-        },
-        None => Err(Errors::KnownPropType),
+        }
+    } else if let Some(b) = value.is_bind_and_get() {
+        Ok(PropRole::bind(
+            "show_bg",
+            MakepadPropValue::bind_without_value(b),
+        ))
+    } else {
+        value
+            .is_bool_and_get()
+            .map(|b| Ok(PropRole::normal("show_bg", MakepadPropValue::Bool(b))))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to show_bg",
+                    value
+                )))
+            })
     }
 }

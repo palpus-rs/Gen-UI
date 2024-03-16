@@ -32,6 +32,11 @@ pub fn prop_padding(value: &Value) -> Result<PropRole, Errors> {
         value
             .is_string_and_get()
             .map(|s| handle(s))
-            .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to padding",
+                    value
+                )))
+            })
     }
 }
