@@ -17,6 +17,8 @@ use crate::{
 };
 use syn::parse::Parse;
 
+use super::handler::{handle_bool, handle_f64, handle_isize, handle_string, handle_usize};
+
 /// 编译时设置（转换时设置）（init）
 /// ## 优点
 ///
@@ -167,77 +169,14 @@ impl From<NodeVariable> for Value {
         let init = quote! {#expr};
         let ty = value.ty.to_token_stream().to_string();
         match ty.as_str() {
-            "String" | "String :: from" => syn::parse2::<syn::LitStr>(init.clone())
-                .and_then(|s| Ok(Value::String(s.value())))
-                .or_else(|_| {
-                    syn::parse2::<syn::ExprCall>(init.clone()).and_then(|expr| {
-                        if let syn::Expr::Lit(syn::ExprLit {
-                            lit: syn::Lit::Str(lit_str),
-                            ..
-                        }) = &expr.args[0]
-                        {
-                            Ok(Value::String(lit_str.value()))
-                        } else {
-                            Err(syn::Error::new(expr.span(), "expected string literal"))
-                        }
-                    })
-                })
-                .or_else(|_| {
-                    syn::parse2::<syn::ExprMethodCall>(init).and_then(|expr| {
-                        if let syn::Expr::Lit(syn::ExprLit {
-                            lit: syn::Lit::Str(lit_str),
-                            ..
-                        }) = &*expr.receiver
-                        {
-                            Ok(Value::String(lit_str.value()))
-                        } else {
-                            Err(syn::Error::new(expr.span(), "expected string literal"))
-                        }
-                    })
-                })
-                .unwrap(),
+            "String" | "String :: from" => handle_string(init).unwrap(),
             "& str" => {
                 panic!("immutable var type:&str , expected String")
             }
-            "f64" => syn::parse2::<syn::LitFloat>(init.clone())
-                .and_then(|f| Ok(Value::Double(f.base10_parse::<f64>().unwrap())))
-                .or_else(|_| {
-                    syn::parse2::<syn::Lit>(init.clone()).and_then(|f| match f {
-                        syn::Lit::Int(i) => Ok(Value::Double(i.base10_parse::<f64>().unwrap())),
-                        syn::Lit::Float(f) => Ok(Value::Double(f.base10_parse::<f64>().unwrap())),
-                        _ => panic!("expected float literal"),
-                    })
-                })
-                .unwrap_or_else(|_| {
-                    let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
-                    let f = match &expr.args[0] {
-                        syn::Expr::Lit(syn::ExprLit {
-                            lit: syn::Lit::Float(lit_float),
-                            ..
-                        }) => lit_float.base10_parse::<f64>().unwrap(),
-                        _ => panic!("expected float literal"),
-                    };
-                    Value::Double(f)
-                }),
-            "bool" => syn::parse2::<syn::LitBool>(init.clone())
-                .and_then(|b| Ok(Value::Bool(b.value())))
-                .or_else(|_| {
-                    syn::parse2::<syn::Lit>(init.clone()).and_then(|b| match b {
-                        syn::Lit::Bool(lb) => Ok(Value::Bool(lb.value())),
-                        _ => panic!("expected bool literal"),
-                    })
-                })
-                .unwrap_or_else(|_| {
-                    let expr = syn::parse2::<syn::ExprCall>(init).unwrap();
-                    let b = match &expr.args[0] {
-                        syn::Expr::Lit(syn::ExprLit {
-                            lit: syn::Lit::Bool(lit_bool),
-                            ..
-                        }) => lit_bool.value(),
-                        _ => panic!("expected bool literal"),
-                    };
-                    Value::Bool(b)
-                }),
+            "f64" => handle_f64(init).unwrap(),
+            "bool" => handle_bool(init).unwrap(),
+            "usize" | "u8" | "u16" | "u32" | "u64" | "int" => handle_usize(init).unwrap(),
+            "isize" | "i8" | "i16" | "i32" | "i64" => handle_isize(init).unwrap(),
             _ => panic!("unexpected value type: {:?}", &ty),
         }
     }

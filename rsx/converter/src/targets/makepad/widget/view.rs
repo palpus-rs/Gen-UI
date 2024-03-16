@@ -28,6 +28,6 @@ pub fn view(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         _ => prop_link(prop_name, v)
             .or_else(|_| prop_walk(prop_name, v))
             .or_else(|_| prop_layout(prop_name, v))
-            .or_else(|_| Err(Errors::unmatched_prop(prop_name, Widgets::View))),
+            .map_err(Into::into),
     }
 }

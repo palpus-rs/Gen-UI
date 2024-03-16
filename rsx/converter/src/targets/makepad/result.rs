@@ -102,18 +102,6 @@ mod test_result_mk {
 
     #[test]
     fn test_simple() {
-        //let no_init:&str;
-        // let win_pad = "10";
-        // let click_me = ||->(){
-        //     println!("clicked!");
-        // };
-        //:margin="view_margin"
-        // background_visible: true;
-        // width: Fill;
-        // height: Fill;
-        // background_color: #7733ff;
-        // spacing: 20;
-        // align: 0.5 0.5;
         let input = r#"
         <template>
             <window id="ui" background_visible="true">
@@ -122,7 +110,7 @@ mod test_result_mk {
         </template>
         
         <script>
-        let view_space = 20.0;
+        let view_space:f64 = 20;
         let mut view_flow = String::from("Down");
        
         </script>

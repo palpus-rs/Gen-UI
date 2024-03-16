@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use quote::quote;
-
 use crate::{
     targets::makepad::{value::MakepadPropValue, BindProp, PropRole},
     utils::alphabetic::{camel_to_snake, remove_expr_link},
@@ -9,11 +7,17 @@ use crate::{
 
 use super::NodeVariable;
 
-/// Convert Vec<NodeVariable> to String
-/// - mut ->  
+/// Convert `Vec<NodeVariable>` to String
+/// - mut
 /// - immut
-/// ## mut
-/// see `build_instance()`
+/// the design is following:
+/// 1. mut variable: if use mut var to bind widget's props,
+/// it will generate into Instance struct and auto generate get and set function for each bind prop
+/// and a new function for Instance to make sure consistence
+/// 2. immutable variable: if use immut var to bind widget's props means
+/// this bind just happen in Event::Startup
+///
+/// RSX will generate a start_up function for bind props
 pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindProp>) -> String {
     let mut instance_fields = Vec::new();
     let mut normal_fields = Vec::new();

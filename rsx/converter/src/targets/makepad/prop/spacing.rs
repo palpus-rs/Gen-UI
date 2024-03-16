@@ -27,6 +27,11 @@ pub fn prop_common_spacing(ty: &str, value: &Value) -> Result<PropRole, Errors> 
         value
             .is_double_and_get()
             .map(|f| Ok(PropRole::normal(ty, MakepadPropValue::F64(f))))
-            .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to {}",
+                    value, ty
+                )))
+            })
     }
 }

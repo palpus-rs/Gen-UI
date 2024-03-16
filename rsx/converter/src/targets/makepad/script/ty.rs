@@ -37,13 +37,13 @@ fn handle_expr(expr: Expr, init: Option<LocalInit>) -> (Type, Option<LocalInit>)
         syn::Expr::Let(_) => todo!(),
         syn::Expr::Lit(lit) => match lit.lit {
             syn::Lit::Str(_) => (ty_string(), init),
-            syn::Lit::ByteStr(bs) => todo!(),
-            syn::Lit::Byte(b) => todo!(),
-            syn::Lit::Char(c) => todo!(),
-            syn::Lit::Int(i) => todo!(),
+            syn::Lit::ByteStr(_) => todo!(),
+            syn::Lit::Byte(_) => todo!(),
+            syn::Lit::Char(_) => todo!(),
+            syn::Lit::Int(_) => (ty_int(), init),
             syn::Lit::Float(_) => (ty_float(), init),
             syn::Lit::Bool(_) => (ty_bool(), init),
-            syn::Lit::Verbatim(v) => todo!(),
+            syn::Lit::Verbatim(_) => todo!(),
             _ => panic!("unexpect lit type in this script"),
         },
         syn::Expr::Loop(_) => todo!(),
@@ -90,6 +90,10 @@ fn ty_bool() -> Type {
     generate_ty("bool")
 }
 
+fn ty_int() -> Type {
+    generate_ty("int")
+}
+
 /// generate syn::Type for dyn type
 fn generate_ty(ty: &str) -> Type {
     let seg = PathSegment {
@@ -105,29 +109,4 @@ fn generate_ty(ty: &str) -> Type {
             segments: p,
         },
     })
-}
-
-#[cfg(test)]
-mod test_ty {
-    use core::str;
-
-    use quote::quote;
-    use syn::{Expr, Type};
-
-    #[test]
-    fn str() {
-        // rs:93] ast = Expr::Lit {
-        //     attrs: [],
-        //     lit: Lit::Str {
-        //         token: "1",
-        //     },
-        // }
-        let str1: &str = "1";
-        let str2: String = "1".to_string();
-        let str3 = String::from("1");
-        let str4 = "1";
-        let str1_t = quote! { String };
-        let ast: Type = syn::parse2(str1_t).unwrap();
-        dbg!(ast);
-    }
 }
