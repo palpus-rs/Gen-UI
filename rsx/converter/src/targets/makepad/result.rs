@@ -130,9 +130,9 @@ mod test_result_mk {
         // let win_pad:&str = "10 16"; ✅ 👍
         // let win_pad = "10 16"; ✅ 👍
         // let win_pad:String = String::from("10 16");
-        let mut view_hei:String = "Fit";
+        let mut view_hei:String = String::from("Fit");
         // let view_width = "All";
-        // let f1 = "Down";
+        let f1 = "Down";
         // let line_s:f64 = 20;
         // let cx = true;
         // let c_hand:String = "Hand".to_string();

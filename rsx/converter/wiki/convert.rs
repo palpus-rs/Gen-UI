@@ -17,7 +17,9 @@ struct Instance {
 }
 impl Instance {
     pub fn new() -> Self {
-        Self { view_hei: Fit }
+        Self {
+            view_hei: String::from("Fit"),
+        }
     }
     pub fn get_view_hei(&self) -> &String {
         &self.view_hei
@@ -31,6 +33,8 @@ impl App {
         self.instance = Instance::new();
         let view_body = self.ui.view(id!(body));
         view_body.apply_over_and_redraw(cx, live! { height: Fit });
+        let window_ui = self.ui.window(id!(ui));
+        window_ui.apply_over_and_redraw(cx, live! { flow: Down });
     }
 }
 impl LiveRegister for App {
@@ -47,3 +51,4 @@ impl AppMain for App {
         self.ui.handle_event(cx, event, &mut Scope::empty());
     }
 }
+app_main!(App);

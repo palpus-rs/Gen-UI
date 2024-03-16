@@ -187,8 +187,8 @@ impl<'a> Display for MakepadConverter<'a> {
         if start_up {
             let _ = f.write_str("match event{ Event::Startup => self.start_up(cx), _ =>() }");
         }
-        f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }")
-        // f.write_str(&t)
+        let _ = f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }");
+        f.write_fmt(format_args!("app_main!({});", self.root))
     }
 }
 

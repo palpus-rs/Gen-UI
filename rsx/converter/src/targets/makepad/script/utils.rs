@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use quote::quote;
+
 use crate::{
     targets::makepad::{value::MakepadPropValue, BindProp, PropRole},
     utils::alphabetic::camel_to_snake,
@@ -14,16 +16,18 @@ use super::NodeVariable;
 /// see `build_instance()`
 pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindProp>) -> String {
     let mut instance_fields = Vec::new();
+    let mut normal_fields = Vec::new();
     for (tag, id, (prop, value)) in binds {
         match vars
             .iter()
             .find(|var| var.get_name() == value.get_bind_key())
         {
             Some(var) => {
+                let init = var.init_to_string().unwrap();
+                let r = PropRole::try_from((tag, (prop, *var))).unwrap();
                 if var.is_mut() {
                     // convert to PropRole and it will get prop_name and prop_value
                     // then get the init value
-                    let r = PropRole::try_from((tag, (prop, *var))).unwrap();
 
                     instance_fields.push((
                         var.get_name(),
@@ -32,7 +36,10 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
                         tag,
                         prop,
                         id,
+                        init,
                     ))
+                } else {
+                    normal_fields.push((r.to_normal_value(), tag, prop, id))
                 }
             }
             None => {}
@@ -40,11 +47,43 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
     }
 
     let (instance, mut_setup) = build_instance(instance_fields);
+    let immut_setup = build_normal(normal_fields);
 
     format!(
-        "{}\nimpl {}{{ fn start_up(&mut self, cx: &mut Cx){{ self.instance = Instance::new(); {} }} }}",
-        instance, name, mut_setup
+        "{}\nimpl {}{{ fn start_up(&mut self, cx: &mut Cx){{ self.instance = Instance::new(); {} {} }} }}",
+        instance, name, mut_setup, immut_setup
     )
+}
+
+/// build normal is aim to add other immuatable properties into start_up function
+fn build_normal(fields: Vec<(MakepadPropValue, &String, &String, &String)>) -> String {
+    build_setup(fields)
+}
+
+fn build_setup(fields: Vec<(MakepadPropValue, &String, &String, &String)>) -> String {
+    let mut setup = HashMap::new();
+    for (value, tag, prop, id) in fields {
+        let tag = camel_to_snake(tag);
+        setup
+            .entry((tag, id))
+            .or_insert_with(Vec::new)
+            .push((prop, value));
+    }
+
+    setup
+        .into_iter()
+        .map(|((tag, id), v)| {
+            let props = v
+                .into_iter()
+                .map(|(prop, value)| format!("{}: {}", prop, value))
+                .collect::<Vec<String>>()
+                .join(", ");
+            format!(
+                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+                tag, id, tag, id, tag, id, props
+            )
+        })
+        .collect::<String>()
 }
 
 /// build an Instance Struct
@@ -80,16 +119,25 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
 /// }
 /// ```
 fn build_instance(
-    fields: Vec<(&str, String, MakepadPropValue, &String, &String, &String)>,
+    fields: Vec<(
+        &str,
+        String,
+        MakepadPropValue,
+        &String,
+        &String,
+        &String,
+        String,
+    )>,
 ) -> (String, String) {
     let mut fields_strs = Vec::new();
     let mut init_strs = Vec::new();
     let mut impls = Vec::new();
     let mut setup = HashMap::new();
-    for (name, ty, value, tag, prop, id) in fields {
+    for (name, ty, value, tag, prop, id, init) in fields {
         let tag = camel_to_snake(tag);
         fields_strs.push(format!("pub {}: {}", name, ty));
-        init_strs.push(format!("{}: {}", name, value.to_string()));
+        // init_strs.push(format!("{}: {}", name, value.to_string()));
+        init_strs.push(format!("{}: {}", name, init));
         impls.push(format!(
             "pub fn get_{}(&self) -> &{} {{ &self.{} }}",
             name, ty, name

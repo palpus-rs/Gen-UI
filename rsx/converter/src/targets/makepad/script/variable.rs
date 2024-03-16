@@ -68,6 +68,9 @@ impl NodeVariable {
     pub fn get_ty_str(&self) -> String {
         self.ty.to_token_stream().to_string()
     }
+    pub fn get_init(&self) -> Option<&LocalInit> {
+        self.init.as_ref()
+    }
     // ensure init exist (Some)
     // pub fn init_to_mk_value(&self) -> Result<MakepadPropValue, syn::Error> {
     //     match &self.init {
