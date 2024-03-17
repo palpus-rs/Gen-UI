@@ -23,21 +23,10 @@ pub use vecs::DVec2;
 use super::PropRole;
 use std::fmt::Display;
 
-// pub enum MakepadPropValueType {
-//     String(String),
-//     F64(f64),
-//     Size(Size),
-//     Color,
-//     Bool,
-//     Margin,
-//     Padding,
-//     Align,
-//     Flow,
-//     DVec2,
-//     Optimize,
-//     EventOrder,
-//     Cursor,
-// }
+pub trait MapValue {
+    /// map struct to makepad value code
+    fn map_value_code(&self) -> String;
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum MakepadPropValue {
@@ -77,12 +66,54 @@ impl MakepadPropValue {
             panic!("not a bind MakepadPropValue");
         }
     }
-    // pub fn rs_to_mkpad_value(ty: &str, input: syn::parse::ParseStream) -> Result<Self, syn::Error> {
-    //     let value = match ty {
-
-    //     };
-    //     Ok(value)
-    // }
+    pub fn to_makepad_ty(&self) -> String {
+        match self {
+            MakepadPropValue::String(_) => "String".to_string(),
+            MakepadPropValue::F64(_) => "f64".to_string(),
+            MakepadPropValue::Size(_) => "Size".to_string(),
+            MakepadPropValue::Color(_) => "String".to_string(),
+            MakepadPropValue::Bool(_) => "bool".to_string(),
+            MakepadPropValue::Margin(_) => "Margin".to_string(),
+            MakepadPropValue::Padding(_) => "Padding".to_string(),
+            MakepadPropValue::Align(_) => "Align".to_string(),
+            MakepadPropValue::Flow(_) => "Flow".to_string(),
+            MakepadPropValue::DVec2(_) => "DVec2".to_string(),
+            MakepadPropValue::Optimize(_) => "Optimize".to_string(),
+            MakepadPropValue::EventOrder(_) => "EventOrder".to_string(),
+            MakepadPropValue::Cursor(_) => "MouseCursor".to_string(),
+            MakepadPropValue::Bind(_, v) => {
+                if let Some(v) = v {
+                    v.to_makepad_ty()
+                } else {
+                    panic!("bind value is none")
+                }
+            }
+        }
+    }
+    pub fn to_value_code(&self) -> String {
+        match self {
+            MakepadPropValue::String(s) => format!("String::from({})", s),
+            MakepadPropValue::F64(f) => f.to_string(),
+            MakepadPropValue::Size(s) => s.map_value_code(),
+            MakepadPropValue::Color(c) => c.map_value_code(),
+            MakepadPropValue::Bool(b) => b.to_string(),
+            MakepadPropValue::Margin(m) => m.map_value_code(),
+            MakepadPropValue::Padding(p) => p.map_value_code(),
+            MakepadPropValue::Align(a) => a.map_value_code(),
+            MakepadPropValue::Flow(f) => f.map_value_code(),
+            MakepadPropValue::DVec2(v) => v.map_value_code(),
+            MakepadPropValue::Optimize(o) => o.map_value_code(),
+            MakepadPropValue::EventOrder(eo) => eo.map_value_code(),
+            MakepadPropValue::Cursor(c) => c.map_value_code(),
+            MakepadPropValue::Bind(_, v) => {
+                if let Some(v) = v {
+                    v.to_value_code()
+                } else {
+                    panic!("bind value is none")
+                }
+            }
+        }
+    }
 }
 
 // impl Parse for MakepadPropValue {

@@ -4,6 +4,8 @@ use syn::parse::Parse;
 
 use crate::{error::Errors, str_to_string_try_from};
 
+use super::MapValue;
+
 /// # Makepad Padding
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 /// Represents padding values for an widget.
@@ -16,6 +18,15 @@ pub struct Padding {
     pub right: f64,
     /// The bottom padding value.
     pub bottom: f64,
+}
+
+impl MapValue for Padding {
+    fn map_value_code(&self) -> String {
+        format!(
+            "Padding {{ top: {}, right: {}, bottom: {}, left: {} }}",
+            self.top, self.right, self.bottom, self.left
+        )
+    }
 }
 
 impl Padding {

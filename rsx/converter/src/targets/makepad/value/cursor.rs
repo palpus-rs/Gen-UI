@@ -12,6 +12,8 @@ use crate::{
     },
 };
 
+use super::MapValue;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Cursor {
     Hidden,
@@ -39,6 +41,37 @@ pub enum Cursor {
     NwseResize,
     ColResize,
     RowResize,
+}
+
+impl MapValue for Cursor {
+    fn map_value_code(&self) -> String {
+        match self {
+            Cursor::Hidden => "Cursor::Hidden".to_string(),
+            Cursor::Default => "Cursor::Default".to_string(),
+            Cursor::Crosshair => "Cursor::Crosshair".to_string(),
+            Cursor::Hand => "Cursor::Hand".to_string(),
+            Cursor::Arrow => "Cursor::Arrow".to_string(),
+            Cursor::Move => "Cursor::Move".to_string(),
+            Cursor::Text => "Cursor::Text".to_string(),
+            Cursor::Wait => "Cursor::Wait".to_string(),
+            Cursor::Help => "Cursor::Help".to_string(),
+            Cursor::NotAllowed => "Cursor::NotAllowed".to_string(),
+            Cursor::NResize => "Cursor::NResize".to_string(),
+            Cursor::NeResize => "Cursor::NeResize".to_string(),
+            Cursor::EResize => "Cursor::EResize".to_string(),
+            Cursor::SeResize => "Cursor::SeResize".to_string(),
+            Cursor::SResize => "Cursor::SResize".to_string(),
+            Cursor::SwResize => "Cursor::SwResize".to_string(),
+            Cursor::WResize => "Cursor::WResize".to_string(),
+            Cursor::NwResize => "Cursor::NwResize".to_string(),
+            Cursor::NsResize => "Cursor::NsResize".to_string(),
+            Cursor::NeswResize => "Cursor::NeswResize".to_string(),
+            Cursor::EwResize => "Cursor::EwResize".to_string(),
+            Cursor::NwseResize => "Cursor::NwseResize".to_string(),
+            Cursor::ColResize => "Cursor::ColResize".to_string(),
+            Cursor::RowResize => "Cursor::RowResize".to_string(),
+        }
+    }
 }
 
 impl TryFrom<&str> for Cursor {

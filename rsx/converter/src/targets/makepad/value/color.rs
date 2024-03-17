@@ -5,10 +5,21 @@ use syn::parse::Parse;
 
 use crate::{error::Errors, str_to_string_try_from};
 
+use super::MapValue;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Color {
     Normal(String),
     LinearGradient,
+}
+
+impl MapValue for Color {
+    fn map_value_code(&self) -> String {
+        match self {
+            Color::Normal(n) => n.to_string(),
+            Color::LinearGradient => todo!(),
+        }
+    }
 }
 
 impl TryFrom<&str> for Color {

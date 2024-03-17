@@ -4,6 +4,8 @@ use syn::parse::Parse;
 
 use crate::{error::Errors, str_to_string_try_from};
 
+use super::MapValue;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct DVec2 {
     pub x: f64,
@@ -16,6 +18,12 @@ impl DVec2 {
     }
     pub fn single(f: f64) -> DVec2 {
         DVec2::new(f, f)
+    }
+}
+
+impl MapValue for DVec2 {
+    fn map_value_code(&self) -> String {
+        format!("DVec2 {{ x:{}, y:{} }}", self.x, self.y)
     }
 }
 

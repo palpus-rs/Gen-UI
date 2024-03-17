@@ -8,9 +8,19 @@ use crate::{
     targets::makepad::constants::{DRAWLIST, NONE, TEXTURE},
 };
 
+use super::MapValue;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Optimize {
     View(ViewOptimize),
+}
+
+impl MapValue for Optimize {
+    fn map_value_code(&self) -> String {
+        match self {
+            Optimize::View(v) => v.map_value_code(),
+        }
+    }
 }
 
 impl Optimize {
@@ -33,6 +43,16 @@ pub enum ViewOptimize {
     None,
     DrawList,
     Texture,
+}
+
+impl MapValue for ViewOptimize {
+    fn map_value_code(&self) -> String {
+        match self {
+            ViewOptimize::None => "ViewOptimize::None".to_string(),
+            ViewOptimize::DrawList => "ViewOptimize::DrawList".to_string(),
+            ViewOptimize::Texture => "ViewOptimize::Texture".to_string(),
+        }
+    }
 }
 
 impl TryFrom<&str> for ViewOptimize {

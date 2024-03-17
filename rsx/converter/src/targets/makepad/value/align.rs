@@ -4,6 +4,8 @@ use syn::parse::Parse;
 
 use crate::error::Errors;
 
+use super::MapValue;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum DAlign {
     X,
@@ -15,6 +17,12 @@ pub enum DAlign {
 pub struct Align {
     pub x: f64,
     pub y: f64,
+}
+
+impl MapValue for Align {
+    fn map_value_code(&self) -> String {
+        format!("Align {{ x:{}, y:{} }}", self.x, self.y)
+    }
 }
 
 impl Align {

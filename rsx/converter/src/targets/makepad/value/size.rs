@@ -8,6 +8,8 @@ use crate::{
     targets::makepad::constants::{ALL, FILL, FIT},
 };
 
+use super::MapValue;
+
 /// # Makepad Size
 /// the size of props
 /// - height
@@ -21,6 +23,17 @@ pub enum Size {
     /// Fit content
     Fit,
     All,
+}
+
+impl MapValue for Size {
+    fn map_value_code(&self) -> String {
+        match self {
+            Size::Fill => format!("Size::Fill"),
+            Size::Fixed(f) => format!("Size::Fixed({f})"),
+            Size::Fit => format!("Size::Fit"),
+            Size::All => format!("Size::All"),
+        }
+    }
 }
 
 impl TryFrom<&str> for Size {
@@ -65,18 +78,6 @@ impl Parse for Size {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let ident = input.parse::<syn::Ident>()?;
         let value = ident.to_string();
-        // match value.parse::<f64>() {
-        //     Ok(number) => Ok(Size::Fixed(number)),
-        //     Err(_) => match value.as_str() {
-        //         FILL => Ok(Size::Fill),
-        //         ALL => Ok(Size::All),
-        //         FIT => Ok(Size::Fit),
-        //         _ => Err(syn::Error::new(
-        //             ident.span(),
-        //             format!("value: {} can not convert to Makepad Size", value),
-        //         )),
-        //     },
-        // }
         match value.as_str().try_into() {
             Ok(v) => Ok(v),
             Err(_) => Err(syn::Error::new(

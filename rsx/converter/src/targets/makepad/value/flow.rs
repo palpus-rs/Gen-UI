@@ -8,6 +8,8 @@ use crate::{
     targets::makepad::constants::{DOWN, OVERLAY, RIGHT, RIGHTWRAP},
 };
 
+use super::MapValue;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Flow {
     /// default
@@ -15,6 +17,17 @@ pub enum Flow {
     Down,
     Overlay,
     RightWrap,
+}
+
+impl MapValue for Flow {
+    fn map_value_code(&self) -> String {
+        match self {
+            Flow::Right => "Flow::Right".to_string(),
+            Flow::Down => "Flow::Down".to_string(),
+            Flow::Overlay => "Flow::Overlay".to_string(),
+            Flow::RightWrap => "Flow::RightWrap".to_string(),
+        }
+    }
 }
 
 impl TryFrom<&str> for Flow {

@@ -4,12 +4,23 @@ use syn::parse::Parse;
 
 use crate::{error::Errors, str_to_string_try_from};
 
+use super::MapValue;
+
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Margin {
     pub left: f64,
     pub top: f64,
     pub right: f64,
     pub bottom: f64,
+}
+
+impl MapValue for Margin {
+    fn map_value_code(&self) -> String {
+        format!(
+            "Margin {{ top: {}, right: {}, bottom: {}, left: {} }}",
+            self.top, self.right, self.bottom, self.left
+        )
+    }
 }
 
 impl Margin {

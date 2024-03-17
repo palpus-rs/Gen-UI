@@ -77,3 +77,11 @@ pub fn prop_layout(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         _ => Err(Errors::UnAcceptConvertRange),
     }
 }
+
+pub fn prop_draw_text(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
+    match prop_name {
+        // from text_style
+        // "wrap" => prop_text_wrap(v),
+        _ => Err(Errors::UnAcceptConvertRange),
+    }
+}

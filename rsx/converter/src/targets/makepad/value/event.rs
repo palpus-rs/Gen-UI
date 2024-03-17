@@ -8,12 +8,23 @@ use crate::{
     targets::makepad::constants::{DOWN, UP},
 };
 
+use super::MapValue;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum EventOrder {
     Down,
     /// default
     Up,
     // List(Vec<>),
+}
+
+impl MapValue for EventOrder {
+    fn map_value_code(&self) -> String {
+        match self {
+            EventOrder::Down => "EventOrder::Down".to_string(),
+            EventOrder::Up => "EventOrder::Up".to_string(),
+        }
+    }
 }
 
 impl TryFrom<&str> for EventOrder {
