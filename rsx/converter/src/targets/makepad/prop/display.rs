@@ -18,14 +18,26 @@ pub fn prop_block_signal_event(value: &Value) -> Result<PropRole, Errors> {
 
 pub fn prop_common_bool(k: &str, value: &Value) -> Result<PropRole, Errors> {
     // Unknown -> String
-    match value.is_unknown_and_get() {
-        Some(s) => match s.parse::<bool>() {
+
+    if let Some(s) = value.is_unknown_and_get() {
+        match s.parse::<bool>() {
             Ok(b) => Ok(PropRole::normal(k, MakepadPropValue::Bool(b))),
             Err(_) => Err(Errors::PropConvertFail(format!(
                 "{} can not convert to {}",
-                value, k
+                s, k
             ))),
-        },
-        None => Err(Errors::KnownPropType),
+        }
+    } else if let Some(b) = value.is_bind_and_get() {
+        Ok(PropRole::bind(k, MakepadPropValue::bind_without_value(b)))
+    } else {
+        value
+            .is_bool_and_get()
+            .map(|b| Ok(PropRole::normal(k, MakepadPropValue::Bool(b))))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to {}",
+                    value, k
+                )))
+            })
     }
 }

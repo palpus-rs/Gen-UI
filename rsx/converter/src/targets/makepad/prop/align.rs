@@ -22,11 +22,29 @@ pub fn prop_align_y(value: &Value) -> Result<PropRole, Errors> {
 }
 
 pub fn prop_common_align(value: &Value, d_align: DAlign) -> Result<PropRole, Errors> {
-    match value.is_unknown_and_get() {
-        Some(s) => match (s, d_align).try_into() {
-            Ok(align) => Ok(PropRole::normal("align", MakepadPropValue::Align(align))),
-            Err(e) => Err(e),
-        },
-        None => Err(Errors::KnownPropType),
+    let handle = |s, d_align| {
+        (s, d_align)
+            .try_into()
+            .map(|align| PropRole::normal("align", MakepadPropValue::Align(align)))
+            .map_err(Into::into)
+    };
+
+    if let Some(s) = value.is_unknown_and_get() {
+        handle(s, d_align)
+    } else if let Some(b) = value.is_bind_and_get() {
+        Ok(PropRole::bind(
+            "align",
+            MakepadPropValue::bind_without_value(b),
+        ))
+    } else {
+        value
+            .is_string_and_get()
+            .map(|s| handle(s, d_align))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert Align",
+                    value
+                )))
+            })
     }
 }

@@ -21,6 +21,11 @@ pub fn prop_flow(value: &Value) -> Result<PropRole, Errors> {
         value
             .is_string_and_get()
             .map(|flow| handle(flow))
-            .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert Flow",
+                    value
+                )))
+            })
     }
 }

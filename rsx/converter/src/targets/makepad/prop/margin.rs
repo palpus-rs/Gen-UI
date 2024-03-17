@@ -32,6 +32,11 @@ pub fn prop_margin(value: &Value) -> Result<PropRole, Errors> {
                     .map(|margin| PropRole::normal("margin", MakepadPropValue::Margin(margin)))
                     .map_err(Into::into)
             })
-            .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert Margin",
+                    value
+                )))
+            })
     }
 }

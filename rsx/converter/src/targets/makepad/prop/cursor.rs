@@ -5,13 +5,6 @@ use crate::{error::Errors, targets::makepad::value::MakepadPropValue};
 use super::PropRole;
 
 pub fn prop_cursor(value: &Value) -> Result<PropRole, Errors> {
-    // match value.is_unknown_and_get() {
-    //     Some(s) => match s.try_into() {
-    //         Ok(cursor) => Ok(PropRole::normal("cursor", MakepadPropValue::Cursor(cursor))),
-    //         Err(e) => Err(e),
-    //     },
-    //     None => Err(Errors::KnownPropType),
-    // }
     let handle = |s: &String| {
         s.try_into()
             .map(|cursor| PropRole::normal("cursor", MakepadPropValue::Cursor(cursor)))
@@ -29,6 +22,11 @@ pub fn prop_cursor(value: &Value) -> Result<PropRole, Errors> {
         value
             .is_string_and_get()
             .map(|s| handle(s))
-            .unwrap_or_else(|| Err(Errors::UnAcceptConvertRange))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to Cursor",
+                    value
+                )))
+            })
     }
 }
