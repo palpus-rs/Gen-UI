@@ -126,6 +126,19 @@ impl MakepadModel {
     pub fn has_children(&self) -> bool {
         self.children.is_some()
     }
+    fn props_to_string(&self) -> String {
+        match self.tag.as_str() {
+            "Window" | "View" => self
+                .props
+                .as_ref()
+                .unwrap()
+                .into_iter()
+                .map(|prop| prop.to_string())
+                .collect::<String>(),
+            "Label" => String::new(),
+            _ => panic!("Invalid widget"),
+        }
+    }
 }
 
 impl Display for MakepadModel {
@@ -145,6 +158,7 @@ impl Display for MakepadModel {
         // add tag
         let _ = f.write_fmt(format_args!("<{}>{}", &self.tag, LEFT_HOLDER));
         // add props
+
         if self.has_props() {
             let props = self
                 .props
@@ -153,6 +167,7 @@ impl Display for MakepadModel {
                 .into_iter()
                 .map(|prop| prop.to_string())
                 .collect::<String>();
+
             let _ = f.write_str(&props);
         }
         // add children

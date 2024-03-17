@@ -1,5 +1,4 @@
 use parser::Value;
-use syn::token::In;
 
 use crate::{error::Errors, targets::makepad::value::MakepadPropValue};
 

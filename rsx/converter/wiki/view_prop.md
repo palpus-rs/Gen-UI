@@ -43,3 +43,10 @@
 }
 </style>
 ```
+
+# label Props
+
+```css
+.ui {
+}
+```

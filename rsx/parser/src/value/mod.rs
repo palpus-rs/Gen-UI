@@ -83,6 +83,12 @@ impl Value {
             _ => None,
         }
     }
+    pub fn is_float_and_get(&self) -> Option<f32> {
+        match self {
+            Value::Float(f) => Some(*f),
+            _ => None,
+        }
+    }
     pub fn is_bool_and_get(&self) -> Option<bool> {
         match self {
             Value::Bool(b) => Some(*b),

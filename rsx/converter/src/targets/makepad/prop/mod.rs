@@ -15,6 +15,7 @@ mod scroll;
 mod size;
 mod spacing;
 mod text;
+mod wrap;
 
 #[allow(unused)]
 pub use align::*;
@@ -43,6 +44,7 @@ pub use size::*;
 #[allow(unused)]
 pub use spacing::*;
 pub use text::*;
+pub use wrap::*;
 
 use std::fmt::Display;
 
@@ -51,7 +53,7 @@ use parser::{PropertyKeyType, PropsKey, Value};
 use crate::error::Errors;
 
 use super::{
-    button,
+    button, label,
     value::{MakepadPropValue, Size},
     view, window, NodeVariable,
 };
@@ -135,6 +137,7 @@ impl TryFrom<(&str, (&str, &Value))> for PropRole {
             "Window" => window(value.1 .0, value.1 .1),
             "Button" => button(value.1 .0, value.1 .1),
             "View" => view(value.1 .0, value.1 .1),
+            "Label" => label(value.1 .0, value.1 .1),
             _ => Err(Errors::UnMatchedWidget),
         }
     }
@@ -149,6 +152,7 @@ impl TryFrom<(&str, (&PropsKey, &Value))> for PropRole {
             "Window" => window(k, value.1 .1),
             "Button" => button(k, value.1 .1),
             "View" => view(k, value.1 .1),
+            "Label" => label(k, value.1 .1),
             _ => Err(Errors::UnMatchedWidget),
         }
     }

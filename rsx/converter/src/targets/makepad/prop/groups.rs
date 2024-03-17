@@ -10,6 +10,7 @@ use super::{
     margin::prop_margin,
     padding::prop_padding,
     position::prop_abs_prop,
+    prop_curve, prop_font, prop_font_size, prop_height_factor, prop_text_wrap, prop_top_drop,
     scroll::prop_scroll,
     size::{prop_height, prop_width},
     spacing::{prop_line_spacing, prop_spacing},
@@ -77,11 +78,17 @@ pub fn prop_layout(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
         _ => Err(Errors::UnAcceptConvertRange),
     }
 }
-
+/// Convert properties to Makepad::TextStyle
 pub fn prop_draw_text(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     match prop_name {
         // from text_style
-        // "wrap" => prop_text_wrap(v),
+        "wrap" => prop_text_wrap(v),
+        "font" => prop_font(v),
+        "font_size" => prop_font_size(v),
+        "curve" => prop_curve(v),
+        "line_spacing" => prop_line_spacing(v),
+        "top_drop" => prop_top_drop(v),
+        "height_factor" => prop_height_factor(v),
         _ => Err(Errors::UnAcceptConvertRange),
     }
 }

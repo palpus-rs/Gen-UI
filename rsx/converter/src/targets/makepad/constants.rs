@@ -38,6 +38,10 @@ pub const EW_RESIZE: &str = "EwResize";
 pub const NWSE_RESIZE: &str = "NwseResize";
 pub const COL_RESIZE: &str = "ColResize";
 pub const ROW_RESIZE: &str = "RowResize";
+//-------------[for Makepad::TextWrap]----------------------------------
+pub const ELLIPSIS: &str = "Ellipsis";
+pub const WORD: &str = "Word";
+pub const LINE: &str = "Line";
 //-------------[for Makepad live design macro bind]--------------------------------
 pub const BIND_IMPORT:&str = "use makepad_widgets::*;\nlive_design!{\nimport makepad_widgets::base::*;\nimport makepad_widgets::theme_desktop_dark::*;";
 pub const LIVE_REGISTER: &str =

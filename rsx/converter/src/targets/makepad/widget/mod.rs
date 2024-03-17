@@ -7,6 +7,7 @@ mod window;
 use std::fmt::Display;
 
 pub use button::button;
+pub use label::label;
 pub use view::view;
 pub use window::window;
 
@@ -16,6 +17,7 @@ pub enum Widgets {
     Window,
     View,
     Button,
+    Label,
 }
 
 impl Display for Widgets {
@@ -24,6 +26,7 @@ impl Display for Widgets {
             Widgets::Window => "Window",
             Widgets::View => "View",
             Widgets::Button => "Button",
+            Widgets::Label => "Label",
         })
     }
 }

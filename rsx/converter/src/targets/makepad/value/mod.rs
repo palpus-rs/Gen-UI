@@ -8,6 +8,7 @@ mod optimize;
 mod padding;
 mod size;
 mod vecs;
+mod wrap;
 
 pub use align::{Align, DAlign};
 pub use color::Color;
@@ -19,6 +20,7 @@ pub use optimize::{Optimize, ViewOptimize};
 pub use padding::Padding;
 pub use size::Size;
 pub use vecs::DVec2;
+pub use wrap::TextWrap;
 
 use super::PropRole;
 use std::fmt::Display;
@@ -32,6 +34,7 @@ pub trait MapValue {
 pub enum MakepadPropValue {
     String(String),
     F64(f64),
+    F32(f32),
     Size(Size),
     Color(Color),
     Bool(bool),
@@ -43,6 +46,8 @@ pub enum MakepadPropValue {
     Optimize(Optimize),
     EventOrder(EventOrder),
     Cursor(Cursor),
+    TextWrap(TextWrap),
+    Font(String),
     Bind(String, Option<Box<MakepadPropValue>>),
 }
 
@@ -70,6 +75,7 @@ impl MakepadPropValue {
         match self {
             MakepadPropValue::String(_) => "String".to_string(),
             MakepadPropValue::F64(_) => "f64".to_string(),
+            MakepadPropValue::F32(_) => "f32".to_string(),
             MakepadPropValue::Size(_) => "Size".to_string(),
             MakepadPropValue::Color(_) => "String".to_string(),
             MakepadPropValue::Bool(_) => "bool".to_string(),
@@ -81,6 +87,8 @@ impl MakepadPropValue {
             MakepadPropValue::Optimize(_) => "Optimize".to_string(),
             MakepadPropValue::EventOrder(_) => "EventOrder".to_string(),
             MakepadPropValue::Cursor(_) => "MouseCursor".to_string(),
+            MakepadPropValue::TextWrap(_) => "TextWrap".to_string(),
+            MakepadPropValue::Font(_) => panic!("v1.0 Font can not be bind"),
             MakepadPropValue::Bind(_, v) => {
                 if let Some(v) = v {
                     v.to_makepad_ty()
@@ -94,6 +102,7 @@ impl MakepadPropValue {
         match self {
             MakepadPropValue::String(s) => format!("String::from({})", s),
             MakepadPropValue::F64(f) => f.to_string(),
+            MakepadPropValue::F32(f) => f.to_string(),
             MakepadPropValue::Size(s) => s.map_value_code(),
             MakepadPropValue::Color(c) => c.map_value_code(),
             MakepadPropValue::Bool(b) => b.to_string(),
@@ -105,6 +114,8 @@ impl MakepadPropValue {
             MakepadPropValue::Optimize(o) => o.map_value_code(),
             MakepadPropValue::EventOrder(eo) => eo.map_value_code(),
             MakepadPropValue::Cursor(c) => c.map_value_code(),
+            MakepadPropValue::TextWrap(tw) => tw.map_value_code(),
+            MakepadPropValue::Font(_) => panic!("v1.0 Font can not be bind"),
             MakepadPropValue::Bind(_, v) => {
                 if let Some(v) = v {
                     v.to_value_code()
@@ -138,6 +149,7 @@ impl Display for MakepadPropValue {
             MakepadPropValue::Margin(m) => f.write_str(m.to_string().as_str()),
             MakepadPropValue::Padding(p) => f.write_str(p.to_string().as_str()),
             MakepadPropValue::F64(num) => f.write_str(num.to_string().as_str()),
+            MakepadPropValue::F32(num) => f.write_str(num.to_string().as_str()),
             MakepadPropValue::Align(a) => f.write_str(a.to_string().as_str()),
             MakepadPropValue::Flow(flow) => f.write_str(flow.to_string().as_str()),
             MakepadPropValue::DVec2(dv) => f.write_str(dv.to_string().as_str()),
@@ -145,6 +157,8 @@ impl Display for MakepadPropValue {
             MakepadPropValue::EventOrder(eo) => f.write_str(eo.to_string().as_str()),
             MakepadPropValue::Cursor(c) => f.write_str(c.to_string().as_str()),
             MakepadPropValue::Bind(_k, v) => f.write_str(v.clone().unwrap().to_string().as_str()),
+            MakepadPropValue::TextWrap(tw) => f.write_str(tw.to_string().as_str()),
+            MakepadPropValue::Font(font) => f.write_fmt(format_args!("{{path: dep({})}}", font)),
         }
     }
 }

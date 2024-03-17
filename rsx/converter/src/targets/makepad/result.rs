@@ -105,7 +105,9 @@ mod test_result_mk {
         let input = r#"
         <template>
             <window id="ui" background_visible="true">
-                <view id="body" :spacing="view_space" :flow="view_flow" />
+                <view id="body" :spacing="view_space" :flow="view_flow">
+                    <label id="t_label"/>
+                </view>
             </window>
         </template>
         
@@ -123,6 +125,11 @@ mod test_result_mk {
             background_color: #96CEF8;
             #body{
                align: 0.5;
+               #t_label{
+                    text: "Hello, World!";
+                    font_size: 20;
+                    brightness: 0.4;
+               }
             }
         }
         </style>
