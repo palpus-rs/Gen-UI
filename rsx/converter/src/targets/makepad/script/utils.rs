@@ -30,7 +30,6 @@ pub fn fns_to_string(
     actions: &Vec<BindAction>,
     binds: Option<&Vec<BindProp>>,
 ) -> String {
-    dbg!(&binds);
     let mut action_fn = HashMap::new();
     for (tag, id, (action, action_var)) in actions {
         // if mfn.get_name() == actions.
@@ -50,11 +49,12 @@ pub fn fns_to_string(
     let action_str = action_fn
         .into_iter()
         .map(|((tag, id), v)| {
+            let tag = camel_to_snake(tag);
             let mut action_str = Vec::new();
             for (action, code) in v {
                 action_str.push(format!(
                     "if self.ui.{}(id!({})).{}(&actions) {{ {} }}",
-                    tag, id, action, code
+                    &tag, id, action, code
                 ));
             }
             action_str.join("\n")

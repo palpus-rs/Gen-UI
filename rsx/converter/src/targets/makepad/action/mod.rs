@@ -3,10 +3,15 @@ mod clicked;
 pub use clicked::*;
 use parser::{common::parse_string, Value};
 use quote::{format_ident, quote};
-use std::fmt::Display;
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+};
 
 use proc_macro2::TokenStream;
 use syn::{parse_str, visit_mut::VisitMut, Expr, ExprField, ExprPath, Pat};
+
+use crate::utils::alphabetic::camel_to_snake;
 
 use super::{build_normal, prop, BindProp, PropRole};
 
@@ -41,7 +46,7 @@ impl MakepadAction {
     //     }
     // }
 
-    pub fn to_code_string(&mut self, binds: Option<&Vec<BindProp>>) -> String {
+    pub fn to_code_string(&mut self, binds: Option<&Vec<BindProp>>) -> (String, Option<String>) {
         // is closure
         match binds {
             Some(binds) => {
@@ -51,16 +56,30 @@ impl MakepadAction {
                     .collect::<Vec<BindProp>>();
                 let mut replacer = IdentReplacer::new(targets);
                 if let Expr::Closure(c) = &mut self.value {
-                    dbg!(&c);
                     let _ = replacer.visit_expr_closure_mut(c);
-                    return quote! {#c}.to_string();
+                    // remove duplicate
+                    for item in replacer.props.values_mut() {
+                        item.sort();
+                        item.dedup();
+                    }
+                    let mut redraw_prop = replacer.props;
+                    let redraw_str = redraw_prop.into_iter().map(|((tag_name, id),prop_kvs)| {
+
+                        let prop_str = prop_kvs.into_iter().map(|(k,v)| format!("{}: (self.instance.get_{}()),",k,v)).collect::<String>();
+
+                        format!( "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+                        tag_name, id, tag_name, id, tag_name,id, prop_str
+                     )
+                    }).collect::<String>();
+
+                    return (quote! {#c}.to_string(), Some(redraw_str));
                 } else {
                     todo!("wait for impl fn")
                 };
             }
             None => {
                 let value = self.get_value();
-                quote! {#value}.to_string()
+                (quote! {#value}.to_string(), None)
             }
         }
     }
@@ -71,14 +90,13 @@ impl MakepadAction {
             res.push_str(" mut");
         }
 
-        // let p = build_normal(fields)
+        let (action_code, redaw_code) = self.to_code_string(binds);
 
-        res.push_str(&format!(
-            " {} = {}; {}();",
-            &name,
-            self.to_code_string(binds),
-            &name
-        ));
+        res.push_str(&format!(" {} = {}; {}();", &name, action_code, &name));
+
+        if redaw_code.is_some() {
+            res.push_str(&redaw_code.unwrap());
+        }
 
         res
     }
@@ -92,14 +110,14 @@ impl MakepadAction {
 struct IdentReplacer {
     target: Vec<BindProp>,
     /// this props means which bind props are being replaced and replaced value
-    props: Vec<(PropRole, String, String)>,
+    props: HashMap<(String, String), Vec<(String, String)>>,
 }
 
 impl IdentReplacer {
     pub fn new(target: Vec<BindProp>) -> IdentReplacer {
         IdentReplacer {
             target,
-            props: Vec::new(),
+            props: HashMap::new(),
         }
     }
     pub fn prop_names(&self) -> Vec<String> {
@@ -107,6 +125,13 @@ impl IdentReplacer {
             .iter()
             .map(|(_, _, (prop_name, _))| prop_name.to_string())
             .collect()
+    }
+    pub fn insert(&mut self, tag_name: &str, id: &str, prop_name: &str, prop_var_name: &str) -> () {
+        let _ = self
+            .props
+            .entry((camel_to_snake(tag_name).to_string(), id.to_string()))
+            .or_default()
+            .push((prop_name.to_string(), prop_var_name.to_string()));
     }
 }
 
@@ -130,17 +155,16 @@ impl VisitMut for IdentReplacer {
                     // }
 
                     if let Some((tag_name, id, (prop_name, prop_value))) =
-                        self.target.iter().find(|(_, _, (_, prop_value))| {
+                        self.target.clone().iter().find(|(_, _, (_, prop_value))| {
                             ident.to_string().eq(prop_value.get_bind_key())
                         })
                     {
-                        let nex_expr = syn::parse_str(&format!(
-                            "self.ui.instance.{}",
-                            prop_value.get_bind_key()
-                        ))
-                        .unwrap();
-                        *i = nex_expr;
-                        // self.props.push(PropRole::try_from((tag_name,(prop_name,Value::UnKnown()))))
+                        let new_expr =
+                            syn::parse_str(&format!("self.instance.{}", prop_value.get_bind_key()))
+                                .unwrap();
+                        *i = new_expr;
+
+                        self.insert(tag_name, id, prop_name, prop_value.get_bind_key());
                     }
                 }
             }
@@ -151,14 +175,4 @@ impl VisitMut for IdentReplacer {
     fn visit_expr_closure_mut(&mut self, i: &mut syn::ExprClosure) {
         syn::visit_mut::visit_expr_closure_mut(self, i);
     }
-    // fn visit_expr_assign_mut(&mut self, i: &mut syn::ExprAssign) {
-    //     //get right when assign
-    //     let right = *i.right;
-    // }
-
-    // fn visit_block_mut(&mut self, i: &mut syn::Block) {
-    //     i.stmts.iter_mut().for_each(|stmt|{
-
-    //     })
-    // }
 }

@@ -48,56 +48,45 @@
 
 ```css
 .ui {
-    text: "Hello, World!";
-    padding: 16;
-    align: 0.5;
-    /* all walk is supported */
-    /* draw_text */
-    font_size: 20;
-    brightness: 1.1;
-    wrap: Word;
-    curve: 0.5;
-    height_factor: 1.3;
-    line_spacing: 1.5;
-    top_drop: 0.5;
-    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
-    color: #fff;
+  text: 'Hello, World!';
+  padding: 16;
+  align: 0.5;
+  /* all walk is supported */
+  /* draw_text */
+  font_size: 20;
+  brightness: 1.1;
+  wrap: Word;
+  curve: 0.5;
+  height_factor: 1.3;
+  line_spacing: 1.5;
+  top_drop: 0.5;
+  font: 'crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf';
+  color: #fff;
 }
 ```
 
 ```
         <template>
-            <window id="ui" background_visible="true">
-                <view id="body" :spacing="view_space" :flow="view_flow">
-                    <button id="btn1" :text="btn_text" @clicked="change_text"></button>
-                    <label id="t_label" :text="label_text" :font_size="label_size" />
+            <window id="ui" >
+                <view id="body" >
+                    <button id="btn1"  @clicked="change_text"></button>
+                    <label id="t_label" :text="label_text"/>
                 </view>
             </window>
         </template>
-        
+
         <script>
-        let view_space:f64 = 20;
-        let mut view_flow = String::from("Down");
         let mut label_text = String::from("this is a Hello, World!! emoji failed");
-        let label_size = 24.0;
-        let btn_text = String::from("Click Me");
-        
-        let change_text = || {
+
+        let mut change_text = || {
             label_text = String::from("I have been clicked!");
         };
         </script>
-        
+
         <style>
         #ui{
-            width: Fill;
-            height: Fill;
-            background_color: #96CEF8;
             #body{
-               align: 0.5;
                #t_label{
-                    brightness: 1.1;
-                    color: #fff;
-                    wrap: Word;
                     font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
                }
             }

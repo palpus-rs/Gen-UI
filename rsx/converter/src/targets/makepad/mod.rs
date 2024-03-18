@@ -153,6 +153,7 @@ impl<'a> Display for MakepadConverter<'a> {
 
         // dbg!(self.script.as_ref().unwrap().to_string());
         let mut start_up = false;
+        let mut event_match = false;
         match &self.widget_ref {
             Some(name) => {
                 let _ = f.write_fmt(format_args!(
@@ -192,6 +193,7 @@ impl<'a> Display for MakepadConverter<'a> {
 
                     match m_fns {
                         Some(fns) => {
+                            event_match = true;
                             let mut fns = fns.into_iter().map(|item| item.clone()).collect();
                             let name = self.root.to_string();
                             let actions = self.bind_actions.as_ref().unwrap();
@@ -217,7 +219,10 @@ impl<'a> Display for MakepadConverter<'a> {
             self.root, APP_MAIN
         ));
         if start_up {
-            let _ = f.write_str("match event{ Event::Startup => self.start_up(cx), _ =>() }");
+            let _ = f.write_str("match event{ Event::Startup => self.start_up(cx), _ =>() };");
+        }
+        if event_match {
+            let _ = f.write_str("self.match_event(cx, event);");
         }
         let _ = f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }");
         f.write_fmt(format_args!("app_main!({});", self.root))
@@ -277,8 +282,6 @@ fn is_closure(init: Option<&LocalInit>) -> bool {
 fn handle_variable(local: &Local) -> ScriptNode {
     // get init
     let init = local.init.clone();
-    // dbg!(local);
-    // dbg!(&local);
     match &local.pat {
         syn::Pat::Type(t) => {
             // get pat
@@ -295,6 +298,9 @@ fn handle_variable(local: &Local) -> ScriptNode {
             let name = i.ident.to_string();
             let is_mut = i.mutability.is_some();
             if is_closure(init.as_ref()) {
+                if !is_mut {
+                    panic!("closure must be mutable")
+                }
                 // handle closure -> function
                 ScriptNode::Function(MakepadAction::new(&name, *init.unwrap().expr, is_mut))
             } else {
