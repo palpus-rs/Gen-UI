@@ -72,3 +72,31 @@ pub fn prop_show_bg(value: &Value) -> Result<PropRole, Errors> {
             })
     }
 }
+
+pub fn prop_color(value: &Value) -> Result<PropRole, Errors> {
+    let handle = |s: &String| {
+        (s, true)
+            .try_into()
+            .map(|draw_bg| PropRole::normal("color", MakepadPropValue::Color(draw_bg)))
+            .map_err(Into::into)
+    };
+
+    if let Some(s) = value.is_unknown_and_get() {
+        handle(s)
+    } else if let Some(b) = value.is_bind_and_get() {
+        Ok(PropRole::bind(
+            "color",
+            MakepadPropValue::bind_without_value(b),
+        ))
+    } else {
+        value
+            .is_string_and_get()
+            .map(|s| handle(s))
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to color",
+                    value
+                )))
+            })
+    }
+}

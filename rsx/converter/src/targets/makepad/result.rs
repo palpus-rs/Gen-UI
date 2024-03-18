@@ -128,7 +128,10 @@ mod test_result_mk {
                #t_label{
                     text: "Hello, World!";
                     font_size: 20;
-                    brightness: 0.4;
+                    brightness: 1.1;
+                    color: #fff;
+                    wrap: Word;
+                    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
                }
             }
         }
@@ -143,7 +146,10 @@ mod test_result_mk {
         //"/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs"
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+        let mut f = File::create(
+            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
+        )
+        .unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }

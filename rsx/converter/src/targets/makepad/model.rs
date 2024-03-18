@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::context::{LEFT_HOLDER, RIGHT_HOLDER};
 
-use super::PropRole;
+use super::{generate_label_props, PropRole};
 
 /// # The Model of Makepad
 /// Model includes all built-in widgets
@@ -135,7 +135,7 @@ impl MakepadModel {
                 .into_iter()
                 .map(|prop| prop.to_string())
                 .collect::<String>(),
-            "Label" => String::new(),
+            "Label" => generate_label_props(self.props.as_ref().unwrap()),
             _ => panic!("Invalid widget"),
         }
     }
@@ -160,13 +160,16 @@ impl Display for MakepadModel {
         // add props
 
         if self.has_props() {
-            let props = self
-                .props
-                .as_ref()
-                .unwrap()
-                .into_iter()
-                .map(|prop| prop.to_string())
-                .collect::<String>();
+            // let props = self
+            //     .props
+            //     .as_ref()
+            //     .unwrap()
+            //     .into_iter()
+            //     .map(|prop| prop.to_string())
+            //     .collect::<String>();
+
+            let props = self.props_to_string();
+            // dbg!(&props);
 
             let _ = f.write_str(&props);
         }

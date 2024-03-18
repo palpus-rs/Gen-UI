@@ -2,7 +2,7 @@ use makepad_widgets::*;
 live_design!{
 import makepad_widgets::base::*;
 import makepad_widgets::theme_desktop_dark::*;
-App = {{App}}{ ui: <Window>{show_bg: true, height: Fill, draw_bg: { color: #96CEF8 }, width: Fill,  body = <View>{align: {x: 0.5, y: 0.5},  t_label = <Label>{} } } }
+App = {{App}}{ ui: <Window>{show_bg: true, width: Fill, draw_bg: { color: #96CEF8 }, height: Fill,  body = <View>{align: {x: 0.5, y: 0.5},  t_label = <Label>{text: "Hello, World!",  draw_text: { color: #ffffff, wrap: Word, text_style: { font: {path: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf")}, font_size: 20, brightness: 1.1,  } }} } } }
 }
 #[derive(Live, LiveHook)]
 pub struct App { #[live] ui: WidgetRef, #[rust] instance: Instance,}

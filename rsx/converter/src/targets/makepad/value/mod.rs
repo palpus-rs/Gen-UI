@@ -143,7 +143,11 @@ impl Display for MakepadPropValue {
             MakepadPropValue::String(s) => f.write_str(s),
             MakepadPropValue::Size(s) => f.write_str(s.to_string().as_str()),
             MakepadPropValue::Color(c) => {
-                f.write_fmt(format_args!("{{ color: {} }}", c.to_string()))
+                if c.is_font() {
+                    f.write_str(c.to_string().as_str())
+                } else {
+                    f.write_fmt(format_args!("{{ color: {} }}", c.to_string()))
+                }
             }
             MakepadPropValue::Bool(b) => f.write_str(&b.to_string()),
             MakepadPropValue::Margin(m) => f.write_str(m.to_string().as_str()),

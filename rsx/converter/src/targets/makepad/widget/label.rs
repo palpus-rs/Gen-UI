@@ -1,5 +1,3 @@
-use std::{collections::HashMap, fmt::Display};
-
 use parser::{PropsKey, Value};
 
 use crate::{
@@ -25,33 +23,47 @@ pub fn label(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     }
 }
 
-pub fn generate_label_props(props: Vec<PropRole>) -> String {
+pub fn generate_label_props(props: &Vec<PropRole>) -> String {
     // when convert to label prop should focus on draw_text
     let mut text_style = Vec::new();
+    let mut draw_text = Vec::new();
+    let mut normal = Vec::new();
     for prop in props {
-        let (prop_name, prop_value) = prop.is_normal_and_get().unwrap();
+        let (prop_name, _) = prop.is_normal_and_get().unwrap();
 
         match prop_name {
-            "color" => todo!(),
-            "wrap" => todo!(),
-            //--- from TextStyle
-            "font" | "height_factor" | "font_size" | "curve" | "line_spacing" | "top_drop" => {
+            "text" => normal.push(prop),
+            //--- from DrawText
+            "color" | "wrap" => draw_text.push(prop),
+            //--- from DrawText::TextStyle
+            "font" | "height_factor" | "font_size" | "curve" | "line_spacing" | "top_drop"
+            | "brightness" => {
                 let _ = text_style.push(prop);
             }
             _ => todo!(),
         };
     }
 
-    if text_style.is_empty() {
-        "".to_string()
-    } else {
-        format!(
+    let mut draw_text = draw_text
+        .into_iter()
+        .map(|item| item.to_string())
+        .collect::<Vec<String>>();
+    if !text_style.is_empty() {
+        draw_text.push(format!(
             "text_style: {{ {} }}",
             text_style
                 .into_iter()
                 .map(|item| item.to_string())
-                .collect::<Vec<String>>()
-                .join(", ")
-        )
-    }
+                .collect::<String>()
+        ))
+    };
+
+    format!(
+        "{} draw_text: {{ {} }}",
+        normal
+            .into_iter()
+            .map(|item| item.to_string())
+            .collect::<String>(),
+        draw_text.join("")
+    )
 }

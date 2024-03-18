@@ -48,5 +48,19 @@
 
 ```css
 .ui {
+    text: "Hello, World!";
+    padding: 16;
+    align: 0.5;
+    /* all walk is supported */
+    /* draw_text */
+    font_size: 20;
+    brightness: 1.1;
+    wrap: Word;
+    curve: 0.5;
+    height_factor: 1.3;
+    line_spacing: 1.5;
+    top_drop: 0.5;
+    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
+    color: #fff;
 }
 ```

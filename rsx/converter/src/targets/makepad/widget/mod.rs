@@ -7,7 +7,7 @@ mod window;
 use std::fmt::Display;
 
 pub use button::button;
-pub use label::label;
+pub use label::{generate_label_props, label};
 pub use view::view;
 pub use window::window;
 
