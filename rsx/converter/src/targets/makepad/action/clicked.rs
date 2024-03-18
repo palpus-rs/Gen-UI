@@ -6,7 +6,6 @@ use crate::{
 };
 
 pub fn action_clicked(value: &Value) -> Result<PropRole, Errors> {
-    dbg!(value);
     match value.is_fn_and_get() {
         Some(f) => {
             let name = f.get_name();

@@ -107,7 +107,7 @@ mod test_result_mk {
             <window id="ui" >
                 <view id="body" >
                     <button id="btn1"  @clicked="change_text"></button>
-                    <label id="t_label" />
+                    <label id="t_label" :text="label_text"/>
                 </view>
             </window>
         </template>
@@ -117,6 +117,7 @@ mod test_result_mk {
         
         let change_text = || {
             label_text = String::from("I have been clicked!");
+            let a = label_text;
         };
         </script>
         
@@ -135,14 +136,11 @@ mod test_result_mk {
         let result = MakepadConverter::convert(&ast, "App");
         // let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
-        dbg!(result.to_string());
+        // dbg!(result.to_string());
         //"/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs"
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        // let mut f = File::create(
-        //     "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
-        // )
-        // .unwrap();
-        // let _ = f.write(result.to_string().as_bytes());
+        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+        let _ = f.write(result.to_string().as_bytes());
     }
 }

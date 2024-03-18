@@ -189,12 +189,15 @@ impl<'a> Display for MakepadConverter<'a> {
                         None => {}
                     }
                     // dbg!(&m_fns);
+
                     match m_fns {
                         Some(fns) => {
+                            let mut fns = fns.into_iter().map(|item| item.clone()).collect();
                             let name = self.root.to_string();
                             let actions = self.bind_actions.as_ref().unwrap();
                             let binds = self.bind_props.as_ref();
-                            let _ = f.write_str(fns_to_string(name, fns, actions, binds).as_str());
+                            let _ =
+                                f.write_str(fns_to_string(name, &mut fns, actions, binds).as_str());
                         }
                         None => {}
                     }
@@ -290,9 +293,10 @@ fn handle_variable(local: &Local) -> ScriptNode {
         }
         syn::Pat::Ident(i) => {
             let name = i.ident.to_string();
+            let is_mut = i.mutability.is_some();
             if is_closure(init.as_ref()) {
                 // handle closure -> function
-                ScriptNode::Function(MakepadAction::new(&name, *init.unwrap().expr))
+                ScriptNode::Function(MakepadAction::new(&name, *init.unwrap().expr, is_mut))
             } else {
                 let is_mut = i.mutability.is_some();
                 let (ty, init) = parse_init_type(init);

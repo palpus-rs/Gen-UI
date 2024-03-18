@@ -26,24 +26,42 @@ use super::NodeVariable;
 /// ```
 pub fn fns_to_string(
     name: String,
-    fns: Vec<&MakepadAction>,
+    fns: &mut Vec<MakepadAction>,
     actions: &Vec<BindAction>,
     binds: Option<&Vec<BindProp>>,
 ) -> String {
-    // dbg!()
-    let mut action_str = Vec::new();
+    dbg!(&binds);
+    let mut action_fn = HashMap::new();
     for (tag, id, (action, action_var)) in actions {
         // if mfn.get_name() == actions.
-        dbg!(action_var);
-        match fns.iter().find(|f| f.get_name() == action_var) {
+        match fns.iter_mut().find(|f| f.get_name() == action_var) {
             Some(f) => {
-                let _ = action_str.push(f.to_code_string(binds));
+                // let _ = action_str.push();
+
+                // let setup = bind_normal();
+                action_fn
+                    .entry((tag, id))
+                    .or_insert_with(Vec::new)
+                    .push((action, format!("{} {}", f.to_code(binds), "")));
             }
             None => {}
         }
     }
+    let action_str = action_fn
+        .into_iter()
+        .map(|((tag, id), v)| {
+            let mut action_str = Vec::new();
+            for (action, code) in v {
+                action_str.push(format!(
+                    "if self.ui.{}(id!({})).{}(&actions) {{ {} }}",
+                    tag, id, action, code
+                ));
+            }
+            action_str.join("\n")
+        })
+        .collect::<String>();
 
-    format!("impl MatchEvent for {} {{ fn handle_actions(&mut self, cx: &mut Cx, actions:&Actions){{ {} }} }}", name,action_str.join("\n"))
+    format!("impl MatchEvent for {} {{ fn handle_actions(&mut self, cx: &mut Cx, actions:&Actions){{ {} }} }}", name, action_str)
 }
 
 /// Convert `Vec<NodeVariable>` to String
@@ -101,7 +119,8 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
 }
 
 /// build normal is aim to add other immuatable properties into start_up function
-fn build_normal(fields: Vec<(PropRole, &String, &String)>) -> String {
+/// `(value, tag, id)`
+pub fn build_normal(fields: Vec<(PropRole, &String, &String)>) -> String {
     build_setup(fields)
 }
 

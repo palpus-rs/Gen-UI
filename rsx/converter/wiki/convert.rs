@@ -2,7 +2,7 @@ use makepad_widgets::*;
 live_design! {
 import makepad_widgets::base::*;
 import makepad_widgets::theme_desktop_dark::*;
-App = {{App}}{ ui: <Window>{show_bg: true, draw_bg: { color: #96CEF8 }, width: Fill, height: Fill,  body = <View>{align: {x: 0.5, y: 0.5},  btn1 = <Button>{} t_label = <Label>{ draw_text: { color: #ffffff, wrap: Word, text_style: { font: {path: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf")}, brightness: 1.1,  } }} } } }
+App = {{App}}{ ui: <Window>{ body = <View>{ btn1 = <Button>{} t_label = <Label>{ draw_text: { text_style: { font: {path: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf")},  } }} } } }
 }
 #[derive(Live, LiveHook)]
 pub struct App {
@@ -13,32 +13,42 @@ pub struct App {
 }
 #[derive(Debug, Clone, Default)]
 struct Instance {
-    pub view_flow: Flow,
+    pub label_text: String,
 }
 impl Instance {
     pub fn new() -> Self {
         Self {
-            view_flow: Flow::Down,
+            label_text: String::from("this is a Hello, World!! emoji failed"),
         }
     }
-    pub fn get_view_flow(&self) -> &Flow {
-        &self.view_flow
+    pub fn get_label_text(&self) -> &String {
+        &self.label_text
     }
-    pub fn set_view_flow(&mut self, view_flow: Flow) {
-        self.view_flow = view_flow
+    pub fn set_label_text(&mut self, label_text: String) {
+        self.label_text = label_text
     }
 }
 impl App {
     fn start_up(&mut self, cx: &mut Cx) {
         self.instance = Instance::new();
-        let view_body = self.ui.view(id!(body));
-        view_body.apply_over_and_redraw(cx, live! { flow: Down,  });
         let label_t_label = self.ui.label(id!(t_label));
-        label_t_label.apply_over_and_redraw(cx, live!{ text: "this is a Hello, World!!😇",  draw_text: { text_style: { font_size: 24,  } } });
-        let view_body = self.ui.view(id!(body));
-        view_body.apply_over_and_redraw(cx, live! { spacing: 20,  });
-        let button_btn1 = self.ui.button(id!(btn1));
-        button_btn1.apply_over_and_redraw(cx, live! { text: "Click Me",  });
+        label_t_label.apply_over_and_redraw(
+            cx,
+            live! { text: "this is a Hello, World!! emoji failed",  draw_text: {  } },
+        );
+    }
+}
+impl MatchEvent for App {
+    fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
+        if self.ui.Button(id!(btn1)).clicked(&actions) {
+            let change_text = || {
+                let label_t_label = self.ui.label(id!(t_label));
+                self.ui.instance.label_text =
+                    label_t_label.apply_over_and_redraw(cx, String::from("I have been clicked!"));
+                let a = self.ui.instance.label_text;
+            };
+            change_text();
+        }
     }
 }
 impl LiveRegister for App {
