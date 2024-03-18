@@ -197,6 +197,17 @@ pub fn models_to_string(models: Vec<MakepadModel>) -> String {
         .collect::<String>()
 }
 
+pub fn props_to_string(tag: &str, props: &Vec<PropRole>) -> String {
+    match tag {
+        "Window" | "View" => props
+            .into_iter()
+            .map(|prop| prop.to_string())
+            .collect::<String>(),
+        "Label" => generate_label_props(props),
+        _ => panic!("Invalid widget"),
+    }
+}
+
 #[cfg(test)]
 mod test_mk_model {
     use crate::targets::makepad::{

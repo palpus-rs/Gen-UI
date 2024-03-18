@@ -33,6 +33,7 @@ pub trait MapValue {
 #[derive(Debug, Clone, PartialEq)]
 pub enum MakepadPropValue {
     String(String),
+    StrVec(String),
     F64(f64),
     F32(f32),
     Size(Size),
@@ -74,6 +75,7 @@ impl MakepadPropValue {
     pub fn to_makepad_ty(&self) -> String {
         match self {
             MakepadPropValue::String(_) => "String".to_string(),
+            MakepadPropValue::StrVec(_) => "String".to_string(),
             MakepadPropValue::F64(_) => "f64".to_string(),
             MakepadPropValue::F32(_) => "f32".to_string(),
             MakepadPropValue::Size(_) => "Size".to_string(),
@@ -100,7 +102,8 @@ impl MakepadPropValue {
     }
     pub fn to_value_code(&self) -> String {
         match self {
-            MakepadPropValue::String(s) => format!("String::from({})", s),
+            MakepadPropValue::String(s) => format!("String::from(\"{}\")", s),
+            MakepadPropValue::StrVec(s) => format!("String::from(\"{}\")", s),
             MakepadPropValue::F64(f) => f.to_string(),
             MakepadPropValue::F32(f) => f.to_string(),
             MakepadPropValue::Size(s) => s.map_value_code(),
@@ -140,7 +143,8 @@ impl MakepadPropValue {
 impl Display for MakepadPropValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MakepadPropValue::String(s) => f.write_str(s),
+            MakepadPropValue::String(s) => f.write_fmt(format_args!("\"{}\"", s)),
+            MakepadPropValue::StrVec(s) => f.write_str(s),
             MakepadPropValue::Size(s) => f.write_str(s.to_string().as_str()),
             MakepadPropValue::Color(c) => {
                 if c.is_font() {

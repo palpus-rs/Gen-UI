@@ -106,7 +106,7 @@ mod test_result_mk {
         <template>
             <window id="ui" background_visible="true">
                 <view id="body" :spacing="view_space" :flow="view_flow">
-                    <label id="t_label"/>
+                    <label id="t_label" :text="label_text" :font_size="label_size" />
                 </view>
             </window>
         </template>
@@ -114,8 +114,8 @@ mod test_result_mk {
         <script>
         let view_space:f64 = 20;
         let mut view_flow = String::from("Down");
-        
-       
+        let label_text = String::from("this is a Hello, World!!😇");
+        let label_size = 24.0;
         </script>
         
         <style>
@@ -126,8 +126,6 @@ mod test_result_mk {
             #body{
                align: 0.5;
                #t_label{
-                    text: "Hello, World!";
-                    font_size: 20;
                     brightness: 1.1;
                     color: #fff;
                     wrap: Word;

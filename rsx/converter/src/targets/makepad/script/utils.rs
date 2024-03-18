@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    targets::makepad::{value::MakepadPropValue, BindProp, PropRole},
-    utils::alphabetic::{camel_to_snake, remove_expr_link},
+    targets::makepad::{
+        generate_label_props, model::props_to_string, value::MakepadPropValue, BindProp, PropRole,
+    },
+    utils::alphabetic::{camel_to_snake, remove_expr_link, uppercase_title},
 };
 
 use super::NodeVariable;
@@ -42,9 +44,10 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
                     //     id,
                     //     init,
                     // ))
-                    instance_fields.push((var.get_name(), r.to_normal_value(), tag, prop, id))
+                    // instance_fields.push((var.get_name(), r.to_normal_value(), tag, prop, id))
+                    instance_fields.push((var.get_name(), r, tag, id))
                 } else {
-                    normal_fields.push((r.to_normal_value(), tag, prop, id))
+                    normal_fields.push((r, tag, id))
                 }
             }
             None => {}
@@ -61,28 +64,28 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
 }
 
 /// build normal is aim to add other immuatable properties into start_up function
-fn build_normal(fields: Vec<(MakepadPropValue, &String, &String, &String)>) -> String {
+fn build_normal(fields: Vec<(PropRole, &String, &String)>) -> String {
     build_setup(fields)
 }
 
-fn build_setup(fields: Vec<(MakepadPropValue, &String, &String, &String)>) -> String {
+fn build_setup(fields: Vec<(PropRole, &String, &String)>) -> String {
     let mut setup = HashMap::new();
-    for (value, tag, prop, id) in fields {
+    for (prop, tag, id) in fields {
         let tag = camel_to_snake(tag);
-        setup
-            .entry((tag, id))
-            .or_insert_with(Vec::new)
-            .push((prop, value));
+        setup.entry((tag, id)).or_insert_with(Vec::new).push(prop);
     }
 
     setup
         .into_iter()
         .map(|((tag, id), v)| {
-            let props = v
-                .into_iter()
-                .map(|(prop, value)| format!("{}: {}", prop, value))
-                .collect::<Vec<String>>()
-                .join(", ");
+            // let props = v
+            //     .into_iter()
+            //     .map(|(prop, value)| format!("{}: {}", prop, value))
+            //     .collect::<Vec<String>>()
+            //     .join(", ");
+            let widget_name = uppercase_title(&tag).unwrap();
+
+            let props = props_to_string(&widget_name, &v);
             format!(
                 "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
                 tag, id, tag, id, tag, id, props
@@ -123,14 +126,13 @@ fn build_setup(fields: Vec<(MakepadPropValue, &String, &String, &String)>) -> St
 ///     }
 /// }
 /// ```
-fn build_instance(
-    fields: Vec<(&str, MakepadPropValue, &String, &String, &String)>,
-) -> (String, String) {
+fn build_instance(fields: Vec<(&str, PropRole, &String, &String)>) -> (String, String) {
     let mut fields_strs = Vec::new();
     let mut init_strs = Vec::new();
     let mut impls = Vec::new();
     let mut setup = HashMap::new();
-    for (name, value, tag, prop, id) in fields {
+    for (name, prop, tag, id) in fields {
+        let value = prop.clone().to_normal_value();
         let prop_ty = value.to_makepad_ty();
         let prop_init = value.to_value_code();
         let tag = camel_to_snake(tag);
@@ -145,21 +147,25 @@ fn build_instance(
             "pub fn set_{}(&mut self, {}: {}) {{ self.{} = {} }}",
             name, name, &prop_ty, name, name
         ));
-        setup
-            .entry((tag, id))
-            .or_insert_with(Vec::new)
-            .push((prop, value))
+        setup.entry((tag, id)).or_insert_with(Vec::new).push(prop)
     }
 
     // build setup
     let setup_str = setup
         .into_iter()
         .map(|((tag, id), v)| {
-            let props = v
-                .into_iter()
-                .map(|(prop, value)| format!("{}: {}", prop, value))
-                .collect::<Vec<String>>()
-                .join(", ");
+            // let props = v
+            //     .into_iter()
+            //     .map(|(prop, value)| format!("{}: {}", prop, value))
+            //     .collect::<Vec<String>>()
+            //     .join(", ");
+            // let props = v
+            //     .into_iter()
+            //     .map(|item| item.to_string())
+            //     .collect::<String>();
+            let widget_name = uppercase_title(&tag).unwrap();
+
+            let props = props_to_string(&widget_name, &v);
             format!(
                 "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
                 tag, id, tag, id, tag, id, props
