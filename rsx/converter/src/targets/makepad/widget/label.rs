@@ -23,6 +23,7 @@ pub fn label(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     }
 }
 
+/// generate makepad label props
 pub fn generate_label_props(props: &Vec<PropRole>) -> String {
     // when convert to label prop should focus on draw_text
     let mut text_style = Vec::new();

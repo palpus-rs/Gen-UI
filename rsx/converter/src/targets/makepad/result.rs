@@ -104,31 +104,26 @@ mod test_result_mk {
     fn test_simple() {
         let input = r#"
         <template>
-            <window id="ui" background_visible="true">
-                <view id="body" :spacing="view_space" :flow="view_flow">
-                    <label id="t_label" :text="label_text" :font_size="label_size" />
+            <window id="ui" >
+                <view id="body" >
+                    <button id="btn1"  @clicked="change_text"></button>
+                    <label id="t_label" />
                 </view>
             </window>
         </template>
         
         <script>
-        let view_space:f64 = 20;
-        let mut view_flow = String::from("Down");
-        let label_text = String::from("this is a Hello, World!!😇");
-        let label_size = 24.0;
+        let mut label_text = String::from("this is a Hello, World!! emoji failed");
+        
+        let change_text = || {
+            label_text = String::from("I have been clicked!");
+        };
         </script>
         
         <style>
         #ui{
-            width: Fill;
-            height: Fill;
-            background_color: #96CEF8;
             #body{
-               align: 0.5;
                #t_label{
-                    brightness: 1.1;
-                    color: #fff;
-                    wrap: Word;
                     font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
                }
             }
@@ -140,14 +135,14 @@ mod test_result_mk {
         let result = MakepadConverter::convert(&ast, "App");
         // let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
-        // dbg!(result.to_string());
+        dbg!(result.to_string());
         //"/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs"
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f = File::create(
-            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
-        )
-        .unwrap();
-        let _ = f.write(result.to_string().as_bytes());
+        // let mut f = File::create(
+        //     "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
+        // )
+        // .unwrap();
+        // let _ = f.write(result.to_string().as_bytes());
     }
 }

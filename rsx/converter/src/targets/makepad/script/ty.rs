@@ -25,7 +25,7 @@ fn handle_expr(expr: Expr, init: Option<LocalInit>) -> (Type, Option<LocalInit>)
             handle_expr(func, init)
         }
         syn::Expr::Cast(_) => todo!(),
-        syn::Expr::Closure(_) => todo!(),
+        syn::Expr::Closure(_) => (ty_fn_closure(), init),
         syn::Expr::Const(_) => todo!(),
         syn::Expr::Continue(_) => todo!(),
         syn::Expr::Field(_) => todo!(),
@@ -92,6 +92,10 @@ fn ty_bool() -> Type {
 
 fn ty_int() -> Type {
     generate_ty("usize")
+}
+
+fn ty_fn_closure() -> Type {
+    generate_ty("Closure")
 }
 
 /// generate syn::Type for dyn type

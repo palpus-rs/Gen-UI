@@ -18,7 +18,9 @@ pub use flow::Flow;
 pub use margin::Margin;
 pub use optimize::{Optimize, ViewOptimize};
 pub use padding::Padding;
+use quote::quote;
 pub use size::Size;
+use syn::Expr;
 pub use vecs::DVec2;
 pub use wrap::TextWrap;
 
@@ -50,14 +52,27 @@ pub enum MakepadPropValue {
     TextWrap(TextWrap),
     Font(String),
     Bind(String, Option<Box<MakepadPropValue>>),
+    Function(String, Option<Expr>),
 }
 
 impl MakepadPropValue {
     pub fn bind(k: &str, v: Option<Box<MakepadPropValue>>) -> Self {
         MakepadPropValue::Bind(k.to_string(), v)
     }
+    pub fn func(k: &str, v: Option<Expr>) -> Self {
+        MakepadPropValue::Function(k.to_string(), v)
+    }
     pub fn bind_without_value(k: &str) -> Self {
         Self::bind(k, None)
+    }
+    pub fn get_fn_key(&self) -> &str {
+        if let MakepadPropValue::Function(k, _) = self {
+            return k;
+        }
+        panic!("not a function MakepadPropValue")
+    }
+    pub fn fn_without_value(k: &str) -> Self {
+        Self::func(k, None)
     }
     pub fn get_bind_key(&self) -> &str {
         if let MakepadPropValue::Bind(k, _) = self {
@@ -98,6 +113,7 @@ impl MakepadPropValue {
                     panic!("bind value is none")
                 }
             }
+            MakepadPropValue::Function(_, _) => todo!(),
         }
     }
     pub fn to_value_code(&self) -> String {
@@ -124,6 +140,13 @@ impl MakepadPropValue {
                     v.to_value_code()
                 } else {
                     panic!("bind value is none")
+                }
+            }
+            MakepadPropValue::Function(_, v) => {
+                if let Some(v) = v {
+                    quote! {#v}.to_string()
+                } else {
+                    panic!("function value is none")
                 }
             }
         }
@@ -167,6 +190,7 @@ impl Display for MakepadPropValue {
             MakepadPropValue::Bind(_k, v) => f.write_str(v.clone().unwrap().to_string().as_str()),
             MakepadPropValue::TextWrap(tw) => f.write_str(tw.to_string().as_str()),
             MakepadPropValue::Font(font) => f.write_fmt(format_args!("{{path: dep({})}}", font)),
+            MakepadPropValue::Function(_, _) => todo!(),
         }
     }
 }
@@ -176,7 +200,7 @@ impl From<PropRole> for MakepadPropValue {
         match value {
             PropRole::Normal(_, v) => v,
             PropRole::Bind(_, v) => v,
-            PropRole::Function => todo!(),
+            PropRole::Function(k, func) => todo!(),
             PropRole::Context(_) => todo!(),
             PropRole::Special(_) => todo!(),
         }

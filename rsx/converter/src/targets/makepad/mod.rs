@@ -1,3 +1,4 @@
+pub mod action;
 pub mod constants;
 pub mod model;
 mod prop;
@@ -11,14 +12,16 @@ pub use prop::*;
 
 pub use script::*;
 pub use style::*;
-use syn::Local;
+use syn::{Expr, Local, LocalInit};
 pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
 use parser::{ASTNodes, PropsKey, Style, Tag, Value, HOLDER_END};
 
-use crate::{error::Errors, utils::alphabetic::uppercase_title};
+use crate::{
+    error::Errors, targets::makepad::action::MakepadAction, utils::alphabetic::uppercase_title,
+};
 
 use self::{
     constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
@@ -29,6 +32,8 @@ use self::{
 type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 /// `(tag_name, id, (prop_name, prop_value))`
 pub type BindProp = (String, String, (String, MakepadPropValue));
+/// `(tag_name, id, (action_name, action_var_name))`
+pub type BindAction = (String, String, (String, String));
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct MakepadConverter<'a> {
     root: Cow<'a, str>,
@@ -38,6 +43,7 @@ pub struct MakepadConverter<'a> {
     style: Option<ConvertStyle<'a>>,
     widget_ref: Option<Cow<'a, str>>,
     bind_props: Option<Vec<BindProp>>,
+    bind_actions: Option<Vec<BindAction>>,
 }
 
 #[allow(dead_code)]
@@ -114,9 +120,10 @@ impl<'a> MakepadConverter<'a> {
     fn convert_template(&mut self, t: &ASTNodes) -> () {
         match t {
             ASTNodes::Tag(t) => {
-                let (model, binds) = handle_tag(*&t, self.style.as_ref(), true);
+                let (model, binds, actions) = handle_tag(*&t, self.style.as_ref(), true);
                 let _ = self.template.replace(model);
                 let _ = self.bind_props.replace(binds);
+                let _ = self.bind_actions.replace(actions);
             }
             ASTNodes::Comment(_) => todo!(),
             ASTNodes::Style(_) => todo!(),
@@ -155,7 +162,23 @@ impl<'a> Display for MakepadConverter<'a> {
                 if self.has_script() {
                     start_up = true;
                     let sc = self.script.as_ref().unwrap();
-                    match sc.get_makepad_vars() {
+                    // match sc.get_makepad_vars() {
+                    //     Some(vars) => {
+                    //         // get bind props
+                    //         let binds = self.bind_props.as_ref().unwrap();
+                    //         let name = self.root.to_string();
+                    //         let bind_instance = vars_to_string(name, vars, binds);
+                    //         let _ = f.write_str(&bind_instance);
+                    //     }
+                    //     None => {}
+                    // }
+                    // let _ = f.write_fmt(format_args!(
+                    //     ", {} }}",
+                    //     self.script.as_ref().unwrap().to_string()
+                    // ));
+
+                    let (m_vars, m_fns) = sc.get_makepad_var_fn();
+                    match m_vars {
                         Some(vars) => {
                             // get bind props
                             let binds = self.bind_props.as_ref().unwrap();
@@ -165,10 +188,16 @@ impl<'a> Display for MakepadConverter<'a> {
                         }
                         None => {}
                     }
-                    // let _ = f.write_fmt(format_args!(
-                    //     ", {} }}",
-                    //     self.script.as_ref().unwrap().to_string()
-                    // ));
+                    // dbg!(&m_fns);
+                    match m_fns {
+                        Some(fns) => {
+                            let name = self.root.to_string();
+                            let actions = self.bind_actions.as_ref().unwrap();
+                            let binds = self.bind_props.as_ref();
+                            let _ = f.write_str(fns_to_string(name, fns, actions, binds).as_str());
+                        }
+                        None => {}
+                    }
                 } else {
                     let _ = f.write_str(HOLDER_END);
                 }
@@ -237,11 +266,17 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
     }
 }
 
+fn is_closure(init: Option<&LocalInit>) -> bool {
+    let expr = *init.unwrap().expr.clone();
+    matches!(expr, Expr::Closure(_))
+}
+
 fn handle_variable(local: &Local) -> ScriptNode {
     // get init
     let init = local.init.clone();
+    // dbg!(local);
     // dbg!(&local);
-    let stmt = match &local.pat {
+    match &local.pat {
         syn::Pat::Type(t) => {
             // get pat
             let (name, is_mut) = match &*t.pat {
@@ -250,18 +285,22 @@ fn handle_variable(local: &Local) -> ScriptNode {
             };
             // get ty
             let ty = &*t.ty;
-            NodeVariable::new_unwrap(name, ty.clone(), init, is_mut)
+
+            ScriptNode::Variable(NodeVariable::new_unwrap(name, ty.clone(), init, is_mut))
         }
         syn::Pat::Ident(i) => {
             let name = i.ident.to_string();
-            let is_mut = i.mutability.is_some();
-            let (ty, init) = parse_init_type(init);
-            NodeVariable::new_unwrap(name, ty, init, is_mut)
+            if is_closure(init.as_ref()) {
+                // handle closure -> function
+                ScriptNode::Function(MakepadAction::new(&name, *init.unwrap().expr))
+            } else {
+                let is_mut = i.mutability.is_some();
+                let (ty, init) = parse_init_type(init);
+                ScriptNode::Variable(NodeVariable::new_unwrap(name, ty, init, is_mut))
+            }
         }
         _ => todo!("handle variable syn later, see future needed"),
-    };
-
-    ScriptNode::Variable(stmt)
+    }
 }
 
 /// 平展样式
@@ -305,7 +344,7 @@ fn handle_tag(
     t: &Tag,
     styles: Option<&ConvertStyle>,
     is_ref: bool,
-) -> (MakepadModel, Vec<BindProp>) {
+) -> (MakepadModel, Vec<BindProp>, Vec<BindAction>) {
     // 1. uppercase the first title case of the tag
     // if can not upper - panic!
     let tag_name = uppercase_title(t.get_name()).unwrap();
@@ -313,9 +352,11 @@ fn handle_tag(
     // 3. add `{` `}` after the tag
     let mut tag_model = MakepadModel::new(&tag_name, is_ref);
     let mut binds = Vec::new();
+    let mut actions: Vec<BindAction> = Vec::new();
     // check props
     if t.has_props() {
         let mut has_bind = false;
+        let mut has_action = false;
         for prop in t.get_props().unwrap() {
             match PropRole::try_from((tag_name.as_str(), prop)) {
                 Ok(p) => {
@@ -326,7 +367,15 @@ fn handle_tag(
                             has_bind = true;
                             binds.push((tag_name.clone(), String::new(), (k, v)));
                         }
-                        PropRole::Function => todo!("function do!!!!"),
+                        PropRole::Function(k, v) => {
+                            has_action = true;
+                            actions.push((
+                                tag_name.clone(),
+                                String::new(),
+                                (k, v.get_fn_key().to_string()),
+                            ));
+                            // tag_model.push_action(p)
+                        }
                         PropRole::Context(c) => {
                             c.into_iter().for_each(|x| tag_model.push_context(x));
                         }
@@ -345,6 +394,16 @@ fn handle_tag(
                         .for_each(|bind| bind.1 = special.to_string());
                 }
                 None => panic!("the widget which has binds need to add special id"),
+            }
+        }
+        if has_action {
+            match tag_model.get_special() {
+                Some(special) => {
+                    let _ = actions
+                        .iter_mut()
+                        .for_each(|action| action.1 = special.to_string());
+                }
+                None => panic!("the widget which has actions need to add special id"),
             }
         }
     }
@@ -370,9 +429,11 @@ fn handle_tag(
         for child_node in t.get_children().unwrap() {
             match child_node {
                 ASTNodes::Tag(child) => {
-                    let (child_model, child_binds) = handle_tag(*&child, styles, false);
+                    let (child_model, child_binds, child_actions) =
+                        handle_tag(*&child, styles, false);
                     tag_model.push_child(child_model);
                     binds.extend(child_binds);
+                    actions.extend(child_actions);
                 }
                 ASTNodes::Comment(_) => (),
                 ASTNodes::Style(_) => panic!("{}", "cannot write styles in template node"),
@@ -380,7 +441,7 @@ fn handle_tag(
         }
     }
 
-    (tag_model, binds)
+    (tag_model, binds, actions)
 }
 
 /// Match properties based on the existing components in the current makepad widgets

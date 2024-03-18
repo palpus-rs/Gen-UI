@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::context::{LEFT_HOLDER, RIGHT_HOLDER};
 
-use super::{generate_label_props, PropRole};
+use super::{action::MakepadAction, generate_label_props, PropRole};
 
 /// # The Model of Makepad
 /// Model includes all built-in widgets
@@ -12,6 +12,7 @@ pub struct MakepadModel {
     contexts: Option<Vec<String>>,
     tag: String,
     props: Option<Vec<PropRole>>,
+    actions: Option<Vec<PropRole>>,
     children: Option<Vec<MakepadModel>>,
     is_ref: bool,
 }
@@ -22,6 +23,7 @@ impl MakepadModel {
             special: None,
             tag: tag.to_string(),
             props: None,
+            actions: None,
             children: None,
             is_ref,
             contexts: None,
@@ -127,16 +129,16 @@ impl MakepadModel {
         self.children.is_some()
     }
     fn props_to_string(&self) -> String {
-        match self.tag.as_str() {
-            "Window" | "View" => self
-                .props
-                .as_ref()
-                .unwrap()
-                .into_iter()
-                .map(|prop| prop.to_string())
-                .collect::<String>(),
-            "Label" => generate_label_props(self.props.as_ref().unwrap()),
-            _ => panic!("Invalid widget"),
+        let props = self.props.as_ref().unwrap();
+        props_to_string(self.tag.as_str(), props)
+    }
+    pub fn push_action(&mut self, item: PropRole) -> () {
+        // let item = PropRole::Function(action);
+        match &mut self.actions {
+            Some(actions) => actions.push(item),
+            None => {
+                let _ = self.actions.replace(vec![item]);
+            }
         }
     }
 }
@@ -199,7 +201,7 @@ pub fn models_to_string(models: Vec<MakepadModel>) -> String {
 
 pub fn props_to_string(tag: &str, props: &Vec<PropRole>) -> String {
     match tag {
-        "Window" | "View" => props
+        "Window" | "View" | "Button" => props
             .into_iter()
             .map(|prop| prop.to_string())
             .collect::<String>(),

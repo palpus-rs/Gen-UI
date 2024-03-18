@@ -9,7 +9,9 @@ pub use ty::*;
 pub use utils::*;
 pub use variable::*;
 
-use std::fmt::Display;
+use std::{fmt::Display, pin};
+
+use super::action::MakepadAction;
 
 #[derive(Debug, Clone, PartialEq)]
 #[allow(dead_code)]
@@ -32,11 +34,27 @@ impl ConvertScript {
         }
         panic!("not a MakepadRS")
     }
-    pub fn get_makepad_rs(&self) -> Vec<&ScriptNode> {
+    pub fn get_makepad_rs(&self) -> Option<&Vec<ScriptNode>> {
         if let ConvertScript::MakepadRS(mrss) = self {
-            return mrss.iter().collect();
+            return if mrss.is_empty() { None } else { Some(mrss) };
         }
         panic!("not a MakepadRS")
+    }
+    pub fn get_makepad_var_fn(&self) -> (Option<Vec<&NodeVariable>>, Option<Vec<&MakepadAction>>) {
+        let mut vars = vec![];
+        let mut fns = vec![];
+        if let ConvertScript::MakepadRS(mrss) = self {
+            for mr in mrss {
+                match mr {
+                    ScriptNode::Variable(var) => vars.push(var),
+                    ScriptNode::Function(func) => fns.push(func),
+                }
+            }
+        }
+        (
+            if vars.is_empty() { None } else { Some(vars) },
+            if fns.is_empty() { None } else { Some(fns) },
+        )
     }
 }
 

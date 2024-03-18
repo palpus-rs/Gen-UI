@@ -2,12 +2,49 @@ use std::collections::HashMap;
 
 use crate::{
     targets::makepad::{
-        generate_label_props, model::props_to_string, value::MakepadPropValue, BindProp, PropRole,
+        action::MakepadAction, generate_label_props, model::props_to_string,
+        value::MakepadPropValue, BindAction, BindProp, PropRole,
     },
     utils::alphabetic::{camel_to_snake, remove_expr_link, uppercase_title},
 };
 
 use super::NodeVariable;
+
+/// Convert `Vec<MakepadAction>` to String
+/// build actions
+/// ``` rust
+/// impl MatchEvent for App{
+/// fn handle_actions(&mut self, cx: &mut Cx, actions:&Actions){
+///     if self.ui.button(id!(button1)).clicked(&actions) {
+///         log!("BUTTON CLICKED {}", self.counter);
+///         self.counter += 1;
+///         let label = self.ui.label(id!(label1));
+///         label.set_text_and_redraw(cx,&format!("Counter: {}", self.counter));
+///     }
+/// }
+/// }
+/// ```
+pub fn fns_to_string(
+    name: String,
+    fns: Vec<&MakepadAction>,
+    actions: &Vec<BindAction>,
+    binds: Option<&Vec<BindProp>>,
+) -> String {
+    // dbg!()
+    let mut action_str = Vec::new();
+    for (tag, id, (action, action_var)) in actions {
+        // if mfn.get_name() == actions.
+        dbg!(action_var);
+        match fns.iter().find(|f| f.get_name() == action_var) {
+            Some(f) => {
+                let _ = action_str.push(f.to_code_string(binds));
+            }
+            None => {}
+        }
+    }
+
+    format!("impl MatchEvent for {} {{ fn handle_actions(&mut self, cx: &mut Cx, actions:&Actions){{ {} }} }}", name,action_str.join("\n"))
+}
 
 /// Convert `Vec<NodeVariable>` to String
 /// - mut

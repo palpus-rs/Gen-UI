@@ -53,6 +53,7 @@ use parser::{PropertyKeyType, PropsKey, Value};
 use crate::error::Errors;
 
 use super::{
+    action::MakepadAction,
     button, label,
     value::{MakepadPropValue, Size},
     view, window, NodeVariable,
@@ -62,7 +63,7 @@ use super::{
 pub enum PropRole {
     Normal(String, MakepadPropValue),
     Bind(String, MakepadPropValue),
-    Function,
+    Function(String, MakepadPropValue),
     // this means: the current prop is id or class which can link to style properties  (class)
     Context(Vec<String>),
     // same as Context, but only have one (id)
@@ -75,6 +76,9 @@ impl PropRole {
     }
     pub fn bind(k: &str, v: MakepadPropValue) -> Self {
         PropRole::Bind(k.to_string(), v)
+    }
+    pub fn func(k: &str, v: MakepadPropValue) -> Self {
+        PropRole::Function(k.to_string(), v)
     }
     pub fn is_bind(&self) -> bool {
         matches!(self, PropRole::Bind(..))
@@ -190,7 +194,7 @@ impl Display for PropRole {
         match self {
             PropRole::Normal(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Bind(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
-            PropRole::Function => todo!(),
+            PropRole::Function(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Context(c) => todo!(),
             PropRole::Special(s) => f.write_str(s),
         }

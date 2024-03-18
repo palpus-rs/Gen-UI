@@ -1,11 +1,13 @@
 use std::fmt::Display;
 
+use crate::targets::makepad::action::MakepadAction;
+
 use super::NodeVariable;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ScriptNode {
     Variable(NodeVariable),
-    Function(String),
+    Function(MakepadAction),
 }
 
 impl ScriptNode {
