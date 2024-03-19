@@ -1,0 +1,11 @@
+[package]
+name = "gen-ui"
+version = "0.0.0"
+authors = ["Willins.SHENG <syf20020816@outlook.com>"]
+description = "A Not Normal Rust UI Framework"
+edition = "2021"
+rust-version = "1.75"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
