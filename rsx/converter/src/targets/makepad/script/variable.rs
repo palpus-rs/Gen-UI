@@ -2,20 +2,7 @@ use std::fmt::Display;
 
 use parser::Value;
 use quote::{quote, ToTokens};
-use syn::{
-    parse::{self, ParseStream},
-    spanned::Spanned,
-    Error, LocalInit, Type,
-};
-
-use crate::{
-    error::Errors,
-    targets::makepad::value::{
-        Align, Color, Cursor, DVec2, EventOrder, Flow, MakepadPropValue, Margin, Optimize, Padding,
-        Size, ViewOptimize,
-    },
-};
-use syn::parse::Parse;
+use syn::{LocalInit, Type};
 
 use super::handler::{handle_bool, handle_f64, handle_isize, handle_string, handle_usize};
 

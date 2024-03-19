@@ -1,19 +1,15 @@
 mod clicked;
 
 pub use clicked::*;
-use parser::{common::parse_string, Value};
-use quote::{format_ident, quote};
-use std::{
-    collections::{HashMap, HashSet},
-    fmt::Display,
-};
 
-use proc_macro2::TokenStream;
-use syn::{parse_str, visit_mut::VisitMut, Expr, ExprField, ExprPath, Pat};
+use quote::quote;
+use std::collections::HashMap;
+
+use syn::{visit_mut::VisitMut, Expr, ExprPath};
 
 use crate::utils::alphabetic::camel_to_snake;
 
-use super::{build_normal, prop, BindProp, PropRole};
+use super::BindProp;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MakepadAction {
@@ -113,6 +109,7 @@ struct IdentReplacer {
     props: HashMap<(String, String), Vec<(String, String)>>,
 }
 
+#[allow(dead_code)]
 impl IdentReplacer {
     pub fn new(target: Vec<BindProp>) -> IdentReplacer {
         IdentReplacer {

@@ -1,4 +1,4 @@
-use parser::{PropsKey, Value};
+use parser::Value;
 
 use crate::{
     error::Errors,

@@ -33,7 +33,7 @@ pub fn surround(s: String, l: &str, r: &str) -> String {
 /// 1. View => view
 /// 2. ViewName => view_name
 pub fn camel_to_snake(s: &str) -> String {
-    let mut chars: Vec<char> = s.chars().collect();
+    let chars: Vec<char> = s.chars().collect();
     let mut result = String::new();
 
     for (i, &c) in chars.iter().enumerate() {

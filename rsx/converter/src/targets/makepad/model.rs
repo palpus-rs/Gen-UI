@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::context::{LEFT_HOLDER, RIGHT_HOLDER};
 
-use super::{action::MakepadAction, generate_label_props, PropRole};
+use super::{generate_label_props, PropRole};
 
 /// # The Model of Makepad
 /// Model includes all built-in widgets

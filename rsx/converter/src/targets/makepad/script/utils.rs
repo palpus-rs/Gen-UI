@@ -2,10 +2,9 @@ use std::collections::HashMap;
 
 use crate::{
     targets::makepad::{
-        action::MakepadAction, generate_label_props, model::props_to_string,
-        value::MakepadPropValue, BindAction, BindProp, PropRole,
+        action::MakepadAction, model::props_to_string, BindAction, BindProp, PropRole,
     },
-    utils::alphabetic::{camel_to_snake, remove_expr_link, uppercase_title},
+    utils::alphabetic::{camel_to_snake, uppercase_title},
 };
 
 use super::NodeVariable;

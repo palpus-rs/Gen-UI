@@ -16,6 +16,7 @@ pub use cursor::Cursor;
 pub use event::EventOrder;
 pub use flow::Flow;
 pub use margin::Margin;
+#[allow(unused_imports)]
 pub use optimize::{Optimize, ViewOptimize};
 pub use padding::Padding;
 use quote::quote;
@@ -200,7 +201,7 @@ impl From<PropRole> for MakepadPropValue {
         match value {
             PropRole::Normal(_, v) => v,
             PropRole::Bind(_, v) => v,
-            PropRole::Function(k, func) => todo!(),
+            PropRole::Function(_, func) => func,
             PropRole::Context(_) => todo!(),
             PropRole::Special(_) => todo!(),
         }

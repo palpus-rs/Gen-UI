@@ -10,6 +10,7 @@ pub enum ScriptNode {
     Function(MakepadAction),
 }
 
+#[allow(dead_code)]
 impl ScriptNode {
     pub fn get_var(&self) -> Option<&NodeVariable> {
         match self {

@@ -4,13 +4,10 @@
 
 use std::fmt::Display;
 
-use parser::{ParseResult, HOLDER_END};
-
-use crate::targets::makepad::constants::BIND_IMPORT;
+use parser::ParseResult;
 
 use super::MakepadConverter;
 
-// }
 #[derive(Debug, Clone, PartialEq)]
 pub struct MakepadConvertResult {
     is_root: bool,
@@ -150,7 +147,10 @@ mod test_result_mk {
         //"/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs"
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+
+        let mut f =
+            File::create("/Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs")
+                .unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }
