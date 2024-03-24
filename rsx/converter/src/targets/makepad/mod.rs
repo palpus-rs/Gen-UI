@@ -179,30 +179,36 @@ impl<'a> Display for MakepadConverter<'a> {
                     // ));
 
                     let (m_vars, m_fns) = sc.get_makepad_var_fn();
+                    let mut match_events = Vec::new();
                     match m_vars {
                         Some(vars) => {
                             // get bind props
                             let binds = self.bind_props.as_ref().unwrap();
                             let name = self.root.to_string();
-                            let bind_instance = vars_to_string(name, vars, binds);
-                            let _ = f.write_str(&bind_instance);
+                            let (instance, start_up) = vars_to_string(name, vars, binds);
+                            let _ = f.write_str(&instance);
+                            match_events.push(start_up);
                         }
                         None => {}
-                    }
+                    };
                     // dbg!(&m_fns);
 
                     match m_fns {
                         Some(fns) => {
                             event_match = true;
                             let mut fns = fns.into_iter().map(|item| item.clone()).collect();
-                            let name = self.root.to_string();
                             let actions = self.bind_actions.as_ref().unwrap();
                             let binds = self.bind_props.as_ref();
-                            let _ =
-                                f.write_str(fns_to_string(name, &mut fns, actions, binds).as_str());
+                            match_events.push(fns_to_string(&mut fns, actions, binds))
                         }
                         None => {}
-                    }
+                    };
+
+                    let _ = f.write_fmt(format_args!(
+                        "impl MatchEvent for {}{{ {} }}",
+                        self.root.to_string(),
+                        match_events.join(" ")
+                    ));
                 } else {
                     let _ = f.write_str(HOLDER_END);
                 }
@@ -219,7 +225,8 @@ impl<'a> Display for MakepadConverter<'a> {
             self.root, APP_MAIN
         ));
         if start_up {
-            let _ = f.write_str("match event{ Event::Startup => self.start_up(cx), _ =>() };");
+            let _ =
+                f.write_str("match event{ Event::Startup => self.handle_startup(cx), _ =>() };");
         }
         if event_match {
             let _ = f.write_str("self.match_event(cx, event);");

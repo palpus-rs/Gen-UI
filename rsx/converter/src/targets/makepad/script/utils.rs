@@ -2,13 +2,15 @@ use std::collections::HashMap;
 
 use crate::{
     targets::makepad::{
-        action::MakepadAction, generate_label_props, model::props_to_string,
-        value::MakepadPropValue, BindAction, BindProp, PropRole,
+        action::MakepadAction, model::props_to_string, BindAction, BindProp, PropRole,
     },
-    utils::alphabetic::{camel_to_snake, remove_expr_link, uppercase_title},
+    utils::alphabetic::{camel_to_snake, uppercase_title},
 };
 
-use super::NodeVariable;
+use super::{
+    handler::{build_handle_actions, build_handle_startup},
+    NodeVariable,
+};
 
 /// Convert `Vec<MakepadAction>` to String
 /// build actions
@@ -25,7 +27,6 @@ use super::NodeVariable;
 /// }
 /// ```
 pub fn fns_to_string(
-    name: String,
     fns: &mut Vec<MakepadAction>,
     actions: &Vec<BindAction>,
     binds: Option<&Vec<BindProp>>,
@@ -61,7 +62,7 @@ pub fn fns_to_string(
         })
         .collect::<String>();
 
-    format!("impl MatchEvent for {} {{ fn handle_actions(&mut self, cx: &mut Cx, actions:&Actions){{ {} }} }}", name, action_str)
+    build_handle_actions(&action_str)
 }
 
 /// Convert `Vec<NodeVariable>` to String
@@ -75,7 +76,11 @@ pub fn fns_to_string(
 /// this bind just happen in Event::Startup
 ///
 /// RSX will generate a start_up function for bind props
-pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindProp>) -> String {
+pub fn vars_to_string(
+    name: String,
+    vars: Vec<&NodeVariable>,
+    binds: &Vec<BindProp>,
+) -> (String, String) {
     let mut instance_fields = Vec::new();
     let mut normal_fields = Vec::new();
     for (tag, id, (prop, value)) in binds {
@@ -112,10 +117,7 @@ pub fn vars_to_string(name: String, vars: Vec<&NodeVariable>, binds: &Vec<BindPr
     let (instance, mut_setup) = build_instance(instance_fields);
     let immut_setup = build_normal(normal_fields);
 
-    format!(
-        "{}\nimpl {}{{ fn start_up(&mut self, cx: &mut Cx){{ self.instance = Instance::new(); {} {} }} }}",
-        instance, name, mut_setup, immut_setup
-    )
+    (instance, build_handle_startup(&mut_setup, &immut_setup))
 }
 
 /// build normal is aim to add other immuatable properties into start_up function
@@ -134,16 +136,11 @@ fn build_setup(fields: Vec<(PropRole, &String, &String)>) -> String {
     setup
         .into_iter()
         .map(|((tag, id), v)| {
-            // let props = v
-            //     .into_iter()
-            //     .map(|(prop, value)| format!("{}: {}", prop, value))
-            //     .collect::<Vec<String>>()
-            //     .join(", ");
             let widget_name = uppercase_title(&tag).unwrap();
 
             let props = props_to_string(&widget_name, &v);
             format!(
-                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(_cx, live!{{ {} }});",
                 tag, id, tag, id, tag, id, props
             )
         })
@@ -223,7 +220,7 @@ fn build_instance(fields: Vec<(&str, PropRole, &String, &String)>) -> (String, S
 
             let props = props_to_string(&widget_name, &v);
             format!(
-                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(_cx, live!{{ {} }});",
                 tag, id, tag, id, tag, id, props
             )
         })

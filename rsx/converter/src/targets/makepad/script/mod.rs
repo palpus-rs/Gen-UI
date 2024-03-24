@@ -1,4 +1,4 @@
-mod handler;
+pub mod handler;
 mod node;
 mod ty;
 mod utils;

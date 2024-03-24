@@ -147,10 +147,11 @@ mod test_result_mk {
         // let result = MakepadConvertResult::new(true, "App", ast);
         dbg!(t.elapsed());
         // dbg!(result.to_string());
-        //"/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs"
+        // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f = File::create("E:/Rust/try/makepad/rsx/converter/wiki/convert.rs").unwrap();
+        let mut f =
+            File::create("E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }
