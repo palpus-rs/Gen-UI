@@ -1,4 +1,4 @@
-use parser::{PropsKey, Value};
+use parser::Value;
 
 use crate::{
     error::Errors,
@@ -8,8 +8,6 @@ use crate::{
         PropRole,
     },
 };
-
-use super::Widgets;
 
 pub fn view(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     match prop_name {

@@ -4,13 +4,10 @@
 
 use std::fmt::Display;
 
-use parser::{ParseResult, HOLDER_END};
-
-use crate::targets::makepad::constants::BIND_IMPORT;
+use parser::ParseResult;
 
 use super::MakepadConverter;
 
-// }
 #[derive(Debug, Clone, PartialEq)]
 pub struct MakepadConvertResult {
     is_root: bool,

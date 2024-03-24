@@ -11,6 +11,7 @@ pub use label::{generate_label_props, label};
 pub use view::view;
 pub use window::window;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Widgets {
     /// most of the props in the window widget is from view widget

@@ -52,12 +52,7 @@ use parser::{PropertyKeyType, PropsKey, Value};
 
 use crate::error::Errors;
 
-use super::{
-    action::MakepadAction,
-    button, label,
-    value::{MakepadPropValue, Size},
-    view, window, NodeVariable,
-};
+use super::{button, label, value::MakepadPropValue, view, window, NodeVariable};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PropRole {
@@ -195,7 +190,7 @@ impl Display for PropRole {
             PropRole::Normal(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Bind(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Function(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
-            PropRole::Context(c) => todo!(),
+            PropRole::Context(_) => todo!(),
             PropRole::Special(s) => f.write_str(s),
         }
     }

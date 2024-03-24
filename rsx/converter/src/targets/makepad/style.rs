@@ -1,23 +1,40 @@
-use std::collections::HashMap;
+use std::{borrow::Cow, collections::HashMap};
 
-use parser::{PropsKey, Value};
+use parser::Style;
 
-use crate::error::Errors;
+use super::{ConvertStyle, MakepadConverter};
 
-use super::{value::MakepadPropValue, PropRole};
-
-pub type StyleProps = HashMap<String, Vec<PropRole>>;
-
-// expand props directly
-// then when it in the widget -> convert
-// pub fn style_props_expand(props: &HashMap<PropsKey, Value>) -> Vec<> {
-//     for (k, v) in props {
-//         match k.ty() {
-//             parser::PropertyKeyType::Normal => ,
-//             parser::PropertyKeyType::Bind => todo!(),
-//             parser::PropertyKeyType::Function => todo!(),
-//         }
-//     }
-// }
-//
-// pub fn style_id() -> Result<StyleProps, Errors> {}
+/// 平展样式
+pub fn expand_style(s: &Box<Style>) -> Option<ConvertStyle> {
+    let mut res = HashMap::new();
+    // handle props
+    if s.has_props() {
+        let style_name = s.get_name();
+        let props = s.get_props().unwrap();
+        match s.get_type() {
+            parser::StyleType::Class | parser::StyleType::Id => {
+                res.insert(Cow::Borrowed(style_name), Cow::Borrowed(props))
+            }
+            parser::StyleType::Pseudo => {
+                // find the parent and set maybe here need to do something special
+                // so write todo to watch
+                todo!("style pseudo");
+            }
+        };
+    }
+    // handle children
+    if s.has_children() {
+        for item in s.get_children().unwrap() {
+            match MakepadConverter::convert_style(item) {
+                Some(styles) => {
+                    let _ = res.extend(styles);
+                }
+                None => {}
+            };
+        }
+    }
+    if res.is_empty() {
+        return None;
+    }
+    Some(res)
+}

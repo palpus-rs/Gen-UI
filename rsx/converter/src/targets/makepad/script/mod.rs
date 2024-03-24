@@ -9,7 +9,7 @@ pub use ty::*;
 pub use utils::*;
 pub use variable::*;
 
-use std::{fmt::Display, pin};
+use std::fmt::Display;
 
 use super::action::MakepadAction;
 
@@ -21,6 +21,7 @@ pub enum ConvertScript {
     MakepadRS(Vec<ScriptNode>),
 }
 
+#[allow(dead_code)]
 impl ConvertScript {
     pub fn get_makepad_vars(&self) -> Option<Vec<&NodeVariable>> {
         if let ConvertScript::MakepadRS(mrss) = self {

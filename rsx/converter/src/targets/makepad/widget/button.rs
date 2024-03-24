@@ -1,4 +1,4 @@
-use parser::{PropsKey, Value};
+use parser::Value;
 
 use crate::{
     error::Errors,
@@ -6,8 +6,6 @@ use crate::{
         action::action_clicked, prop_layout, prop_link, prop_text, prop_walk, PropRole,
     },
 };
-
-use super::Widgets;
 
 /// handle makepad button widget match
 pub fn button(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {

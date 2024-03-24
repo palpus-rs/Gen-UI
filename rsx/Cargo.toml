@@ -1,6 +1,5 @@
 [workspace]
-members=[
-  "parser", # parse rsx to AST
-  "file",
+members = [
+  "parser",    # parse rsx to AST
   "converter", # convert AST to other frameworks
 ]

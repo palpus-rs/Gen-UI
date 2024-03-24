@@ -17,7 +17,7 @@ pub use widget::*;
 
 use std::{borrow::Cow, collections::HashMap, fmt::Display};
 
-use parser::{ASTNodes, PropsKey, Style, Tag, Value, HOLDER_END};
+use parser::{ASTNodes, PropsKey, Tag, Value, HOLDER_END};
 
 use crate::{
     error::Errors, targets::makepad::action::MakepadAction, utils::alphabetic::uppercase_title,
@@ -29,7 +29,7 @@ use self::{
     value::MakepadPropValue,
 };
 
-type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
+pub type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 /// `(tag_name, id, (prop_name, prop_value))`
 pub type BindProp = (String, String, (String, MakepadPropValue));
 /// `(tag_name, id, (action_name, action_var_name))`
@@ -318,41 +318,6 @@ fn handle_variable(local: &Local) -> ScriptNode {
         }
         _ => todo!("handle variable syn later, see future needed"),
     }
-}
-
-/// 平展样式
-fn expand_style(s: &Box<Style>) -> Option<ConvertStyle> {
-    let mut res = HashMap::new();
-    // handle props
-    if s.has_props() {
-        let style_name = s.get_name();
-        let props = s.get_props().unwrap();
-        match s.get_type() {
-            parser::StyleType::Class | parser::StyleType::Id => {
-                res.insert(Cow::Borrowed(style_name), Cow::Borrowed(props))
-            }
-            parser::StyleType::Pseudo => {
-                // find the parent and set maybe here need to do something special
-                // so write todo to watch
-                todo!("style pseudo");
-            }
-        };
-    }
-    // handle children
-    if s.has_children() {
-        for item in s.get_children().unwrap() {
-            match MakepadConverter::convert_style(item) {
-                Some(styles) => {
-                    let _ = res.extend(styles);
-                }
-                None => {}
-            };
-        }
-    }
-    if res.is_empty() {
-        return None;
-    }
-    Some(res)
 }
 
 /// acturally if the handle_tag() function can run
