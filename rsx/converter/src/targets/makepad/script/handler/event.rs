@@ -7,7 +7,7 @@ pub fn build_handle_actions(action_str: &str) -> String {
 
 pub fn build_handle_startup(mut_setup: &str, immut_setup: &str) -> String {
     format!(
-        "fn handle_startup(&mut self, _cx: &mut Cx) {{ self.instance = Instance::new(); {} {} }}",
+        "fn handle_startup(&mut self, cx: &mut Cx) {{ self.instance = Instance::new(); {} {} }}",
         mut_setup, immut_setup
     )
 }

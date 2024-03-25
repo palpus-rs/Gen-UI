@@ -6,6 +6,8 @@ use std::fmt::Display;
 
 use parser::ParseResult;
 
+use crate::utils::alphabetic::snake_to_camel;
+
 use super::MakepadConverter;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -27,7 +29,7 @@ impl MakepadConvertResult {
     /// use MakepadConverter to convert rsx to Makepad Code
     /// it will build live_design! part and some impls for Target
     pub fn new(is_root: bool, file_name: &str, ast: ParseResult) -> MakepadConvertResult {
-        let code = MakepadConverter::convert(&ast, "App").to_string();
+        let code = MakepadConverter::convert(&ast, &snake_to_camel(file_name)).to_string();
 
         MakepadConvertResult {
             is_root,
@@ -39,7 +41,7 @@ impl MakepadConvertResult {
     }
 
     pub fn update(&mut self, ast: ParseResult) -> () {
-        let code = MakepadConverter::convert(&ast, "App").to_string();
+        let code = MakepadConverter::convert(&ast, &snake_to_camel(&self.file_name)).to_string();
         self.code.replace(code);
     }
 }
@@ -50,7 +52,7 @@ impl Display for MakepadConvertResult {
             Some(c) => {
                 let _ = f.write_str(c);
                 if self.is_root {
-                    let _ = f.write_fmt(format_args!("\napp_main!({});", self.file_name));
+                    let _ = f.write_fmt(format_args!("\napp_main!({});", snake_to_camel(&self.file_name)));
                 }
             }
             None => {}
@@ -140,15 +142,15 @@ mod test_result_mk {
         "#;
         let t = Instant::now();
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-        let result = MakepadConverter::convert(&ast, "App");
-        // let result = MakepadConvertResult::new(true, "App", ast);
+        // let result = MakepadConverter::convert(&ast, "App");
+        let result = MakepadConvertResult::new(true, "my_app", ast);
         dbg!(t.elapsed());
         // dbg!(result.to_string());
         // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
         let mut f =
-            File::create("E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs").unwrap();
+            File::create("/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }

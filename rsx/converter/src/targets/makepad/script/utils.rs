@@ -4,7 +4,7 @@ use crate::{
     targets::makepad::{
         action::MakepadAction, model::props_to_string, BindAction, BindProp, PropRole,
     },
-    utils::alphabetic::{camel_to_snake, uppercase_title},
+    utils::alphabetic::{camel_to_snake, snake_to_camel, uppercase_title},
 };
 
 use super::{
@@ -136,11 +136,11 @@ fn build_setup(fields: Vec<(PropRole, &String, &String)>) -> String {
     setup
         .into_iter()
         .map(|((tag, id), v)| {
-            let widget_name = uppercase_title(&tag).unwrap();
+            let widget_name = snake_to_camel(&tag);
 
             let props = props_to_string(&widget_name, &v);
             format!(
-                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(_cx, live!{{ {} }});",
+                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
                 tag, id, tag, id, tag, id, props
             )
         })
@@ -216,11 +216,11 @@ fn build_instance(fields: Vec<(&str, PropRole, &String, &String)>) -> (String, S
             //     .into_iter()
             //     .map(|item| item.to_string())
             //     .collect::<String>();
-            let widget_name = uppercase_title(&tag).unwrap();
+            let widget_name = snake_to_camel(&tag);
 
             let props = props_to_string(&widget_name, &v);
             format!(
-                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(_cx, live!{{ {} }});",
+                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
                 tag, id, tag, id, tag, id, props
             )
         })

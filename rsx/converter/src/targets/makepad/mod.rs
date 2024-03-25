@@ -20,7 +20,7 @@ use std::{borrow::Cow, collections::HashMap, fmt::Display};
 use parser::{ASTNodes, PropsKey, Tag, Value, HOLDER_END};
 
 use crate::{
-    error::Errors, targets::makepad::action::MakepadAction, utils::alphabetic::uppercase_title,
+    error::Errors, targets::makepad::action::MakepadAction, utils::alphabetic::{snake_to_camel, uppercase_title},
 };
 
 use self::{
@@ -157,8 +157,8 @@ impl<'a> Display for MakepadConverter<'a> {
         match &self.widget_ref {
             Some(name) => {
                 let _ = f.write_fmt(format_args!(
-                    "\n#[derive(Live, LiveHook)]\npub struct App {{ #[live] {}: WidgetRef, #[rust] instance: Instance,}}\n",
-                    name,
+                    "\n#[derive(Live, LiveHook)]\npub struct {} {{ #[live] {}: WidgetRef, #[rust] instance: Instance,}}\n",
+                    self.root,name,
                 ));
                 if self.has_script() {
                     start_up = true;
@@ -231,8 +231,8 @@ impl<'a> Display for MakepadConverter<'a> {
         if event_match {
             let _ = f.write_str("self.match_event(cx, event);");
         }
-        let _ = f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }");
-        f.write_fmt(format_args!("app_main!({});", self.root))
+        f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }")
+       
     }
 }
 
@@ -329,7 +329,7 @@ fn handle_tag(
 ) -> (MakepadModel, Vec<BindProp>, Vec<BindAction>) {
     // 1. uppercase the first title case of the tag
     // if can not upper - panic!
-    let tag_name = uppercase_title(t.get_name()).unwrap();
+    let tag_name = snake_to_camel(t.get_name());
     // 2. add `<` `>` surround the tag
     // 3. add `{` `}` after the tag
     let mut tag_model = MakepadModel::new(&tag_name, is_ref);

@@ -46,6 +46,22 @@ pub fn camel_to_snake(s: &str) -> String {
     result
 }
 
+pub fn snake_to_camel(s: &str) -> String {
+    if s.contains("_"){
+        s.split('_')
+        .map(|part| {
+            let mut c = part.chars();
+            match c.next() {
+                None => String::new(),
+                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+            }
+        })
+        .collect()
+    }else{
+        uppercase_title(s).unwrap()
+    }
+}
+
 /// remove the link from type expr
 /// find :: and remove the following
 /// String::from => String
