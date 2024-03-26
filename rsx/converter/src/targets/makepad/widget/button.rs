@@ -7,6 +7,36 @@ use crate::{
     },
 };
 
+#[derive(Debug,Clone,Copy,PartialEq)]
+pub enum ButtonAction {
+    None,
+    Clicked,
+    Pressed,
+    Released,
+}
+
+impl ButtonAction {
+    pub fn match_action(action:&str)->ButtonAction{
+        match action {
+            "clicked" => ButtonAction::Clicked,
+            "pressed" => ButtonAction::Pressed,
+            "released" => ButtonAction::Released,
+            _ => ButtonAction::None,
+        }
+    }
+}
+
+impl ToString for ButtonAction {
+    fn to_string(&self) -> String {
+        match self {
+            ButtonAction::None => "ButtonAction::None",
+            ButtonAction::Clicked => "ButtonAction::Clicked",
+            ButtonAction::Pressed => "ButtonAction::Pressed",
+            ButtonAction::Released => "ButtonAction::Released",
+        }.to_string()
+    }
+}
+
 /// handle makepad button widget match
 pub fn button(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
     match prop_name {
@@ -18,3 +48,5 @@ pub fn button(prop_name: &str, v: &Value) -> Result<PropRole, Errors> {
             .map_err(Into::into),
     }
 }
+
+

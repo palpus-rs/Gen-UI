@@ -44,6 +44,13 @@ pub const WORD: &str = "Word";
 pub const LINE: &str = "Line";
 //-------------[for Makepad live design macro bind]--------------------------------
 pub const BIND_IMPORT:&str = "use makepad_widgets::*;\nlive_design!{\nimport makepad_widgets::base::*;\nimport makepad_widgets::theme_desktop_dark::*;";
+
+pub const IMPL_WIDGET:&str = "impl Widget for";
+pub const FN_DRAW_WALK:&str = "fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {";
+pub const DRAW_STEP_DONE:&str = "DrawStep::done() }";
+pub const FN_HANDLE_EVENT:&str = "fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {";
+
+
 pub const LIVE_REGISTER: &str =
     "fn live_register(cx: &mut Cx) {crate::makepad_widgets::live_design(cx);}";
 pub const APP_MAIN: &str = "fn handle_event(&mut self, cx: &mut Cx, event: &Event)";

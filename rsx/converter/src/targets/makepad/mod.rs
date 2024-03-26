@@ -26,9 +26,7 @@ use crate::{
 };
 
 use self::{
-    constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
-    model::MakepadModel,
-    value::MakepadPropValue,
+    constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER}, handler::{build_draw_walk, build_handle_event, build_widget_trait}, model::MakepadModel, value::MakepadPropValue
 };
 
 pub type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
@@ -158,7 +156,7 @@ impl<'a> Display for MakepadConverter<'a> {
         let _ = f.write_fmt(format_args!("{}\n{}\n{}", BIND_IMPORT, t_fmt, HOLDER_END));
 
         // dbg!(self.script.as_ref().unwrap().to_string());
-        let mut start_up = false;
+        let mut start_up_flag = false;
         let mut event_match = false;
         match &self.widget_ref {
             Some(name) => {
@@ -167,7 +165,7 @@ impl<'a> Display for MakepadConverter<'a> {
                     self.root,name,
                 ));
                 if self.has_script() {
-                    start_up = true;
+                    start_up_flag = true;
                     let sc = self.script.as_ref().unwrap();
                     let (m_vars, m_fns) = sc.get_makepad_var_fn();
                     let mut match_events = Vec::new();
@@ -182,7 +180,6 @@ impl<'a> Display for MakepadConverter<'a> {
                         }
                         None => {}
                     };
-                    // dbg!(&m_fns);
 
                     match m_fns {
                         Some(fns) => {
@@ -211,7 +208,7 @@ impl<'a> Display for MakepadConverter<'a> {
                     "impl AppMain for {} {{ {} {{ ",
                     self.root, APP_MAIN
                 ));
-                if start_up {
+                if start_up_flag {
                     let _ = f.write_str(
                         "match event{ Event::Startup => self.handle_startup(cx), _ =>() };",
                     );
@@ -223,17 +220,52 @@ impl<'a> Display for MakepadConverter<'a> {
             }
             None => {
                 // no special ref means the model is define component
+                let mut widget_events = Vec::new();
+                let mut draw_walk = Vec::new();
+                let mut handle_event = Vec::new();
                 let inherits = self.template.as_ref().unwrap().get_inherit().unwrap();
-
                 let _ = f.write_fmt(format_args!(
                     "\n#[derive(Live, LiveHook, Widget)] pub struct {} {{ #[deref] #[redraw] instance: {} }}\n",
                     self.root, inherits.to_string(),
                 ));
 
-                f.write_fmt(format_args!(
-                    "impl Widget for EasyWidget {{ fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {{ {} DrawStep::done() }}}}",
-                    inherits.default_draw_walk()
-                ))
+                if self.has_script() {
+                    // start_up_flag = true;
+                    let sc = self.script.as_ref().unwrap();
+                    let (m_vars, m_fns) = sc.get_makepad_var_fn();
+                    
+                    match m_vars {
+                        Some(vars) => {
+                            // get bind props
+                            let binds = self.bind_props.as_ref().unwrap();
+                            
+                            // let (instance, start_up) = vars_to_string(name, vars, binds);
+                            let sub_draw_walk = build_draw_walk_sub_binds(vars,binds);
+                            // let _ = f.write_str(&instance);
+                            draw_walk.push(sub_draw_walk);
+                        }
+                        None => {}
+                    };
+
+                    match m_fns {
+                        Some(fns) => {
+                            // event_match = true;
+                            let mut fns = fns.into_iter().map(|item| item.clone()).collect();
+                            let actions = self.bind_actions.as_ref().unwrap();
+                            let binds = self.bind_props.as_ref();
+                            handle_event.push(build_handle_event_sub_fns(&mut fns, actions, binds))
+                        }
+                        None => {}
+                    };
+
+
+                } 
+                draw_walk.push(inherits.default_draw_walk());
+                handle_event.push(inherits.default_event_handle());
+                widget_events.push(build_draw_walk(&draw_walk.join(" ")));
+                widget_events.push(build_handle_event(&handle_event.join(" ")));
+                // Impl Widget
+                f.write_str(&build_widget_trait(&self.root, widget_events))
             }
         }
     }

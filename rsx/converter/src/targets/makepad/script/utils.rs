@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use crate::{
     targets::makepad::{
-        action::MakepadAction, model::props_to_string, BindAction, BindProp, PropRole,
+        action::MakepadAction, model::props_to_string, BindAction, BindProp, MakepadWidgetActions,
+        PropRole,
     },
     utils::alphabetic::{camel_to_snake, snake_to_camel, uppercase_title},
 };
@@ -31,6 +32,67 @@ pub fn fns_to_string(
     actions: &Vec<BindAction>,
     binds: Option<&Vec<BindProp>>,
 ) -> String {
+    let action_str = build_match_handle_event(
+        fns,
+        actions,
+        binds,
+        |actions, tag, id, action_code_list| -> String {
+            for (action, code) in action_code_list {
+                actions.push(format!(
+                    "if self.ui.{}(id!({})).{}(&actions) {{ {} }}",
+                    tag, id, action, code
+                ));
+            }
+            actions.join(" ")
+        },
+    );
+
+    build_handle_actions(&action_str)
+}
+
+/// ## example
+/// for action in cx.capture_actions(|cx| self.button(id!(bb)).handle_event(cx, event, scope)) {
+///     match action.as_widget_action().cast(){
+///         ButtonAction::Clicked => { log!("Button clicked");}
+///         _ => {log!("Button action not handled");}
+///     }
+/// }
+pub fn build_handle_event_sub_fns(
+    fns: &mut Vec<MakepadAction>,
+    actions: &Vec<BindAction>,
+    binds: Option<&Vec<BindProp>>,
+) -> String {
+    build_match_handle_event(
+        fns,
+        actions,
+        binds,
+        |actions, tag, id, action_code_list| -> String {
+            for (action, code) in action_code_list {
+                let _ = actions.push(format!(
+                    "{} => {{ {} }}",
+                    MakepadWidgetActions::match_action(tag.into(), action).to_string(),
+                    code
+                ));
+            }
+            actions.push("_ => ()".to_string());
+
+            format!(
+            "for action in cx.capture_actions(|cx| self.{}(id!({})).handle_event(cx, event, scope)) {{ match action.as_widget_action().cast(){{ {} }} }}",
+            tag, id, actions.join(", ")
+        )
+        },
+    )
+}
+
+pub fn build_match_handle_event<F>(
+    fns: &mut Vec<MakepadAction>,
+    actions: &Vec<BindAction>,
+    binds: Option<&Vec<BindProp>>,
+    f: F,
+) -> String
+where
+    F: Fn(&mut Vec<String>, &str, &str, Vec<(&String, String)>) -> String,
+{
     let mut action_fn = HashMap::new();
     for (tag, id, (action, action_var)) in actions {
         // if mfn.get_name() == actions.
@@ -42,27 +104,22 @@ pub fn fns_to_string(
                 action_fn
                     .entry((tag, id))
                     .or_insert_with(Vec::new)
-                    .push((action, format!("{} {}", f.to_code(binds), "")));
+                    .push((action, f.to_code(binds)));
             }
             None => {}
         }
     }
-    let action_str = action_fn
+    action_fn
         .into_iter()
         .map(|((tag, id), v)| {
             let tag = camel_to_snake(tag);
             let mut action_str = Vec::new();
-            for (action, code) in v {
-                action_str.push(format!(
-                    "if self.ui.{}(id!({})).{}(&actions) {{ {} }}",
-                    &tag, id, action, code
-                ));
-            }
-            action_str.join("\n")
+            // for (action, code) in v {
+            //     action_str.push(f(&tag,id,&action,&code));
+            // }
+            f(&mut action_str, &tag, id, v)
         })
-        .collect::<String>();
-
-    build_handle_actions(&action_str)
+        .collect::<String>()
 }
 
 /// Convert `Vec<NodeVariable>` to String
@@ -120,13 +177,43 @@ pub fn vars_to_string(
     (instance, build_handle_startup(&mut_setup, &immut_setup))
 }
 
+pub fn build_draw_walk_sub_binds(vars: Vec<&NodeVariable>, binds: &Vec<BindProp>) -> String {
+    let mut fields = Vec::new();
+    for (tag, id, (prop, value)) in binds {
+        match vars
+            .iter()
+            .find(|var| var.get_name() == value.get_bind_key())
+        {
+            Some(var) => {
+                // let init = var.init_to_string().unwrap();
+                let r = PropRole::try_from((tag, (prop, *var))).unwrap();
+                fields.push((r, tag, id));
+            }
+            None => {}
+        }
+    }
+
+    build_setup(fields, |tag,id,props|{
+        format!(
+            "let {}_{} = self.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+            tag, id, tag, id, tag, id, props
+        )
+    })
+}
+
 /// build normal is aim to add other immuatable properties into start_up function
 /// `(value, tag, id)`
 pub fn build_normal(fields: Vec<(PropRole, &String, &String)>) -> String {
-    build_setup(fields)
+    build_setup(fields, |tag,id,props|{
+        format!(
+            "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+            tag, id, tag, id, tag, id, props
+        )
+    })
 }
 
-fn build_setup(fields: Vec<(PropRole, &String, &String)>) -> String {
+fn build_setup<F>(fields: Vec<(PropRole, &String, &String)>, f: F) -> String
+where F: Fn(&str,&str,&str)->String {
     let mut setup = HashMap::new();
     for (prop, tag, id) in fields {
         let tag = camel_to_snake(tag);
@@ -139,10 +226,11 @@ fn build_setup(fields: Vec<(PropRole, &String, &String)>) -> String {
             let widget_name = snake_to_camel(&tag);
 
             let props = props_to_string(&widget_name, &v);
-            format!(
-                "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
-                tag, id, tag, id, tag, id, props
-            )
+            // format!(
+            //     "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
+            //     tag, id, tag, id, tag, id, props
+            // )
+            f(&tag,id,&props)
         })
         .collect::<String>()
 }

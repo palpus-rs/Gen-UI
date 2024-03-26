@@ -4,9 +4,11 @@ mod component;
 mod label;
 mod view;
 mod window;
+mod action;
 
 use std::fmt::{format, Display};
 
+pub use action::*;
 pub use button::button;
 pub use component::component;
 pub use label::{generate_label_props, label};
@@ -36,6 +38,15 @@ impl Widgets {
             _ => todo!("other draw walk()"),
         }
     }
+    pub fn default_event_handle(&self)->String{
+        match self {
+            Widgets::Window | Widgets::Button | Widgets::View | Widgets::Label => {
+                "let _ = self.instance.handle_event(cx, event, scope);".to_string()
+            }
+            _ => todo!("other event_handle()"),
+        }
+    }
+    
 }
 
 impl Display for Widgets {

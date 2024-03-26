@@ -169,11 +169,15 @@ mod test_result_mk {
             <component inherits="view">
                 <label class="t_label" font_size="32" text="label 1"/>
                 <label id="second_lb" class="t_label" :font_size="fs"  text="label 2"/>
+                <button id="bb" text="text btn" @clicked="btn_click" />
             </component>
         </template>
         
         <script>
-        let fs: u64 = 18.0;
+        let fs: f64 = 18.0;
+        let mut btn_click = ||{
+            log!("Button bb Clicked");
+        };
         </script>
         
         <style>
@@ -194,10 +198,10 @@ mod test_result_mk {
 
         // dbg!(result.to_string());
         // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
-        // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
-        // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
+        // /Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs
+        // E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget.rs
         let mut f = File::create(
-            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs",
+            "E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget.rs",
         )
         .unwrap();
         let _ = f.write(result.to_string().as_bytes());
