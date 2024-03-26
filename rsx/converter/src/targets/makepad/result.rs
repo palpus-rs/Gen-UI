@@ -153,4 +153,43 @@ mod test_result_mk {
             File::create("/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs").unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
+    
+    #[test]
+    fn test_widget() {
+        let input = r#"
+        <template>
+            <component inherits="view">
+                <label class="t_label" font_size="32" text="label 1"/>
+                <label id="second_lb" class="t_label" :font_size="fs"  text="label 2"/>
+            </component>
+        </template>
+        
+        <script>
+        let fs: u64 = 18.0;
+        </script>
+        
+        <style>
+        .t_label{
+            brightness: 1.1;
+            color: #fff;
+            wrap: Word;
+            font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
+        }
+        </style>
+        "#;
+        let t = Instant::now();
+        let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
+       
+        let result = MakepadConverter::convert(&ast, "easy_widget");
+        // let result = MakepadConvertResult::new(true, "easy_widget", ast);
+        dbg!(t.elapsed());
+       
+        // dbg!(result.to_string());
+        // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
+        // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
+        // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
+        let mut f =
+            File::create("/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs").unwrap();
+        let _ = f.write(result.to_string().as_bytes());
+    }
 }

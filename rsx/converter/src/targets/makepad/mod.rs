@@ -67,7 +67,12 @@ impl<'a> MakepadConverter<'a> {
                 Some(ref_ui_name) => {
                     let _ = self.widget_ref.replace(Cow::Owned(ref_ui_name.to_string()));
                 }
-                None => todo!("set default special name as widget ref"),
+                
+                None => {}
+                // {
+                //     dbg!(t);
+                //     todo!("set default special name as widget ref")
+                // },
             }
         }
     }
@@ -362,11 +367,14 @@ fn handle_tag(
                             c.into_iter().for_each(|x| tag_model.push_context(x));
                         }
                         PropRole::Special(s) => tag_model.set_special(s),
+                        PropRole::Component(c) => tag_model.set_inherit(Some(c)),
+                        
                     }
                 }
                 Err(e) => panic!("{}", e.to_string()),
             };
         }
+        
         // add special for all binds
         if has_bind {
             match tag_model.get_special() {
@@ -389,6 +397,7 @@ fn handle_tag(
             }
         }
     }
+    
     // have styles
     // true: do not need to associate with styles
     // false: need if style exists

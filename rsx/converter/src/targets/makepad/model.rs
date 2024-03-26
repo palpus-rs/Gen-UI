@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::context::{LEFT_HOLDER, RIGHT_HOLDER};
 
-use super::{generate_label_props, PropRole};
+use super::{generate_label_props, PropRole, Widgets};
 
 /// # The Model of Makepad
 /// Model includes all built-in widgets
@@ -15,6 +15,7 @@ pub struct MakepadModel {
     actions: Option<Vec<PropRole>>,
     children: Option<Vec<MakepadModel>>,
     is_ref: bool,
+    inherits: Option<Widgets>,
 }
 
 impl MakepadModel {
@@ -26,8 +27,15 @@ impl MakepadModel {
             actions: None,
             children: None,
             is_ref,
+            inherits: None,
             contexts: None,
         }
+    }
+    pub fn is_inherit(&self) -> bool {
+        self.inherits.is_some()
+    }
+    pub fn set_inherit(&mut self, inherits: Option<Widgets>) {
+        self.inherits = inherits;
     }
     pub fn get_contexts(&self) -> Option<&Vec<String>> {
         self.contexts.as_ref()
@@ -155,25 +163,17 @@ impl Display for MakepadModel {
                 // `special = <tag_name>{}`
                 let _ = f.write_fmt(format_args!("{} = ", self.special.as_ref().unwrap()));
             }
-        } else {
         }
         // add tag
-        let _ = f.write_fmt(format_args!("<{}>{}", &self.tag, LEFT_HOLDER));
-        // add props
+        if !self.is_inherit() {
+            let _ = f.write_fmt(format_args!("<{}>{}", &self.tag, LEFT_HOLDER));
+            // add props
+            if self.has_props() {
+                let props = self.props_to_string();
+                // dbg!(&props);
 
-        if self.has_props() {
-            // let props = self
-            //     .props
-            //     .as_ref()
-            //     .unwrap()
-            //     .into_iter()
-            //     .map(|prop| prop.to_string())
-            //     .collect::<String>();
-
-            let props = self.props_to_string();
-            // dbg!(&props);
-
-            let _ = f.write_str(&props);
+                let _ = f.write_str(&props);
+            }
         }
         // add children
         if self.has_children() {
@@ -187,8 +187,12 @@ impl Display for MakepadModel {
                 .join(" ");
             let _ = f.write_fmt(format_args!(" {} ", &children));
         }
-
-        f.write_str(RIGHT_HOLDER)
+        if !self.is_inherit(){
+            f.write_str(RIGHT_HOLDER)
+        }else{
+            f.write_str("")
+        }
+        
     }
 }
 
@@ -210,36 +214,52 @@ pub fn props_to_string(tag: &str, props: &Vec<PropRole>) -> String {
     }
 }
 
-#[cfg(test)]
-mod test_mk_model {
-    use crate::targets::makepad::{
-        value::{MakepadPropValue, Size},
-        PropRole,
-    };
-
-    use super::MakepadModel;
-
-    #[test]
-    fn test_display() {
-        let mut model = MakepadModel::new("Window", true);
-        model.set_special("my_ui".to_string());
-
-        model.push_prop(PropRole::Normal(
-            "height".to_string(),
-            MakepadPropValue::Size(Size::Fixed(180.0)),
-        ));
-
-        model.push_prop(PropRole::Normal(
-            "width".to_string(),
-            MakepadPropValue::Size(Size::Fill),
-        ));
-
-        model.push_child(MakepadModel::new("Button", false));
-
-        let mut nesting = MakepadModel::new("View", false);
-        nesting.push_child(MakepadModel::new("Button", false));
-        model.push_child(nesting);
-
-        dbg!(model.to_string());
+fn special_model_to_string(
+    model: &MakepadModel,
+    f: &mut std::fmt::Formatter<'_>,
+) -> std::fmt::Result {
+    if model.has_special() {
+        // ref tag
+        // `special: <tag_name>{}`
+        if model.is_ref {
+            let _ = f.write_fmt(format_args!("{}: ", model.special.as_ref().unwrap()));
+        } else {
+            // unref tag
+            // `special = <tag_name>{}`
+            let _ = f.write_fmt(format_args!("{} = ", model.special.as_ref().unwrap()));
+        }
+    } else {
     }
+    // add tag
+    let _ = f.write_fmt(format_args!("<{}>{}", &model.tag, LEFT_HOLDER));
+    // add props
+
+    if model.has_props() {
+        // let props = model
+        //     .props
+        //     .as_ref()
+        //     .unwrap()
+        //     .into_iter()
+        //     .map(|prop| prop.to_string())
+        //     .collect::<String>();
+
+        let props = model.props_to_string();
+        // dbg!(&props);
+
+        let _ = f.write_str(&props);
+    }
+    // add children
+    if model.has_children() {
+        let children = model
+            .children
+            .as_ref()
+            .unwrap()
+            .into_iter()
+            .map(|child| child.to_string())
+            .collect::<Vec<String>>()
+            .join(" ");
+        let _ = f.write_fmt(format_args!(" {} ", &children));
+    }
+
+    f.write_str(RIGHT_HOLDER)
 }

@@ -16,7 +16,9 @@ mod size;
 mod spacing;
 mod text;
 mod wrap;
+mod component;
 
+pub use component::*;
 #[allow(unused)]
 pub use align::*;
 pub use bg::*;
@@ -52,7 +54,7 @@ use parser::{PropertyKeyType, PropsKey, Value};
 
 use crate::error::Errors;
 
-use super::{button, label, value::MakepadPropValue, view, window, NodeVariable};
+use super::{button, component, label, value::MakepadPropValue, view, window, NodeVariable, Widgets};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PropRole {
@@ -63,6 +65,7 @@ pub enum PropRole {
     Context(Vec<String>),
     // same as Context, but only have one (id)
     Special(String),
+    Component(Widgets),
 }
 
 impl PropRole {
@@ -137,6 +140,7 @@ impl TryFrom<(&str, (&str, &Value))> for PropRole {
             "Button" => button(value.1 .0, value.1 .1),
             "View" => view(value.1 .0, value.1 .1),
             "Label" => label(value.1 .0, value.1 .1),
+            "Component" => component(value.1 .0, value.1 .1),
             _ => Err(Errors::UnMatchedWidget),
         }
     }
@@ -152,6 +156,7 @@ impl TryFrom<(&str, (&PropsKey, &Value))> for PropRole {
             "Button" => button(k, value.1 .1),
             "View" => view(k, value.1 .1),
             "Label" => label(k, value.1 .1),
+            "Component" => component(k, value.1 .1),
             _ => Err(Errors::UnMatchedWidget),
         }
     }
@@ -192,6 +197,8 @@ impl Display for PropRole {
             PropRole::Function(k, v) => f.write_fmt(format_args!("{}: {}, ", k, v.to_string())),
             PropRole::Context(_) => todo!(),
             PropRole::Special(s) => f.write_str(s),
+            PropRole::Component(s) => todo!(),
+            
         }
     }
 }

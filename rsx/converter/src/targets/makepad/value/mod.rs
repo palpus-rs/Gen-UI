@@ -204,6 +204,8 @@ impl From<PropRole> for MakepadPropValue {
             PropRole::Function(_, func) => func,
             PropRole::Context(_) => todo!(),
             PropRole::Special(_) => todo!(),
+            PropRole::Component(_) => todo!(),
+            
         }
     }
 }

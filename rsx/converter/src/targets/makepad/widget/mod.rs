@@ -3,6 +3,7 @@ mod common;
 mod label;
 mod view;
 mod window;
+mod component;
 
 use std::fmt::Display;
 
@@ -10,6 +11,9 @@ pub use button::button;
 pub use label::{generate_label_props, label};
 pub use view::view;
 pub use window::window;
+pub use component::component;
+
+use crate::{str_to_string_try_from, utils::alphabetic::snake_to_camel};
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -19,6 +23,8 @@ pub enum Widgets {
     View,
     Button,
     Label,
+    Component,
+    DefineComponent(String),
 }
 
 impl Display for Widgets {
@@ -28,7 +34,28 @@ impl Display for Widgets {
             Widgets::View => "View",
             Widgets::Button => "Button",
             Widgets::Label => "Label",
+            Widgets::Component => todo!(),
+            Widgets::DefineComponent(_) => todo!(),
         })
+    }
+}
+
+impl From<&str> for Widgets {
+    fn from(value: &str) -> Self {
+        match snake_to_camel(value).as_str(){
+            "Window" => Widgets::Window,
+            "View" => Widgets::View,
+            "Button" => Widgets::Button,
+            "Label" => Widgets::Label,
+            "Component" => Widgets::Component,
+            _ => Widgets::DefineComponent(value.to_string())
+        }
+    }
+}
+
+impl From<&String> for Widgets {
+    fn from(value: &String) -> Self {
+        value.as_str().into()
     }
 }
 
