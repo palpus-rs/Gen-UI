@@ -20,7 +20,9 @@ use std::{borrow::Cow, collections::HashMap, fmt::Display};
 use parser::{ASTNodes, PropsKey, Tag, Value, HOLDER_END};
 
 use crate::{
-    error::Errors, targets::makepad::action::MakepadAction, utils::alphabetic::{snake_to_camel, uppercase_title},
+    error::Errors,
+    targets::makepad::action::MakepadAction,
+    utils::alphabetic::{snake_to_camel, uppercase_title},
 };
 
 use self::{
@@ -67,12 +69,11 @@ impl<'a> MakepadConverter<'a> {
                 Some(ref_ui_name) => {
                     let _ = self.widget_ref.replace(Cow::Owned(ref_ui_name.to_string()));
                 }
-                
-                None => {}
-                // {
-                //     dbg!(t);
-                //     todo!("set default special name as widget ref")
-                // },
+
+                None => {} // {
+                           //     dbg!(t);
+                           //     todo!("set default special name as widget ref")
+                           // },
             }
         }
     }
@@ -162,27 +163,12 @@ impl<'a> Display for MakepadConverter<'a> {
         match &self.widget_ref {
             Some(name) => {
                 let _ = f.write_fmt(format_args!(
-                    "\n#[derive(Live, LiveHook)]\npub struct {} {{ #[live] {}: WidgetRef, #[rust] instance: Instance,}}\n",
+                    "\n#[derive(Live, LiveHook)] pub struct {} {{ #[live] {}: WidgetRef, #[rust] instance: Instance,}}\n",
                     self.root,name,
                 ));
                 if self.has_script() {
                     start_up = true;
                     let sc = self.script.as_ref().unwrap();
-                    // match sc.get_makepad_vars() {
-                    //     Some(vars) => {
-                    //         // get bind props
-                    //         let binds = self.bind_props.as_ref().unwrap();
-                    //         let name = self.root.to_string();
-                    //         let bind_instance = vars_to_string(name, vars, binds);
-                    //         let _ = f.write_str(&bind_instance);
-                    //     }
-                    //     None => {}
-                    // }
-                    // let _ = f.write_fmt(format_args!(
-                    //     ", {} }}",
-                    //     self.script.as_ref().unwrap().to_string()
-                    // ));
-
                     let (m_vars, m_fns) = sc.get_makepad_var_fn();
                     let mut match_events = Vec::new();
                     match m_vars {
@@ -217,27 +203,39 @@ impl<'a> Display for MakepadConverter<'a> {
                 } else {
                     let _ = f.write_str(HOLDER_END);
                 }
+                let _ = f.write_fmt(format_args!(
+                    "\nimpl LiveRegister for {} {{ {} }}",
+                    self.root, LIVE_REGISTER
+                ));
+                let _ = f.write_fmt(format_args!(
+                    "impl AppMain for {} {{ {} {{ ",
+                    self.root, APP_MAIN
+                ));
+                if start_up {
+                    let _ = f.write_str(
+                        "match event{ Event::Startup => self.handle_startup(cx), _ =>() };",
+                    );
+                }
+                if event_match {
+                    let _ = f.write_str("self.match_event(cx, event);");
+                }
+                f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }")
             }
-            None => {}
-        }
+            None => {
+                // no special ref means the model is define component
+                let inherits = self.template.as_ref().unwrap().get_inherit().unwrap();
 
-        let _ = f.write_fmt(format_args!(
-            "\nimpl LiveRegister for {} {{ {} }}",
-            self.root, LIVE_REGISTER
-        ));
-        let _ = f.write_fmt(format_args!(
-            "impl AppMain for {} {{ {} {{ ",
-            self.root, APP_MAIN
-        ));
-        if start_up {
-            let _ =
-                f.write_str("match event{ Event::Startup => self.handle_startup(cx), _ =>() };");
+                let _ = f.write_fmt(format_args!(
+                    "\n#[derive(Live, LiveHook, Widget)] pub struct {} {{ #[deref] #[redraw] instance: {} }}\n",
+                    self.root, inherits.to_string(),
+                ));
+
+                f.write_fmt(format_args!(
+                    "impl Widget for EasyWidget {{ fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {{ {} DrawStep::done() }}}}",
+                    inherits.default_draw_walk()
+                ))
+            }
         }
-        if event_match {
-            let _ = f.write_str("self.match_event(cx, event);");
-        }
-        f.write_str("self.ui.handle_event(cx, event, &mut Scope::empty());} }")
-       
     }
 }
 
@@ -368,13 +366,12 @@ fn handle_tag(
                         }
                         PropRole::Special(s) => tag_model.set_special(s),
                         PropRole::Component(c) => tag_model.set_inherit(Some(c)),
-                        
                     }
                 }
                 Err(e) => panic!("{}", e.to_string()),
             };
         }
-        
+
         // add special for all binds
         if has_bind {
             match tag_model.get_special() {
@@ -397,7 +394,7 @@ fn handle_tag(
             }
         }
     }
-    
+
     // have styles
     // true: do not need to associate with styles
     // false: need if style exists

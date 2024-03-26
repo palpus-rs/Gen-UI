@@ -1,19 +1,19 @@
 mod button;
 mod common;
+mod component;
 mod label;
 mod view;
 mod window;
-mod component;
 
-use std::fmt::Display;
+use std::fmt::{format, Display};
 
 pub use button::button;
+pub use component::component;
 pub use label::{generate_label_props, label};
 pub use view::view;
 pub use window::window;
-pub use component::component;
 
-use crate::{str_to_string_try_from, utils::alphabetic::snake_to_camel};
+use crate::utils::alphabetic::snake_to_camel;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, PartialEq)]
@@ -27,6 +27,17 @@ pub enum Widgets {
     DefineComponent(String),
 }
 
+impl Widgets {
+    pub fn default_draw_walk(&self) -> String {
+        match self {
+            Widgets::Window | Widgets::Button | Widgets::View | Widgets::Label => {
+                "let _ = self.instance.draw_walk(cx, scope, walk);".to_string()
+            }
+            _ => todo!("other draw walk()"),
+        }
+    }
+}
+
 impl Display for Widgets {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -35,20 +46,20 @@ impl Display for Widgets {
             Widgets::Button => "Button",
             Widgets::Label => "Label",
             Widgets::Component => todo!(),
-            Widgets::DefineComponent(_) => todo!(),
+            Widgets::DefineComponent(c) => c,
         })
     }
 }
 
 impl From<&str> for Widgets {
     fn from(value: &str) -> Self {
-        match snake_to_camel(value).as_str(){
+        match snake_to_camel(value).as_str() {
             "Window" => Widgets::Window,
             "View" => Widgets::View,
             "Button" => Widgets::Button,
             "Label" => Widgets::Label,
             "Component" => Widgets::Component,
-            _ => Widgets::DefineComponent(value.to_string())
+            _ => Widgets::DefineComponent(value.to_string()),
         }
     }
 }

@@ -37,6 +37,9 @@ impl MakepadModel {
     pub fn set_inherit(&mut self, inherits: Option<Widgets>) {
         self.inherits = inherits;
     }
+    pub fn get_inherit(&self) -> Option<&Widgets> {
+        self.inherits.as_ref()
+    }
     pub fn get_contexts(&self) -> Option<&Vec<String>> {
         self.contexts.as_ref()
     }
@@ -212,54 +215,4 @@ pub fn props_to_string(tag: &str, props: &Vec<PropRole>) -> String {
         "Label" => generate_label_props(props),
         _ => panic!("Invalid widget"),
     }
-}
-
-fn special_model_to_string(
-    model: &MakepadModel,
-    f: &mut std::fmt::Formatter<'_>,
-) -> std::fmt::Result {
-    if model.has_special() {
-        // ref tag
-        // `special: <tag_name>{}`
-        if model.is_ref {
-            let _ = f.write_fmt(format_args!("{}: ", model.special.as_ref().unwrap()));
-        } else {
-            // unref tag
-            // `special = <tag_name>{}`
-            let _ = f.write_fmt(format_args!("{} = ", model.special.as_ref().unwrap()));
-        }
-    } else {
-    }
-    // add tag
-    let _ = f.write_fmt(format_args!("<{}>{}", &model.tag, LEFT_HOLDER));
-    // add props
-
-    if model.has_props() {
-        // let props = model
-        //     .props
-        //     .as_ref()
-        //     .unwrap()
-        //     .into_iter()
-        //     .map(|prop| prop.to_string())
-        //     .collect::<String>();
-
-        let props = model.props_to_string();
-        // dbg!(&props);
-
-        let _ = f.write_str(&props);
-    }
-    // add children
-    if model.has_children() {
-        let children = model
-            .children
-            .as_ref()
-            .unwrap()
-            .into_iter()
-            .map(|child| child.to_string())
-            .collect::<Vec<String>>()
-            .join(" ");
-        let _ = f.write_fmt(format_args!(" {} ", &children));
-    }
-
-    f.write_str(RIGHT_HOLDER)
 }

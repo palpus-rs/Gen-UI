@@ -52,7 +52,10 @@ impl Display for MakepadConvertResult {
             Some(c) => {
                 let _ = f.write_str(c);
                 if self.is_root {
-                    let _ = f.write_fmt(format_args!("\napp_main!({});", snake_to_camel(&self.file_name)));
+                    let _ = f.write_fmt(format_args!(
+                        "\napp_main!({});",
+                        snake_to_camel(&self.file_name)
+                    ));
                 }
             }
             None => {}
@@ -68,7 +71,10 @@ mod test_result_mk {
 
     use parser::{ParseResult, ParseTarget};
 
-    use crate::targets::makepad::{result::MakepadConvertResult, MakepadConverter};
+    use crate::{
+        targets::makepad::{result::MakepadConvertResult, MakepadConverter},
+        utils::alphabetic::snake_to_camel,
+    };
 
     #[test]
     fn test_main() {
@@ -149,11 +155,13 @@ mod test_result_mk {
         // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f =
-            File::create("/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs").unwrap();
+        let mut f = File::create(
+            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
+        )
+        .unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
-    
+
     #[test]
     fn test_widget() {
         let input = r#"
@@ -179,17 +187,19 @@ mod test_result_mk {
         "#;
         let t = Instant::now();
         let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-       
-        let result = MakepadConverter::convert(&ast, "easy_widget");
+        let name = snake_to_camel("easy_widget");
+        let result = MakepadConverter::convert(&ast, &name);
         // let result = MakepadConvertResult::new(true, "easy_widget", ast);
         dbg!(t.elapsed());
-       
+
         // dbg!(result.to_string());
         // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
-        let mut f =
-            File::create("/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs").unwrap();
+        let mut f = File::create(
+            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs",
+        )
+        .unwrap();
         let _ = f.write(result.to_string().as_bytes());
     }
 }
