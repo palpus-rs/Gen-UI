@@ -232,9 +232,17 @@ impl<'a> Display for MakepadConverter<'a> {
                 if self.has_script() {
                     // start_up_flag = true;
                     let sc = self.script.as_ref().unwrap();
-                    let (m_vars, m_fns) = sc.get_makepad_var_fn();
-                    
+                    sc.to_makepad_rs().into_iter().map(|node|{
+                        match node {
+                            ScriptNode::Variable(v) => todo!(),
+                            ScriptNode::Function(f) => todo!(),
+                            ScriptNode::Struct(s) => todo!(),
+                        }
+                    });
+                    // let (m_vars, m_fns) = sc.get_makepad_var_fn();
+                    // dbg!(m_vars.as_ref());
                     match m_vars {
+                        
                         Some(vars) => {
                             // get bind props
                             let binds = self.bind_props.as_ref().unwrap();
