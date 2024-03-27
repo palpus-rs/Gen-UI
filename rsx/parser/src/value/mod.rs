@@ -43,6 +43,7 @@ pub enum Value {
     /// - rgb color: rgb(211,23,255)
     /// - rgba color: rgba(255,255,87,0.4)
     Color(Color),
+    Struct(String),
     UnKnown(String),
 }
 
@@ -214,6 +215,7 @@ impl Display for Value {
             Value::Function(func) => func.to_string(),
             Value::Void => String::new(),
             Value::Color(color) => color.to_string(),
+            Value::Struct(s)=> s.to_string(),
             Value::Vec(v) => format!(
                 "{:?}",
                 v.into_iter()

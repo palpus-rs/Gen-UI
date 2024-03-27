@@ -186,8 +186,11 @@ pub fn build_draw_walk_sub_binds(vars: Vec<&NodeVariable>, binds: &Vec<BindProp>
         {
             Some(var) => {
                 // let init = var.init_to_string().unwrap();
-                let r = PropRole::try_from((tag, (prop, *var))).unwrap();
-                fields.push((r, tag, id));
+                
+                if tag != "Component"{
+                    let r = PropRole::try_from((tag, (prop, *var))).unwrap();
+                    fields.push((r, tag, id));
+                }
             }
             None => {}
         }

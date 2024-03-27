@@ -49,6 +49,7 @@ impl ConvertScript {
                 match mr {
                     ScriptNode::Variable(var) => vars.push(var),
                     ScriptNode::Function(func) => fns.push(func),
+                    _ => {},
                 }
             }
         }

@@ -1,5 +1,7 @@
 use std::fmt::Display;
 
+use syn::{Item, ItemStruct, Stmt};
+
 use crate::targets::makepad::action::MakepadAction;
 
 use super::NodeVariable;
@@ -8,6 +10,7 @@ use super::NodeVariable;
 pub enum ScriptNode {
     Variable(NodeVariable),
     Function(MakepadAction),
+    Struct(ItemStruct)
 }
 
 #[allow(dead_code)]
@@ -25,6 +28,8 @@ impl Display for ScriptNode {
         match self {
             ScriptNode::Variable(v) => f.write_str(v.to_string().as_str()),
             ScriptNode::Function(_) => todo!(),
+            ScriptNode::Struct(_) => todo!(),
+            
         }
     }
 }

@@ -271,18 +271,8 @@ impl<'a> Display for MakepadConverter<'a> {
     }
 }
 
-/// expand all style sheet
-fn handle_style(ast: &parser::ParseResult) -> Option<ConvertStyle> {
-    let mut res = HashMap::new();
-    for style in ast.style().unwrap() {
-        match MakepadConverter::convert_style(style) {
-            Some(styles) => res.extend(styles),
-            None => return None,
-        };
-    }
-    Some(res)
-}
 
+//---------------------------------------[handle script]-----------------------------------------------------------------------------------------
 fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
     // is_single:
     // true: the script is independent and it will be inject into other rsx , do not need to convert special
@@ -301,7 +291,29 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
                 syn::Stmt::Local(local) => {
                     stmts.push(handle_variable(local));
                 }
-                _ => todo!("syn::Stmt need to complate later"),
+                syn::Stmt::Item(item) => {
+                    match item {
+                        syn::Item::Const(_) => todo!(),
+                        syn::Item::Enum(_) => todo!(),
+                        syn::Item::ExternCrate(_) => todo!(),
+                        syn::Item::Fn(_) => todo!(),
+                        syn::Item::ForeignMod(_) => todo!(),
+                        syn::Item::Impl(_) => todo!(),
+                        syn::Item::Macro(_) => todo!(),
+                        syn::Item::Mod(_) => todo!(),
+                        syn::Item::Static(_) => todo!(),
+                        syn::Item::Struct(s) => stmts.push(ScriptNode::Struct(s.clone())),
+                        syn::Item::Trait(_) => todo!(),
+                        syn::Item::TraitAlias(_) => todo!(),
+                        syn::Item::Type(_) => todo!(),
+                        syn::Item::Union(_) => todo!(),
+                        syn::Item::Use(_) => todo!(),
+                        syn::Item::Verbatim(_) => todo!(),
+                        _ => todo!(),
+                    }
+                },
+                syn::Stmt::Expr(_, _) => todo!(),
+                syn::Stmt::Macro(_) => todo!(),
             }
 
             // todo!("handle script in rsx");
@@ -354,6 +366,8 @@ fn handle_variable(local: &Local) -> ScriptNode {
         _ => todo!("handle variable syn later, see future needed"),
     }
 }
+
+//---------------------------------------[handle tag]-----------------------------------------------------------------------------------------
 
 /// acturally if the handle_tag() function can run
 /// it must have ConvertScript
@@ -412,7 +426,13 @@ fn handle_tag(
                         .iter_mut()
                         .for_each(|bind| bind.1 = special.to_string());
                 }
-                None => panic!("the widget which has binds need to add special id"),
+                None => {
+                    
+                    if !tag_model.is_component(){
+dbg!(&tag_model);
+                        panic!("the widget(expcet component) which has binds need to add special id");
+                    }
+                },
             }
         }
         if has_action {
@@ -464,103 +484,3 @@ fn handle_tag(
     (tag_model, binds, actions)
 }
 
-/// Match properties based on the existing components in the current makepad widgets
-// fn prop_match(tag: &str, prop: (&PropsKey, &Value)) -> Result<PropRole, Errors> {
-//     match tag {
-//         "Window" => window(prop.0, prop.1),
-//         "Button" => button(prop.0, prop.1),
-//         _ => Err(Errors::UnMatchedWidget),
-//     }
-// }
-
-#[cfg(test)]
-mod test_makepad {
-    use std::time::Instant;
-
-    use parser::{ParseResult, ParseTarget};
-
-    use super::MakepadConverter;
-
-    #[test]
-    fn convert_single_t() {
-        // example for: window single button
-        // <button id="my_button" text="Hello, World" @clicked="btn_click"></button>
-
-        let input = r#"
-        <template>
-            <window id="ui" class="my_ui my_ui2">
-               <view id="body" class="my_ui2"/>
-            </window>
-        </template>
-
-        <style>
-        #ui{
-            padding: 10 16;
-            height: 178.9;
-            line_spacing: 32.9;
-            clip_x: true;
-            clip_y: false;
-        }
-        .my_ui{
-            width: Fill;
-            background_color: #000;
-            background_visible: false;
-            flow: Overlay;
-        }
-        .my_ui2{
-            margin: 1 3 5 7;
-            spacing: 18;
-        }
-        </style>
-        "#;
-        let t = Instant::now();
-        let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-        let convert = MakepadConverter::convert(&ast, "App");
-        dbg!(t.elapsed());
-        // dbg!(&ast.style());
-        dbg!(convert.to_string());
-    }
-
-    #[test]
-    fn convert_style() {
-        let input = r#"
-        <style>
-        .ui{
-            height:100;
-            width:120;
-            margin:7 10 0 30;
-            .button{
-                height: 46;
-                width: 88.8;
-            }
-        }
-        </style>
-        "#;
-        let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-        let style = ast.style().unwrap();
-        style.into_iter().for_each(|x| {
-            dbg!(MakepadConverter::convert_style(x));
-        });
-    }
-
-    #[test]
-    fn convert_t() {
-        // example for: window single button
-        let input = r#"
-        <template>
-            <window id="ui">
-                <button id="my_button" text="Hello, World" @clicked="btn_click"></button>
-            </window>
-        </template>
-
-        <script>
-        let mut btn_click = || {
-            println!("CLICKED!");
-        };
-        </script>
-        "#;
-
-        let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-        dbg!(MakepadConverter::convert(&ast, "App"));
-    }
-}

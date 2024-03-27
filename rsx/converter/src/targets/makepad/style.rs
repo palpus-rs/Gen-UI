@@ -38,3 +38,15 @@ pub fn expand_style(s: &Box<Style>) -> Option<ConvertStyle> {
     }
     Some(res)
 }
+
+/// expand all style sheet
+pub fn handle_style(ast: &parser::ParseResult) -> Option<ConvertStyle> {
+    let mut res = HashMap::new();
+    for style in ast.style().unwrap() {
+        match MakepadConverter::convert_style(style) {
+            Some(styles) => res.extend(styles),
+            None => return None,
+        };
+    }
+    Some(res)
+}

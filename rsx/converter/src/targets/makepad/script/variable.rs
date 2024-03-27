@@ -4,6 +4,8 @@ use parser::Value;
 use quote::{quote, ToTokens};
 use syn::{LocalInit, Type};
 
+use crate::targets::makepad::handler::{handle_expr_default, handle_struct};
+
 use super::handler::{handle_bool, handle_f64, handle_isize, handle_string, handle_usize};
 
 /// 编译时设置（转换时设置）（init）
@@ -164,7 +166,21 @@ impl From<NodeVariable> for Value {
             "bool" => handle_bool(init).unwrap(),
             "usize" | "u8" | "u16" | "u32" | "u64" | "int" => handle_usize(init).unwrap(),
             "isize" | "i8" | "i16" | "i32" | "i64" => handle_isize(init).unwrap(),
-            _ => panic!("unexpected value type: {:?}", &ty),
+            other => {
+                // 对other进行处理识别匹配default
+                if other.contains(":: default"){
+                    // 是Struct使用了default()方法，处理为：
+                    // #[live]
+                    // pub props: MyProps,       
+                    // Value::Struct()
+                    // dbg!(init);
+                    // return handle_struct(init).unwrap();
+                    return handle_expr_default(init).unwrap();
+                }
+
+
+                panic!("unexpected value type: {:?}", &ty);
+            }
         }
     }
 }

@@ -31,6 +31,9 @@ impl MakepadModel {
             contexts: None,
         }
     }
+    pub fn is_component(&self)->bool{
+        self.tag.eq("Component") && self.is_inherit()
+    }
     pub fn is_inherit(&self) -> bool {
         self.inherits.is_some()
     }

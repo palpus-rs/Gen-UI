@@ -156,7 +156,7 @@ mod test_result_mk {
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
         let mut f = File::create(
-            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
+            "E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/convert.rs",
         )
         .unwrap();
         let _ = f.write(result.to_string().as_bytes());
@@ -166,18 +166,26 @@ mod test_result_mk {
     fn test_widget() {
         let input = r#"
         <template>
-            <component inherits="view">
-                <label class="t_label" font_size="32" text="label 1"/>
+            <component inherits="view" :props="my_props">
+                <label id="first_lb" class="t_label" font_size="32" :text="my_props.label1"/>
                 <label id="second_lb" class="t_label" :font_size="fs"  text="label 2"/>
                 <button id="bb" text="text btn" @clicked="btn_click" />
             </component>
         </template>
         
         <script>
+        #[derive(Default)]
+        pub struct MyProps{
+            pub label1: String
+        }
+
+        let my_props = MyProps::default();
+        
         let fs: f64 = 18.0;
         let mut btn_click = ||{
             log!("Button bb Clicked");
         };
+        
         </script>
         
         <style>
@@ -201,7 +209,7 @@ mod test_result_mk {
         // /Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs
         // E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget.rs
         let mut f = File::create(
-            "E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget.rs",
+            "E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget2.rs",
         )
         .unwrap();
         let _ = f.write(result.to_string().as_bytes());
