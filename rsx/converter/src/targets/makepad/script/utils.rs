@@ -8,7 +8,7 @@ use crate::{
     targets::makepad::{
         action::MakepadAction, handler::MakepadFieldConverter, model::props_to_string, BindAction, BindProp, MakepadWidgetActions, PropRole
     },
-    utils::alphabetic::{camel_to_snake, snake_to_camel, uppercase_title},
+    utils::{alphabetic::{camel_to_snake, snake_to_camel, uppercase_title}, macros::build_attr_macro},
 };
 
 use super::{
@@ -362,9 +362,9 @@ pub fn get_component_prop_struct_name(
          })
 }
 
-pub fn build_component_structs(structs: Vec<ItemStruct>, target: Option<String>) -> String {
+pub fn build_component_structs(mut structs: Vec<ItemStruct>, target: Option<String>) -> String {
     
-    for mut item in structs {
+    structs.iter_mut().map(|item|{
         
         let name = item.ident.to_string();
         if target.is_some() && name.eq(target.as_ref().unwrap()) {
@@ -378,53 +378,22 @@ pub fn build_component_structs(structs: Vec<ItemStruct>, target: Option<String>)
                             d_macro.tokens.append(TokenTree::Ident(Ident::new(item, Span::call_site())));
                         });
                     },
-                    _ => todo!(),
+                    _ => panic!("Rule Fatal: UnAcceptable! `build_component_structs()`"),
                 }
             });
             // add live_ignore attr macro
-            let attr_macro = Attribute{
-                pound_token: Default::default(),
-                style: AttrStyle::Outer,
-                bracket_token: Bracket::default(),
-                meta: Meta::Path(syn::Path::from(PathSegment{
-                    ident: Ident::new("live_ignore", Span::call_site()),
-                    arguments: syn::PathArguments::None,
-                })),
-            };
+            let attr_macro = build_attr_macro("live_ignore");
             item.attrs.push(attr_macro);
-            // dbg!(quote!{#item}.to_string());
-            dbg!(&item.fields);
-            todo!();
+            // handle field to Makepad struct
             item.fields.iter_mut().for_each(|field|{
                let _ =  MakepadFieldConverter::convert(field);
             });
-            dbg!(&item);
-            // for d_macro in derives {
-            //     let ident = Ident::new(d_macro,Span::call_site());
-                
-                
-            // }
-            
-            todo!()
-            // for derive in new_derives {
-            //     // let meta = Meta::List(MetaList {
-            //     //     path: syn::parse_str(derive).unwrap(),
-            //     //     paren_token: syn::token::Paren::default(),
-            //     //     nested: syn::punctuated::Punctuated::new(),
-
-            //     // });
-                
-
-
-            //     item.attrs.push(Attribute { pound_token: syn::token::Pound::default(), style: syn::AttrStyle::Outer, bracket_token: syn::token::Bracket::default(), path: syn::Path::from(Ident::new(derive, proc_macro2::Span::call_site())), tokens: quote! { #meta } });
-            // }
-            // for attr in new_attrs {
-            //     let meta = Meta::Path(syn::Path::from(Ident::new(attr, proc_macro2::Span::call_site())));
-            //     ast.attrs.push(Attribute { pound_token: syn::token::Pound::default(), style: syn::AttrStyle::Outer, bracket_token: syn::token::Bracket::default(), path: syn::Path::from(Ident::new(attr, proc_macro2::Span::call_site())), tokens: quote! { #meta } });
-            // }
         }
-    }
-    todo!()
+        
+        item.to_token_stream().to_string()
+
+    }).collect::<String>()
+   
 }
 
 // fn build_instance(

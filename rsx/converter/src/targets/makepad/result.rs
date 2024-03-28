@@ -176,7 +176,6 @@ mod test_result_mk {
         <script>
         #[derive(Default)]
         pub struct MyProps{
-            #[live]
             pub label1: String
         }
 
