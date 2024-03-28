@@ -230,7 +230,6 @@ impl<'a> Display for MakepadConverter<'a> {
                 let inherits = self.template.as_ref().unwrap().get_inherit().unwrap();
 
                 let (mut draw_walk, mut handle_event, component_struct) = if self.has_script() {
-                    // start_up_flag = true;
                     let sc = self.script.as_ref().unwrap();
                     sc.as_makepad_rs().iter().for_each(|node| {
                         match node {
@@ -239,16 +238,22 @@ impl<'a> Display for MakepadConverter<'a> {
                             ScriptNode::Struct(s) => structs.push(s.clone()),
                         };
                     });
-                   
+
                     let binds = self.bind_props.as_ref();
                     let actions = self.bind_actions.as_ref().unwrap();
-                    let struct_name = get_component_prop_struct_name(binds, &draw_walk);
+                    let (struct_name, struct_var) =
+                        get_component_prop_struct_name(binds, &draw_walk).unwrap();
                     let mut fns = handle_event.into_iter().map(|item| item.clone()).collect();
-                    
+                    let struct_name = if struct_name.is_empty() {
+                        None
+                    } else {
+                        Some(struct_name)
+                    };
+
                     (
-                        build_draw_walk_sub_binds(draw_walk, binds.unwrap()),
+                        build_draw_walk_sub_binds(draw_walk, binds.unwrap(), &struct_var),
                         build_handle_event_sub_fns(&mut fns, actions, binds),
-                        build_component_structs(structs,struct_name, &self.root, inherits ),
+                        build_component_structs(structs, struct_name, &self.root, inherits),
                     )
                 } else {
                     (String::new(), String::new(), String::new())

@@ -7,8 +7,8 @@ use syn::{Expr, Ident, ItemStruct, Meta};
 use crate::{
     context::{LEFT_HOLDER, RIGHT_HOLDER},
     targets::makepad::{
-        action::MakepadAction, handler::MakepadFieldConverter, model::props_to_string, BindAction,
-        BindProp, MakepadWidgetActions, PropRole, Widgets,
+        action::MakepadAction, handler::MakepadFieldConverter, model::props_to_string,
+        value::MakepadPropValue, BindAction, BindProp, MakepadWidgetActions, PropRole, Widgets,
     },
     utils::{
         alphabetic::{camel_to_snake, snake_to_camel},
@@ -185,22 +185,35 @@ pub fn vars_to_string(
     (instance, build_handle_startup(&mut_setup, &immut_setup))
 }
 
-pub fn build_draw_walk_sub_binds(vars: Vec<&NodeVariable>, binds: &Vec<BindProp>) -> String {
+pub fn build_draw_walk_sub_binds(
+    vars: Vec<&NodeVariable>,
+    binds: &Vec<BindProp>,
+    prop_sign: &str,
+) -> String {
     let mut fields = Vec::new();
     for (tag, id, (prop, value)) in binds {
-        match vars
-            .iter()
-            .find(|var| var.get_name() == value.get_bind_key())
-        {
-            Some(var) => {
-                // let init = var.init_to_string().unwrap();
+        let key = value.get_bind_key();
+        if key.contains(prop_sign) && tag != "Component" {
+            fields.push((
+                PropRole::normal(
+                    prop,
+                    MakepadPropValue::String(format!("(self.props.{})", key)),
+                ),
+                tag,
+                id,
+            ));
+        } else {
+            match vars.iter().find(|var| var.get_name() == key) {
+                Some(var) => {
+                    // let init = var.init_to_string().unwrap();
 
-                if tag != "Component" {
-                    let r = PropRole::try_from((tag, (prop, *var))).unwrap();
-                    fields.push((r, tag, id));
+                    if tag != "Component" {
+                        let r = PropRole::try_from((tag, (prop, *var))).unwrap();
+                        fields.push((r, tag, id));
+                    }
                 }
+                None => {}
             }
-            None => {}
         }
     }
 
@@ -340,7 +353,7 @@ fn build_instance(fields: Vec<(&str, PropRole, &String, &String)>) -> (String, S
 pub fn get_component_prop_struct_name(
     binds: Option<&Vec<BindProp>>,
     vars: &Vec<&NodeVariable>,
-) -> Option<String> {
+) -> Option<(String, String)> {
     let binds = binds?;
 
     // Use iterator chaining to simplify finding the required prop and struct name
@@ -355,7 +368,7 @@ pub fn get_component_prop_struct_name(
                          if let Expr::Call(expr_call) = &*init.expr {
                              if let Expr::Path(expr_path) = &*expr_call.func {
                                  // Directly return the struct name if found
-                                 return Some(expr_path.path.segments[0].ident.to_string());
+                                 return Some((expr_path.path.segments[0].ident.to_string(), prop_name.to_string()));
                              }
                          }
                          // If cannot destructure the expression to find the struct name, panic
