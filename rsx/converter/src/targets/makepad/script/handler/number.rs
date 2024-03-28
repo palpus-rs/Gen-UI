@@ -117,10 +117,10 @@ pub fn handle_isize(init: TokenStream) -> Result<Value, syn::Error> {
         })
 }
 
-pub fn handle_struct(init: TokenStream)->Result<Value,syn::Error>{
-    match syn::parse2::<syn::ItemStruct>(init){
-        Ok(s) => Ok(Value::Struct(s.to_token_stream().to_string())),
-        Err(e) => Err(e),
-    }
-}
+// pub fn handle_struct(init: TokenStream)->Result<Value,syn::Error>{
+//     match syn::parse2::<syn::ItemStruct>(init){
+//         Ok(s) => Ok(Value::Struct(s.to_token_stream().to_string())),
+//         Err(e) => Err(e),
+//     }
+// }
 

@@ -4,7 +4,7 @@ use parser::Value;
 use quote::{quote, ToTokens};
 use syn::{LocalInit, Type};
 
-use crate::targets::makepad::handler::{handle_expr_default, handle_struct};
+use crate::targets::makepad::handler::{handle_expr_default};
 
 use super::handler::{handle_bool, handle_f64, handle_isize, handle_string, handle_usize};
 

@@ -30,6 +30,13 @@ impl ConvertScript {
             panic!("only makepad rs can use this fn");
         }
     }
+    pub fn as_makepad_rs(&self) -> &Vec<ScriptNode> {
+        if let ConvertScript::MakepadRS(rs) = self {
+            rs
+        }else{
+            panic!("only makepad rs can use this fn");
+        }
+    }
     pub fn get_makepad_vars(&self) -> Option<Vec<&NodeVariable>> {
         if let ConvertScript::MakepadRS(mrss) = self {
             let mut vars = vec![];

@@ -42,3 +42,56 @@ for field in &mut ast.fields {
 let tokens = quote! { #ast };
 println!("{}", tokens);
 ```
+
+```
+tem = ItemStruct {
+    attrs: [
+        
+    ],
+    vis: Visibility::Public(
+        Pub,
+    ),
+    struct_token: Struct,
+    ident: Ident(
+        MyProps,
+    ),
+    generics: Generics {
+        
+    },
+    fields: Fields::Named {
+        brace_token: Brace,
+        named: [
+            Field {
+                attrs: [],
+                vis: Visibility::Public(
+                    Pub,
+                ),
+                mutability: FieldMutability::None,
+                ident: Some(
+                    Ident(
+                        label1,
+                    ),
+                ),
+                colon_token: Some(
+                    Colon,
+                ),
+                ty: Type::Path {
+                    qself: None,
+                    path: Path {
+                        leading_colon: None,
+                        segments: [
+                            PathSegment {
+                                ident: Ident(
+                                    String,
+                                ),
+                                arguments: PathArguments::None,
+                            },
+                        ],
+                    },
+                },
+            },
+        ],
+    },
+    semi_token: None,
+}
+```

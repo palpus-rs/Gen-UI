@@ -176,6 +176,7 @@ mod test_result_mk {
         <script>
         #[derive(Default)]
         pub struct MyProps{
+            #[live]
             pub label1: String
         }
 
@@ -205,11 +206,10 @@ mod test_result_mk {
         dbg!(t.elapsed());
 
         // dbg!(result.to_string());
-        // E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs
-        // /Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget.rs
-        // E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget.rs
+        // /Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget2.rs
+        // E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget2.rs
         let mut f = File::create(
-            "E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/widget2.rs",
+            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/widget2.rs",
         )
         .unwrap();
         let _ = f.write(result.to_string().as_bytes());

@@ -15,7 +15,7 @@ pub use style::*;
 use syn::{Expr, Local, LocalInit};
 pub use widget::*;
 
-use std::{borrow::Cow, collections::HashMap, fmt::Display};
+use std::{borrow::Cow, collections::HashMap, fmt::Display, ops::Deref};
 
 use parser::{ASTNodes, PropsKey, Tag, Value, HOLDER_END};
 
@@ -26,7 +26,10 @@ use crate::{
 };
 
 use self::{
-    constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER}, handler::{build_draw_walk, build_handle_event, build_widget_trait}, model::MakepadModel, value::MakepadPropValue
+    constants::{APP_MAIN, BIND_IMPORT, LIVE_REGISTER},
+    handler::{build_draw_walk, build_handle_event, build_widget_trait},
+    model::MakepadModel,
+    value::MakepadPropValue,
 };
 
 pub type ConvertStyle<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
@@ -223,62 +226,47 @@ impl<'a> Display for MakepadConverter<'a> {
                 let mut widget_events = Vec::new();
                 let mut draw_walk = Vec::new();
                 let mut handle_event = Vec::new();
+                let mut structs = Vec::new();
                 let inherits = self.template.as_ref().unwrap().get_inherit().unwrap();
                 let _ = f.write_fmt(format_args!(
                     "\n#[derive(Live, LiveHook, Widget)] pub struct {} {{ #[deref] #[redraw] instance: {} }}\n",
                     self.root, inherits.to_string(),
                 ));
 
-                if self.has_script() {
+                let (mut draw_walk, mut handle_event, component_struct) = if self.has_script() {
                     // start_up_flag = true;
                     let sc = self.script.as_ref().unwrap();
-                    sc.to_makepad_rs().into_iter().map(|node|{
+                    sc.as_makepad_rs().iter().for_each(|node| {
                         match node {
-                            ScriptNode::Variable(v) => todo!(),
-                            ScriptNode::Function(f) => todo!(),
-                            ScriptNode::Struct(s) => todo!(),
-                        }
+                            ScriptNode::Variable(v) => draw_walk.push(v),
+                            ScriptNode::Function(f) => handle_event.push(f),
+                            ScriptNode::Struct(s) => structs.push(s.clone()),
+                        };
                     });
-                    // let (m_vars, m_fns) = sc.get_makepad_var_fn();
-                    // dbg!(m_vars.as_ref());
-                    match m_vars {
-                        
-                        Some(vars) => {
-                            // get bind props
-                            let binds = self.bind_props.as_ref().unwrap();
-                            
-                            // let (instance, start_up) = vars_to_string(name, vars, binds);
-                            let sub_draw_walk = build_draw_walk_sub_binds(vars,binds);
-                            // let _ = f.write_str(&instance);
-                            draw_walk.push(sub_draw_walk);
-                        }
-                        None => {}
-                    };
-
-                    match m_fns {
-                        Some(fns) => {
-                            // event_match = true;
-                            let mut fns = fns.into_iter().map(|item| item.clone()).collect();
-                            let actions = self.bind_actions.as_ref().unwrap();
-                            let binds = self.bind_props.as_ref();
-                            handle_event.push(build_handle_event_sub_fns(&mut fns, actions, binds))
-                        }
-                        None => {}
-                    };
-
-
-                } 
-                draw_walk.push(inherits.default_draw_walk());
-                handle_event.push(inherits.default_event_handle());
-                widget_events.push(build_draw_walk(&draw_walk.join(" ")));
-                widget_events.push(build_handle_event(&handle_event.join(" ")));
+                   
+                    let binds = self.bind_props.as_ref();
+                    let actions = self.bind_actions.as_ref().unwrap();
+                    let struct_name = get_component_prop_struct_name(binds, &draw_walk);
+                    let mut fns = handle_event.into_iter().map(|item| item.clone()).collect();
+                    (
+                        build_draw_walk_sub_binds(draw_walk, binds.unwrap()),
+                        build_handle_event_sub_fns(&mut fns, actions, binds),
+                        build_component_structs( structs,struct_name),
+                    )
+                } else {
+                    (String::new(), String::new(), String::new())
+                };
+                draw_walk.push_str(inherits.default_draw_walk().as_str());
+                handle_event.push_str(inherits.default_event_handle().as_str());
+                let _ = f.write_str(&component_struct);
+                widget_events.push(build_draw_walk(&draw_walk));
+                widget_events.push(build_handle_event(&handle_event));
                 // Impl Widget
                 f.write_str(&build_widget_trait(&self.root, widget_events))
             }
         }
     }
 }
-
 
 //---------------------------------------[handle script]-----------------------------------------------------------------------------------------
 fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
@@ -299,26 +287,24 @@ fn handle_script(ast: &parser::ParseResult, is_single: bool) -> ConvertScript {
                 syn::Stmt::Local(local) => {
                     stmts.push(handle_variable(local));
                 }
-                syn::Stmt::Item(item) => {
-                    match item {
-                        syn::Item::Const(_) => todo!(),
-                        syn::Item::Enum(_) => todo!(),
-                        syn::Item::ExternCrate(_) => todo!(),
-                        syn::Item::Fn(_) => todo!(),
-                        syn::Item::ForeignMod(_) => todo!(),
-                        syn::Item::Impl(_) => todo!(),
-                        syn::Item::Macro(_) => todo!(),
-                        syn::Item::Mod(_) => todo!(),
-                        syn::Item::Static(_) => todo!(),
-                        syn::Item::Struct(s) => stmts.push(ScriptNode::Struct(s.clone())),
-                        syn::Item::Trait(_) => todo!(),
-                        syn::Item::TraitAlias(_) => todo!(),
-                        syn::Item::Type(_) => todo!(),
-                        syn::Item::Union(_) => todo!(),
-                        syn::Item::Use(_) => todo!(),
-                        syn::Item::Verbatim(_) => todo!(),
-                        _ => todo!(),
-                    }
+                syn::Stmt::Item(item) => match item {
+                    syn::Item::Const(_) => todo!(),
+                    syn::Item::Enum(_) => todo!(),
+                    syn::Item::ExternCrate(_) => todo!(),
+                    syn::Item::Fn(_) => todo!(),
+                    syn::Item::ForeignMod(_) => todo!(),
+                    syn::Item::Impl(_) => todo!(),
+                    syn::Item::Macro(_) => todo!(),
+                    syn::Item::Mod(_) => todo!(),
+                    syn::Item::Static(_) => todo!(),
+                    syn::Item::Struct(s) => stmts.push(ScriptNode::Struct(s.clone())),
+                    syn::Item::Trait(_) => todo!(),
+                    syn::Item::TraitAlias(_) => todo!(),
+                    syn::Item::Type(_) => todo!(),
+                    syn::Item::Union(_) => todo!(),
+                    syn::Item::Use(_) => todo!(),
+                    syn::Item::Verbatim(_) => todo!(),
+                    _ => todo!(),
                 },
                 syn::Stmt::Expr(_, _) => todo!(),
                 syn::Stmt::Macro(_) => todo!(),
@@ -435,12 +421,13 @@ fn handle_tag(
                         .for_each(|bind| bind.1 = special.to_string());
                 }
                 None => {
-                    
-                    if !tag_model.is_component(){
-dbg!(&tag_model);
-                        panic!("the widget(expcet component) which has binds need to add special id");
+                    if !tag_model.is_component() {
+                        dbg!(&tag_model);
+                        panic!(
+                            "the widget(expcet component) which has binds need to add special id"
+                        );
                     }
-                },
+                }
             }
         }
         if has_action {
@@ -491,4 +478,3 @@ dbg!(&tag_model);
 
     (tag_model, binds, actions)
 }
-

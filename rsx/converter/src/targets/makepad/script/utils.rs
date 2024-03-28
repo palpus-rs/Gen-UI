@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
+use proc_macro2::{Punct, Spacing, Span, TokenStream, TokenTree};
+use quote::{quote, IdentFragment, ToTokens, TokenStreamExt};
+use syn::{ext::IdentExt, punctuated::Punctuated, token::{Bracket, Pound}, AttrStyle, Attribute, Expr, Ident, ItemStruct, Meta, MetaList, PatIdent, Path, PathSegment};
+
 use crate::{
     targets::makepad::{
-        action::MakepadAction, model::props_to_string, BindAction, BindProp, MakepadWidgetActions,
-        PropRole,
+        action::MakepadAction, handler::MakepadFieldConverter, model::props_to_string, BindAction, BindProp, MakepadWidgetActions, PropRole
     },
     utils::alphabetic::{camel_to_snake, snake_to_camel, uppercase_title},
 };
@@ -186,8 +189,8 @@ pub fn build_draw_walk_sub_binds(vars: Vec<&NodeVariable>, binds: &Vec<BindProp>
         {
             Some(var) => {
                 // let init = var.init_to_string().unwrap();
-                
-                if tag != "Component"{
+
+                if tag != "Component" {
                     let r = PropRole::try_from((tag, (prop, *var))).unwrap();
                     fields.push((r, tag, id));
                 }
@@ -196,7 +199,7 @@ pub fn build_draw_walk_sub_binds(vars: Vec<&NodeVariable>, binds: &Vec<BindProp>
         }
     }
 
-    build_setup(fields, |tag,id,props|{
+    build_setup(fields, |tag, id, props| {
         format!(
             "let {}_{} = self.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
             tag, id, tag, id, tag, id, props
@@ -207,7 +210,7 @@ pub fn build_draw_walk_sub_binds(vars: Vec<&NodeVariable>, binds: &Vec<BindProp>
 /// build normal is aim to add other immuatable properties into start_up function
 /// `(value, tag, id)`
 pub fn build_normal(fields: Vec<(PropRole, &String, &String)>) -> String {
-    build_setup(fields, |tag,id,props|{
+    build_setup(fields, |tag, id, props| {
         format!(
             "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
             tag, id, tag, id, tag, id, props
@@ -216,7 +219,9 @@ pub fn build_normal(fields: Vec<(PropRole, &String, &String)>) -> String {
 }
 
 fn build_setup<F>(fields: Vec<(PropRole, &String, &String)>, f: F) -> String
-where F: Fn(&str,&str,&str)->String {
+where
+    F: Fn(&str, &str, &str) -> String,
+{
     let mut setup = HashMap::new();
     for (prop, tag, id) in fields {
         let tag = camel_to_snake(tag);
@@ -233,7 +238,7 @@ where F: Fn(&str,&str,&str)->String {
             //     "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
             //     tag, id, tag, id, tag, id, props
             // )
-            f(&tag,id,&props)
+            f(&tag, id, &props)
         })
         .collect::<String>()
 }
@@ -325,6 +330,101 @@ fn build_instance(fields: Vec<(&str, PropRole, &String, &String)>) -> (String, S
         init_strs.join(", "),
         impls.join(" ")
     ), setup_str )
+}
+
+pub fn get_component_prop_struct_name(
+    binds: Option<&Vec<BindProp>>,
+    vars: &Vec<&NodeVariable>,
+) -> Option<String> {
+    let binds = binds?;
+
+    // Use iterator chaining to simplify finding the required prop and struct name
+    binds.iter()
+         .find(|bind| bind.2 .0 == "$props")
+         .and_then(|(_, _, (_, prop))| {
+             let prop_name = prop.get_bind_key();
+             vars.iter()
+                 .find(|var| var.get_name() == prop_name)
+                 .and_then(|var| {
+                     var.get_init().and_then(|init| {
+                         if let Expr::Call(expr_call) = &*init.expr {
+                             if let Expr::Path(expr_path) = &*expr_call.func {
+                                 // Directly return the struct name if found
+                                 return Some(expr_path.path.segments[0].ident.to_string());
+                             }
+                         }
+                         // If cannot destructure the expression to find the struct name, panic
+                         panic!("can not deep expr struct");
+                     })
+                 })
+                 // If a struct corresponding to the prop_name is not found, panic
+                 .or_else(|| panic!("can not find prop struct, you must define prop struct if you use component `:props`"))
+         })
+}
+
+pub fn build_component_structs(structs: Vec<ItemStruct>, target: Option<String>) -> String {
+    
+    for mut item in structs {
+        
+        let name = item.ident.to_string();
+        if target.is_some() && name.eq(target.as_ref().unwrap()) {
+            // 添加新的派生和属性
+            let derives = vec!["Live", "LiveHook", "LiveRegister"];
+            item.attrs.iter_mut().for_each(|attr|{
+                match &mut attr.meta {
+                    Meta::List(d_macro) => {
+                        derives.iter().for_each(|item|{
+                            d_macro.tokens.append(TokenTree::Punct(Punct::new(',',Spacing::Alone)));
+                            d_macro.tokens.append(TokenTree::Ident(Ident::new(item, Span::call_site())));
+                        });
+                    },
+                    _ => todo!(),
+                }
+            });
+            // add live_ignore attr macro
+            let attr_macro = Attribute{
+                pound_token: Default::default(),
+                style: AttrStyle::Outer,
+                bracket_token: Bracket::default(),
+                meta: Meta::Path(syn::Path::from(PathSegment{
+                    ident: Ident::new("live_ignore", Span::call_site()),
+                    arguments: syn::PathArguments::None,
+                })),
+            };
+            item.attrs.push(attr_macro);
+            // dbg!(quote!{#item}.to_string());
+            dbg!(&item.fields);
+            todo!();
+            item.fields.iter_mut().for_each(|field|{
+               let _ =  MakepadFieldConverter::convert(field);
+            });
+            dbg!(&item);
+            // for d_macro in derives {
+            //     let ident = Ident::new(d_macro,Span::call_site());
+                
+                
+            // }
+            
+            todo!()
+            // for derive in new_derives {
+            //     // let meta = Meta::List(MetaList {
+            //     //     path: syn::parse_str(derive).unwrap(),
+            //     //     paren_token: syn::token::Paren::default(),
+            //     //     nested: syn::punctuated::Punctuated::new(),
+
+            //     // });
+                
+
+
+            //     item.attrs.push(Attribute { pound_token: syn::token::Pound::default(), style: syn::AttrStyle::Outer, bracket_token: syn::token::Bracket::default(), path: syn::Path::from(Ident::new(derive, proc_macro2::Span::call_site())), tokens: quote! { #meta } });
+            // }
+            // for attr in new_attrs {
+            //     let meta = Meta::Path(syn::Path::from(Ident::new(attr, proc_macro2::Span::call_site())));
+            //     ast.attrs.push(Attribute { pound_token: syn::token::Pound::default(), style: syn::AttrStyle::Outer, bracket_token: syn::token::Bracket::default(), path: syn::Path::from(Ident::new(attr, proc_macro2::Span::call_site())), tokens: quote! { #meta } });
+            // }
+        }
+    }
+    todo!()
 }
 
 // fn build_instance(
