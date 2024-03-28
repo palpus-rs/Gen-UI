@@ -228,10 +228,6 @@ impl<'a> Display for MakepadConverter<'a> {
                 let mut handle_event = Vec::new();
                 let mut structs = Vec::new();
                 let inherits = self.template.as_ref().unwrap().get_inherit().unwrap();
-                let _ = f.write_fmt(format_args!(
-                    "\n#[derive(Live, LiveHook, Widget)] pub struct {} {{ #[deref] #[redraw] instance: {} }}\n",
-                    self.root, inherits.to_string(),
-                ));
 
                 let (mut draw_walk, mut handle_event, component_struct) = if self.has_script() {
                     // start_up_flag = true;
@@ -248,10 +244,11 @@ impl<'a> Display for MakepadConverter<'a> {
                     let actions = self.bind_actions.as_ref().unwrap();
                     let struct_name = get_component_prop_struct_name(binds, &draw_walk);
                     let mut fns = handle_event.into_iter().map(|item| item.clone()).collect();
+                    
                     (
                         build_draw_walk_sub_binds(draw_walk, binds.unwrap()),
                         build_handle_event_sub_fns(&mut fns, actions, binds),
-                        build_component_structs( structs,struct_name),
+                        build_component_structs(structs,struct_name, &self.root, inherits ),
                     )
                 } else {
                     (String::new(), String::new(), String::new())

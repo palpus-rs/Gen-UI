@@ -1,14 +1,19 @@
 use std::collections::HashMap;
 
-use proc_macro2::{Punct, Spacing, Span, TokenStream, TokenTree};
-use quote::{quote, IdentFragment, ToTokens, TokenStreamExt};
-use syn::{ext::IdentExt, punctuated::Punctuated, token::{Bracket, Pound}, AttrStyle, Attribute, Expr, Ident, ItemStruct, Meta, MetaList, PatIdent, Path, PathSegment};
+use proc_macro2::{Punct, Spacing, Span, TokenTree};
+use quote::{ToTokens, TokenStreamExt};
+use syn::{Expr, Ident, ItemStruct, Meta};
 
 use crate::{
+    context::{LEFT_HOLDER, RIGHT_HOLDER},
     targets::makepad::{
-        action::MakepadAction, handler::MakepadFieldConverter, model::props_to_string, BindAction, BindProp, MakepadWidgetActions, PropRole
+        action::MakepadAction, handler::MakepadFieldConverter, model::props_to_string, BindAction,
+        BindProp, MakepadWidgetActions, PropRole, Widgets,
     },
-    utils::{alphabetic::{camel_to_snake, snake_to_camel, uppercase_title}, macros::build_attr_macro},
+    utils::{
+        alphabetic::{camel_to_snake, snake_to_camel},
+        macros::build_attr_macro,
+    },
 };
 
 use super::{
@@ -362,38 +367,77 @@ pub fn get_component_prop_struct_name(
          })
 }
 
-pub fn build_component_structs(mut structs: Vec<ItemStruct>, target: Option<String>) -> String {
-    
-    structs.iter_mut().map(|item|{
-        
-        let name = item.ident.to_string();
-        if target.is_some() && name.eq(target.as_ref().unwrap()) {
-            // 添加新的派生和属性
-            let derives = vec!["Live", "LiveHook", "LiveRegister"];
-            item.attrs.iter_mut().for_each(|attr|{
-                match &mut attr.meta {
+/// Convert std struct to Makepad Struct
+/// ```
+/// #[derive(Default)]
+/// pub struct MyProps{
+///     pub label1: String
+/// }
+/// //to makepad---------------------------------------
+/// #[derive(Default, Live, LiveHook, LiveRegister)]
+/// #[live_ignore]
+/// pub struct MyProps {
+///     #[live]
+///     pub label1: RcStringMut,
+/// }
+/// ```
+pub fn build_component_structs(
+    mut structs: Vec<ItemStruct>,
+    target: Option<String>,
+    root: &str,
+    inherits: &Widgets,
+) -> String {
+    let mut prop_name = String::new();
+    let mut f = structs
+        .iter_mut()
+        .map(|item| {
+            let name = item.ident.to_string();
+            if target.is_some() && name.eq(target.as_ref().unwrap()) {
+                prop_name = name;
+                // 添加新的派生和属性
+                let derives = vec!["Live", "LiveHook", "LiveRegister"];
+                item.attrs.iter_mut().for_each(|attr| match &mut attr.meta {
                     Meta::List(d_macro) => {
-                        derives.iter().for_each(|item|{
-                            d_macro.tokens.append(TokenTree::Punct(Punct::new(',',Spacing::Alone)));
-                            d_macro.tokens.append(TokenTree::Ident(Ident::new(item, Span::call_site())));
+                        derives.iter().for_each(|item| {
+                            d_macro
+                                .tokens
+                                .append(TokenTree::Punct(Punct::new(',', Spacing::Alone)));
+                            d_macro
+                                .tokens
+                                .append(TokenTree::Ident(Ident::new(item, Span::call_site())));
                         });
-                    },
+                    }
                     _ => panic!("Rule Fatal: UnAcceptable! `build_component_structs()`"),
-                }
-            });
-            // add live_ignore attr macro
-            let attr_macro = build_attr_macro("live_ignore");
-            item.attrs.push(attr_macro);
-            // handle field to Makepad struct
-            item.fields.iter_mut().for_each(|field|{
-               let _ =  MakepadFieldConverter::convert(field);
-            });
-        }
-        
-        item.to_token_stream().to_string()
+                });
+                // add live_ignore attr macro
+                let attr_macro = build_attr_macro("live_ignore");
+                item.attrs.push(attr_macro);
+                // handle field to Makepad struct
+                item.fields.iter_mut().for_each(|field| {
+                    let _ = MakepadFieldConverter::convert(field);
+                });
+            }
 
-    }).collect::<String>()
-   
+            item.to_token_stream().to_string()
+        })
+        .collect::<String>();
+
+    f.push_str(
+        format!(
+            "#[derive(Live, LiveHook, Widget)] pub struct {} {} #[deref] #[redraw] instance: {},",
+            root,
+            LEFT_HOLDER,
+            inherits.to_string(),
+        )
+        .as_str(),
+    );
+
+    if !prop_name.is_empty() {
+        f.push_str(format!("#[live] props: {}", prop_name).as_str());
+    }
+
+    f.push_str(RIGHT_HOLDER);
+    f
 }
 
 // fn build_instance(

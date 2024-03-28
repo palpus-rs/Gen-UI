@@ -4,17 +4,19 @@ import makepad_widgets::base::*;
 import makepad_widgets::theme_desktop_dark::*;
 EasyWidget = {{EasyWidget}}{  first_lb = <Label>{ draw_text: { wrap: Word, color: #ffffff, text_style: { font_size: 32, brightness: 1.1, font: {path: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf")},  } }} second_lb = <Label>{text: "label 2",  draw_text: { wrap: Word, color: #ffffff, text_style: { brightness: 1.1, font: {path: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf")},  } }} bb = <Button>{text: "text btn", }  }
 }
-#[derive(Live, LiveHook, Widget)]
-pub struct EasyWidget {
-    #[deref]
-    #[redraw]
-    instance: View,
-}
 #[derive(Default, Live, LiveHook, LiveRegister)]
 #[live_ignore]
 pub struct MyProps {
     #[live]
     pub label1: RcStringMut,
+}
+#[derive(Live, LiveHook, Widget)]
+pub struct EasyWidget {
+    #[deref]
+    #[redraw]
+    instance: View,
+    #[live]
+    props: MyProps,
 }
 impl Widget for EasyWidget {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
