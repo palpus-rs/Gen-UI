@@ -8,9 +8,6 @@
 //! 这些策略器会在generator层进行处理，生成对应的代码
 //! 所有的策略器都会需要传入一个闭包作为参数
 //! 例如属性策略器会使用带有标签名称、属性名称、属性值的闭包（属性值可能来自style部分，可能来自script部分）
-mod template;
-mod script;
-mod style;
 mod keyword;
 mod strategy;
 mod model;

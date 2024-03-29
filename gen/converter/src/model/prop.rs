@@ -9,3 +9,9 @@ use gen_parser::{PropsKey, Value};
 pub type ConvertProp<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
 // /// `(tag_name, id, (prop_name, prop_value))`
 // pub type BindProp = (String, String, (String, MakepadPropValue));
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Props<'a> {
+    normal: Option<Vec<ConvertProp<'a>>>,
+    bind: Option<Vec<ConvertProp<'a>>>,
+}
