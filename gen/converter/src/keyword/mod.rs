@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use gen_parser::Value;
 
-use crate::model::Model;
+use crate::model::{Model, TemplateModel};
 
 const PROPS: &str = "props";
 const ID: &str = "id";
@@ -25,22 +25,32 @@ pub enum KeyWords {
 }
 
 impl KeyWords {
-    pub fn value_prop(&self, value: &Value, model: &mut Model) -> () {
+    pub fn value_prop(&self, value: &Value, model: &mut TemplateModel) -> () {
         match self {
             KeyWords::Props => {
                 // props只能是绑定的
+                let props = value.is_bind_and_get().unwrap();
+                // model.push_prop(item)
             }
             KeyWords::Id => {
                 // id只能是单个String或Unknown
-                if let Some(id) = value.is_unknown_and_get() {
-                    let _ = model.set_special(id);
-                }
+                // if let Some(id) = value.is_unknown_and_get() {
+                //     let _ = model.set_special(id);
+                // } else {
+                //     value.is_string_and_get().unwrap_or_else(|s| {
+                //         let _ = model.set_special(s);
+                //     });
+                // }
+                string_unknown(value, |id| {
+                    model.set_special(id);
+                });
             }
             KeyWords::Class => {
                 // class没有限制，可以是String,Unknown,绑定
             }
             KeyWords::Inherits => {
                 // inherits只能是单个String或Unknown
+                string_unknown(value, |inherits| model.set_inherit(inherits));
             }
             _ => panic!("KeyWord can not use in Template prop"),
         }
@@ -70,5 +80,18 @@ impl TryFrom<&str> for KeyWords {
             ACTIONS_MACRO => Ok(KeyWords::Actions_Macro),
             _ => Err(crate::error::Errors::MissMatchKeyWord),
         }
+    }
+}
+
+fn string_unknown<F>(value: &Value, f: F) -> ()
+where
+    F: FnOnce(&str) -> (),
+{
+    if let Some(id) = value.is_unknown_and_get() {
+        let _ = f(id);
+    } else {
+        value.is_string_and_get().map(|id| {
+            let _ = f(id);
+        });
     }
 }
