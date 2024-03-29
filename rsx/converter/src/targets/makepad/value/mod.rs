@@ -54,6 +54,8 @@ pub enum MakepadPropValue {
     Font(String),
     Bind(String, Option<Box<MakepadPropValue>>),
     Function(String, Option<Expr>),
+    // 从Struct中执行语句，例如: live!{ text: (self.props.name), }
+    FromStruct(String)
 }
 
 impl MakepadPropValue {
@@ -115,6 +117,8 @@ impl MakepadPropValue {
                 }
             }
             MakepadPropValue::Function(_, _) => todo!(),
+            MakepadPropValue::FromStruct(_) => "Struct".to_string(),
+            
         }
     }
     pub fn to_value_code(&self) -> String {
@@ -142,14 +146,16 @@ impl MakepadPropValue {
                 } else {
                     panic!("bind value is none")
                 }
-            }
+            },
             MakepadPropValue::Function(_, v) => {
                 if let Some(v) = v {
                     quote! {#v}.to_string()
                 } else {
                     panic!("function value is none")
                 }
-            }
+            },
+            MakepadPropValue::FromStruct(_) => todo!(),
+            
         }
     }
 }
@@ -192,6 +198,7 @@ impl Display for MakepadPropValue {
             MakepadPropValue::TextWrap(tw) => f.write_str(tw.to_string().as_str()),
             MakepadPropValue::Font(font) => f.write_fmt(format_args!("{{path: dep({})}}", font)),
             MakepadPropValue::Function(_, _) => todo!(),
+            MakepadPropValue::FromStruct(s) => f.write_str(s),
         }
     }
 }

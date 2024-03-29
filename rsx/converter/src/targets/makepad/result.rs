@@ -156,7 +156,7 @@ mod test_result_mk {
         // /Users/user/Downloads/makepad-rik/examples/single/window_s/src/app.rs
         // E:/Rust/try/makepad/rsx/converter/wiki/convert.rs
         let mut f = File::create(
-            "E:/Rust/try/makepad/Gen-UI/rsx/converter/wiki/convert.rs",
+            "/Users/user/Workspace/others/beyond-framework/rsx/converter/wiki/convert.rs",
         )
         .unwrap();
         let _ = f.write(result.to_string().as_bytes());

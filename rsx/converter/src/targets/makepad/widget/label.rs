@@ -45,6 +45,11 @@ pub fn generate_label_props(props: &Vec<PropRole>) -> String {
         };
     }
 
+    let mut f = normal
+        .into_iter()
+        .map(|item| item.to_string())
+        .collect::<String>();
+
     let mut draw_text = draw_text
         .into_iter()
         .map(|item| item.to_string())
@@ -56,15 +61,10 @@ pub fn generate_label_props(props: &Vec<PropRole>) -> String {
                 .into_iter()
                 .map(|item| item.to_string())
                 .collect::<String>()
-        ))
-    };
+        ));
 
-    format!(
-        "{} draw_text: {{ {} }}",
-        normal
-            .into_iter()
-            .map(|item| item.to_string())
-            .collect::<String>(),
-        draw_text.join("")
-    )
+        let _ = f.push_str(format!("draw_text: {{{}}}",draw_text.join("")).as_str());
+    }
+
+    f
 }

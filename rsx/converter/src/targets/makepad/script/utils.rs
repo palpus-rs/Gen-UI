@@ -194,10 +194,11 @@ pub fn build_draw_walk_sub_binds(
     for (tag, id, (prop, value)) in binds {
         let key = value.get_bind_key();
         if key.contains(prop_sign) && tag != "Component" {
+            let key = key.replace(format!("{}.",prop_sign).as_str(), "");
             fields.push((
                 PropRole::normal(
                     prop,
-                    MakepadPropValue::String(format!("(self.props.{})", key)),
+                    MakepadPropValue::FromStruct(format!("(self.props.{})", key)),
                 ),
                 tag,
                 id,
@@ -217,6 +218,7 @@ pub fn build_draw_walk_sub_binds(
         }
     }
 
+    
     build_setup(fields, |tag, id, props| {
         format!(
             "let {}_{} = self.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
@@ -252,10 +254,6 @@ where
             let widget_name = snake_to_camel(&tag);
 
             let props = props_to_string(&widget_name, &v);
-            // format!(
-            //     "let {}_{} = self.ui.{}(id!({})); {}_{}.apply_over_and_redraw(cx, live!{{ {} }});",
-            //     tag, id, tag, id, tag, id, props
-            // )
             f(&tag, id, &props)
         })
         .collect::<String>()
