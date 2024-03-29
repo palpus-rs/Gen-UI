@@ -1,5 +1,5 @@
 [package]
-name = "parser"
+name = "gen_parser"
 version = "0.1.0"
 edition = "2021"
 authors = ["syf20020816@outlook.com"]

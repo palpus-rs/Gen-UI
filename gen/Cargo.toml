@@ -1,0 +1,1 @@
+workspace = { members = ["converter", "generator", "parser", "utils", "tests"] }
