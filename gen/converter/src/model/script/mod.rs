@@ -2,6 +2,6 @@
 #[allow(dead_code)]
 pub enum ConvertScript {
     Rust(String),
-    /// need to join('\n')
-    RS(Vec<ScriptNode>),
+    // need to join('\n')
+    // RS(Vec<ScriptNode>),
 }

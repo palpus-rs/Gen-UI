@@ -6,12 +6,14 @@ use gen_parser::{PropsKey, Value};
 /// in gen-ui no difference between style and props
 /// so we use the same struct to represent them
 /// `<prop_name, HashMap<prop, value>>`
-pub type ConvertProp<'a> = HashMap<Cow<'a, str>, Cow<'a, HashMap<PropsKey, Value>>>;
+pub type ConvertProp = HashMap<String, HashMap<PropsKey, Value>>;
 // /// `(tag_name, id, (prop_name, prop_value))`
 // pub type BindProp = (String, String, (String, MakepadPropValue));
 
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct Props<'a> {
-    normal: Option<Vec<ConvertProp<'a>>>,
-    bind: Option<Vec<ConvertProp<'a>>>,
+pub struct Props {
+    normal: Option<Vec<ConvertProp>>,
+    bind: Option<Vec<ConvertProp>>,
 }
+
+

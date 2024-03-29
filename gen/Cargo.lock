@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "converter"
+name = "gen_converter"
 version = "0.1.0"
 dependencies = [
  "gen_parser",
@@ -78,6 +78,7 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
+ "gen_converter",
  "gen_parser",
 ]
 
