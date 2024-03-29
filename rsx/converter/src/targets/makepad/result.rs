@@ -67,7 +67,7 @@ impl Display for MakepadConvertResult {
 
 #[cfg(test)]
 mod test_result_mk {
-    use std::{fs::File, io::Write, time::Instant};
+    use std::{collections::HashMap, fs::File, io::Write, time::Instant};
 
     use parser::{ParseResult, ParseTarget};
 
@@ -174,6 +174,10 @@ mod test_result_mk {
         </template>
         
         <script>
+        use gen::actions;
+
+        actions!((clicked, String),(focus, String));
+
         #[derive(Default)]
         pub struct MyProps{
             pub label1: String
@@ -182,8 +186,10 @@ mod test_result_mk {
         let my_props = MyProps::default();
         
         let fs: f64 = 18.0;
+
         let mut btn_click = ||{
-            log!("Button bb Clicked");
+            println!("Button bb Clicked");
+            active!(clicked, "Hello".to_string());
         };
         
         </script>
