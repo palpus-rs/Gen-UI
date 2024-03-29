@@ -5,6 +5,9 @@ version = 3
 [[package]]
 name = "converter"
 version = "0.1.0"
+dependencies = [
+ "gen_parser",
+]
 
 [[package]]
 name = "gen_parser"
