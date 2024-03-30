@@ -1,1 +1,1 @@
-workspace = { members = ["converter", "generator", "parser", "utils", "tests"] }
+workspace = { members = ["converter", "generator", "parser", "utils", "tests", "macros", "traits"] }

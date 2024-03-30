@@ -5,8 +5,9 @@ use gen_parser::{PropsKey, Value};
 /// also name ConvertStyle
 /// in gen-ui no difference between style and props
 /// so we use the same struct to represent them
-/// `<prop_name, HashMap<prop, value>>`
-pub type ConvertProp = HashMap<String, HashMap<PropsKey, Value>>;
+/// `<id|class, HashMap<prop, value>>`
+pub type ConvertStyle = HashMap<String, HashMap<PropsKey, Value>>;
+pub type ConvertProp = HashMap<PropsKey,Value>;
 // /// `(tag_name, id, (prop_name, prop_value))`
 // pub type BindProp = (String, String, (String, MakepadPropValue));
 
@@ -17,3 +18,14 @@ pub struct Props {
 }
 
 
+// #[derive(Debug, PartialEq, Clone)]
+// pub enum PropRole {
+//     Normal(String, MakepadPropValue),
+//     Bind(String, MakepadPropValue),
+//     Function(String, MakepadPropValue),
+//     // this means: the current prop is id or class which can link to style properties  (class)
+//     Context(Vec<String>),
+//     // same as Context, but only have one (id)
+//     Special(String),
+//     Component(Widgets),
+// }

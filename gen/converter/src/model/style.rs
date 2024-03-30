@@ -2,10 +2,10 @@ use std::{borrow::Cow, collections::HashMap};
 
 use gen_parser::{ASTNodes, Style, StyleType};
 
-use super::prop::ConvertProp;
+use super::prop::ConvertStyle;
 
 /// 平展样式
-pub fn expand_style(style: &Box<Style>) -> Option<ConvertProp> {
+pub fn expand_style(style: &Box<Style>) -> Option<ConvertStyle> {
     let mut res = HashMap::new();
     // handle props
     if style.has_props() {
@@ -39,7 +39,7 @@ pub fn expand_style(style: &Box<Style>) -> Option<ConvertProp> {
 }
 
 /// expand all style sheet
-pub fn handle_styles(styles: &Vec<ASTNodes>) -> Option<ConvertProp> {
+pub fn handle_styles(styles: &Vec<ASTNodes>) -> Option<ConvertStyle> {
     let mut res = HashMap::new();
     for style in styles {
         match style {
