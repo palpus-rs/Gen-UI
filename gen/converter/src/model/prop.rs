@@ -1,6 +1,7 @@
 use std::{borrow::Cow, collections::HashMap};
 
 use gen_parser::{PropsKey, Value};
+use gen_traits::prop::Prop;
 
 /// also name ConvertStyle
 /// in gen-ui no difference between style and props
@@ -17,7 +18,8 @@ pub struct Props {
     bind: Option<Vec<ConvertProp>>,
 }
 
-
+#[derive(Debug, Clone, gen_macros::Prop)]
+pub struct NoProps{}
 // #[derive(Debug, PartialEq, Clone)]
 // pub enum PropRole {
 //     Normal(String, MakepadPropValue),

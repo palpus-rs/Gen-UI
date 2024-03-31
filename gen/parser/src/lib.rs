@@ -37,4 +37,4 @@ mod value;
 
 pub use ast::*;
 pub use tokenizer::*;
-pub use value::Value;
+pub use value::*;

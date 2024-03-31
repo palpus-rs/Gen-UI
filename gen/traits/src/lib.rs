@@ -1,2 +1,2 @@
 pub mod event;
-pub mod ty;
+pub mod prop;

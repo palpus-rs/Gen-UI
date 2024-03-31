@@ -1,5 +1,5 @@
 <template>
-    <component inherits="view" :props="my_props">
+    <component inherits="view">
         <label id="first_lb" class="t_label" font_size="32" :text="my_props.label1"/>
         <label id="second_lb" class="t_label" :font_size="fs"  text="label 2"/>
         <button id="bb" text="text btn" @clicked="btn_click" />
@@ -7,11 +7,15 @@
 </template>
 
 <script>
-use gen::actions;
+use gen::{Event, Props};
 
-actions!((clicked, String),(focus, String));
+#[derive(Event)]
+pub enum Events{
+    #[name("click")]
+    Clicked
+}
 
-#[derive(Default)]
+#[derive(Default, Props)]
 pub struct MyProps{
     pub label1: String
 }

@@ -22,8 +22,8 @@ use prop::ConvertProp;
 pub use template::TemplateModel;
 
 use self::{
-    action::Action, prop::{ConvertStyle, Props}, script::ConvertScript, style::handle_styles,
-    template::handle_template,
+    action::Action, event::NoEvent, prop::{ConvertStyle, NoProps, Props}, script::ConvertScript, style::handle_styles
+    
 };
 
 /// # GenUI文件模型
@@ -35,13 +35,13 @@ use self::{
 /// - 如果这个文件有模版和脚本，那么这个文件会被标识为TemplateScript策略
 /// - ...
 /// 通过策略,转换器可以知道如何处理这个文件
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone,  Default)]
 pub struct Model {
     /// 模型的唯一标识，通常被认为是该模型的文件路径，根据文件路径可以找到这个模型
     /// 这个字段在模型生成时会被设置
     special: String,
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
-    template: Option<TemplateModel>,
+    template: Option<TemplateModel<NoEvent,NoProps>>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
     script: Option<ConvertScript>,
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
@@ -51,7 +51,7 @@ pub struct Model {
     /// 模型是否需要被编译
     /// 在项目中可能存在一个文件被编写，但没有在项目中使用到
     /// 表现为这个文件没有使用Rust的use语句进行引入
-    complie: bool,
+    compile: bool,
 }
 
 impl Model {

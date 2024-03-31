@@ -9,6 +9,10 @@ const ID: &str = "id";
 const CLASS: &str = "class";
 const INHERITS: &str = "inherits";
 const ACTIONS_MACRO: &str = "actions!";
+const IF: &str = "if";
+const ELSE_IF: &str = "else if";
+const ELSE: &str = "else";
+const FOR: &str = "for";
 
 /// The key words in gen-ui template
 #[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
@@ -21,6 +25,14 @@ pub enum KeyWords {
     Class,
     /// inherits
     Inherits,
+    /// for
+    For,
+    /// if
+    If,
+    /// else if
+    ElseIf,
+    /// else
+    Else,
     Actions_Macro,
 }
 
@@ -64,6 +76,12 @@ impl Display for KeyWords {
             KeyWords::Class => CLASS,
             KeyWords::Inherits => INHERITS,
             KeyWords::Actions_Macro => ACTIONS_MACRO,
+            KeyWords::For => FOR,
+            KeyWords::If => IF,
+            KeyWords::ElseIf => ELSE_IF,
+            KeyWords::Else =>ELSE,
+            
+
         })
     }
 }
@@ -78,6 +96,10 @@ impl TryFrom<&str> for KeyWords {
             CLASS => Ok(KeyWords::Class),
             INHERITS => Ok(KeyWords::Inherits),
             ACTIONS_MACRO => Ok(KeyWords::Actions_Macro),
+            FOR => Ok(KeyWords::For),
+            IF => Ok(KeyWords::If),
+            ELSE_IF => Ok(KeyWords::ElseIf),
+            ELSE => Ok(KeyWords::Else),
             _ => Err(crate::error::Errors::MissMatchKeyWord),
         }
     }

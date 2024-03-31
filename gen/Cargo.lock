@@ -6,12 +6,21 @@ version = 3
 name = "gen_converter"
 version = "0.1.0"
 dependencies = [
+ "gen_macros",
  "gen_parser",
+ "gen_traits",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
 name = "gen_macros"
 version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "gen_parser"

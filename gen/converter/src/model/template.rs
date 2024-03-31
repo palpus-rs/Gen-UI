@@ -1,18 +1,19 @@
 use std::borrow::Cow;
 
 use gen_parser::{ASTNodes, Props};
+use gen_traits::{event::Event, prop::Prop};
+use proc_macro2::TokenStream;
 
 use crate::keyword::KeyWords;
 
-use super::{ ConvertProp, ModelAction};
+use super::{event::Callbacks, ConvertProp, ModelAction};
 
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
 /// 在GenUI中甚至没有内置组件的概念（因为GenUI是可插拔的，如果你想要转化为Makepad，那么内置组件就是Makepad的内置组件）
-/// 
-#[derive(Debug, Clone, PartialEq, Default)]
-pub struct TemplateModel {
+#[derive(Debug, Clone, Default)]
+pub struct TemplateModel<E: Event, P: Prop> {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
     /// 以此来在不同的文件中区分相同的组件
@@ -27,39 +28,83 @@ pub struct TemplateModel {
     /// 组件的名字，这个名字标识了组件应该如何在.gen文件中书写
     /// 例如，如果组件名字是`button`，那么在.gen文件中书写`<button></button>`就是正确的
     name: String,
-    /// 组件的属性
+    /// 组件的属性(由外部设置的属性)
     /// 无论是自定义组件还是内置组件，都有属性，只是有些被显示的书写在.gen文件中，有些被隐藏在组件内部
     /// 对GenUI来说，不需要关心这些属性的默认值是什么，这些都由插入的转化框架来决定
     /// 但是，GenUI需要关心这些属性是否是绑定的还是静态的
     /// 对于自定义组件来说，这些属性却是一个重要的部分，因为这些属性需要被外部传入
     props: Option<Props>,
-    /// 组件的事件
+    /// 组件的属性
+    /// 这表示组件允许外部传入给内部的属性，需要使用GenUI的Prop宏进行标注
+    /// 例如：
+    /// ```rust
+    /// #[derive(Debug, Clone, PartialEq, Prop)]
+    /// pub enum Props{
+    ///     text: String,
+    ///     height: f64,
+    /// }
+    /// ```
+    prop_ptr: P,
+    /// 组件的事件的回调(是指组件内部允许暴露到外部的事件)
+    /// 指的是外部组件当组件内部的事件被触发后，进行处理
+    /// 回调的参数依赖于组件的事件提供给外部参数
+    /// 回调表现为一个闭包或一个函数
+    /// 语法：`<define_component @click="do_click" />`
+    callbacks: Option<Callbacks>,
+    /// 组件事件
     /// 事件也可以被认为是组件状态
+    /// 由编写者决定，所以并不一定存在，但若存在则必须要使用GenUI的Event宏进行标注
     /// 例如，一个按钮组件，它有一个点击事件，那么这个按钮被点击时，这个事件就会被触发，也就是这个按钮进入了点击状态
     /// GenuI中事件实际上是由外部影响的
     /// 例如，在组件中有一个按钮，当这个按钮被点击时，这个按钮会激发组件的点击事件并把这个事件传递给外部（连带参数）
     /// 外部可以根据这个事件来做一些事情
-    /// 语法：`<define_component @click="do_click" />`
     /// 对于定义组件时就需要相应的使用Rust编写
     /// ```rust
     /// #[derive(Debug, Clone, PartialEq, Event)]
     /// pub enum Events{
-    ///     #[name = "click"]
+    ///     #[name("click")]
     ///     Clicked(//内部给到外部的参数),
     /// }
     /// ```
-    events: Option<>,
+    event_ptr: E,
+    /// 组件是否继承另一个组件
+    /// 若继承另一个组件，当前组件就会自动继承另一个组件的所有属性和事件
+    inherits: Option<String>,
+    /// 当前组件是否为根组件
+    /// 根组件指的是当前组件是整个.gen文件的组件树的根
+    /// 在GenUI中，每个.gen文件都有一个根组件
+    root: bool,
+    /// 组件的子组件
+    children: Option<Vec<TemplateModel<E, P>>>,
+}
 
-    // props: Option<ConvertProp>,
-    // props: Option<>
-    // /// tag actions
-    // actions: Option<Vec<ModelAction>>,
-    // /// children tag model
-    // children: Option<Vec<TemplateModel>>,
-    // /// is root
-    // is_root: bool,
-    // /// inherits
-    // inherits: Option<String>,
+impl<E: Event, P: Prop> TemplateModel<E, P> {
+    pub fn get_special(&self) -> Option<&String> {
+        self.special.as_ref()
+    }
+    pub fn set_special(&mut self, special: &str) -> () {
+        let _ = self.special.replace(special.to_string());
+    }
+    pub fn has_special(&self) -> bool {
+        self.special.is_some()
+    }
+    pub fn get_class(&self) -> Option<&Vec<String>> {
+        self.class.as_ref()
+    }
+    pub fn set_class(&mut self, class: Vec<String>) -> () {
+        let _ = self.class.replace(class);
+    }
+    pub fn has_class(&self) -> bool {
+        self.class.is_some()
+    }
+    pub fn push_class(&mut self, item: String) -> () {
+        match &mut self.class {
+            Some(class) => class.push(item),
+            None => {
+                let _ = self.class.replace(vec![item]);
+            }
+        }
+    }
 }
 
 // impl TemplateModel {
@@ -167,7 +212,7 @@ pub struct TemplateModel {
 
 //             return (model, props);
 //         }
-        
+
 //     }
 //     panic!("handle_template fn can only handle ASTNodes::Tag")
 // }

@@ -27,10 +27,10 @@ let mut change_text = || {
     #body{
        align: 0.5;
        #t_label{
-    brightness: 1.1;
-    color: #fff;
-    wrap: Word;
-    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
+            brightness: 1.1;
+            color: #fff;
+            wrap: Word;
+            font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
        }
     }
 }
