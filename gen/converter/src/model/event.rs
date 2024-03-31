@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, default};
 
 
 use gen_parser::{PropsKey, Value};
@@ -27,5 +27,8 @@ pub struct ModelEvent<T: Event>{
 pub type Callbacks = HashMap<PropsKey, Value>;
 
 /// 默认的组件的事件，即没有任何事件，不提供任何回调
-#[derive(gen_macros::Event, Debug, Clone)]
-pub enum NoEvent {}
+#[derive(gen_macros::Event, Debug, Clone,Default)]
+pub enum NoEvent {
+    #[default]
+    None,
+}

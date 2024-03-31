@@ -18,8 +18,7 @@ const FOR: &str = "for";
 /// The key words in gen-ui template
 #[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 pub enum KeyWords {
-    /// :props
-    Props,
+    
     /// id
     Id,
     /// class
@@ -41,11 +40,6 @@ impl KeyWords {
     pub fn value_prop<E,P>(&self, value: &Value, model: &mut TemplateModel<E,P>) -> ()
     where E: Event, P: Prop {
         match self {
-            KeyWords::Props => {
-                // props只能是绑定的
-                let props = value.is_bind_and_get().unwrap();
-                // model.push_prop(item)
-            }
             KeyWords::Id => {
                 // id只能是单个String或Unknown
                 // if let Some(id) = value.is_unknown_and_get() {
@@ -73,7 +67,7 @@ impl KeyWords {
 impl Display for KeyWords {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            KeyWords::Props => PROPS,
+           
             KeyWords::Id => ID,
             KeyWords::Class => CLASS,
             KeyWords::Inherits => INHERITS,
@@ -93,7 +87,7 @@ impl TryFrom<&str> for KeyWords {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            PROPS => Ok(KeyWords::Props),
+            
             ID => Ok(KeyWords::Id),
             CLASS => Ok(KeyWords::Class),
             INHERITS => Ok(KeyWords::Inherits),

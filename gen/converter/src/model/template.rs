@@ -1,20 +1,21 @@
 use std::borrow::Cow;
 
-use gen_parser::{ASTNodes, Props};
+use gen_parser::{ASTNodes, Props, Tag};
 use gen_traits::{event::Event, prop::Prop};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse2, ExprStruct};
+use ulid::Ulid;
 
 use crate::keyword::KeyWords;
 
-use super::{event::Callbacks, ConvertProp, ModelAction};
+use super::{event::{Callbacks, NoEvent}, prop::NoProps, ConvertProp, ModelAction};
 
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
 /// 在GenUI中甚至没有内置组件的概念（因为GenUI是可插拔的，如果你想要转化为Makepad，那么内置组件就是Makepad的内置组件）
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone,Default)]
 pub struct TemplateModel<E: Event, P: Prop> {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
@@ -35,7 +36,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     /// 对GenUI来说，不需要关心这些属性的默认值是什么，这些都由插入的转化框架来决定
     /// 但是，GenUI需要关心这些属性是否是绑定的还是静态的
     /// 对于自定义组件来说，这些属性却是一个重要的部分，因为这些属性需要被外部传入
-    props: Option<Props>,
+    props: Props,
     /// 组件的属性
     /// 这表示组件允许外部传入给内部的属性，需要使用GenUI的Prop宏进行标注
     /// 例如：
@@ -78,7 +79,29 @@ pub struct TemplateModel<E: Event, P: Prop> {
     root: bool,
     /// 组件的子组件
     children: Option<Vec<TemplateModel<E, P>>>,
+    // /// 组件的插槽(暂不开启)
+    // /// 插槽的作用在于将子组件插入到指定的位置
+    // /// 在GenUI中插槽使用<slot>标签进行指定
+    // /// ```gen
+    // /// // parent
+    // /// <my-widget>
+    // ///     <slot ptr="footer">
+    // ///         <input></input>
+    // ///     </slot>
+    // /// </my-widget>
+    // /// 
+    // /// // child
+    // /// <component name="my-widget">
+    // ///     <view></view>
+    // ///     <view>
+    // ///         <slot name="footer"></slot>
+    // ///     </view>
+    // /// </component>
+    // /// ```
+    // slots:
 }
+
+
 
 impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn get_special(&self) -> Option<&String> {
@@ -122,11 +145,11 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn set_name(&mut self, name: &str) -> () {
         self.name = name.to_string();
     }
-    pub fn get_props(&self) -> Option<&Props> {
-        self.props.as_ref()
+    pub fn get_props(&self) -> Props {
+        self.props
     }
     pub fn set_props(&mut self, props: Props) -> () {
-        let _ = self.props.replace(props);
+        self.props = props;
     }
     pub fn has_props(&self) -> bool {
         self.props.is_some()
@@ -190,8 +213,42 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
             }
         }
     }
+    pub fn convert(ast: ASTNodes) -> Self {
+        let mut model = TemplateModel::default();
+        match ast {
+            ASTNodes::Tag(tag) =>convert_template(*tag, &mut model),
+            ASTNodes::Comment(_) => {}
+            ASTNodes::Style(_) => panic!("cannot write styles in template node"),
+        }
+        model
+    }
 }
 
+
+/// ## 转换模板
+/// 将ASTNodes::Tag转换为TemplateModel
+/// - 为模型生成一个唯一标识符
+/// - 获取Tag的名称作为TemplateModel的名称
+/// - 获取Tag被设置的属性作为TemplateModel传入的属性
+fn convert_template<E:Event,P:Prop>(tag: Tag, model:&mut TemplateModel<E,P>)->(){
+    // [生成ulid作为模型的唯一标识符]------------------------------------------------------
+    let special = Ulid::new().to_string();
+    model.set_special(&special);
+    // [获取Tag的名称作为TemplateModel的名称]------------------------------------------------
+    model.set_name(tag.get_name());
+    // [获取Tag被设置的属性作为TemplateModel传入的属性]--------------------------------------
+    // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
+    if tag.has_props(){
+       tag.get_props().unwrap().iter().for_each(|(prop, value)|{
+            match prop.name() {
+                "id" => model.set_id(value.is_unknown_and_get().unwrap()),
+                "class" => {
+                    
+                }
+            }
+       })
+    }
+}
 // impl TemplateModel {
 //     pub fn is_component(&self) -> bool {
 //         self.tag_name.eq("component") && self.is_inherit()

@@ -18,8 +18,10 @@ pub struct Props {
     bind: Option<Vec<ConvertProp>>,
 }
 
-#[derive(Debug, Clone, gen_macros::Prop)]
+#[derive(Debug, Clone, gen_macros::Prop,Default)]
 pub struct NoProps{}
+
+
 // #[derive(Debug, PartialEq, Clone)]
 // pub enum PropRole {
 //     Normal(String, MakepadPropValue),
