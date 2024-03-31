@@ -3,6 +3,8 @@ use std::borrow::Cow;
 use gen_parser::{ASTNodes, Props};
 use gen_traits::{event::Event, prop::Prop};
 use proc_macro2::TokenStream;
+use quote::{quote, ToTokens};
+use syn::{parse2, ExprStruct};
 
 use crate::keyword::KeyWords;
 
@@ -102,6 +104,89 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
             Some(class) => class.push(item),
             None => {
                 let _ = self.class.replace(vec![item]);
+            }
+        }
+    }
+    pub fn get_id(&self) -> Option<&String> {
+        self.id.as_ref()
+    }
+    pub fn set_id(&mut self, id: &str) -> () {
+        let _ = self.id.replace(id.to_string());
+    }
+    pub fn has_id(&self) -> bool {
+        self.id.is_some()
+    }
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+    pub fn set_name(&mut self, name: &str) -> () {
+        self.name = name.to_string();
+    }
+    pub fn get_props(&self) -> Option<&Props> {
+        self.props.as_ref()
+    }
+    pub fn set_props(&mut self, props: Props) -> () {
+        let _ = self.props.replace(props);
+    }
+    pub fn has_props(&self) -> bool {
+        self.props.is_some()
+    }
+    pub fn get_prop_ptr(&self) -> &P {
+        &self.prop_ptr
+    }
+    pub fn set_prop_ptr(&mut self, prop_ptr: P) -> () {
+        self.prop_ptr = prop_ptr;
+    }
+    // pub fn has_prop_ptr(&self) -> bool {
+    //     let target = self.get_prop_ptr();
+    //     let token = quote!{ #target }.to_token_stream();
+    //     let prop = parse2::<ExprStruct>(token).unwrap();
+    //     prop.fields.len() > 0
+    // }
+    pub fn get_callbacks(&self) -> Option<&Callbacks> {
+        self.callbacks.as_ref()
+    }
+    pub fn set_callbacks(&mut self, callbacks: Callbacks) -> () {
+        let _ = self.callbacks.replace(callbacks);
+    }
+    pub fn has_callbacks(&self) -> bool {
+        self.callbacks.is_some()
+    }
+    pub fn get_event_ptr(&self) -> &E {
+        &self.event_ptr
+    }
+    pub fn set_event_ptr(&mut self, event_ptr: E) -> () {
+        self.event_ptr = event_ptr;
+    }
+    pub fn get_inherit(&self) -> Option<&String> {
+        self.inherits.as_ref()
+    }
+    pub fn set_inherit(&mut self, inherits: &str) -> () {
+        let _ = self.inherits.replace(inherits.to_string());
+    }
+    pub fn has_inherit(&self) -> bool {
+        self.inherits.is_some()
+    }
+    pub fn is_root(&self) -> bool {
+        self.root
+    }
+    pub fn set_root(&mut self, root: bool) -> () {
+        self.root = root;
+    }
+    pub fn get_children(&self) -> Option<&Vec<TemplateModel<E, P>>> {
+        self.children.as_ref()
+    }
+    pub fn set_children(&mut self, children: Vec<TemplateModel<E, P>>) -> () {
+        let _ = self.children.replace(children);
+    }
+    pub fn has_children(&self) -> bool {
+        self.children.is_some()
+    }
+    pub fn push_child(&mut self, child: TemplateModel<E, P>) -> () {
+        match &mut self.children {
+            Some(children) => children.push(child),
+            None => {
+                let _ = self.children.replace(vec![child]);
             }
         }
     }

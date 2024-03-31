@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
 use gen_parser::Value;
+use gen_traits::{event::Event, prop::Prop};
 
 use crate::model::{Model, TemplateModel};
 
@@ -37,7 +38,8 @@ pub enum KeyWords {
 }
 
 impl KeyWords {
-    pub fn value_prop(&self, value: &Value, model: &mut TemplateModel) -> () {
+    pub fn value_prop<E,P>(&self, value: &Value, model: &mut TemplateModel<E,P>) -> ()
+    where E: Event, P: Prop {
         match self {
             KeyWords::Props => {
                 // props只能是绑定的
