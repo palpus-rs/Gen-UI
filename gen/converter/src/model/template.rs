@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, };
 
 use gen_parser::{ASTNodes, PropertyKeyType, Props, PropsKey, Tag, Value};
 use gen_traits::{event::Event, prop::Prop};
@@ -7,12 +7,13 @@ use ulid::Ulid;
 
 use super::event::Callbacks;
 
+
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
 /// 在GenUI中甚至没有内置组件的概念（因为GenUI是可插拔的，如果你想要转化为Makepad，那么内置组件就是Makepad的内置组件）
-#[derive(Debug, Clone, Default, PartialEq)]
-pub struct TemplateModel<E: Event, P: Prop> {
+#[derive(Debug)]
+pub struct TemplateModel {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
     /// 以此来在不同的文件中区分相同的组件
@@ -43,7 +44,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     ///     height: f64,
     /// }
     /// ```
-    prop_ptr: P,
+    prop_ptr:Box<dyn Prop>,
     /// 组件的事件的回调(是指组件内部允许暴露到外部的事件)
     /// 指的是外部组件当组件内部的事件被触发后，进行处理
     /// 回调的参数依赖于组件的事件提供给外部参数
@@ -65,7 +66,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     ///     Clicked(//内部给到外部的参数),
     /// }
     /// ```
-    event_ptr: E,
+    event_ptr: Box<dyn Event>,
     /// 组件是否继承另一个组件
     /// 若继承另一个组件，当前组件就会自动继承另一个组件的所有属性和事件
     /// 注意这个属性只能是normal的不能是动态绑定的
@@ -75,7 +76,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     /// 在GenUI中，每个.gen文件都有一个根组件
     root: bool,
     /// 组件的子组件
-    children: Option<Vec<TemplateModel<E, P>>>,
+    children: Option<Vec<TemplateModel>>,
     /// 记录父组件的唯一标识符
     parent: Option<String>,
     // /// 组件的插槽(暂不开启)
@@ -100,7 +101,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     // slots:
 }
 
-impl<E: Event, P: Prop> TemplateModel<E, P> {
+impl TemplateModel {
     pub fn get_special(&self) -> Option<&String> {
         self.special.as_ref()
     }
@@ -204,11 +205,14 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
             }
         }
     }
-    pub fn get_prop_ptr(&self) -> &P {
+    pub fn get_prop_ptr(&self) -> &Box<dyn Prop> {
         &self.prop_ptr
     }
-    pub fn set_prop_ptr(&mut self, prop_ptr: P) -> () {
-        self.prop_ptr = prop_ptr;
+    pub fn set_prop_ptr<P>(&mut self, prop_ptr: P) -> ()
+    where
+        P: Prop,
+    {
+        self.prop_ptr = Box::new(prop_ptr);
     }
     // pub fn has_prop_ptr(&self) -> bool {
     //     let target = self.get_prop_ptr();
@@ -271,11 +275,14 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
             None => false,
         }
     }
-    pub fn get_event_ptr(&self) -> &E {
+    pub fn get_event_ptr(&self) -> &Box<dyn Event> {
         &self.event_ptr
     }
-    pub fn set_event_ptr(&mut self, event_ptr: E) -> () {
-        self.event_ptr = event_ptr;
+    pub fn set_event_ptr<E>(&mut self, event_ptr: E) -> ()
+    where
+        E: Event,
+    {
+        self.event_ptr = Box::new(event_ptr);
     }
     pub fn get_inherits(&self) -> Option<&String> {
         self.inherits.as_ref()
@@ -307,16 +314,16 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn set_root(&mut self, root: bool) -> () {
         self.root = root;
     }
-    pub fn get_children(&self) -> Option<&Vec<TemplateModel<E, P>>> {
+    pub fn get_children(&self) -> Option<&Vec<TemplateModel>> {
         self.children.as_ref()
     }
-    pub fn set_children(&mut self, children: Vec<TemplateModel<E, P>>) -> () {
+    pub fn set_children(&mut self, children: Vec<TemplateModel>) -> () {
         let _ = self.children.replace(children);
     }
     pub fn has_children(&self) -> bool {
         self.children.is_some()
     }
-    pub fn push_child(&mut self, child: TemplateModel<E, P>) -> () {
+    pub fn push_child(&mut self, child: TemplateModel) -> () {
         match &mut self.children {
             Some(children) => children.push(child),
             None => {
@@ -358,11 +365,7 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
 /// - 设置root
 /// - 获取所有外部传入的事件设置到callbacks上
 /// - 设置children
-fn convert_template<E: Event, P: Prop>(
-    tag: &Tag,
-    model: &mut TemplateModel<E, P>,
-    is_root: bool,
-) -> () {
+fn convert_template<E: Event, P: Prop>(tag: &Tag, model: &mut TemplateModel, is_root: bool) -> () {
     // [生成ulid作为模型的唯一标识符]------------------------------------------------------
     let special = Ulid::new().to_string();
     model.set_special(&special);
