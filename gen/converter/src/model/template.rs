@@ -1,6 +1,6 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashMap};
 
-use gen_parser::{ASTNodes, Props, Tag};
+use gen_parser::{ASTNodes, PropertyKeyType, Props, PropsKey, Tag, Value};
 use gen_traits::{event::Event, prop::Prop};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
@@ -9,13 +9,17 @@ use ulid::Ulid;
 
 use crate::keyword::KeyWords;
 
-use super::{event::{Callbacks, NoEvent}, prop::NoProps, ConvertProp, ModelAction};
+use super::{
+    event::{Callbacks, NoEvent},
+    prop::NoProps,
+    ConvertProp, ModelAction,
+};
 
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
 /// 在GenUI中甚至没有内置组件的概念（因为GenUI是可插拔的，如果你想要转化为Makepad，那么内置组件就是Makepad的内置组件）
-#[derive(Debug, Clone,Default)]
+#[derive(Debug, Clone, Default)]
 pub struct TemplateModel<E: Event, P: Prop> {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
@@ -24,7 +28,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     /// class是一个数组，一个组件模型可以有多个class
     /// 这些class指向style中的样式
     /// 这些class可以是动态绑定的
-    class: Option<Vec<String>>,
+    class: Option<Value>,
     /// id是一个字符串，一个组件模型只能有一个id
     /// 这个id不能是动态绑定的，只能是静态的
     id: Option<String>,
@@ -89,7 +93,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     // ///         <input></input>
     // ///     </slot>
     // /// </my-widget>
-    // /// 
+    // ///
     // /// // child
     // /// <component name="my-widget">
     // ///     <view></view>
@@ -101,8 +105,6 @@ pub struct TemplateModel<E: Event, P: Prop> {
     // slots:
 }
 
-
-
 impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn get_special(&self) -> Option<&String> {
         self.special.as_ref()
@@ -113,28 +115,69 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn has_special(&self) -> bool {
         self.special.is_some()
     }
-    pub fn get_class(&self) -> Option<&Vec<String>> {
+    pub fn get_class(&self) -> Option<&Value> {
         self.class.as_ref()
     }
-    pub fn set_class(&mut self, class: Vec<String>) -> () {
+    pub fn set_class(&mut self, class: Value) -> () {
         let _ = self.class.replace(class);
+    }
+
+    pub fn set_class_from_prop(&mut self) -> bool {
+        let tmp_props = self.props.clone();
+
+        match self.props.as_mut() {
+            Some(props) => {
+                // 目前解析器部分还不支持解析数组，只能采用绑定方式，并且可能未来也不打算支持
+                // 支持直接在标签属性中解析数组可能会引发一些不好的编写习惯
+                // let normal_remove_item = PropsKey::new("class", false, PropertyKeyType::Normal);
+                // let bind_remove_item
+                let item = tmp_props
+                    .as_ref()
+                    .unwrap()
+                    .iter()
+                    .find(|(prop, _)| prop.name() == "class");
+                match item {
+                    Some((prop, _)) => {
+                        let class = props.remove(prop).unwrap();
+                        self.set_class(class);
+                        true
+                    }
+                    None => false,
+                }
+            }
+            None => false,
+        }
     }
     pub fn has_class(&self) -> bool {
         self.class.is_some()
     }
-    pub fn push_class(&mut self, item: String) -> () {
-        match &mut self.class {
-            Some(class) => class.push(item),
-            None => {
-                let _ = self.class.replace(vec![item]);
-            }
-        }
-    }
+
     pub fn get_id(&self) -> Option<&String> {
         self.id.as_ref()
     }
     pub fn set_id(&mut self, id: &str) -> () {
         let _ = self.id.replace(id.to_string());
+    }
+
+    /// 从props中获取key为id的属性
+    /// 并从props中删除
+    /// 会返回bool
+    /// - true: 表示有id并已经设置完成
+    /// - false: 表示没有id
+    fn set_id_from_props(&mut self) -> bool {
+        match self.props.as_mut() {
+            Some(props) => {
+                let remove_item = PropsKey::new("id", false, PropertyKeyType::Normal);
+                match props.remove(&remove_item) {
+                    Some(value) => {
+                        let _ = self.set_id(value.to_string().as_str());
+                        true
+                    }
+                    None => false,
+                }
+            }
+            None => false,
+        }
     }
     pub fn has_id(&self) -> bool {
         self.id.is_some()
@@ -145,14 +188,26 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn set_name(&mut self, name: &str) -> () {
         self.name = name.to_string();
     }
-    pub fn get_props(&self) -> Props {
-        self.props
+    pub fn get_props(&self) -> &Props {
+        &self.props
     }
     pub fn set_props(&mut self, props: Props) -> () {
         self.props = props;
     }
     pub fn has_props(&self) -> bool {
         self.props.is_some()
+    }
+    pub fn push_prop(&mut self, key: PropsKey, value: Value) -> () {
+        match &mut self.props {
+            Some(props) => {
+                let _ = props.insert(key, value);
+            }
+            None => {
+                let mut item = HashMap::new();
+                item.insert(key, value);
+                self.set_props(Some(item));
+            }
+        }
     }
     pub fn get_prop_ptr(&self) -> &P {
         &self.prop_ptr
@@ -216,7 +271,7 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn convert(ast: ASTNodes) -> Self {
         let mut model = TemplateModel::default();
         match ast {
-            ASTNodes::Tag(tag) =>convert_template(*tag, &mut model),
+            ASTNodes::Tag(tag) => convert_template(*tag, &mut model, true),
             ASTNodes::Comment(_) => {}
             ASTNodes::Style(_) => panic!("cannot write styles in template node"),
         }
@@ -224,30 +279,34 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     }
 }
 
-
 /// ## 转换模板
 /// 将ASTNodes::Tag转换为TemplateModel
 /// - 为模型生成一个唯一标识符
 /// - 获取Tag的名称作为TemplateModel的名称
 /// - 获取Tag被设置的属性作为TemplateModel传入的属性
-fn convert_template<E:Event,P:Prop>(tag: Tag, model:&mut TemplateModel<E,P>)->(){
+/// - 无需设置prop_ptr和event_ptr（这两个需要解析script才能决定）
+/// - 设置root
+fn convert_template<E: Event, P: Prop>(
+    tag: Tag,
+    model: &mut TemplateModel<E, P>,
+    is_root: bool,
+) -> () {
     // [生成ulid作为模型的唯一标识符]------------------------------------------------------
     let special = Ulid::new().to_string();
     model.set_special(&special);
+    model.set_root(is_root);
     // [获取Tag的名称作为TemplateModel的名称]------------------------------------------------
     model.set_name(tag.get_name());
     // [获取Tag被设置的属性作为TemplateModel传入的属性]--------------------------------------
     // 其中id、class会被单独提出来，其他的属性会被放入props中（for,if,inherits等也一样）
-    if tag.has_props(){
-       tag.get_props().unwrap().iter().for_each(|(prop, value)|{
-            match prop.name() {
-                "id" => model.set_id(value.is_unknown_and_get().unwrap()),
-                "class" => {
-                    
-                }
-            }
-       })
+    if tag.has_props() {
+        let props = tag.get_props().unwrap();
+        model.set_props(Some(props.clone()));
     }
+    // [完成属性设置后提取id]--------------------------------------------------------------
+    model.set_id_from_props();
+    // [完成属性设置后提取class列表]--------------------------------------------------------
+    model.set_class_from_prop();
 }
 // impl TemplateModel {
 //     pub fn is_component(&self) -> bool {
