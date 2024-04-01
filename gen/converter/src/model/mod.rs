@@ -1,30 +1,35 @@
 pub mod action;
-pub mod prop;
 pub mod event;
+pub mod prop;
 mod script;
 mod style;
 mod template;
 
 use std::{
-    borrow::Cow,
     error::Error,
-    ffi::{OsStr, OsString},
-    fs::{read_to_string, DirEntry, File},
+    fs::File,
     io::Read,
-    path::{Path, PathBuf},
-    sync::mpsc,
+    path::Path,
+    sync::mpsc::{self, Sender},
     thread,
 };
 
-use action::ModelAction;
 use gen_parser::{ParseResult, ParseTarget, Strategy};
-use prop::ConvertProp;
+use gen_traits::{event::Event, prop::Prop};
 pub use template::TemplateModel;
 
 use self::{
-    action::Action, event::NoEvent, prop::{ConvertStyle, NoProps, Props}, script::ConvertScript, style::handle_styles
-    
+    event::NoEvent,
+    prop::{ConvertStyle, NoProps},
+    script::ConvertScript,
+    style::handle_styles,
 };
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ConvertResult<E: Event, P: Prop> {
+    Template(Option<TemplateModel<E, P>>),
+    Style(Option<ConvertStyle>),
+}
 
 /// # GenUI文件模型
 /// 用于表示一个.gen文件，这个文件会被解析为一个模型
@@ -35,13 +40,13 @@ use self::{
 /// - 如果这个文件有模版和脚本，那么这个文件会被标识为TemplateScript策略
 /// - ...
 /// 通过策略,转换器可以知道如何处理这个文件
-#[derive(Debug, Clone,  Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Model {
     /// 模型的唯一标识，通常被认为是该模型的文件路径，根据文件路径可以找到这个模型
     /// 这个字段在模型生成时会被设置
     special: String,
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
-    template: Option<TemplateModel<NoEvent,NoProps>>,
+    template: Option<TemplateModel<NoEvent, NoProps>>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
     script: Option<ConvertScript>,
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
@@ -58,15 +63,33 @@ impl Model {
     pub fn new(path: &Path) -> Result<Self, Box<dyn Error>> {
         match file_data(path) {
             Ok(input) => {
+                let mut model = Model::default();
                 let ast =
                     ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
-                Ok(Model::convert(ast, path))
+                let _ = Model::convert(&mut model, ast, path);
+                Ok(model)
             }
             Err(e) => Err(e),
         }
     }
-    fn convert(ast: ParseResult, path: &Path)->Self{
-        let mut model = Model::default();
+    pub fn set_template(&mut self, template: TemplateModel<NoEvent, NoProps>) -> () {
+        let _ = self.template.replace(template);
+    }
+    pub fn set_script(&mut self, script: ConvertScript) -> () {
+        let _ = self.script.replace(script);
+    }
+    pub fn set_style(&mut self, style: ConvertStyle) -> () {
+        let _ = self.style.replace(style);
+    }
+    pub fn set_compile(&mut self) {
+        self.compile = true;
+    }
+    pub fn get_compile(&self) -> bool {
+        self.compile
+    }
+    /// 通过parser层解析的结果和文件路径生成converter层模型
+    /// 这一层只需要处理template和style部分，script不变
+    fn convert(model: &mut Model, ast: ParseResult, path: &Path) -> () {
         let _ = model.set_special(path.to_str().unwrap());
         // get strategy
         match &ast.strategy() {
@@ -78,40 +101,58 @@ impl Model {
             Strategy::TemplateStyle => todo!(),
             Strategy::All => {
                 let (sender, receiver) = mpsc::channel();
+                let template_sender: Sender<ConvertResult<NoEvent, NoProps>> = sender.clone();
                 let style_sender = sender.clone();
-                let script_sender = sender.clone();
-                let template_sender = sender;
-                let styles = ast.style().unwrap().clone();
                 let template = ast.template().unwrap()[0].clone();
+                let styles = ast.style().unwrap().clone();
+                let script = ast.script().unwrap().clone();
+                model.set_script(script);
                 let _ = thread::spawn(move || {
-                    let styles = handle_styles(&styles);
-                   style_sender.send((1_u8, styles)).expect("send style error");
+                    let convert_res = TemplateModel::convert(&template, true);
+                    template_sender
+                        .send(ConvertResult::Template(convert_res))
+                        .expect("send template error");
+                });
+                let _ = thread::spawn(move || {
+                    let convert_res = handle_styles(&styles);
+                    style_sender
+                        .send(ConvertResult::Style(convert_res))
+                        .expect("send style error");
                 });
 
-                // let _ = thread::spawn(move || {
-                //     let templates = handle_template(&template);
-                //     template_sender.send((10_u8, templates)).expect("send style error");
-                // });
-
-                // match receiver.recv().expect("receive style error") {
-                //     (handled_styles, true) | (handled_styles, true) => {
-                //         model.style = handled_styles
-                //     }
-                //     (None, false) | (Some(_), false) => todo!(),
-                // }
+                for _ in 0..2 {
+                    match receiver
+                        .recv()
+                        .expect("gen_converter: receive failed when convert!")
+                    {
+                        ConvertResult::Template(t) => {
+                            if t.is_some() {
+                                model.set_template(t.unwrap());
+                            } else {
+                                panic!("template cannot be none in Strategy::All")
+                            }
+                        }
+                        ConvertResult::Style(s) => {
+                            if s.is_some() {
+                                model.set_style(s.unwrap());
+                            } else {
+                                panic!("style cannot be none in Strategy::All")
+                            }
+                        }
+                    }
+                }
             }
             // Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),
             _ => panic!("Invalid strategy!"),
         }
-
-        model
     }
 
     pub fn set_special(&mut self, special: &str) -> () {
         if self.special.is_empty() {
             self.special = special.to_string();
+        } else {
+            panic!("special is already set");
         }
-        panic!("special is already set");
     }
 }
 
@@ -130,8 +171,6 @@ impl Model {
 //     // actions from template
 //     actions: Option<Vec<Action>>,
 // }
-
-
 
 // impl Model {
 //     pub fn new(path: &str) -> Result<Self, Box<dyn Error>> {

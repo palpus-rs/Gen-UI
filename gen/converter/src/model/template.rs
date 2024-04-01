@@ -1,25 +1,17 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use gen_parser::{ASTNodes, PropertyKeyType, Props, PropsKey, Tag, Value};
 use gen_traits::{event::Event, prop::Prop};
-use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
-use syn::{parse2, ExprStruct};
+
 use ulid::Ulid;
 
-use crate::keyword::KeyWords;
-
-use super::{
-    event::{Callbacks, NoEvent},
-    prop::NoProps,
-    ConvertProp, ModelAction,
-};
+use super::event::Callbacks;
 
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
 /// 在GenUI中甚至没有内置组件的概念（因为GenUI是可插拔的，如果你想要转化为Makepad，那么内置组件就是Makepad的内置组件）
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct TemplateModel<E: Event, P: Prop> {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
@@ -330,14 +322,24 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
             }
         }
     }
-    pub fn convert(ast: ASTNodes) -> Self {
+    pub fn convert(ast: &ASTNodes, is_root: bool) -> Option<Self> {
         let mut model = TemplateModel::default();
+        let mut flag = false;
         match ast {
-            ASTNodes::Tag(tag) => convert_template(*tag, &mut model, true),
+            ASTNodes::Tag(tag) => {
+                if !flag {
+                    flag = true;
+                }
+                convert_template(&*tag, &mut model, is_root)
+            }
             ASTNodes::Comment(_) => {}
             ASTNodes::Style(_) => panic!("cannot write styles in template node"),
         }
-        model
+        if flag {
+            Some(model)
+        } else {
+            None
+        }
     }
 }
 
@@ -350,8 +352,9 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
 /// - 无需设置prop_ptr和event_ptr（这两个需要解析script才能决定）
 /// - 设置root
 /// - 获取所有外部传入的事件设置到callbacks上
+/// - 设置children
 fn convert_template<E: Event, P: Prop>(
-    tag: Tag,
+    tag: &Tag,
     model: &mut TemplateModel<E, P>,
     is_root: bool,
 ) -> () {
@@ -375,6 +378,16 @@ fn convert_template<E: Event, P: Prop>(
     model.set_inherits_from_props();
     // [设置callbacks]------------------------------------------------------------------
     model.set_callbacks_from_props();
+    // [设置children]-------------------------------------------------------------------
+    if tag.has_children() {
+        let children = tag
+            .get_children()
+            .unwrap()
+            .iter()
+            .map(|child| TemplateModel::convert(child, false).unwrap())
+            .collect();
+        model.set_children(children)
+    }
 }
 // impl TemplateModel {
 //     pub fn is_component(&self) -> bool {

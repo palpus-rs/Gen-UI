@@ -14,6 +14,8 @@ fn main() {
     // let mut f = File::create("/Users/user/Workspace/others/beyond-framework/gen/tests/release/ast.txt").unwrap();
     //    dbg!(target.template());
 
-    let model = Model::new(Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen"));
-    dbg!(model.unwrap());
+    // windows: E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen
+    // mac: 
+    let model_view = Model::new(Path::new("/Users/user/Workspace/others/beyond-framework/gen/tests/ui/view/easy.gen"));
+    dbg!(model_view.unwrap());
 }
