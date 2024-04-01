@@ -9,5 +9,5 @@ use gen_traits::prop::Prop;
 /// `<id|class, HashMap<prop, value>>`
 pub type ConvertStyle = HashMap<String, HashMap<PropsKey, Value>>;
 
-#[derive(Debug, gen_macros::Prop, Default)]
+#[derive(Debug, gen_macros::Prop, Default, Clone)]
 pub struct NoProps {}

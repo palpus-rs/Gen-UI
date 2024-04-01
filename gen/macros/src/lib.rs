@@ -23,7 +23,11 @@ pub fn derive_prop(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
     let expanded = quote! {
-        impl Prop for #name{}
+        impl Prop for #name{
+            fn clone_box(&self) -> Box<dyn Prop> {
+                Box::new(self.clone())
+            }
+        }
     };
 
     TokenStream::from(expanded)

@@ -1,12 +1,14 @@
-use std::{collections::HashMap, };
+use std::collections::HashMap;
 
 use gen_parser::{ASTNodes, PropertyKeyType, Props, PropsKey, Tag, Value};
 use gen_traits::{event::Event, prop::Prop};
 
 use ulid::Ulid;
 
-use super::event::Callbacks;
-
+use super::{
+    event::{Callbacks, NoEvent},
+    prop::NoProps,
+};
 
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
@@ -44,7 +46,7 @@ pub struct TemplateModel {
     ///     height: f64,
     /// }
     /// ```
-    prop_ptr:Box<dyn Prop>,
+    prop_ptr: Box<dyn Prop>,
     /// 组件的事件的回调(是指组件内部允许暴露到外部的事件)
     /// 指的是外部组件当组件内部的事件被触发后，进行处理
     /// 回调的参数依赖于组件的事件提供给外部参数
@@ -208,11 +210,8 @@ impl TemplateModel {
     pub fn get_prop_ptr(&self) -> &Box<dyn Prop> {
         &self.prop_ptr
     }
-    pub fn set_prop_ptr<P>(&mut self, prop_ptr: P) -> ()
-    where
-        P: Prop,
-    {
-        self.prop_ptr = Box::new(prop_ptr);
+    pub fn set_prop_ptr(&mut self, prop_ptr: Box<dyn Prop>) -> () {
+        self.prop_ptr = prop_ptr;
     }
     // pub fn has_prop_ptr(&self) -> bool {
     //     let target = self.get_prop_ptr();
@@ -278,11 +277,8 @@ impl TemplateModel {
     pub fn get_event_ptr(&self) -> &Box<dyn Event> {
         &self.event_ptr
     }
-    pub fn set_event_ptr<E>(&mut self, event_ptr: E) -> ()
-    where
-        E: Event,
-    {
-        self.event_ptr = Box::new(event_ptr);
+    pub fn set_event_ptr(&mut self, event_ptr: Box<dyn Event>) -> () {
+        self.event_ptr = event_ptr;
     }
     pub fn get_inherits(&self) -> Option<&String> {
         self.inherits.as_ref()
@@ -365,7 +361,7 @@ impl TemplateModel {
 /// - 设置root
 /// - 获取所有外部传入的事件设置到callbacks上
 /// - 设置children
-fn convert_template<E: Event, P: Prop>(tag: &Tag, model: &mut TemplateModel, is_root: bool) -> () {
+fn convert_template(tag: &Tag, model: &mut TemplateModel, is_root: bool) -> () {
     // [生成ulid作为模型的唯一标识符]------------------------------------------------------
     let special = Ulid::new().to_string();
     model.set_special(&special);
@@ -399,5 +395,43 @@ fn convert_template<E: Event, P: Prop>(tag: &Tag, model: &mut TemplateModel, is_
             })
             .collect();
         model.set_children(children)
+    }
+}
+
+impl Default for TemplateModel {
+    fn default() -> Self {
+        Self {
+            special: Default::default(),
+            class: Default::default(),
+            id: Default::default(),
+            name: Default::default(),
+            props: Default::default(),
+            prop_ptr: Box::new(NoProps::default()),
+            callbacks: Default::default(),
+            event_ptr: Box::new(NoEvent::default()),
+            inherits: Default::default(),
+            root: Default::default(),
+            children: Default::default(),
+            parent: Default::default(),
+        }
+    }
+}
+
+impl Clone for TemplateModel {
+    fn clone(&self) -> Self {
+        Self {
+            special: self.special.clone(),
+            class: self.class.clone(),
+            id: self.id.clone(),
+            name: self.name.clone(),
+            props: self.props.clone(),
+            prop_ptr: self.prop_ptr.clone(),
+            callbacks: self.callbacks.clone(),
+            event_ptr: self.event_ptr.clone(),
+            inherits: self.inherits.clone(),
+            root: self.root.clone(),
+            children: self.children.clone(),
+            parent: self.parent.clone(),
+        }
     }
 }

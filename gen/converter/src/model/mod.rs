@@ -24,7 +24,7 @@ use self::{
     style::handle_styles,
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum ConvertResult {
     Template(Option<TemplateModel>),
     Style(Option<ConvertStyle>),
