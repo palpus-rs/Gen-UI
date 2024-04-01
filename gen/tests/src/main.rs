@@ -1,21 +1,19 @@
 use std::path::Path;
 
-use gen_converter::model::Model;
+use gen_converter::{model::Model, strategy::id};
 use gen_parser::*;
 
 fn main() {
-    // let file = read_to_string("/Users/user/Workspace/others/beyond-framework/gen/tests/ui/view/index.gen");
-    // let file = read_to_string("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen");
+    let mut view_model = Model::new(Path::new(
+        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen",
+    ))
+    .unwrap();
 
-    // let input = file.unwrap();
-    // // let ast = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
-    // let target = ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
-    // dbg!(ast);
-    // let mut f = File::create("/Users/user/Workspace/others/beyond-framework/gen/tests/release/ast.txt").unwrap();
-    //    dbg!(target.template());
+    let _ = id(&mut view_model, |t_model, id_style| {
+        id_style.into_iter().for_each(|(k, v)| {
+            t_model.push_prop(k, v);
+        });
+    });
 
-    // windows: E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen
-    // mac: 
-    let model_view = Model::new(Path::new("/Users/user/Workspace/others/beyond-framework/gen/tests/ui/view/easy.gen"));
-    dbg!(model_view.unwrap());
+    dbg!(view_model);
 }

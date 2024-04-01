@@ -51,7 +51,7 @@ pub struct Model {
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
     /// 也可以认为是模型的属性部分，在GenUI中并没有属性与样式的区别
     /// ConvertStyle实际上是被平展的样式列表
-    style: Option<ConvertStyle>,
+    pub style: Option<ConvertStyle>,
     /// 模型是否需要被编译
     /// 在项目中可能存在一个文件被编写，但没有在项目中使用到
     /// 表现为这个文件没有使用Rust的use语句进行引入
@@ -88,6 +88,21 @@ impl Model {
     }
     pub fn get_template(&self) -> Option<&TemplateModel> {
         self.template.as_ref()
+    }
+    pub fn get_template_mut(&mut self) -> Option<&mut TemplateModel> {
+        self.template.as_mut()
+    }
+    pub fn has_template(&self) -> bool {
+        self.template.is_some()
+    }
+    pub fn get_styles(&self) -> Option<&ConvertStyle> {
+        self.style.as_ref()
+    }
+    pub fn get_styles_mut(&mut self) -> Option<&mut ConvertStyle> {
+        self.style.as_mut()
+    }
+    pub fn has_styles(&self) -> bool {
+        self.style.is_some()
     }
     /// 通过parser层解析的结果和文件路径生成converter层模型
     /// 这一层只需要处理template和style部分，script不变

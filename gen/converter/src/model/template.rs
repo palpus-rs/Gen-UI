@@ -26,7 +26,7 @@ pub struct TemplateModel {
     class: Option<Value>,
     /// id是一个字符串，一个组件模型只能有一个id
     /// 这个id不能是动态绑定的，只能是静态的
-    id: Option<String>,
+    pub id: Option<String>,
     /// 组件的名字，这个名字标识了组件应该如何在.gen文件中书写
     /// 例如，如果组件名字是`button`，那么在.gen文件中书写`<button></button>`就是正确的
     name: String,
