@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use gen_converter::model::Model;
 use gen_parser::*;
 
@@ -12,6 +14,6 @@ fn main() {
     // let mut f = File::create("/Users/user/Workspace/others/beyond-framework/gen/tests/release/ast.txt").unwrap();
     //    dbg!(target.template());
 
-    let model = Model::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen");
+    let model = Model::new(Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen"));
     dbg!(model.unwrap());
 }

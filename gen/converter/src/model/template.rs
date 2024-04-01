@@ -76,6 +76,7 @@ pub struct TemplateModel<E: Event, P: Prop> {
     event_ptr: E,
     /// 组件是否继承另一个组件
     /// 若继承另一个组件，当前组件就会自动继承另一个组件的所有属性和事件
+    /// 注意这个属性只能是normal的不能是动态绑定的
     inherits: Option<String>,
     /// 当前组件是否为根组件
     /// 根组件指的是当前组件是整个.gen文件的组件树的根
@@ -227,8 +228,54 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn set_callbacks(&mut self, callbacks: Callbacks) -> () {
         let _ = self.callbacks.replace(callbacks);
     }
+    pub fn push_callbacks(&mut self, k: PropsKey, v: Value) -> () {
+        match self.callbacks.as_mut() {
+            Some(callbacks) => {
+                let _ = callbacks.insert(k, v);
+            }
+
+            None => {
+                self.callbacks = Some(
+                    vec![(k, v)]
+                        .into_iter()
+                        .collect::<HashMap<PropsKey, Value>>(),
+                )
+            }
+        }
+    }
     pub fn has_callbacks(&self) -> bool {
         self.callbacks.is_some()
+    }
+    pub fn set_callbacks_from_props(&mut self) -> bool {
+        let tmp_props = self.props.clone();
+        match self.props.as_mut() {
+            Some(props) => {
+                // 所有callbacks都是Value::Function的并且也直接在PropKey上的ty是Function
+                tmp_props.unwrap().iter().for_each(|(k, _)| {
+                    if PropertyKeyType::Function.eq(k.ty()) {
+                        match props.remove_entry(k) {
+                            Some((k, v)) => match self.callbacks.as_mut() {
+                                Some(callbacks) => {
+                                    let _ = callbacks.insert(k, v);
+                                }
+
+                                None => {
+                                    self.callbacks = Some(
+                                        vec![(k, v)]
+                                            .into_iter()
+                                            .collect::<HashMap<PropsKey, Value>>(),
+                                    )
+                                }
+                            },
+                            None => (),
+                        }
+                    }
+                });
+
+                self.has_callbacks()
+            }
+            None => false,
+        }
     }
     pub fn get_event_ptr(&self) -> &E {
         &self.event_ptr
@@ -236,11 +283,26 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
     pub fn set_event_ptr(&mut self, event_ptr: E) -> () {
         self.event_ptr = event_ptr;
     }
-    pub fn get_inherit(&self) -> Option<&String> {
+    pub fn get_inherits(&self) -> Option<&String> {
         self.inherits.as_ref()
     }
-    pub fn set_inherit(&mut self, inherits: &str) -> () {
+    pub fn set_inherits(&mut self, inherits: &str) -> () {
         let _ = self.inherits.replace(inherits.to_string());
+    }
+    pub fn set_inherits_from_props(&mut self) -> bool {
+        match self.props.as_mut() {
+            Some(props) => {
+                let remove_item = PropsKey::new("inherits", false, PropertyKeyType::Normal);
+                match props.remove(&remove_item) {
+                    Some(value) => {
+                        let _ = self.set_inherits(value.to_string().as_str());
+                        true
+                    }
+                    None => false,
+                }
+            }
+            None => false,
+        }
     }
     pub fn has_inherit(&self) -> bool {
         self.inherits.is_some()
@@ -284,8 +346,10 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
 /// - 为模型生成一个唯一标识符
 /// - 获取Tag的名称作为TemplateModel的名称
 /// - 获取Tag被设置的属性作为TemplateModel传入的属性
+/// - 提取id, class, inherits
 /// - 无需设置prop_ptr和event_ptr（这两个需要解析script才能决定）
 /// - 设置root
+/// - 获取所有外部传入的事件设置到callbacks上
 fn convert_template<E: Event, P: Prop>(
     tag: Tag,
     model: &mut TemplateModel<E, P>,
@@ -307,6 +371,10 @@ fn convert_template<E: Event, P: Prop>(
     model.set_id_from_props();
     // [完成属性设置后提取class列表]--------------------------------------------------------
     model.set_class_from_prop();
+    // [完成属性设置后提取inherits]--------------------------------------------------------
+    model.set_inherits_from_props();
+    // [设置callbacks]------------------------------------------------------------------
+    model.set_callbacks_from_props();
 }
 // impl TemplateModel {
 //     pub fn is_component(&self) -> bool {

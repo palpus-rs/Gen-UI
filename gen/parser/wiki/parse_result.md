@@ -154,7 +154,7 @@ let mut handle_click = ||{
                                                                 ty: Function,
                                                             }: Function(
                                                                 Function {
-                                                                    name: "handle_actions",
+                                                                    name: "handle_click",
                                                                     params: None,
                                                                     is_style: false,
                                                                 },

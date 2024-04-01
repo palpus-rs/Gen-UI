@@ -37,32 +37,32 @@ pub enum KeyWords {
 }
 
 impl KeyWords {
-    pub fn value_prop<E,P>(&self, value: &Value, model: &mut TemplateModel<E,P>) -> ()
-    where E: Event, P: Prop {
-        match self {
-            KeyWords::Id => {
-                // id只能是单个String或Unknown
-                // if let Some(id) = value.is_unknown_and_get() {
-                //     let _ = model.set_special(id);
-                // } else {
-                //     value.is_string_and_get().unwrap_or_else(|s| {
-                //         let _ = model.set_special(s);
-                //     });
-                // }
-                string_unknown(value, |id| {
-                    model.set_special(id);
-                });
-            }
-            KeyWords::Class => {
-                // class没有限制，可以是String,Unknown,绑定
-            }
-            KeyWords::Inherits => {
-                // inherits只能是单个String或Unknown
-                string_unknown(value, |inherits| model.set_inherit(inherits));
-            }
-            _ => panic!("KeyWord can not use in Template prop"),
-        }
-    }
+    // pub fn value_prop<E,P>(&self, value: &Value, model: &mut TemplateModel<E,P>) -> ()
+    // where E: Event, P: Prop {
+    //     match self {
+    //         KeyWords::Id => {
+    //             // id只能是单个String或Unknown
+    //             // if let Some(id) = value.is_unknown_and_get() {
+    //             //     let _ = model.set_special(id);
+    //             // } else {
+    //             //     value.is_string_and_get().unwrap_or_else(|s| {
+    //             //         let _ = model.set_special(s);
+    //             //     });
+    //             // }
+    //             string_unknown(value, |id| {
+    //                 model.set_special(id);
+    //             });
+    //         }
+    //         KeyWords::Class => {
+    //             // class没有限制，可以是String,Unknown,绑定
+    //         }
+    //         KeyWords::Inherits => {
+    //             // inherits只能是单个String或Unknown
+    //             string_unknown(value, |inherits| model.set_inherit(inherits));
+    //         }
+    //         _ => panic!("KeyWord can not use in Template prop"),
+    //     }
+    // }
 }
 impl Display for KeyWords {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
