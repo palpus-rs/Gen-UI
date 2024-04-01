@@ -76,6 +76,8 @@ pub struct TemplateModel<E: Event, P: Prop> {
     root: bool,
     /// 组件的子组件
     children: Option<Vec<TemplateModel<E, P>>>,
+    /// 记录父组件的唯一标识符
+    parent: Option<String>,
     // /// 组件的插槽(暂不开启)
     // /// 插槽的作用在于将子组件插入到指定的位置
     // /// 在GenUI中插槽使用<slot>标签进行指定
@@ -322,6 +324,9 @@ impl<E: Event, P: Prop> TemplateModel<E, P> {
             }
         }
     }
+    pub fn set_parent(&mut self, special: &str) -> () {
+        let _ = self.parent.replace(special.to_string());
+    }
     pub fn convert(ast: &ASTNodes, is_root: bool) -> Option<Self> {
         let mut model = TemplateModel::default();
         let mut flag = false;
@@ -384,7 +389,11 @@ fn convert_template<E: Event, P: Prop>(
             .get_children()
             .unwrap()
             .iter()
-            .map(|child| TemplateModel::convert(child, false).unwrap())
+            .map(|child| {
+                let mut model = TemplateModel::convert(child, false).unwrap();
+                model.set_special(&special);
+                model
+            })
             .collect();
         model.set_children(children)
     }
