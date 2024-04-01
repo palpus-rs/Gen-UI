@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use gen_parser::{ASTNodes, Style, StyleType};
 
@@ -12,9 +12,7 @@ pub fn expand_style(style: &Box<Style>) -> Option<ConvertStyle> {
         let style_name = style.get_name();
         let props = style.get_props().unwrap();
         match style.get_type() {
-            StyleType::Class | StyleType::Id => {
-                res.insert(style_name.to_string(), props.clone())
-            }
+            StyleType::Class | StyleType::Id => res.insert(style_name.to_string(), props.clone()),
             StyleType::Pseudo => {
                 // find the parent and set maybe here need to do something special
                 // so write todo to watch

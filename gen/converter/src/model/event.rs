@@ -1,5 +1,4 @@
-use std::{collections::HashMap, default};
-
+use std::collections::HashMap;
 
 use gen_parser::{PropsKey, Value};
 use gen_traits::event::Event;
@@ -13,7 +12,7 @@ use gen_traits::event::Event;
 /// }
 /// ```
 /// name就是click, event就是Events::Clicked
-pub struct ModelEvent<T: Event>{
+pub struct ModelEvent<T: Event> {
     pub name: String,
     pub event: Option<T>,
 }
@@ -27,7 +26,7 @@ pub struct ModelEvent<T: Event>{
 pub type Callbacks = HashMap<PropsKey, Value>;
 
 /// 默认的组件的事件，即没有任何事件，不提供任何回调
-#[derive(gen_macros::Event, Debug, Clone,Default)]
+#[derive(gen_macros::Event, Debug, Clone, Default)]
 pub enum NoEvent {
     #[default]
     None,
