@@ -1,4 +1,7 @@
-use std::{default, fmt::Display};
+use std::{collections::HashMap, default, fmt::Display};
+
+use gen_parser::{PropsKey, Value};
+use proc_macro2::TokenTree;
 
 mod button;
 mod define;
@@ -34,15 +37,22 @@ impl Widget {
             _ => todo!(),
         }
     }
-    pub fn prop(&self) {
-        match self {
-            Widget::Window => window::prop(),
-            Widget::View => todo!(),
-            Widget::Label => todo!(),
-            Widget::Button => todo!(),
-            Widget::Define(_) => todo!(),
-        }
+    pub fn props(&self, props: HashMap<&PropsKey,&Value>)->Vec<TokenTree> {
+       let mut ast = vec![];
+        props.iter().for_each(|(prop, value)|{
+            let prop_name = prop.name();
+            let prop_value = value.is_unknown_and_get().unwrap();
+            ast.extend(match self {
+                Widget::Window => todo!(),
+                Widget::View => view::prop(prop_name, prop_value),
+                Widget::Label => todo!(),
+                Widget::Button => todo!(),
+                Widget::Define(_) => todo!(),
+            });
+        });
+        ast
     }
+   
 }
 
 impl From<&str> for Widget {

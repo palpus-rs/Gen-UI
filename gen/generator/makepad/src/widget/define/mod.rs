@@ -1,4 +1,7 @@
+use std::collections::HashMap;
+
 use gen_converter::model::TemplateModel;
+use gen_parser::{PropsKey, Value};
 use gen_utils::common::{snake_to_camel, token_tree_ident, token_tree_punct_alone};
 use proc_macro2::TokenTree;
 
@@ -19,14 +22,19 @@ pub fn ast(is_app: bool, model: &TemplateModel) {
                 .as_str(),
         )
     };
+    let unbind_props = model.get_unbind_props();
 }
 
 /// generate makepad widget prop ast
 /// ```makepad
 /// prop: xxx
 /// ```
-pub fn prop(widget: &Widget) {
-    
+pub fn prop(widget: &Widget, unbind_props:Option<HashMap<&PropsKey,&Value>>)->Vec<TokenTree> {
+    let mut ast = vec![];
+    if let Some(props) = unbind_props {
+       ast.extend(widget.props(props));
+    }
+    ast
 }
 
 /// generate makepad widget ast

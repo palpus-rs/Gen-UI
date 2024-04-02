@@ -213,6 +213,28 @@ impl TemplateModel {
     pub fn set_prop_ptr(&mut self, prop_ptr: Box<dyn Prop>) -> () {
         self.prop_ptr = prop_ptr;
     }
+    pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey,&Value>> {
+        match self.props.as_ref() {
+            Some(props) => Some(
+                props
+                    .iter()
+                    .filter(|(k, _)| !k.is_normal())
+                    .collect(),
+            ),
+            None => None,
+        }
+    }
+    pub fn get_bind_props(&self)->Option<HashMap<&PropsKey,&Value>>{
+        match self.props.as_ref() {
+            Some(props) => Some(
+                props
+                    .iter()
+                    .filter(|(k, _)| k.is_bind())
+                    .collect(),
+            ),
+            None => None,
+        }
+    }
     // pub fn has_prop_ptr(&self) -> bool {
     //     let target = self.get_prop_ptr();
     //     let token = quote!{ #target }.to_token_stream();

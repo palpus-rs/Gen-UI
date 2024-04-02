@@ -84,6 +84,12 @@ impl PropsKey {
     pub fn ty(&self)->&PropertyKeyType{
         &self.ty
     }
+    pub fn is_bind(&self) -> bool {
+        self.ty.is_bind()
+    }
+    pub fn is_normal(&self) -> bool {
+        self.ty.is_normal()
+    }
 }
 
 impl Display for PropsKey {
