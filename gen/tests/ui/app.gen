@@ -1,9 +1,9 @@
 <template>
     <window id="ui" background_visible="true">
-        <view id="body" :spacing="view_space" :flow="view_flow">
-            <button id="btn1" :text="btn_text" @clicked="change_text"></button>
-            <label id="t_label" :text="label_text" :font_size="label_size" />
-        </view>
+            <view id="body" :spacing="view_space" :flow="view_flow">
+                <button id="btn1" :text="btn_text" @clicked="change_text"></button>
+                <label id="t_label" :text="label_text" :font_size="label_size" />
+            </view>
     </window>
 </template>
 

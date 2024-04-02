@@ -50,6 +50,15 @@ name = "gen_traits"
 version = "0.1.0"
 
 [[package]]
+name = "gen_utils"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -88,6 +97,10 @@ name = "makepad-gen-plugin"
 version = "0.1.0"
 dependencies = [
  "gen_converter",
+ "gen_utils",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -189,6 +202,9 @@ version = "0.1.0"
 dependencies = [
  "gen_converter",
  "gen_parser",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -207,10 +223,6 @@ name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
-
-[[package]]
-name = "utils"
-version = "0.1.0"
 
 [[package]]
 name = "wasi"

@@ -349,6 +349,12 @@ impl TemplateModel {
             None
         }
     }
+    /// 生成最终所需的框架的代码
+    /// 这个代码最终会写如文件中
+    /// 
+    pub fn generate() -> () {
+
+    }
 }
 
 /// ## 转换模板
