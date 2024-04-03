@@ -13,12 +13,10 @@ pub struct Makepad(pub TokenStream);
 impl Makepad {
     pub fn ast(mut model: Model) -> Self {
         // 处理template部分
-        let template = model.get_template_mut();
-
         let _ = id(&mut model, gen::id());
         // 处理script部分
 
         // 处理style部分
-        todo!()
+        todo!("{:#?}", model)
     }
 }

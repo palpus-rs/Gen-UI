@@ -7,8 +7,9 @@ use proc_macro2::TokenStream;
 
 
 fn main() {
+    // E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen
     let mut view_model = Model::new(Path::new(
-        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen",
+        "/Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen",
     ))
     .unwrap();
 

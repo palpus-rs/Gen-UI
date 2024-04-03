@@ -5,6 +5,8 @@ pub enum Errors {
     MissMatchKeyWord,
     StrategyNoTemplateStyles,
     StrategyNoTemplateId,
+    StrategyNoTemplateClass,
+    StrategyNoScript,
 }
 
 impl Error for Errors {}
@@ -18,6 +20,8 @@ impl Display for Errors {
                 "Gen-Converter[strategy]: Model not have styles or template"
             }
             Errors::StrategyNoTemplateId => "Gen-Converter[strategy]: Model not have template id",
+            Errors::StrategyNoTemplateClass => "Gen-Converter[strategy]: Model not have template class",
+            Errors::StrategyNoScript => "Gen-Converter[strategy]: Model not have script",
         })
     }
 }
