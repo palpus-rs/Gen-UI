@@ -1,5 +1,3 @@
-use std::error::Error;
-
 /// uppercase the first title case of the string
 ///
 /// if the first title case is ascii alphabetic it will back the uppercase String

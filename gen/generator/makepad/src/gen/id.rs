@@ -1,9 +1,12 @@
-use gen_converter::strategy::id;
+use std::collections::HashMap;
 
-fn gen_id(){
-    // return |t_model, id_style| {
-    //     id_style.into_iter().for_each(|(k, v)| {
-    //         t_model.push_prop(k, v);
-    //     });
-    // };
+use gen_converter::model::TemplateModel;
+use gen_parser::{PropsKey, Value};
+
+pub fn id() -> impl FnMut(&mut TemplateModel, HashMap<PropsKey, Value>) -> () {
+    return |t_model, id_style| {
+        id_style.into_iter().for_each(|(k, v)| {
+            t_model.push_prop(k, v);
+        });
+    };
 }

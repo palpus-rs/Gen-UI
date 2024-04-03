@@ -43,11 +43,11 @@ pub enum ConvertResult {
 pub struct Model {
     /// 模型的唯一标识，通常被认为是该模型的文件路径，根据文件路径可以找到这个模型
     /// 这个字段在模型生成时会被设置
-    special: String,
+    pub special: String,
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
-    template: Option<TemplateModel>,
+    pub template: Option<TemplateModel>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
-    script: Option<ConvertScript>,
+    pub  script: Option<ConvertScript>,
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
     /// 也可以认为是模型的属性部分，在GenUI中并没有属性与样式的区别
     /// ConvertStyle实际上是被平展的样式列表
@@ -55,7 +55,7 @@ pub struct Model {
     /// 模型是否需要被编译
     /// 在项目中可能存在一个文件被编写，但没有在项目中使用到
     /// 表现为这个文件没有使用Rust的use语句进行引入
-    compile: bool,
+    pub compile: bool,
 }
 
 impl Model {

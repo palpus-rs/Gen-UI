@@ -1,13 +1,16 @@
-use std::collections::HashMap;
-
-use gen_parser::{PropsKey, Value};
 use proc_macro2::TokenTree;
 
+use crate::prop::{builtin::show_bg, DRAW_BG, SHOW_BG};
 
-
-
-
+/// generate view widget prop
 pub fn prop(prop_name: &str, value: &str)->Vec<TokenTree>{
+
+    match prop_name{
+        SHOW_BG => show_bg(value),
+        _ => todo!()
+    }
+
+
 // match prop_name {
     //     // match to `draw_bg`
     //     "draw_bg" => prop_bg(v),
