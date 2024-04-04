@@ -1,3 +1,4 @@
+use proc_macro2::{TokenStream, TokenTree};
 use syn::{Block, Meta, Stmt, StmtMacro};
 
 use crate::{error::Errors, model::Model};
@@ -18,28 +19,34 @@ pub fn script<U, P, E, L, F>(
     mut event_f: E,
     mut lifetime_f: L,
     mut other_f: F,
-) -> Result<(), Errors>
+) -> Result<TokenStream, Errors>
 where
-    U: FnMut(Vec<syn::ItemUse>) -> (),
-    P: FnMut(Option<syn::ItemStruct>) -> (),
-    E: FnMut(Option<syn::ItemEnum>) -> (),
-    L: FnMut(Vec<StmtMacro>) -> (),
-    F: FnMut(Vec<Stmt>) -> (),
+    U: FnMut(Vec<syn::ItemUse>) -> Option<TokenStream>,
+    P: FnMut(Option<syn::ItemStruct>) -> Option<TokenStream>,
+    E: FnMut(Option<syn::ItemEnum>) -> Option<TokenStream>,
+    L: FnMut(Vec<StmtMacro>) -> Option<TokenStream>,
+    F: FnMut(Vec<Stmt>) -> Option<TokenStream>,
 {
     if !model.has_script() {
         return Err(Errors::StrategyNoScript);
     }
-
+    let mut tt = TokenStream::new();
     let script = model.script.unwrap().to_origin();
     let (uses, prop, event, lifetime, other) = split_script(script);
 
-    use_f(uses);
-    prop_f(prop);
-    event_f(event);
-    lifetime_f(lifetime);
-    other_f(other);
+    extend(&mut tt, use_f(uses));
+    extend(&mut tt, prop_f(prop));
+    extend(&mut tt, event_f(event));
+    extend(&mut tt, lifetime_f(lifetime));
+    extend(&mut tt, other_f(other));
 
-    Ok(())
+    Ok(tt)
+}
+
+fn extend(iter: &mut TokenStream, ts: Option<TokenStream>) -> () {
+    if let Some(value) = ts {
+        iter.extend(value);
+    }
 }
 
 fn split_script(

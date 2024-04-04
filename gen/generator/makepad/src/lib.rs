@@ -15,6 +15,7 @@ pub struct Makepad(pub TokenStream);
 
 impl Makepad {
     pub fn ast(mut model: Model) -> Self {
+        let mut ast_tt = Vec::new();
         // [这一部分是为了对Model进一步进行处理]-----------------------------------------------------
         // 处理template部分
         let _ = id(&mut model, gen::id());
@@ -25,8 +26,19 @@ impl Makepad {
 
         // [完成处理后这个model就是最终的Model，下面就可以开始生成Makepad AST]-----------------------------------------------------
         // 处理script部分
-        let _ = script(model, use_f, prop_f, event_f, lifetime_f, other_f)
-        todo!("{:#?}", model.script.unwrap())
+        match script(
+            model,
+            gen::r#use(),
+            gen::prop(),
+            gen::event(),
+            gen::lifetime(),
+            gen::other(),
+        ){
+            Ok(tt) => ast_tt.extend(tt),
+            Err(_) => (),
+        }
+        todo!("{:#?}", ast_tt);
+        // todo!("{:#?}", model.script.unwrap())
     }
 
     pub fn to_token_stream(&self) -> TokenStream {
