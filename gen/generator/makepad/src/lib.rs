@@ -1,6 +1,8 @@
-use gen_converter::{model::Model, strategy::{class, id, inherits, style}};
-use proc_macro2::{TokenStream, TokenTree};
-use syn::parse2;
+use gen_converter::{
+    model::Model,
+    strategy::{class, id, inherits, script, style},
+};
+use proc_macro2::TokenStream;
 
 pub mod error;
 pub mod gen;
@@ -18,17 +20,16 @@ impl Makepad {
         let _ = id(&mut model, gen::id());
         let _ = class(&mut model, gen::class());
         let _ = inherits(&mut model, gen::inherits());
-        // 处理script部分
-
         // 处理style部分
-        let  _ = style(&mut model, gen::style());
+        let _ = style(&mut model, gen::style());
+
         // [完成处理后这个model就是最终的Model，下面就可以开始生成Makepad AST]-----------------------------------------------------
+        // 处理script部分
+        let _ = script(model, use_f, prop_f, event_f, lifetime_f, other_f)
         todo!("{:#?}", model.script.unwrap())
     }
 
-    pub fn to_token_stream(&self) -> TokenStream{
-
+    pub fn to_token_stream(&self) -> TokenStream {
         todo!()
     }
 }
-
