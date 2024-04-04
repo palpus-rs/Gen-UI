@@ -21,10 +21,11 @@ impl Display for Errors {
                 "Gen-Converter[strategy]: Model not have styles or template"
             }
             Errors::StrategyNoTemplateId => "Gen-Converter[strategy]: Model not have template id",
-            Errors::StrategyNoTemplateClass => "Gen-Converter[strategy]: Model not have template class",
+            Errors::StrategyNoTemplateClass => {
+                "Gen-Converter[strategy]: Model not have template class"
+            }
             Errors::StrategyNoScript => "Gen-Converter[strategy]: Model not have script",
             Errors::StrategyNoInherits => "Gen-Converter[strategy]: Model not have inherits",
-            
         })
     }
 }

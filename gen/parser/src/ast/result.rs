@@ -7,7 +7,7 @@ use crate::{
 
 use super::{ASTNodes, ParseCore, ParseTarget, Script, Strategy};
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ParseResult {
     template: Option<Vec<ASTNodes>>,
     style: Option<Vec<ASTNodes>>,

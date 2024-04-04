@@ -107,6 +107,9 @@ impl Model {
     pub fn get_script(&self) -> Option<&ConvertScript> {
         self.script.as_ref()
     }
+    pub fn has_script(&self) -> bool {
+        self.script.is_some()
+    }
     /// 通过parser层解析的结果和文件路径生成converter层模型
     /// 这一层只需要处理template和style部分，script不变
     fn convert(model: &mut Model, ast: ParseResult, path: &Path) -> () {

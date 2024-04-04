@@ -46,7 +46,8 @@ pub struct TemplateModel {
     ///     height: f64,
     /// }
     /// ```
-    prop_ptr: Box<dyn Prop>,
+    // prop_ptr: Box<dyn Prop>,
+    prop_ptr: Option<String>,
     /// 组件的事件的回调(是指组件内部允许暴露到外部的事件)
     /// 指的是外部组件当组件内部的事件被触发后，进行处理
     /// 回调的参数依赖于组件的事件提供给外部参数
@@ -68,7 +69,8 @@ pub struct TemplateModel {
     ///     Clicked(//内部给到外部的参数),
     /// }
     /// ```
-    event_ptr: Box<dyn Event>,
+    // event_ptr: Box<dyn Event>,
+    event_ptr: Option<String>,
     /// 组件是否继承另一个组件
     /// 若继承另一个组件，当前组件就会自动继承另一个组件的所有属性和事件
     /// 注意这个属性只能是normal的不能是动态绑定的
@@ -207,11 +209,11 @@ impl TemplateModel {
             }
         }
     }
-    pub fn get_prop_ptr(&self) -> &Box<dyn Prop> {
-        &self.prop_ptr
+    pub fn get_prop_ptr(&self) -> Option<&String> {
+        self.prop_ptr.as_ref()
     }
-    pub fn set_prop_ptr(&mut self, prop_ptr: Box<dyn Prop>) -> () {
-        self.prop_ptr = prop_ptr;
+    pub fn set_prop_ptr(&mut self, prop_ptr: &str) -> () {
+       let  _ =  self.prop_ptr.replace(prop_ptr.to_string());
     }
     pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey,&Value>> {
         match self.props.as_ref() {
@@ -296,11 +298,11 @@ impl TemplateModel {
             None => false,
         }
     }
-    pub fn get_event_ptr(&self) -> &Box<dyn Event> {
-        &self.event_ptr
+    pub fn get_event_ptr(&self) -> Option<&String> {
+        self.event_ptr.as_ref()
     }
-    pub fn set_event_ptr(&mut self, event_ptr: Box<dyn Event>) -> () {
-        self.event_ptr = event_ptr;
+    pub fn set_event_ptr(&mut self, event_ptr: &str) -> () {
+        let _ = self.event_ptr.replace(event_ptr.to_string());
     }
     pub fn get_inherits(&self) -> Option<&String> {
         self.inherits.as_ref()
@@ -434,9 +436,9 @@ impl Default for TemplateModel {
             id: Default::default(),
             name: Default::default(),
             props: Default::default(),
-            prop_ptr: Box::new(NoProps::default()),
+            prop_ptr: Default::default(),
             callbacks: Default::default(),
-            event_ptr: Box::new(NoEvent::default()),
+            event_ptr: Default::default(),
             inherits: Default::default(),
             root: Default::default(),
             children: Default::default(),

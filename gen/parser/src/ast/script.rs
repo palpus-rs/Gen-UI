@@ -1,31 +1,32 @@
 use std::fmt::Display;
 
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{token::Brace, Block, Stmt};
 
 use crate::target::parse_script;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Script(Block);
+#[derive(Debug, Clone)]
+pub struct Script(TokenStream);
 
 #[allow(dead_code)]
 impl Script {
-    pub fn brace_token(&self) -> &Brace {
-        &self.0.brace_token
-    }
-    pub fn ast(&self) -> &Vec<Stmt> {
-        &self.0.stmts
-    }
-    pub fn to_origin(self) -> Block {
+    // pub fn brace_token(&self) -> &Brace {
+    //     &self.0.brace_token
+    // }
+    // pub fn ast(&self) -> &Vec<Stmt> {
+    //     &self.0.stmts
+    // }
+    pub fn to_origin(self) -> TokenStream {
         self.0
     }
-    pub fn as_origin(&self) -> &Block {
+    pub fn as_origin(&self) -> &TokenStream {
         &self.0
     }
 }
 
-impl From<Block> for Script {
-    fn from(value: Block) -> Self {
+impl From<TokenStream> for Script {
+    fn from(value: TokenStream) -> Self {
         Script(value)
     }
 }

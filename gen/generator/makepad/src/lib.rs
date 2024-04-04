@@ -22,7 +22,7 @@ impl Makepad {
         // 处理style部分
         let  _ = style(&mut model, gen::style());
         // [完成处理后这个model就是最终的Model，下面就可以开始生成Makepad AST]-----------------------------------------------------
-        todo!("{:#?}", model)
+        todo!("{:#?}", model.script)
     }
 
     pub fn to_token_stream(&self) -> TokenStream{

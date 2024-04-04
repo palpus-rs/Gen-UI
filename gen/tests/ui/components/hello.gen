@@ -7,26 +7,25 @@
 </template>
 
 <script>
-use gen::{Event, Props};
+use gen_macros::{Event, Props};
 
-#[derive(Event)]
+#[derive(Event, Debug, Clone, Default)]
 pub enum Events{
     #[name("click")]
-    Clicked
+    Clicked(String),
+    None,
 }
 
-#[derive(Default, Props)]
+#[derive(Debug, Prop, Default, Clone)]
 pub struct MyProps{
     pub label1: String
 }
-
-let my_props = MyProps::default();
 
 let fs: f64 = 18.0;
 
 let mut btn_click = ||{
     println!("Button bb Clicked");
-    active!(clicked, "Hello".to_string());
+    active!(Events::Clicked, "Hello".to_string());
 };
 </script>
 
@@ -35,6 +34,6 @@ let mut btn_click = ||{
     brightness: 1.1;
     color: #fff;
     wrap: Word;
-    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
+    font: use("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf");
 }
 </style>
