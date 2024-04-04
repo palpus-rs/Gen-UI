@@ -108,6 +108,9 @@ impl Model {
     pub fn has_script(&self) -> bool {
         self.script.is_some()
     }
+    pub fn is_component(&self) -> bool {
+        self.template.is_some() && self.get_template().unwrap().has_inherit()
+    }
     /// 通过parser层解析的结果和文件路径生成converter层模型
     /// 这一层只需要处理template和style部分，script不变
     fn convert(model: &mut Model, ast: ParseResult, path: &Path) -> () {

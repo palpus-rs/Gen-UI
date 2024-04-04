@@ -1,3 +1,5 @@
+use std::{fs::File, io::Write};
+
 use gen_converter::{
     model::Model,
     strategy::{class, id, inherits, script, style},
@@ -15,7 +17,7 @@ pub struct Makepad(pub TokenStream);
 
 impl Makepad {
     pub fn ast(mut model: Model) -> Self {
-        let mut ast_tt = Vec::new();
+        let mut ast_tt = TokenStream::new();
         // [这一部分是为了对Model进一步进行处理]-----------------------------------------------------
         // 处理template部分
         let _ = id(&mut model, gen::id());
@@ -33,11 +35,14 @@ impl Makepad {
             gen::event(),
             gen::lifetime(),
             gen::other(),
-        ){
+        ) {
             Ok(tt) => ast_tt.extend(tt),
             Err(_) => (),
         }
-        todo!("{:#?}", ast_tt);
+        let res = ast_tt.to_string();
+        let mut f = File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs").unwrap();
+        let _ = f.write(res.as_bytes());
+        todo!("{:#?}", &res);
         // todo!("{:#?}", model.script.unwrap())
     }
 

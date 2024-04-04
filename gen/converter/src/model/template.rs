@@ -1,14 +1,10 @@
 use std::collections::HashMap;
 
 use gen_parser::{ASTNodes, PropertyKeyType, Props, PropsKey, Tag, Value};
-use gen_traits::{event::Event, prop::Prop};
 
 use ulid::Ulid;
 
-use super::{
-    event::{Callbacks, NoEvent},
-    prop::NoProps,
-};
+use super::event::Callbacks;
 
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
@@ -213,27 +209,17 @@ impl TemplateModel {
         self.prop_ptr.as_ref()
     }
     pub fn set_prop_ptr(&mut self, prop_ptr: &str) -> () {
-       let  _ =  self.prop_ptr.replace(prop_ptr.to_string());
+        let _ = self.prop_ptr.replace(prop_ptr.to_string());
     }
-    pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey,&Value>> {
+    pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
         match self.props.as_ref() {
-            Some(props) => Some(
-                props
-                    .iter()
-                    .filter(|(k, _)| !k.is_normal())
-                    .collect(),
-            ),
+            Some(props) => Some(props.iter().filter(|(k, _)| !k.is_normal()).collect()),
             None => None,
         }
     }
-    pub fn get_bind_props(&self)->Option<HashMap<&PropsKey,&Value>>{
+    pub fn get_bind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
         match self.props.as_ref() {
-            Some(props) => Some(
-                props
-                    .iter()
-                    .filter(|(k, _)| k.is_bind())
-                    .collect(),
-            ),
+            Some(props) => Some(props.iter().filter(|(k, _)| k.is_bind()).collect()),
             None => None,
         }
     }
@@ -375,10 +361,8 @@ impl TemplateModel {
     }
     /// 生成最终所需的框架的代码
     /// 这个代码最终会写如文件中
-    /// 
-    pub fn generate() -> () {
-
-    }
+    ///
+    pub fn generate() -> () {}
 }
 
 /// ## 转换模板

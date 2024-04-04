@@ -22,7 +22,7 @@ pub fn script<U, P, E, L, F>(
 ) -> Result<TokenStream, Errors>
 where
     U: FnMut(Vec<syn::ItemUse>) -> Option<TokenStream>,
-    P: FnMut(Option<syn::ItemStruct>) -> Option<TokenStream>,
+    P: FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream>,
     E: FnMut(Option<syn::ItemEnum>) -> Option<TokenStream>,
     L: FnMut(Vec<StmtMacro>) -> Option<TokenStream>,
     F: FnMut(Vec<Stmt>) -> Option<TokenStream>,
@@ -31,11 +31,13 @@ where
         return Err(Errors::StrategyNoScript);
     }
     let mut tt = TokenStream::new();
+    let is_component = model.is_component();
     let script = model.script.unwrap().to_origin();
     let (uses, prop, event, lifetime, other) = split_script(script);
+    
 
     extend(&mut tt, use_f(uses));
-    extend(&mut tt, prop_f(prop));
+    extend(&mut tt, prop_f(prop, is_component));
     extend(&mut tt, event_f(event));
     extend(&mut tt, lifetime_f(lifetime));
     extend(&mut tt, other_f(other));

@@ -9,14 +9,14 @@
 <script>
 use gen_macros::{Event, Props};
 
-#[derive(Event, Debug, Clone, Default)]
+#[derive(Event)]
 pub enum Events{
     #[name("click")]
     Clicked(String),
     None,
 }
 
-#[derive(Debug, Prop, Default, Clone)]
+#[derive(Prop)]
 pub struct MyProps{
     pub label1: String
 }

@@ -24,9 +24,7 @@ pub fn derive_prop(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let expanded = quote! {
         impl Prop for #name{
-            fn clone_box(&self) -> Box<dyn Prop> {
-                Box::new(self.clone())
-            }
+            
         }
     };
 

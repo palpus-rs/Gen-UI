@@ -25,9 +25,9 @@ pub struct ModelEvent<T: Event> {
 /// - 事件
 pub type Callbacks = HashMap<PropsKey, Value>;
 
-/// 默认的组件的事件，即没有任何事件，不提供任何回调
-#[derive(gen_macros::Event, Debug, Clone, Default)]
-pub enum NoEvent {
-    #[default]
-    None,
-}
+// 默认的组件的事件，即没有任何事件，不提供任何回调
+// #[derive(gen_macros::Event, Debug, Clone, Default)]
+// pub enum NoEvent {
+//     #[default]
+//     None,
+// }
