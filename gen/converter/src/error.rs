@@ -7,6 +7,7 @@ pub enum Errors {
     StrategyNoTemplateId,
     StrategyNoTemplateClass,
     StrategyNoScript,
+    StrategyNoInherits,
 }
 
 impl Error for Errors {}
@@ -22,6 +23,8 @@ impl Display for Errors {
             Errors::StrategyNoTemplateId => "Gen-Converter[strategy]: Model not have template id",
             Errors::StrategyNoTemplateClass => "Gen-Converter[strategy]: Model not have template class",
             Errors::StrategyNoScript => "Gen-Converter[strategy]: Model not have script",
+            Errors::StrategyNoInherits => "Gen-Converter[strategy]: Model not have inherits",
+            
         })
     }
 }

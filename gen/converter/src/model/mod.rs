@@ -47,7 +47,7 @@ pub struct Model {
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
     pub template: Option<TemplateModel>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
-    pub  script: Option<ConvertScript>,
+    pub script: Option<ConvertScript>,
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
     /// 也可以认为是模型的属性部分，在GenUI中并没有属性与样式的区别
     /// ConvertStyle实际上是被平展的样式列表
