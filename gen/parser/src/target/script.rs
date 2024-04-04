@@ -1,29 +1,28 @@
 //! mode:
 //! - variable: let | const variable_name: variable_type = variable_value;
 //! - funcation: let function_name: function_type = ||{ function_handle };
-
 use proc_macro2::TokenStream;
+use syn::{parse2, Block};
 
 #[allow(dead_code)]
-pub fn parse_script(input: &str) -> Result<TokenStream, crate::error::Error> {
+pub fn parse_script(input: &str) -> Result<Block, crate::error::Error> {
     let input = format!("{{ {} }}", input);
     // make input to TokenStream
     let token = match input.parse::<TokenStream>() {
-        Ok(t) => return Ok(t),
+        Ok(t) => t,
         Err(_) => {
             return Err(crate::error::Error::parse_error(
                 "cannot parse rsx script to rust TokenStream!",
             ));
         }
     };
-
-    // // token to ast
-    // match parse2::<Block>(token) {
-    //     Ok(ast) => Ok(ast),
-    //     Err(_) => Err(crate::error::Error::parse_error(
-    //         "cannot convert TokenStream to rust Block!",
-    //     )),
-    // }
+    // token to ast
+    match parse2::<Block>(token) {
+        Ok(ast) => Ok(ast),
+        Err(_) => Err(crate::error::Error::parse_error(
+            "cannot convert TokenStream to rust Block!",
+        )),
+    }
 }
 
 #[cfg(test)]

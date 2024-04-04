@@ -9,20 +9,15 @@ use std::{
     fs::File,
     io::Read,
     path::Path,
-    sync::mpsc::{self, Sender},
+    sync::mpsc::{self},
     thread,
 };
 
 use gen_parser::{ParseResult, ParseTarget, Strategy};
-use gen_traits::{event::Event, prop::Prop};
+
 pub use template::TemplateModel;
 
-use self::{
-    event::NoEvent,
-    prop::{ConvertStyle, NoProps},
-    script::ConvertScript,
-    style::handle_styles,
-};
+use self::{prop::ConvertStyle, script::ConvertScript, style::handle_styles};
 
 #[derive(Debug, Clone)]
 pub enum ConvertResult {
@@ -106,6 +101,9 @@ impl Model {
     }
     pub fn get_script(&self) -> Option<&ConvertScript> {
         self.script.as_ref()
+    }
+    pub fn get_script_mut(&mut self) -> Option<&mut ConvertScript> {
+        self.script.as_mut()
     }
     pub fn has_script(&self) -> bool {
         self.script.is_some()

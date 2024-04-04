@@ -27,6 +27,11 @@ let mut btn_click = ||{
     println!("Button bb Clicked");
     active!(Events::Clicked, "Hello".to_string());
 };
+
+on_shutdown!{
+    println!("{}", "on shutdown!");
+    println!("GenUI: {}", "good bye!");
+}
 </script>
 
 <style>

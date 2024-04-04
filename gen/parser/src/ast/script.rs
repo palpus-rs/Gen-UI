@@ -1,13 +1,12 @@
 use std::fmt::Display;
 
-use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{token::Brace, Block, Stmt};
+use syn::Block;
 
 use crate::target::parse_script;
 
-#[derive(Debug, Clone)]
-pub struct Script(TokenStream);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Script(Block);
 
 #[allow(dead_code)]
 impl Script {
@@ -17,16 +16,19 @@ impl Script {
     // pub fn ast(&self) -> &Vec<Stmt> {
     //     &self.0.stmts
     // }
-    pub fn to_origin(self) -> TokenStream {
+    pub fn to_origin(self) -> Block {
         self.0
     }
-    pub fn as_origin(&self) -> &TokenStream {
+    pub fn as_origin(&self) -> &Block {
         &self.0
+    }
+    pub fn as_origin_mut(&mut self) -> &mut Block {
+        &mut self.0
     }
 }
 
-impl From<TokenStream> for Script {
-    fn from(value: TokenStream) -> Self {
+impl From<Block> for Script {
+    fn from(value: Block) -> Self {
         Script(value)
     }
 }
