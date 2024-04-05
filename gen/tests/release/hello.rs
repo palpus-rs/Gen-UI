@@ -8,5 +8,3 @@ pub enum Events {
     Clicked(String),
     None,
 }
-println!("{}", "on shutdown!");
-println!("GenUI: {}", "good bye!");

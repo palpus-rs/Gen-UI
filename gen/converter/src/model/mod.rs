@@ -66,6 +66,9 @@ impl Model {
             Err(e) => Err(e),
         }
     }
+    pub fn get_special(&self) -> &str {
+        &self.special
+    }
     pub fn set_template(&mut self, template: TemplateModel) -> () {
         let _ = self.template.replace(template);
     }

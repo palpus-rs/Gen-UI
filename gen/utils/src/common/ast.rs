@@ -21,6 +21,11 @@ pub fn group(tree: Vec<TokenTree>) -> Group {
     Group::new(Delimiter::Brace, stream)
 }
 
+pub fn group_paren(tree: Vec<TokenTree>) -> Group {
+    let stream = TokenStream::from_iter(tree.into_iter());
+    Group::new(Delimiter::Parenthesis, stream)
+}
+
 /// create a new token tree ident
 /// debug result:
 /// ```
@@ -42,4 +47,27 @@ pub fn token_tree_punct_alone(input: char) -> TokenTree {
 
 pub fn token_tree_group(tree: Vec<TokenTree>) -> TokenTree {
     TokenTree::Group(group(tree))
+}
+
+pub fn token_tree_group_paren(tree: Vec<TokenTree>) -> TokenTree {
+    TokenTree::Group(group_paren(tree))
+}
+
+pub fn token_stream_to_tree(stream: TokenStream) -> Vec<TokenTree> {
+    stream.into_iter().collect()
+}
+pub fn trees_to_token_stream(tree: Vec<TokenTree>) -> TokenStream {
+    TokenStream::from_iter(tree.into_iter())
+}
+
+pub fn tree_to_token_stream(tree: TokenTree) -> TokenStream {
+    TokenStream::from(tree)
+}
+
+pub fn token_streams_to_trees(streams: Vec<TokenStream>) -> Vec<TokenTree> {
+    streams
+        .into_iter()
+        .map(|stream| token_stream_to_tree(stream))
+        .flatten()
+        .collect()
 }

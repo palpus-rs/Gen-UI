@@ -1,10 +1,15 @@
 use gen_converter::model::script::LifeTime;
-use gen_utils::common::{token_tree_ident, token_tree_punct_alone};
+use gen_utils::common::{
+    token_stream_to_tree, token_streams_to_trees, token_tree_ident, token_tree_punct_alone,
+    tree_to_token_stream, trees_to_token_stream,
+};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use syn::{Attribute, Lifetime, Meta, Stmt, StmtMacro};
 
-use crate::utils::{derive_default_none, derive_live_livehook};
+use crate::utils::{
+    derive_default_none, derive_live_livehook, handle_shutdown, handle_startup, impl_match_event,
+};
 
 pub fn r#use() -> impl FnMut(Vec<syn::ItemUse>) -> Option<TokenStream> {
     return |uses| {
@@ -71,29 +76,40 @@ pub fn event() -> impl FnMut(Option<syn::ItemEnum>) -> Option<TokenStream> {
     };
 }
 
-pub fn lifetime() -> impl FnMut(Vec<StmtMacro>) -> Option<Vec<LifeTime>> {
-    return |lifetimes| {
+pub fn lifetime() -> impl FnMut(Vec<StmtMacro>, &str, bool) -> Option<TokenStream> {
+    return |lifetimes, target, is_component| {
+        if is_component {
+            return None;
+        }
+
         if lifetimes.is_empty() {
             None
         } else {
             //    let lifetimes = lifetimes.unwrap();
             // 目前lifetimes中有两个宏，一个`on_startup!`一个`on_shutdown!`
             // 在Macro中将tokens提取出来放到GenUI提供的LiftTime中即可
-            Some(
-                lifetimes
-                    .into_iter()
-                    .map(|lifetime| {
-                        let tokens = lifetime.mac.tokens;
-                        if lifetime.mac.path.is_ident("on_startup") {
-                            LifeTime::StartUp(tokens)
-                        } else if lifetime.mac.path.is_ident("on_shutdown") {
-                            LifeTime::ShutDown(tokens)
-                        } else {
-                            panic!("Invalid lifetime macro")
-                        }
-                    })
-                    .collect(),
-            )
+
+            let lifetime_code = lifetimes
+                .into_iter()
+                .map(|lifetime| {
+                    let tokens = token_stream_to_tree(lifetime.mac.tokens);
+                    let item = if lifetime.mac.path.is_ident("on_startup") {
+                        LifeTime::StartUp(tree_to_token_stream(handle_startup(tokens)))
+                    } else if lifetime.mac.path.is_ident("on_shutdown") {
+                        LifeTime::ShutDown(tree_to_token_stream(handle_shutdown(tokens)))
+                    } else {
+                        panic!("Invalid lifetime macro")
+                    };
+                    item.to_token_stream()
+                })
+                .collect::<Vec<TokenStream>>();
+
+            let match_event = impl_match_event(
+                token_tree_ident(target),
+                token_streams_to_trees(lifetime_code),
+            );
+
+            Some(trees_to_token_stream(match_event))
         }
     };
 }

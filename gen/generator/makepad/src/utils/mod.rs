@@ -102,11 +102,11 @@ pub fn impl_live_register(target: TokenTree, code: Vec<TokenTree>) -> Vec<TokenT
     ]
 }
 
-pub fn makepad_widgets_register() -> Vec<TokenTree> {
+pub fn makepad_widgets_register(target:&str) -> Vec<TokenTree> {
     vec![
         token_tree_ident("crate"),
         token_tree_punct_joint(':'),
-        token_tree_ident("makepad_widgets"),
+        token_tree_ident(target),
         token_tree_punct_joint(':'),
         token_tree_punct_joint(':'),
         token_tree_ident("live_design"),
@@ -133,11 +133,30 @@ pub fn handle_startup(code: Vec<TokenTree>) -> TokenTree {
     ])
 }
 
+pub fn handle_shutdown(code: Vec<TokenTree>) -> TokenTree {
+    token_tree_group(vec![
+        token_tree_ident("fn"),
+        token_tree_ident("handle_shutdown"),
+        token_tree_group_paren(vec![
+            token_tree_punct_alone('&'),
+            token_tree_ident("mut"),
+            token_tree_ident("self"),
+            token_tree_punct_alone(','),
+            token_tree_ident("cx"),
+            token_tree_punct_alone(':'),
+            token_tree_punct_alone('&'),
+            token_tree_ident("mut"),
+            token_tree_ident("Cx"),
+        ]),
+        token_tree_group(code),
+    ])
+}
+
 pub fn handle_actions(code: Vec<TokenTree>) -> TokenTree {
     token_tree_group(vec![
         token_tree_ident("fn"),
         token_tree_ident("handle_actions"),
-        token_tree_group(vec![
+        token_tree_group_paren(vec![
             token_tree_punct_alone('&'),
             token_tree_ident("mut"),
             token_tree_ident("self"),
@@ -161,7 +180,7 @@ pub fn handle_event(code: Vec<TokenTree>) -> TokenTree {
     token_tree_group(vec![
         token_tree_ident("fn"),
         token_tree_ident("handle_event"),
-        token_tree_group(vec![
+        token_tree_group_paren(vec![
             token_tree_punct_alone('&'),
             token_tree_ident("mut"),
             token_tree_ident("self"),
@@ -186,11 +205,19 @@ pub fn self_match_event() -> Vec<TokenTree> {
         token_tree_ident("self"),
         token_tree_punct_joint('.'),
         token_tree_ident("match_event"),
-        token_tree_group(vec![
+        token_tree_group_paren(vec![
             token_tree_ident("cx"),
             token_tree_punct_alone(','),
             token_tree_ident("event"),
         ]),
+    ]
+}
+
+pub fn macro_app_main(target: TokenTree)->Vec<TokenTree>{
+    vec![
+        token_tree_ident("app_main"),
+        token_tree_punct_alone('!'),
+        token_tree_group_paren(vec![target]),
     ]
 }
 

@@ -37,6 +37,7 @@ impl Instance {
     }
 }
 impl MatchEvent for MyApp {
+    
     fn handle_startup(&mut self, cx: &mut Cx) {
         self.instance = Instance::new();
         let view_body = self.ui.view(id!(body));
