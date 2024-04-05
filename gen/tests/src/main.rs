@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{path::Path, time::Instant};
 
 use gen_converter::{model::Model, strategy::id};
 use gen_parser::*;
@@ -9,15 +9,18 @@ use proc_macro2::TokenStream;
 fn main() {
     // E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen
     // Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen
+    
     let mut view_model = Model::new(Path::new(
         "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/components/hello.gen",
     ))
     .unwrap();
-
-    let makepad = Makepad::ast(view_model);
-
+    
+    let t = Instant::now();
+    let _ = Makepad::ast(view_model);
+    
+    
     // dbg!(view_model);
-    dbg!(makepad);
+    dbg!(t.elapsed());
     // let input = r#"
     // use makepad_widgets::*;
     // live_design! {

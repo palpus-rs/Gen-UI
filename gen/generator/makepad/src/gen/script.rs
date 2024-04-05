@@ -1,7 +1,9 @@
 use gen_utils::common::{token_tree_ident, token_tree_punct_alone};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt};
-use syn::{parse2, token::Token, Meta, Stmt, StmtMacro};
+use syn::{parse2, token::Token, Attribute, Meta, Stmt, StmtMacro};
+
+use crate::utils::{derive_default_none, derive_live_livehook};
 
 pub fn r#use() -> impl FnMut(Vec<syn::ItemUse>) -> Option<TokenStream> {
     return |uses| {
@@ -32,12 +34,7 @@ pub fn prop() -> impl FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream
             // 去除GenUI带有的`#[derive(Prop)]`宏更换为Makepad的宏
             // 若不是自定义组件则使用#[derive(Live, LiveHook)]
             // 若是自定义组件则使用#[derive(Live, LiveHook, Widget)]
-            let mut derives = vec![
-                token_tree_ident("Live"),
-                token_tree_punct_alone(','),
-                token_tree_ident("LiveHook"),
-                token_tree_punct_alone(','),
-            ];
+            let mut derives = derive_live_livehook();
 
             if is_component {
                 derives.extend(vec![
@@ -46,31 +43,8 @@ pub fn prop() -> impl FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream
                 ]);
             }
             // find derive
-            for attr in &mut prop.attrs {
-                if attr.path().is_ident("derive") {
-                    if let Meta::List(meta) = &mut attr.meta {
-                        // remove Prop
-                        let tmp = meta.tokens.clone();
-                        
-                        tmp.into_iter().for_each(|token| {
-                            derives.push(token);
-                        });
-                       
-                        let pos = derives
-                            .iter()
-                            .position(|item| item.to_string().eq("Prop"))
-                            .unwrap();
-                        
-                        derives.remove(pos);
-                        // derives.splice(pos..pos + 2, None);
-                        
-                        meta.tokens = TokenStream::from_iter(derives.into_iter());
+            change_derives(prop.attrs.as_mut(), derives, "Prop");
 
-                        break;
-                    }
-                }
-            }
-            
             Some(prop.to_token_stream())
         }
     };
@@ -81,8 +55,17 @@ pub fn event() -> impl FnMut(Option<syn::ItemEnum>) -> Option<TokenStream> {
         if event.is_none() {
             None
         } else {
-            let event = event.unwrap();
-            Some(TokenStream::new())
+            let mut event = event.unwrap();
+            // 去除GenUI带有的`#[derive(Event)]`宏更换为Makepad的`#[derive(DefaultNone)]`宏
+            let derives = derive_default_none();
+
+            change_derives(event.attrs.as_mut(), derives, "Event");
+            // 移除所有的`#[name]`宏
+            event.variants.iter_mut().for_each(|variant| {
+                variant.attrs.retain(|attr| !attr.path().is_ident("name"));
+            });
+
+            Some(event.to_token_stream())
         }
     };
 }
@@ -107,4 +90,37 @@ pub fn other() -> impl FnMut(Vec<Stmt>) -> Option<TokenStream> {
             Some(TokenStream::new())
         }
     };
+}
+
+fn change_derives(attrs: &mut Vec<Attribute>, mut derives: Vec<TokenTree>, target: &str) {
+    for attr in attrs {
+        if attr.path().is_ident("derive") {
+            if let Meta::List(meta) = &mut attr.meta {
+                // remove Prop
+                let tmp = meta.tokens.clone();
+
+                tmp.into_iter().for_each(|token| {
+                    derives.push(token);
+                });
+
+                let pos = derives
+                    .iter()
+                    .position(|item| item.to_string().eq(target))
+                    .unwrap();
+
+                // 向前查找一个逗号，若是逗号则一起删除逗号，否则只删除Prop
+                if let Some(TokenTree::Punct(punct)) = derives.get(pos - 1) {
+                    if punct.as_char() == ',' {
+                        derives.splice(pos - 1..pos + 1, None);
+                    }
+                } else {
+                    derives.remove(pos);
+                }
+
+                meta.tokens = TokenStream::from_iter(derives.into_iter());
+
+                break;
+            }
+        }
+    }
 }

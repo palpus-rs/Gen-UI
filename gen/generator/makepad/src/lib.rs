@@ -42,7 +42,8 @@ impl Makepad {
         let res = ast_tt.to_string();
         let mut f = File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs").unwrap();
         let _ = f.write(res.as_bytes());
-        todo!("{:#?}", &res);
+        Makepad(ast_tt)
+        // todo!("{:#?}", &res);
         // todo!("{:#?}", model.script.unwrap())
     }
 

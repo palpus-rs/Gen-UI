@@ -9,7 +9,7 @@
 <script>
 use gen_macros::{Event, Props};
 
-#[derive(Event)]
+#[derive(Event,Clone,Debug)]
 pub enum Events{
     #[name("click")]
     Clicked(String),
