@@ -7,7 +7,7 @@
 </template>
 
 <script>
-use gen_macros::{Event, Props};
+use gen_macros::{Event, Props, on_shutdown};
 
 #[derive(Event,Clone,Debug)]
 pub enum Events{

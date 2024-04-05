@@ -1,7 +1,7 @@
 use proc_macro2::{TokenStream, TokenTree};
-use syn::{Block, Meta, Stmt, StmtMacro};
+use syn::{Block,  Meta, Stmt, StmtMacro};
 
-use crate::{error::Errors, model::Model};
+use crate::{error::Errors, model::{script::LifeTime, Model}};
 
 /// 在GenUI中Rust脚本是直接写在`<script>`标签里的
 /// 例如：`<script>println!("Hello, World!");</script>`
@@ -24,7 +24,7 @@ where
     U: FnMut(Vec<syn::ItemUse>) -> Option<TokenStream>,
     P: FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream>,
     E: FnMut(Option<syn::ItemEnum>) -> Option<TokenStream>,
-    L: FnMut(Vec<StmtMacro>) -> Option<TokenStream>,
+    L: FnMut(Vec<StmtMacro>) -> Option<Vec<LifeTime>>,
     F: FnMut(Vec<Stmt>) -> Option<TokenStream>,
 {
     if !model.has_script() {
@@ -39,7 +39,7 @@ where
     extend(&mut tt, use_f(uses));
     extend(&mut tt, prop_f(prop, is_component));
     extend(&mut tt, event_f(event));
-    extend(&mut tt, lifetime_f(lifetime));
+    extend(&mut tt, lifetime_extend(lifetime_f(lifetime)));
     extend(&mut tt, other_f(other));
 
     Ok(tt)
@@ -48,6 +48,19 @@ where
 fn extend(iter: &mut TokenStream, ts: Option<TokenStream>) -> () {
     if let Some(value) = ts {
         iter.extend(value);
+    }
+}
+
+fn lifetime_extend(lifetimes:Option<Vec<LifeTime>>)->Option<TokenStream>{
+    match lifetimes {
+        Some(lifetimes) => {
+            Some(
+                lifetimes.into_iter().map(|lifetime|{
+                    lifetime.to_token_stream()
+                }).collect()
+            )
+        },
+        None => None,
     }
 }
 

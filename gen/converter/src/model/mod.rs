@@ -1,6 +1,6 @@
 pub mod event;
 pub mod prop;
-mod script;
+pub mod script;
 mod style;
 mod template;
 

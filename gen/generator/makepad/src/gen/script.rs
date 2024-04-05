@@ -1,7 +1,8 @@
+use gen_converter::model::script::LifeTime;
 use gen_utils::common::{token_tree_ident, token_tree_punct_alone};
 use proc_macro2::{TokenStream, TokenTree};
-use quote::{ToTokens, TokenStreamExt};
-use syn::{parse2, token::Token, Attribute, Meta, Stmt, StmtMacro};
+use quote::ToTokens;
+use syn::{Attribute, Lifetime, Meta, Stmt, StmtMacro};
 
 use crate::utils::{derive_default_none, derive_live_livehook};
 
@@ -70,13 +71,29 @@ pub fn event() -> impl FnMut(Option<syn::ItemEnum>) -> Option<TokenStream> {
     };
 }
 
-pub fn lifetime() -> impl FnMut(Vec<StmtMacro>) -> Option<TokenStream> {
+pub fn lifetime() -> impl FnMut(Vec<StmtMacro>) -> Option<Vec<LifeTime>> {
     return |lifetimes| {
         if lifetimes.is_empty() {
             None
         } else {
             //    let lifetimes = lifetimes.unwrap();
-            Some(TokenStream::new())
+            // 目前lifetimes中有两个宏，一个`on_startup!`一个`on_shutdown!`
+            // 在Macro中将tokens提取出来放到GenUI提供的LiftTime中即可
+            Some(
+                lifetimes
+                    .into_iter()
+                    .map(|lifetime| {
+                        let tokens = lifetime.mac.tokens;
+                        if lifetime.mac.path.is_ident("on_startup") {
+                            LifeTime::StartUp(tokens)
+                        } else if lifetime.mac.path.is_ident("on_shutdown") {
+                            LifeTime::ShutDown(tokens)
+                        } else {
+                            panic!("Invalid lifetime macro")
+                        }
+                    })
+                    .collect(),
+            )
         }
     };
 }
@@ -86,7 +103,7 @@ pub fn other() -> impl FnMut(Vec<Stmt>) -> Option<TokenStream> {
         if others.is_empty() {
             None
         } else {
-            //    let others = others.unwrap();
+            // 直接放到makepad的MatchEvent trait的start_up函数中
             Some(TokenStream::new())
         }
     };
