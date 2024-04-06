@@ -1,9 +1,13 @@
-use proc_macro2::{TokenStream, TokenTree};
+use gen_parser::Props;
+use proc_macro2::TokenStream;
 use syn::{Block, Meta, Stmt, StmtMacro};
 
 use crate::{
     error::Errors,
-    model::{script::LifeTime, Model},
+    model::{
+        script::{LifeTime, ScriptBuilder},
+        Model,
+    },
 };
 
 /// 在GenUI中Rust脚本是直接写在`<script>`标签里的
@@ -14,7 +18,7 @@ use crate::{
 /// - prop 策略器：获取带有`#[derive(Prop)]`的结构体，并返回TokenTree
 /// - event 策略器：获取带有`#[derive(Event)]`的枚举，并返回TokenTree
 /// - 生命周期策略器: 处理生命周期,目前只处理带有`on_startup!, on_shutdown!`标识的返回TokenTree
-/// - 其他策略器： 用于处理其他的语句，例如`let a = 1;`等
+/// - 其他策略器： 用于处理其他的语句，例如`let a = 1;`等(other策略器需要捕获模板中进行绑定的变量和事件)
 pub fn script<U, P, E, L, F>(
     model: Model,
     mut use_f: U,
@@ -22,33 +26,45 @@ pub fn script<U, P, E, L, F>(
     mut event_f: E,
     mut lifetime_f: L,
     mut other_f: F,
-) -> Result<TokenStream, Errors>
+) -> Result<ScriptBuilder, Errors>
 where
     U: FnMut(Vec<syn::ItemUse>) -> Option<TokenStream>,
     P: FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream>,
     E: FnMut(Option<syn::ItemEnum>) -> Option<TokenStream>,
-    L: FnMut(Vec<StmtMacro>, &str, bool) -> Option<TokenStream>,
-    F: FnMut(Vec<Stmt>) -> Option<TokenStream>,
+    L: FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>>,
+    F: FnMut(Vec<Stmt>, Option<Vec<(String, Props)>>) -> Option<TokenStream>,
 {
     if !model.has_script() {
         return Err(Errors::StrategyNoScript);
     }
-    let mut tt = TokenStream::new();
+
     let model_name = &model.special;
+    // 获取model中的绑定变量和方法
+    let binds = model.get_binds_tree();
     let is_component = model.is_component();
     let script = model.script.unwrap().to_origin();
 
     let (uses, prop, event, lifetime, other) = split_script(script);
     // target指的是当前Model的名称
-    let target = get_target_name(model_name, prop.as_ref().unwrap(), is_component);
+    let target = get_target_name(model_name, prop.as_ref(), is_component);
 
-    extend(&mut tt, use_f(uses));
-    extend(&mut tt, prop_f(prop, is_component));
-    extend(&mut tt, event_f(event));
-    extend(&mut tt, lifetime_f(lifetime, &target, is_component));
-    extend(&mut tt, other_f(other));
+    let tt = ScriptBuilder {
+        uses: use_f(uses),
+        props: prop_f(prop, is_component),
+        events: event_f(event),
+        lifetimes: lifetime_f(lifetime, is_component),
+        others: other_f(other, binds),
+        target,
+    };
 
     Ok(tt)
+}
+
+pub fn scirpt_builder<F>(sc_builder: ScriptBuilder, mut f: F) -> ScriptBuilder
+where
+    F: FnMut(ScriptBuilder) -> ScriptBuilder,
+{
+    f(sc_builder)
 }
 
 fn extend(iter: &mut TokenStream, ts: Option<TokenStream>) -> () {
@@ -57,10 +73,10 @@ fn extend(iter: &mut TokenStream, ts: Option<TokenStream>) -> () {
     }
 }
 
-fn get_target_name(name: &str, prop: &syn::ItemStruct, is_component: bool) -> String {
+fn get_target_name(name: &str, prop: Option<&syn::ItemStruct>, is_component: bool) -> String {
     return if is_component {
         // get the name of the component(from syn::ItemStruct)
-        prop.ident.to_string()
+        prop.unwrap().ident.to_string()
     } else {
         // 获取文件名
         name.split("/").last().unwrap().replace(".gen", "")

@@ -1,12 +1,12 @@
 //！对Model处理的策略器
-mod id;
 mod class;
+mod id;
 mod inherits;
-mod style;
 mod script;
+mod style;
 
-pub use id::id;
 pub use class::class;
+pub use id::id;
 pub use inherits::inherits;
+pub use script::{scirpt_builder, script};
 pub use style::style;
-pub use script::script;

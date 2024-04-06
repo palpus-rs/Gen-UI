@@ -13,7 +13,7 @@ use std::{
     thread,
 };
 
-use gen_parser::{ParseResult, ParseTarget, Strategy};
+use gen_parser::{ParseResult, ParseTarget, Props, Strategy};
 
 pub use template::TemplateModel;
 
@@ -114,6 +114,15 @@ impl Model {
     pub fn is_component(&self) -> bool {
         self.template.is_some() && self.get_template().unwrap().has_inherit()
     }
+    pub fn get_binds_tree(&self) -> Option<Vec<(String, Props)>> {
+        match self.get_template() {
+            Some(template) => {
+                Some(template.get_props_tree(true))
+            }
+            None => None,
+        }
+    }
+
     /// 通过parser层解析的结果和文件路径生成converter层模型
     /// 这一层只需要处理template和style部分，script不变
     fn convert(model: &mut Model, ast: ParseResult, path: &Path) -> () {

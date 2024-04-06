@@ -359,6 +359,44 @@ impl TemplateModel {
             None
         }
     }
+
+    // this function is used to get all props from the template model
+    pub fn get_props_tree(&self, is_bind: bool) -> Vec<(String, Props)> {
+        fn append(node: &TemplateModel, is_bind: bool) -> Vec<(String, Props)> {
+            let mut props_tree = Vec::new();
+            if is_bind {
+                match node.get_props().clone() {
+                    Some(props) => {
+                        props_tree.push((
+                            node.get_name().to_string(),
+                            Some(props.into_iter().filter(|(k, _)| !k.is_normal()).collect()),
+                        ));
+                    }
+                    None => (),
+                }
+            } else {
+                props_tree.push((node.get_name().to_string(), node.get_props().clone()));
+            }
+
+            match node.get_children() {
+                Some(children) => {
+                    for child in children {
+                        props_tree.extend(append(child, is_bind));
+                    }
+                }
+                None => (),
+            }
+            props_tree
+        }
+
+        // 从根节点开始遍历
+        // 获取每个节点的props以及采集节点名称
+        let mut props_tree = Vec::new();
+
+        props_tree.extend(append(self, is_bind));
+
+        props_tree
+    }
     /// 生成最终所需的框架的代码
     /// 这个代码最终会写如文件中
     ///

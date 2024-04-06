@@ -10,7 +10,7 @@ fn main() {
     // Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen
 
     let mut view_model = Model::new(Path::new(
-        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/components/hello.gen",
+        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen",
     ))
     .unwrap();
     // dbg!(&view_model.script);

@@ -118,7 +118,7 @@ pub fn handle_startup(code: Vec<TokenTree>) -> TokenTree {
     token_tree_group(vec![
         token_tree_ident("fn"),
         token_tree_ident("handle_startup"),
-        token_tree_group(vec![
+        token_tree_group_paren(vec![
             token_tree_punct_alone('&'),
             token_tree_ident("mut"),
             token_tree_ident("self"),

@@ -32,10 +32,6 @@ fn hello(){
     println!("{}",hello);
 }
 
-on_shutdown!{
-    println!("{}", "on shutdown!");
-    println!("GenUI: {}", "good bye!");
-}
 </script>
 
 <style>
