@@ -307,26 +307,17 @@ fn change_derives(attrs: &mut Vec<Attribute>, mut derives: Vec<TokenTree>, targe
     }
 }
 
-pub fn scirpt_builder() -> impl FnMut(ScriptBuilder) -> ScriptBuilder {
-    return |mut sc_builder| {
-        // 在这里uses,props和events无需处理
-        // 
-
-        if sc_builder.has_lifetime() && sc_builder.has_others() {
-            dbg!(sc_builder);
-            todo!()
-            // let others = sc_builder.others.replace(TokenStream::new()).unwrap();
-            // for lt in sc_builder.get_lifetime_mut().unwrap().iter_mut() {
-            //     if let LifeTime::StartUp(tt) = lt {
-            //         tt.extend(others);
-            //         break;
-            //     }
-            // }
-        }
-        sc_builder
-    };
-}
-
+/// 在这里uses,props和events无需处理
+/// 只需要根据sc_builder中的is_component判断是否是自定义组件还是主组件
+/// ## 主：
+/// - 将props放到MatchEvent的handle_startup中(也就是直接放到ScriptBuilder的lifetimes的LifeTime::StartUp中)
+/// - 将events放到MatchEvent的handle_actions中
+/// - 将others放到外部
+/// ## 自定义：
+/// 自定义组件中无需写lifetime的TokenStream
+/// - 将props放到Widget的draw_walk中
+/// - 将events放到Widget的handle_event中
+/// - 将others放到外部
 pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
     let ScriptBuilder {
         uses,
@@ -334,7 +325,8 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         events,
         lifetimes,
         target,
-        ..
+        is_component,
+        others
     } = sc_builder;
 
     let mut t_s = TokenStream::new();

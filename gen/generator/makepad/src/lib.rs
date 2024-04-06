@@ -39,10 +39,7 @@ impl Makepad {
             gen::lifetime(),
             gen::other(),
         ) {
-            let _ = ast_tt.extend(sc_builder_to_token_stream(scirpt_builder(
-                sc,
-                gen::scirpt_builder(),
-            )));
+            let _ = ast_tt.extend(sc_builder_to_token_stream(sc));
         }
         let res = ast_tt.to_string();
         let mut f = File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs").unwrap();

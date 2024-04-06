@@ -97,6 +97,10 @@ impl ScriptBuilder {
     pub fn get_lifetime_mut(&mut self)-> Option<&mut Vec<LifeTime>>{
         self.lifetimes.as_mut()
     }
+    pub fn others_to_token_stream<F>(&self, mut f: F) -> TokenStream 
+    where F: FnMut(Option<&ScriptHandle>)->TokenStream{
+        f(self.get_others())
+    }
     // pub fn to_token_stream(self, extends: [bool; 5]) -> TokenStream {
     //     let sections = [
     //         self.uses,
