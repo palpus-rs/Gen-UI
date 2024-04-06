@@ -2,14 +2,11 @@ use gen_converter::model::{
     script::{LifeTime, ScriptBuilder, ScriptHandle, ScriptHandles},
     PropTree,
 };
-use gen_parser::{Props, PropsKey, Value};
-use gen_utils::common::{
-    token_stream_to_tree, token_streams_to_trees, token_tree_ident, token_tree_punct_alone,
-    tree_to_token_stream, trees_to_token_stream,
-};
+
+use gen_utils::common::{token_stream_to_tree, token_tree_ident, token_tree_punct_alone};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
-use syn::{Attribute, Lifetime, Meta, Pat, Stmt, StmtMacro};
+use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
 
 use crate::utils::{
     apply_over_and_redraw, derive_default_none, derive_live_livehook, handle_shutdown,
@@ -122,9 +119,9 @@ pub fn lifetime() -> impl FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>> {
     };
 }
 
-pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>, bool) -> Option<ScriptHandle>
+pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>) -> Option<ScriptHandle>
 {
-    return |others, props, is_component| {
+    return |others, props| {
         if others.is_empty() {
             None
         } else {
@@ -141,7 +138,7 @@ pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>, bool) -> O
             let mut res = ScriptHandle::default();
             for stmt in others {
                 // 获取stmt的标识符
-                handle_stmt(&mut res, stmt, is_component, &binds, &fns, is_root);
+                handle_stmt(&mut res, stmt, &binds, &fns, is_root);
                 is_root = false;
             }
 
@@ -153,7 +150,6 @@ pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>, bool) -> O
 fn handle_stmt(
     sc: &mut ScriptHandle,
     stmt: Stmt,
-    is_component: bool,
     binds: &PropTree,
     fns: &PropTree,
     root: bool,
@@ -314,7 +310,7 @@ fn change_derives(attrs: &mut Vec<Attribute>, mut derives: Vec<TokenTree>, targe
 pub fn scirpt_builder() -> impl FnMut(ScriptBuilder) -> ScriptBuilder {
     return |mut sc_builder| {
         // 在这里uses,props和events无需处理
-        // 在GenUI中所有others都应该放到makepad的MatchEvent的start_up函数中
+        // 
 
         if sc_builder.has_lifetime() && sc_builder.has_others() {
             dbg!(sc_builder);

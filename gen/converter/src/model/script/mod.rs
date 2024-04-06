@@ -74,6 +74,7 @@ pub struct ScriptBuilder {
     pub others: Option<ScriptHandle>,
     // Widget标识（是Widget对象的名称）
     pub target: String,
+    pub is_component: bool
 }
 
 impl ScriptBuilder {
