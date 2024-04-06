@@ -164,7 +164,7 @@ fn handle_stmt(
             let init = local.init.as_ref().unwrap();
             let expr = &*init.expr;
             match expr {
-                syn::Expr::Lit(_) => {
+                syn::Expr::Lit(_) | syn::Expr::Call(_) => {
                     // 属性,获取属性的标识符
                     let ident = get_prop_ident(&local.pat);
                     // 遍历binds
@@ -172,20 +172,30 @@ fn handle_stmt(
                         panic!("can not find target bind");
                     } else {
                         let (mut tag, mut id, mut p) = (None, None, None);
+                        // println!("{:#?}", binds);
                         for (special, props) in binds {
-                            dbg!(props);
-                            let target = props
-                                .as_ref()
-                                .unwrap()
-                                .into_iter()
-                                .find(|(_, v)| {
-                                    ident.eq(v.is_bind_and_get().unwrap())
-                                })
-                                .expect(format!("can not find target bind: {}",&ident).as_str());
-                            tag.replace(special.0.to_string());
-                            id.replace(special.1.to_string());
-                            p.replace(target.0.clone());
-                            break;
+                            if props.is_none() {
+                                continue;
+                            } else {
+                                if props.as_ref().unwrap().is_empty() {
+                                    continue;
+                                }
+
+                                let target = props
+                                    .as_ref()
+                                    .unwrap()
+                                    .into_iter()
+                                    .find(|(_, v)| ident.eq(v.is_bind_and_get().unwrap()));
+
+                                if let Some((t_p, _)) = target {
+                                    tag.replace(special.0.to_string());
+                                    id.replace(special.1.to_string());
+                                    p.replace(t_p.clone());
+                                    break;
+                                } else {
+                                    continue;
+                                }
+                            }
                         }
                         sc.push_props(ScriptHandles::Prop(
                             tag.unwrap(),
@@ -204,20 +214,27 @@ fn handle_stmt(
                     if fns.is_empty() {
                         panic!("can not find target fn")
                     } else {
-                        let mut tk = TokenStream::new();
                         let (mut tag, mut id, mut p) = (None, None, None);
-                        for (special, props) in fns {
-                            let target = props
-                                .as_ref()
-                                .unwrap()
-                                .into_iter()
-                                .find(|(k, v)| ident.eq(k.name()))
-                                .unwrap();
-                            tag.replace(special.0.to_string());
-                            id.replace(special.1.to_string());
-                            p.replace(target.0.clone());
-
-                            break;
+                        for (special, events) in fns {
+                            if events.is_none() {
+                                continue;
+                            } else {
+                                if events.as_ref().unwrap().is_empty() {
+                                    continue;
+                                }
+                                let target =
+                                    events.as_ref().unwrap().into_iter().find(|(_, v)| {
+                                        ident.eq(v.is_fn_and_get().unwrap().get_name())
+                                    });
+                                if let Some((t_p, _)) = target {
+                                    tag.replace(special.0.to_string());
+                                    id.replace(special.1.to_string());
+                                    p.replace(t_p.clone());
+                                    break;
+                                } else {
+                                    continue;
+                                }
+                            }
                         }
                         // 生成方法绑定的代码
                         sc.push_events(ScriptHandles::Event(
@@ -229,7 +246,10 @@ fn handle_stmt(
                         ));
                     }
                 }
-                _ => todo!("can not handle this kind of stmt: `gen::script::handle_stmt`"),
+                other => todo!(
+                    "can not handle this kind of stmt: `gen::script::handle_stmt` => \n {:#?}",
+                    other
+                ),
             }
         }
         other => sc.push_others(ScriptHandles::Other(other.to_token_stream())),

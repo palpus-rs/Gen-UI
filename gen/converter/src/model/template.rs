@@ -371,16 +371,22 @@ impl TemplateModel {
             let name = node.get_name().to_string();
             match node.get_props().clone() {
                 Some(props) => {
+                    
                     bind_tree.push((
                         (name.clone(), id.clone()),
                         Some(props.clone().into_iter().filter(|(k, _)| k.is_bind()).collect()),
                     ));
-
+                }
+                None => (),
+            }
+            match node.get_callbacks().clone(){
+                Some(callbacks) =>{
+                    
                     fn_tree.push((
                         (name, id),
-                        Some(props.into_iter().filter(|(k, _)| k.is_fn()).collect()),
+                        Some(callbacks.clone().into_iter().collect()),
                     ));
-                }
+                },
                 None => (),
             }
 
