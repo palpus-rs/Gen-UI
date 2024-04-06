@@ -2,7 +2,8 @@
 //! which is helpful for gen makepad ast
 
 use gen_utils::common::*;
-use proc_macro2::TokenTree;
+use proc_macro2::{TokenStream, TokenTree};
+use syn::token;
 
 /// generate `use makepad_widgets::*;`
 pub fn use_makepad_widget_all() -> Vec<TokenTree> {
@@ -219,6 +220,37 @@ pub fn macro_app_main(target: TokenTree)->Vec<TokenTree>{
         token_tree_punct_alone('!'),
         token_tree_group_paren(vec![target]),
     ]
+}
+
+pub fn apply_over_and_redraw(ui:Option<&str>, tag: String, id: String, pv:Vec<TokenTree>) -> Vec<TokenTree> {
+    let mut f = vec![
+        token_tree_ident("self"),
+        token_tree_punct_joint('.')
+    ];
+    if ui.is_some(){
+        f.push(token_tree_ident(ui.unwrap()));
+        f.push(token_tree_punct_alone('.'));
+    }
+
+    f.extend(vec![
+        token_tree_ident(&tag),
+        token_tree_group_paren(vec![
+            token_tree_ident("id"),
+            token_tree_punct_alone('!'),
+            token_tree_group_paren(vec![token_tree_ident(&id)]),
+            token_tree_punct_alone('.'),
+            token_tree_ident("apply_over_and_redraw"),
+            token_tree_group_paren(vec![
+                token_tree_ident("cx"),
+                token_tree_punct_alone(','),
+                token_tree_ident("live"),
+                token_tree_punct_alone('!'),
+                token_tree_group(pv)
+            ]),
+        ]),
+        token_tree_punct_alone(';')
+    ]);
+    f
 }
 
 /// generate makepad dsl

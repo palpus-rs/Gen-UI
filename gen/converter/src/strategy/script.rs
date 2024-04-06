@@ -5,8 +5,8 @@ use syn::{Block, Meta, Stmt, StmtMacro};
 use crate::{
     error::Errors,
     model::{
-        script::{LifeTime, ScriptBuilder},
-        Model,
+        script::{LifeTime, ScriptBuilder, ScriptHandle},
+        Model, PropTree,
     },
 };
 
@@ -32,7 +32,7 @@ where
     P: FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream>,
     E: FnMut(Option<syn::ItemEnum>) -> Option<TokenStream>,
     L: FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>>,
-    F: FnMut(Vec<Stmt>, Option<Vec<(String, Props)>>) -> Option<TokenStream>,
+    F: FnMut(Vec<Stmt>, Option<(PropTree,PropTree)>, bool) -> Option<ScriptHandle>,
 {
     if !model.has_script() {
         return Err(Errors::StrategyNoScript);
@@ -53,7 +53,7 @@ where
         props: prop_f(prop, is_component),
         events: event_f(event),
         lifetimes: lifetime_f(lifetime, is_component),
-        others: other_f(other, binds),
+        others: other_f(other, binds, is_component),
         target,
     };
 

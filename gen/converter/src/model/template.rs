@@ -6,6 +6,8 @@ use ulid::Ulid;
 
 use super::event::Callbacks;
 
+pub type PropTree = Vec<((String, String), Props)>;
+
 /// # GenUI组件模型
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
@@ -361,41 +363,43 @@ impl TemplateModel {
     }
 
     // this function is used to get all props from the template model
-    pub fn get_props_tree(&self, is_bind: bool) -> Vec<(String, Props)> {
-        fn append(node: &TemplateModel, is_bind: bool) -> Vec<(String, Props)> {
-            let mut props_tree = Vec::new();
-            if is_bind {
-                match node.get_props().clone() {
-                    Some(props) => {
-                        props_tree.push((
-                            node.get_name().to_string(),
-                            Some(props.into_iter().filter(|(k, _)| !k.is_normal()).collect()),
-                        ));
-                    }
-                    None => (),
+    pub fn get_props_tree(&self) -> (PropTree, PropTree) {
+        fn append(node: &TemplateModel) -> (PropTree, PropTree) {
+            let mut bind_tree = Vec::new();
+            let mut fn_tree = Vec::new();
+            let id = node.get_id().expect("bind prop need id").to_string();
+            let name = node.get_name().to_string();
+            match node.get_props().clone() {
+                Some(props) => {
+                    bind_tree.push((
+                        (name.clone(), id.clone()),
+                        Some(props.clone().into_iter().filter(|(k, _)| k.is_bind()).collect()),
+                    ));
+
+                    fn_tree.push((
+                        (name, id),
+                        Some(props.into_iter().filter(|(k, _)| k.is_fn()).collect()),
+                    ));
                 }
-            } else {
-                props_tree.push((node.get_name().to_string(), node.get_props().clone()));
+                None => (),
             }
 
             match node.get_children() {
                 Some(children) => {
                     for child in children {
-                        props_tree.extend(append(child, is_bind));
+                        let (binds, fns) = append(child);
+                        bind_tree.extend(binds);
+                        fn_tree.extend(fns);
                     }
                 }
                 None => (),
             }
-            props_tree
+            (bind_tree, fn_tree)
         }
 
         // 从根节点开始遍历
         // 获取每个节点的props以及采集节点名称
-        let mut props_tree = Vec::new();
-
-        props_tree.extend(append(self, is_bind));
-
-        props_tree
+        append(self)
     }
     /// 生成最终所需的框架的代码
     /// 这个代码最终会写如文件中

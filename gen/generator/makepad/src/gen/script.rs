@@ -1,15 +1,19 @@
-use gen_converter::model::script::{LifeTime, ScriptBuilder};
-use gen_parser::Props;
+use gen_converter::model::{
+    script::{LifeTime, ScriptBuilder, ScriptHandle, ScriptHandles},
+    PropTree,
+};
+use gen_parser::{Props, PropsKey, Value};
 use gen_utils::common::{
     token_stream_to_tree, token_streams_to_trees, token_tree_ident, token_tree_punct_alone,
     tree_to_token_stream, trees_to_token_stream,
 };
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
-use syn::{Attribute, Lifetime, Meta, Stmt, StmtMacro};
+use syn::{Attribute, Lifetime, Meta, Pat, Stmt, StmtMacro};
 
 use crate::utils::{
-    derive_default_none, derive_live_livehook, handle_shutdown, handle_startup, impl_match_event,
+    apply_over_and_redraw, derive_default_none, derive_live_livehook, handle_shutdown,
+    handle_startup, impl_match_event,
 };
 
 pub fn r#use() -> impl FnMut(Vec<syn::ItemUse>) -> Option<TokenStream> {
@@ -77,8 +81,8 @@ pub fn event() -> impl FnMut(Option<syn::ItemEnum>) -> Option<TokenStream> {
     };
 }
 
-pub fn lifetime() -> impl FnMut(Vec<StmtMacro>,  bool) -> Option<Vec<LifeTime>> {
-    return |lifetimes,  is_component| {
+pub fn lifetime() -> impl FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>> {
+    return |lifetimes, is_component| {
         if is_component {
             return None;
         }
@@ -86,9 +90,9 @@ pub fn lifetime() -> impl FnMut(Vec<StmtMacro>,  bool) -> Option<Vec<LifeTime>> 
         if lifetimes.is_empty() {
             None
         } else {
-            //    let lifetimes = lifetimes.unwrap();
             // 目前lifetimes中有两个宏，一个`on_startup!`一个`on_shutdown!`
             // 在Macro中将tokens提取出来放到GenUI提供的LiftTime中即可
+            // 这两个宏目前只能在Makepad的主组件中使用
 
             let lifetime_code = lifetimes
                 .into_iter()
@@ -104,7 +108,6 @@ pub fn lifetime() -> impl FnMut(Vec<StmtMacro>,  bool) -> Option<Vec<LifeTime>> 
                     } else {
                         panic!("Invalid lifetime macro")
                     };
-                    
                 })
                 .collect::<Vec<LifeTime>>();
 
@@ -119,21 +122,140 @@ pub fn lifetime() -> impl FnMut(Vec<StmtMacro>,  bool) -> Option<Vec<LifeTime>> 
     };
 }
 
-pub fn other() -> impl FnMut(Vec<Stmt>,Option<Vec<(String, Props)>>) -> Option<TokenStream> {
-    return |others, binds| {
+pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>, bool) -> Option<ScriptHandle>
+{
+    return |others, props, is_component| {
         if others.is_empty() {
             None
         } else {
-            // 直接放到makepad的MatchEvent trait的start_up函数中
-            // 这会在script_builder中处理,这里直接返回即可
-            Some(
-                others
-                    .into_iter()
-                    .map(|stmt| stmt.to_token_stream())
-                    .collect(),
-            )
+            // 如果是define widget
+            // prop绑定部分直接放到makepad的Widget trait的draw_walk函数中,事件部分直接放到handle_event中
+            // 如果不是自定义的组件则将所有的others放到makepad的MatchEvent的start_up函数中,事件部分直接放到handle_actions中
+            // 不过这里只需要处理内部，真正的函数的包装在scirpt_builder中处理
+            if props.is_none() {
+                return None;
+            }
+
+            let (binds, fns) = props.unwrap();
+            let mut is_root = true;
+            let mut res = ScriptHandle::default();
+            for stmt in others {
+                // 获取stmt的标识符
+                handle_stmt(&mut res, stmt, is_component, &binds, &fns, is_root);
+                is_root = false;
+            }
+
+            Some(res)
         }
     };
+}
+
+fn handle_stmt(
+    sc: &mut ScriptHandle,
+    stmt: Stmt,
+    is_component: bool,
+    binds: &PropTree,
+    fns: &PropTree,
+    root: bool,
+) -> () {
+    match &stmt {
+        Stmt::Local(local) => {
+            // 这里将属性绑定和方法绑定分开，方法使用闭包，属性使用变量
+            let init = local.init.as_ref().unwrap();
+            let expr = &*init.expr;
+            match expr {
+                syn::Expr::Lit(_) => {
+                    // 属性,获取属性的标识符
+                    let ident = get_prop_ident(&local.pat);
+                    // 遍历binds
+                    if binds.is_empty() {
+                        panic!("can not find target bind");
+                    } else {
+                        let (mut tag, mut id, mut p) = (None, None, None);
+                        for (special, props) in binds {
+                            dbg!(props);
+                            let target = props
+                                .as_ref()
+                                .unwrap()
+                                .into_iter()
+                                .find(|(_, v)| {
+                                    ident.eq(v.is_bind_and_get().unwrap())
+                                })
+                                .expect(format!("can not find target bind: {}",&ident).as_str());
+                            tag.replace(special.0.to_string());
+                            id.replace(special.1.to_string());
+                            p.replace(target.0.clone());
+                            break;
+                        }
+                        sc.push_props(ScriptHandles::Prop(
+                            tag.unwrap(),
+                            id.unwrap(),
+                            p.unwrap(),
+                            stmt.to_token_stream(),
+                            root,
+                        ));
+                        // 生成属性绑定的代码
+                        // return ScriptHandles::Prop(tag, id, p, stmt.to_token_stream(), root);
+                    }
+                }
+                syn::Expr::Closure(_) => {
+                    // 方法
+                    let ident = get_prop_ident(&local.pat);
+                    if fns.is_empty() {
+                        panic!("can not find target fn")
+                    } else {
+                        let mut tk = TokenStream::new();
+                        let (mut tag, mut id, mut p) = (None, None, None);
+                        for (special, props) in fns {
+                            let target = props
+                                .as_ref()
+                                .unwrap()
+                                .into_iter()
+                                .find(|(k, v)| ident.eq(k.name()))
+                                .unwrap();
+                            tag.replace(special.0.to_string());
+                            id.replace(special.1.to_string());
+                            p.replace(target.0.clone());
+
+                            break;
+                        }
+                        // 生成方法绑定的代码
+                        sc.push_events(ScriptHandles::Event(
+                            tag.unwrap(),
+                            id.unwrap(),
+                            p.unwrap(),
+                            stmt.to_token_stream(),
+                            root,
+                        ));
+                    }
+                }
+                _ => todo!("can not handle this kind of stmt: `gen::script::handle_stmt`"),
+            }
+        }
+        other => sc.push_others(ScriptHandles::Other(other.to_token_stream())),
+    }
+}
+
+fn get_prop_ident(pat: &Pat) -> String {
+    match pat {
+        syn::Pat::Ident(i) => i.ident.to_string(),
+        // syn::Pat::Lit(_) => todo!(),
+        // syn::Pat::Macro(_) => todo!(),
+        // syn::Pat::Or(_) => todo!(),
+        // syn::Pat::Paren(_) => todo!(),
+        // syn::Pat::Path(_) => todo!(),
+        // syn::Pat::Range(_) => todo!(),
+        // syn::Pat::Reference(_) => todo!(),
+        // syn::Pat::Rest(_) => todo!(),
+        // syn::Pat::Slice(_) => todo!(),
+        // syn::Pat::Struct(_) => todo!(),
+        // syn::Pat::Tuple(_) => todo!(),
+        // syn::Pat::TupleStruct(_) => todo!(),
+        syn::Pat::Type(t) => get_prop_ident(&*t.pat),
+        // syn::Pat::Verbatim(_) => todo!(),
+        // syn::Pat::Wild(_) => todo!(),
+        _ => panic!("prop bind should use `let` to bind a variable"),
+    }
 }
 
 fn change_derives(attrs: &mut Vec<Attribute>, mut derives: Vec<TokenTree>, target: &str) {
@@ -169,28 +291,28 @@ fn change_derives(attrs: &mut Vec<Attribute>, mut derives: Vec<TokenTree>, targe
     }
 }
 
-
 pub fn scirpt_builder() -> impl FnMut(ScriptBuilder) -> ScriptBuilder {
     return |mut sc_builder| {
-         // 在这里uses,props和events无需处理
+        // 在这里uses,props和events无需处理
         // 在GenUI中所有others都应该放到makepad的MatchEvent的start_up函数中
-        
-        if sc_builder.has_lifetime() && sc_builder.has_others(){
-            let others = sc_builder.others.replace(TokenStream::new()).unwrap();
-            for lt in sc_builder.get_lifetime_mut().unwrap().iter_mut() {
-                if let LifeTime::StartUp(tt) = lt {
-                    tt.extend(others);
-                    break;
-                }
-            }
+
+        if sc_builder.has_lifetime() && sc_builder.has_others() {
+            dbg!(sc_builder);
+            todo!()
+            // let others = sc_builder.others.replace(TokenStream::new()).unwrap();
+            // for lt in sc_builder.get_lifetime_mut().unwrap().iter_mut() {
+            //     if let LifeTime::StartUp(tt) = lt {
+            //         tt.extend(others);
+            //         break;
+            //     }
+            // }
         }
-       sc_builder
+        sc_builder
     };
 }
 
 pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
-
-    let ScriptBuilder{
+    let ScriptBuilder {
         uses,
         props,
         events,
@@ -215,12 +337,12 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         for lt in lifetimes {
             let fn_tk = if let LifeTime::StartUp(start_up) = lt {
                 handle_startup(token_stream_to_tree(start_up))
-            }else if let LifeTime::ShutDown(shut_down) = lt{
+            } else if let LifeTime::ShutDown(shut_down) = lt {
                 handle_shutdown(token_stream_to_tree(shut_down))
-            }else{
+            } else {
                 panic!("Invalid lifetime macro")
             };
-            
+
             fn_tks.push(fn_tk);
         }
         let match_event = impl_match_event(token_tree_ident(&target), fn_tks);

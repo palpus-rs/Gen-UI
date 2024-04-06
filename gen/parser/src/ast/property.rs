@@ -90,6 +90,9 @@ impl PropsKey {
     pub fn is_normal(&self) -> bool {
         self.ty.is_normal()
     }
+    pub fn is_fn(&self)->bool{
+        self.ty.is_function()
+    }
 }
 
 impl Display for PropsKey {

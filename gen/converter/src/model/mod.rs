@@ -13,9 +13,9 @@ use std::{
     thread,
 };
 
-use gen_parser::{ParseResult, ParseTarget, Props, Strategy};
+use gen_parser::{ParseResult, ParseTarget, Strategy};
 
-pub use template::TemplateModel;
+pub use template::{PropTree, TemplateModel};
 
 use self::{prop::ConvertStyle, script::ConvertScript, style::handle_styles};
 
@@ -114,11 +114,9 @@ impl Model {
     pub fn is_component(&self) -> bool {
         self.template.is_some() && self.get_template().unwrap().has_inherit()
     }
-    pub fn get_binds_tree(&self) -> Option<Vec<(String, Props)>> {
+    pub fn get_binds_tree(&self) -> Option<(PropTree, PropTree)> {
         match self.get_template() {
-            Some(template) => {
-                Some(template.get_props_tree(true))
-            }
+            Some(template) => Some(template.get_props_tree()),
             None => None,
         }
     }
