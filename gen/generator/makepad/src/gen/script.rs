@@ -6,7 +6,9 @@ use gen_converter::model::{
 };
 
 use gen_parser::PropsKey;
-use gen_utils::common::{token_stream_to_tree, token_tree_ident, token_tree_punct_alone, trees_to_token_stream};
+use gen_utils::common::{
+    token_stream_to_tree, token_tree_ident, token_tree_punct_alone, trees_to_token_stream,
+};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt};
 use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
@@ -14,7 +16,8 @@ use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
 use crate::{
     utils::{
         apply_over_and_redraw, derive_default_none, derive_live_livehook, draw_walk,
-        handle_event_widget, handle_shutdown, handle_startup, impl_match_event, instance,
+        handle_event_widget, handle_shutdown, handle_startup, impl_match_event, impl_target,
+        instance, instance_new_fn, instance_return_self,
     },
     widget::Widget,
 };
@@ -363,8 +366,8 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
             let mut fn_tks = Vec::new();
             if let Some(sc) = others {
                 let (p_token, e_token, o_token) =
-                    sc.to_token_stream(widget_prop_main(), widget_event(), widget_other());
-                todo!("{:#?}", p_token);
+                    sc.to_token_stream(widget_prop_main(), widget_event_main(), widget_other());
+                todo!("{:#?}", p_token.0.to_string());
             }
             for lt in lifetimes {
                 let fn_tk = if let LifeTime::StartUp(start_up) = lt {
@@ -392,9 +395,10 @@ fn widget_other() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
 /// 返回
 /// - Instance struct（这个可以直接写出去）
 /// - handle_startup的内部代码（这个需要进一步加到LifeTime里）
-fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) ->(TokenStream, TokenStream) {
+fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> (TokenStream, TokenStream) {
     return |p| {
         let mut p_map = HashMap::new();
+        // 整理到Map中
         p.into_iter().for_each(|item| {
             let (tag, id, prop, ident, code, is_root) = item.is_prop_and_get();
             p_map
@@ -403,18 +407,46 @@ fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) ->(TokenStream, TokenStr
                 .push((prop, ident, code, is_root))
         });
         let mut tk = TokenStream::new();
-        let mut ft_tks =  Vec::new();
+        let mut ft_tks = Vec::new();
+        let mut init_tks = Vec::new();
+        let mut field_tks = Vec::new();
         p_map.into_iter().for_each(|((tag, id), pvs)| {
             let widget = Widget::from(tag.as_str());
-            let (ft_tk, p_tk) = widget.props_from_tk(tag,id, pvs);
+            let (ft_tk, init_tk, field_tk, p_tk) = widget.props_from_tk(tag, id, pvs);
             tk.extend(p_tk);
             ft_tks.extend(ft_tk);
+            init_tks.extend(init_tk);
+            field_tks.extend(field_tk);
         });
         // build Instance
-        
-        (trees_to_token_stream(instance(ft_tks)),tk)
+        (
+            trees_to_token_stream(build_instance(ft_tks, init_tks, field_tks)),
+            tk,
+        )
     };
 }
+
+fn build_instance(
+    tk: Vec<TokenTree>,
+    init_tks: Vec<TokenTree>,
+    field_tks: Vec<TokenTree>,
+) -> Vec<TokenTree> {
+    let mut tks = instance(tk);
+    tks.extend(impl_target(
+        "Instance",
+        instance_new_fn(instance_return_self(init_tks, field_tks)),
+    ));
+    tks
+}
+
+/// 构建handle_actions
+fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
+    return |e| {
+        TokenStream::new()
+        //    TokenStream::from_iter(handle_event_widget())
+    };
+}
+
 /// 在Widget trait中添加draw_walk函数
 fn widget_prop() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
     return |p| {

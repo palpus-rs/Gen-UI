@@ -5,8 +5,13 @@ impl MatchEvent for app {
     }
 }
 
-fn a() {
-    let view_bg = true;
-    self.view(id!(body).apply_over_and_redraw(cx, live! { show_bg : (view_bg) , }));
+#[derive(Debug, Clone, Default)]
+struct Instance {
+    pub view_bg: bool,
 }
-
+impl Instance {
+    fn new() -> Self {
+        let mut view_bg = true;
+        Self { view_bg }
+    }
+}

@@ -2,8 +2,7 @@
 //! which is helpful for gen makepad ast
 
 use gen_utils::common::*;
-use proc_macro2::{TokenStream, TokenTree};
-use syn::token;
+use proc_macro2::TokenTree;
 
 /// generate `use makepad_widgets::*;`
 pub fn use_makepad_widget_all() -> Vec<TokenTree> {
@@ -361,6 +360,34 @@ pub fn instance(kvs: Vec<TokenTree>) -> Vec<TokenTree> {
         token_tree_group(kvs),
     ]);
     tk
+}
+
+/// generate `impl xxx{...}`
+pub fn impl_target(target: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("impl"),
+        token_tree_ident(target),
+        token_tree_group(code),
+    ]
+}
+
+/// generate `fn new()->Self{}`
+pub fn instance_new_fn(code: Vec<TokenTree>) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("fn"),
+        token_tree_ident("new"),
+        token_tree_group_paren(vec![]),
+        token_tree_punct_joint('-'),
+        token_tree_punct_joint('>'),
+        token_tree_ident("Self"),
+        token_tree_group(code),
+    ]
+}
+
+/// generate `...init code...; Self{...}`
+pub fn instance_return_self(mut init: Vec<TokenTree>, code: Vec<TokenTree>) -> Vec<TokenTree> {
+    init.extend(vec![token_tree_ident("Self"), token_tree_group(code)]);
+    init
 }
 
 /// generate `pub field: Type,`

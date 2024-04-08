@@ -1,7 +1,10 @@
 use std::{collections::HashMap, default, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
-use gen_utils::common::{snake_to_camel, token_stream_to_tree, trees_to_token_stream};
+use gen_utils::common::{
+    snake_to_camel, token_stream_to_tree, token_tree_ident, token_tree_punct_alone,
+    trees_to_token_stream,
+};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::TokenStreamExt;
 
@@ -61,16 +64,22 @@ impl Widget {
         tag: String,
         id: String,
         pvs: Vec<(PropsKey, String, TokenStream, bool)>,
-    ) -> (TokenStream, Vec<TokenTree>) {
+    ) -> (TokenStream, TokenStream, TokenStream, Vec<TokenTree>) {
         let mut prop_fts = TokenStream::new();
         let mut props = TokenStream::new();
+        let mut codes = TokenStream::new();
+        let mut fields = TokenStream::new();
         pvs.into_iter().for_each(|(k, ident, code, _)| {
             let (p_tk, ty_tk) = self.prop_from_str(&k, &ident.as_str());
             props.extend(p_tk);
             prop_fts.extend(struct_field_type(&ident, ty_tk));
+            codes.extend(code);
+            fields.extend(vec![token_tree_ident(&ident), token_tree_punct_alone(',')]);
         });
         (
             prop_fts,
+            codes,
+            fields,
             apply_over_and_redraw(None, tag, id, token_stream_to_tree(props)),
         )
     }
