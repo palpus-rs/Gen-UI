@@ -1,3 +1,4 @@
+use gen_utils::common::token_tree_ident;
 use proc_macro2::{TokenStream, TokenTree};
 
 use crate::prop::{builtin::{show_bg, show_bg_bind}, DRAW_BG, SHOW_BG};
@@ -30,9 +31,11 @@ pub fn prop(prop_name: &str, value: &str)->Vec<TokenTree>{
     // }
 }
 
-pub fn prop_token(prop_name: &str, value: &str )->Vec<TokenTree>{
+/// return prop token and prop type token
+/// (prop_tk, type_tk)
+pub fn prop_token(prop_name: &str, value: &str )->(Vec<TokenTree>, TokenTree){
     match prop_name{
-        SHOW_BG => show_bg_bind(value),
+        SHOW_BG => (show_bg_bind(value), token_tree_ident("bool")),
         _ => todo!()
     }
 }

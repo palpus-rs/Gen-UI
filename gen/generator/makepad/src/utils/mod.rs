@@ -327,6 +327,53 @@ pub fn live_macro(code: Vec<TokenTree>) -> Vec<TokenTree> {
         token_tree_group(code),
     ]
 }
+
+/// `#[derive(Debug, Clone, Default)]`
+fn derive_macros(marcos: Vec<&str>) -> Vec<TokenTree> {
+    // let len  = marcos.len();
+    let mut marcos_tks = Vec::new();
+    marcos.iter().enumerate().for_each(|(i, v)| {
+        marcos_tks.push(token_tree_ident(v));
+        if i != marcos.len() {
+            marcos_tks.push(token_tree_punct_alone(','))
+        }
+    });
+    vec![
+        token_tree_punct_alone('#'),
+        token_tree_group_bracket(vec![
+            token_tree_ident("derive"),
+            token_tree_group_paren(marcos_tks),
+        ]),
+    ]
+}
+
+/// ```
+/// #[derive(Debug, Clone, Default)]
+/// struct Instance {
+///   pub field: Type,
+/// }
+/// ```
+pub fn instance(kvs: Vec<TokenTree>) -> Vec<TokenTree> {
+    let mut tk = derive_macros(vec!["Debug", "Clone", "Default"]);
+    tk.extend(vec![
+        token_tree_ident("struct"),
+        token_tree_ident("Instance"),
+        token_tree_group(kvs),
+    ]);
+    tk
+}
+
+/// generate `pub field: Type,`
+pub fn struct_field_type(field: &str, ty: TokenTree) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("pub"),
+        token_tree_ident(field),
+        token_tree_punct_alone(':'),
+        ty,
+        token_tree_punct_alone(','),
+    ]
+}
+
 /// generate makepad dsl
 /// return TokenTree::Group
 pub fn dsl() -> TokenTree {

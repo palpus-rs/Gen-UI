@@ -4,7 +4,6 @@ use proc_macro2::{TokenStream, TokenTree};
 mod bg;
 
 pub use bg::*;
-use quote::TokenStreamExt;
 
 
 pub fn normal_prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
@@ -21,6 +20,10 @@ pub fn bind_prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
         token_tree_ident(prop_name),
         token_tree_punct_alone(':'),
         token_tree_group_paren(vec![
+            token_tree_ident("self"),
+            token_tree_punct_alone('.'),
+            token_tree_ident("instance"),
+            token_tree_punct_alone('.'),
             token_tree_ident(value),
         ]),
         token_tree_punct_alone(',')

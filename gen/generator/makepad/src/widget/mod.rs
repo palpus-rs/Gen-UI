@@ -5,7 +5,7 @@ use gen_utils::common::{snake_to_camel, token_stream_to_tree, trees_to_token_str
 use proc_macro2::{TokenStream, TokenTree};
 use quote::TokenStreamExt;
 
-use crate::utils::{apply_over_and_redraw, live_macro};
+use crate::utils::{apply_over_and_redraw, live_macro, struct_field_type};
 
 pub mod button;
 pub mod define;
@@ -61,17 +61,20 @@ impl Widget {
         tag: String,
         id: String,
         pvs: Vec<(PropsKey, String, TokenStream, bool)>,
-    ) -> TokenStream {
-        let mut codes = TokenStream::new();
+    ) -> (TokenStream, Vec<TokenTree>) {
+        let mut prop_fts = TokenStream::new();
         let mut props = TokenStream::new();
-        pvs.into_iter().for_each(|(k, v, code, _)| {
-            codes.extend(code);
-            props.extend(self.prop_from_str(&k, v.as_str()));
+        pvs.into_iter().for_each(|(k, ident, code, _)| {
+            let (p_tk, ty_tk) = self.prop_from_str(&k, &ident.as_str());
+            props.extend(p_tk);
+            prop_fts.extend(struct_field_type(&ident, ty_tk));
         });
-        codes.extend(trees_to_token_stream(apply_over_and_redraw(None, tag, id, token_stream_to_tree(props))));
-        codes
+        (
+            prop_fts,
+            apply_over_and_redraw(None, tag, id, token_stream_to_tree(props)),
+        )
     }
-    fn prop_from_str(&self, k: &PropsKey, v: &str) -> Vec<TokenTree> {
+    fn prop_from_str(&self, k: &PropsKey, v: &str) -> (Vec<TokenTree>, TokenTree) {
         let prop_name = k.name();
         match self {
             Widget::Window => todo!(),

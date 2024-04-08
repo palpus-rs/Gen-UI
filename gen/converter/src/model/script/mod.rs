@@ -91,9 +91,9 @@ impl ScriptHandle {
         mut p: P,
         mut e: E,
         mut o: O,
-    ) -> (TokenStream, TokenStream, TokenStream)
+    ) -> ((TokenStream, TokenStream), TokenStream, TokenStream)
     where
-        P: FnMut(Vec<ScriptHandles>) -> TokenStream,
+        P: FnMut(Vec<ScriptHandles>) -> (TokenStream, TokenStream),
         E: FnMut(Vec<ScriptHandles>) -> TokenStream,
         O: FnMut(Vec<ScriptHandles>) -> TokenStream,
     {

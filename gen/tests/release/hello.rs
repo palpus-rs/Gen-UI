@@ -9,3 +9,4 @@ fn a() {
     let view_bg = true;
     self.view(id!(body).apply_over_and_redraw(cx, live! { show_bg : (view_bg) , }));
 }
+
