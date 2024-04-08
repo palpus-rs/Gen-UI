@@ -21,15 +21,38 @@ impl LifeTime {
     }
 }
 
-#[derive(Debug,Clone)]
-pub enum ScriptHandles{
-    Prop(String,String,PropsKey,TokenStream,bool),
-    Event(String,String,PropsKey,TokenStream,bool),
+#[derive(Debug, Clone)]
+pub enum ScriptHandles {
+    Prop(String, String, PropsKey, String, TokenStream, bool),
+    Event(String, String, PropsKey, TokenStream, bool),
     Other(TokenStream),
 }
 
+impl ScriptHandles {
+    pub fn is_prop_and_get(self) -> (String, String, PropsKey, String, TokenStream, bool) {
+        match self {
+            ScriptHandles::Prop(tag, id, prop, ident, code, is_root) => {
+                (tag, id, prop, ident, code, is_root)
+            }
+            _ => panic!("only prop can be get"),
+        }
+    }
+    pub fn is_event_and_get(self) -> (String, String, PropsKey, TokenStream, bool) {
+        match self {
+            ScriptHandles::Event(tag, id, prop, code, is_root) => (tag, id, prop, code, is_root),
+            _ => panic!("only event can be get"),
+        }
+    }
+    pub fn is_other_and_get(self) -> TokenStream {
+        match self {
+            ScriptHandles::Other(tt) => tt,
+            _ => panic!("only other can be get"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
-pub struct ScriptHandle{
+pub struct ScriptHandle {
     props: Vec<ScriptHandles>,
     events: Vec<ScriptHandles>,
     others: Vec<ScriptHandles>,
@@ -63,6 +86,24 @@ impl ScriptHandle {
     pub fn push_others(&mut self, other: ScriptHandles) {
         self.others.push(other);
     }
+    pub fn to_token_stream<P, E, O>(
+        self,
+        mut p: P,
+        mut e: E,
+        mut o: O,
+    ) -> (TokenStream, TokenStream, TokenStream)
+    where
+        P: FnMut(Vec<ScriptHandles>) -> TokenStream,
+        E: FnMut(Vec<ScriptHandles>) -> TokenStream,
+        O: FnMut(Vec<ScriptHandles>) -> TokenStream,
+    {
+        let ScriptHandle {
+            props,
+            events,
+            others,
+        } = self;
+        (p(props), e(events), o(others))
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -74,7 +115,7 @@ pub struct ScriptBuilder {
     pub others: Option<ScriptHandle>,
     // Widget标识（是Widget对象的名称）
     pub target: String,
-    pub is_component: bool
+    pub is_component: bool,
 }
 
 impl ScriptBuilder {
@@ -91,14 +132,16 @@ impl ScriptBuilder {
     pub fn get_others(&self) -> Option<&ScriptHandle> {
         self.others.as_ref()
     }
-    pub fn get_others_mut(&mut self)-> Option<&mut ScriptHandle>{
+    pub fn get_others_mut(&mut self) -> Option<&mut ScriptHandle> {
         self.others.as_mut()
     }
-    pub fn get_lifetime_mut(&mut self)-> Option<&mut Vec<LifeTime>>{
+    pub fn get_lifetime_mut(&mut self) -> Option<&mut Vec<LifeTime>> {
         self.lifetimes.as_mut()
     }
-    pub fn others_to_token_stream<F>(&self, mut f: F) -> TokenStream 
-    where F: FnMut(Option<&ScriptHandle>)->TokenStream{
+    pub fn others_to_token_stream<F>(&self, mut f: F) -> TokenStream
+    where
+        F: FnMut(Option<&ScriptHandle>) -> TokenStream,
+    {
         f(self.get_others())
     }
     // pub fn to_token_stream(self, extends: [bool; 5]) -> TokenStream {

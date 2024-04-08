@@ -1,13 +1,14 @@
 use std::{collections::HashMap, default, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
-use proc_macro2::TokenTree;
+use gen_utils::common::snake_to_camel;
+use proc_macro2::{TokenStream, TokenTree};
 
-mod button;
-mod define;
-mod label;
-mod view;
-mod window;
+pub mod button;
+pub mod define;
+pub mod label;
+pub mod view;
+pub mod window;
 
 // pub use define::*;
 // pub use button::*;
@@ -37,9 +38,9 @@ impl Widget {
             _ => todo!(),
         }
     }
-    pub fn props(&self, props: HashMap<&PropsKey,&Value>)->Vec<TokenTree> {
-       let mut ast = vec![];
-        props.iter().for_each(|(prop, value)|{
+    pub fn props(&self, props: HashMap<&PropsKey, &Value>) -> Vec<TokenTree> {
+        let mut ast = vec![];
+        props.iter().for_each(|(prop, value)| {
             let prop_name = prop.name();
             let prop_value = value.is_unknown_and_get().unwrap();
             ast.extend(match self {
@@ -52,17 +53,27 @@ impl Widget {
         });
         ast
     }
-   
+    pub fn prop_from_str(&self, k: &PropsKey, v: &str, code: &mut TokenStream) -> () {
+        let prop_name = k.name();
+        match self {
+            Widget::Window => todo!(),
+            Widget::View => view::prop_token(prop_name, v, code),
+            Widget::Label => todo!(),
+            Widget::Button => todo!(),
+            Widget::Define(_) => todo!(),
+        };
+    }
 }
 
 impl From<&str> for Widget {
     fn from(value: &str) -> Self {
-        match value {
+        let widget_name = snake_to_camel(value).unwrap();
+        match widget_name.as_str() {
             WINDOW => Widget::Window,
             VIEW => Widget::View,
             LABEL => Widget::Label,
             BUTTON => Widget::Button,
-            _ => Widget::Define(value.to_string()),
+            _ => Widget::Define(widget_name),
         }
     }
 }

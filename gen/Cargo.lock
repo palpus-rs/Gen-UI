@@ -96,10 +96,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "jni-sys"
-version = "0.4.0"
-
-[[package]]
 name = "js-sys"
 version = "0.3.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -148,7 +144,6 @@ name = "makepad-draw"
 version = "0.6.0"
 dependencies = [
  "ab_glyph_rasterizer",
- "makepad-html",
  "makepad-platform",
  "makepad-vector",
  "rustybuzz",
@@ -257,7 +252,6 @@ version = "0.4.0"
 name = "makepad-platform"
 version = "0.6.0"
 dependencies = [
- "jni-sys",
  "makepad-futures",
  "makepad-futures-legacy",
  "makepad-http",

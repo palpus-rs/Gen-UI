@@ -8,9 +8,12 @@ use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
 use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
 
-use crate::utils::{
-    apply_over_and_redraw, derive_default_none, derive_live_livehook, handle_shutdown,
-    handle_startup, impl_match_event,
+use crate::{
+    utils::{
+        apply_over_and_redraw, derive_default_none, derive_live_livehook, draw_walk,
+        handle_event_widget, handle_shutdown, handle_startup, impl_match_event,
+    },
+    widget::Widget,
 };
 
 pub fn r#use() -> impl FnMut(Vec<syn::ItemUse>) -> Option<TokenStream> {
@@ -119,8 +122,7 @@ pub fn lifetime() -> impl FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>> {
     };
 }
 
-pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>) -> Option<ScriptHandle>
-{
+pub fn other() -> impl FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>) -> Option<ScriptHandle> {
     return |others, props| {
         if others.is_empty() {
             None
@@ -197,6 +199,7 @@ fn handle_stmt(
                             tag.unwrap(),
                             id.unwrap(),
                             p.unwrap(),
+                            ident,
                             stmt.to_token_stream(),
                             root,
                         ));
@@ -326,9 +329,9 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         lifetimes,
         target,
         is_component,
-        others
+        others,
     } = sc_builder;
-
+    let impl_target = token_tree_ident(&target);
     let mut t_s = TokenStream::new();
     if let Some(uses) = uses {
         t_s.extend(uses);
@@ -340,23 +343,84 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         t_s.extend(events);
     }
     if let Some(lifetimes) = lifetimes {
-        // 这里需要给生命周期的函数添加Makepad的MatchEvent的外壳
-        let mut fn_tks = Vec::new();
-        for lt in lifetimes {
-            let fn_tk = if let LifeTime::StartUp(start_up) = lt {
-                handle_startup(token_stream_to_tree(start_up))
-            } else if let LifeTime::ShutDown(shut_down) = lt {
-                handle_shutdown(token_stream_to_tree(shut_down))
-            } else {
-                panic!("Invalid lifetime macro")
-            };
+        if is_component {
+            // 添加Widget的外壳
+            // 直接从others中获取prop和event转为tokenstream
+            if let Some(sc) = others {
+                let (p_token, e_token, o_token) =
+                    sc.to_token_stream(widget_prop(), widget_event(), widget_other());
 
-            fn_tks.push(fn_tk);
+                t_s.extend(p_token);
+                t_s.extend(e_token);
+                t_s.extend(o_token);
+            }
+        } else {
+            // 这里需要给生命周期的函数添加Makepad的MatchEvent的外壳
+            let mut fn_tks = Vec::new();
+            if let Some(sc) = others {
+                let (p_token, e_token, o_token) =
+                    sc.to_token_stream(widget_prop_main(), widget_event(), widget_other());
+            }
+            for lt in lifetimes {
+                let fn_tk = if let LifeTime::StartUp(start_up) = lt {
+                    handle_startup(token_stream_to_tree(start_up))
+                } else if let LifeTime::ShutDown(shut_down) = lt {
+                    handle_shutdown(token_stream_to_tree(shut_down))
+                } else {
+                    panic!("Invalid lifetime macro")
+                };
+
+                fn_tks.push(fn_tk);
+            }
+            let match_event = impl_match_event(token_tree_ident(&target), fn_tks);
+
+            t_s.extend(match_event);
         }
-        let match_event = impl_match_event(token_tree_ident(&target), fn_tks);
-
-        t_s.extend(match_event);
     }
 
     t_s
+}
+
+fn widget_other() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
+    return |o| TokenStream::from_iter(o.into_iter().map(|item| item.is_other_and_get()));
+}
+fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
+    return |p| {
+        // dbg!(&p);
+        let w_p = p.into_iter().for_each(|item| {
+            let (tag, id, prop, ident, mut code, is_root) = item.is_prop_and_get();
+            let widget = Widget::from(tag.as_str());
+            widget.prop_from_str(&prop, &ident,&mut code);
+            dbg!(code.to_string());
+            todo!();
+            // apply_over_and_redraw(None, tag, id, pv);
+        });
+
+        //    draw_walk(w_p)
+        todo!()
+    };
+}
+/// 在Widget trait中添加draw_walk函数
+fn widget_prop() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
+    return |p| {
+        dbg!(&p);
+        let w_p = p.into_iter().for_each(|item| {
+            let (tag, id, prop, ident, code, is_root) = item.is_prop_and_get();
+            let widget = Widget::from(tag.as_str());
+            // widget.
+            todo!();
+            // apply_over_and_redraw(None, tag, id, pv);
+        });
+
+        //    draw_walk(w_p)
+        todo!()
+    };
+}
+
+fn widget_event() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
+    return |e| {
+        dbg!(e);
+        todo!()
+        //    TokenStream::from_iter(handle_event_widget())
+    };
 }

@@ -42,7 +42,8 @@ impl Makepad {
             let _ = ast_tt.extend(sc_builder_to_token_stream(sc));
         }
         let res = ast_tt.to_string();
-        let mut f = File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs").unwrap();
+        // E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs
+        let mut f = File::create("/Users/user/Workspace/others/Gen-UI/gen/tests/release/hello.rs").unwrap();
         let _ = f.write(res.as_bytes());
         Makepad(ast_tt)
         // todo!("{:#?}", &res);

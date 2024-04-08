@@ -6,11 +6,11 @@ use makepad_gen_plugin::Makepad;
 use proc_macro2::TokenStream;
 
 fn main() {
-    // E:/Rust/try/makepad/Gen-UI/gen/tests/ui/view/index.gen
+    // E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen
     // Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen
 
     let mut view_model = Model::new(Path::new(
-        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen",
+        "/Users/user/Workspace/others/Gen-UI/gen/tests/ui/app.gen",
     ))
     .unwrap();
     // dbg!(&view_model.script);
