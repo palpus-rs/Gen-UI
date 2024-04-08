@@ -1,8 +1,11 @@
 use std::{collections::HashMap, default, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
-use gen_utils::common::snake_to_camel;
+use gen_utils::common::{snake_to_camel, token_stream_to_tree, trees_to_token_stream};
 use proc_macro2::{TokenStream, TokenTree};
+use quote::TokenStreamExt;
+
+use crate::utils::{apply_over_and_redraw, live_macro};
 
 pub mod button;
 pub mod define;
@@ -53,15 +56,30 @@ impl Widget {
         });
         ast
     }
-    pub fn prop_from_str(&self, k: &PropsKey, v: &str, code: &mut TokenStream) -> () {
+    pub fn props_from_tk(
+        &self,
+        tag: String,
+        id: String,
+        pvs: Vec<(PropsKey, String, TokenStream, bool)>,
+    ) -> TokenStream {
+        let mut codes = TokenStream::new();
+        let mut props = TokenStream::new();
+        pvs.into_iter().for_each(|(k, v, code, _)| {
+            codes.extend(code);
+            props.extend(self.prop_from_str(&k, v.as_str()));
+        });
+        codes.extend(trees_to_token_stream(apply_over_and_redraw(None, tag, id, token_stream_to_tree(props))));
+        codes
+    }
+    fn prop_from_str(&self, k: &PropsKey, v: &str) -> Vec<TokenTree> {
         let prop_name = k.name();
         match self {
             Widget::Window => todo!(),
-            Widget::View => view::prop_token(prop_name, v, code),
+            Widget::View => view::prop_token(prop_name, v),
             Widget::Label => todo!(),
             Widget::Button => todo!(),
             Widget::Define(_) => todo!(),
-        };
+        }
     }
 }
 

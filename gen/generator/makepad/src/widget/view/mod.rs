@@ -1,6 +1,6 @@
 use proc_macro2::{TokenStream, TokenTree};
 
-use crate::prop::{builtin::{show_bg, show_bg_token}, DRAW_BG, SHOW_BG};
+use crate::prop::{builtin::{show_bg, show_bg_bind}, DRAW_BG, SHOW_BG};
 
 /// generate view widget prop
 pub fn prop(prop_name: &str, value: &str)->Vec<TokenTree>{
@@ -30,9 +30,9 @@ pub fn prop(prop_name: &str, value: &str)->Vec<TokenTree>{
     // }
 }
 
-pub fn prop_token(prop_name: &str, value: &str, code: &mut TokenStream )->(){
+pub fn prop_token(prop_name: &str, value: &str )->Vec<TokenTree>{
     match prop_name{
-        SHOW_BG => show_bg_token(value, code),
+        SHOW_BG => show_bg_bind(value),
         _ => todo!()
-    };
+    }
 }

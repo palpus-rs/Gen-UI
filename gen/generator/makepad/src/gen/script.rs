@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use gen_converter::model::{
     script::{LifeTime, ScriptBuilder, ScriptHandle, ScriptHandles},
     PropTree,
 };
 
+use gen_parser::PropsKey;
 use gen_utils::common::{token_stream_to_tree, token_tree_ident, token_tree_punct_alone};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
@@ -360,6 +363,7 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
             if let Some(sc) = others {
                 let (p_token, e_token, o_token) =
                     sc.to_token_stream(widget_prop_main(), widget_event(), widget_other());
+                todo!("{}", p_token);
             }
             for lt in lifetimes {
                 let fn_tk = if let LifeTime::StartUp(start_up) = lt {
@@ -387,17 +391,20 @@ fn widget_other() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
 fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
     return |p| {
         // dbg!(&p);
-        let w_p = p.into_iter().for_each(|item| {
-            let (tag, id, prop, ident, mut code, is_root) = item.is_prop_and_get();
-            let widget = Widget::from(tag.as_str());
-            widget.prop_from_str(&prop, &ident,&mut code);
-            dbg!(code.to_string());
-            todo!();
-            // apply_over_and_redraw(None, tag, id, pv);
+        let mut p_map = HashMap::new();
+        p.into_iter().for_each(|item| {
+            let (tag, id, prop, ident, code, is_root) = item.is_prop_and_get();
+            p_map
+                .entry((tag, id))
+                .or_insert_with(Vec::new)
+                .push((prop, ident, code, is_root))
         });
-
-        //    draw_walk(w_p)
-        todo!()
+        let mut tk = TokenStream::new();
+        p_map.into_iter().for_each(|((tag, id), pvs)| {
+            let widget = Widget::from(tag.as_str());
+            tk.extend(widget.props_from_tk(tag,id, pvs));
+        });
+        tk
     };
 }
 /// 在Widget trait中添加draw_walk函数
