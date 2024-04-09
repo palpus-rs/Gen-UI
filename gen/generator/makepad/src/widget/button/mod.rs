@@ -1,8 +1,8 @@
 use gen_parser::PropsKey;
-use gen_utils::common::{token_stream_to_tree, token_tree_ident, trees_to_token_stream};
-use proc_macro2::{Group, TokenStream, TokenTree};
+use gen_utils::common::{token_stream_to_tree, token_tree_ident};
+use proc_macro2::{TokenStream, TokenTree};
 
-use crate::{gen::FieldTable, utils::{if_group, self_event_react}};
+use crate::{gen::FieldTable, utils::self_event_react};
 
 pub fn event(
     root: Option<String>,
@@ -48,7 +48,7 @@ fn button_clicked(
     let _ = visit_tree(&mut code, prefix, &fields);
 
     // 2. 调用self_event_react方法构造
-    
+
     let mut tk = vec![token_tree_ident("if")];
     tk.extend(self_event_react(root, "button", &id, &ident, code));
     tk
@@ -66,11 +66,11 @@ fn visit_tree(tk: &mut Vec<TokenTree>, prefix: Vec<TokenTree>, fields: &Vec<Stri
             TokenTree::Ident(ident) => {
                 if fields.contains(&ident.to_string()) {
                     // 向当前索引位置插入prefix
-                   if index > 0{
-                    tk.splice((index - 1)..index, prefix.clone());
-                   }else{
-                    tk.splice(0..0, prefix.clone());
-                   }
+                    if index > 0 {
+                        tk.splice((index - 1)..index, prefix.clone());
+                    } else {
+                        tk.splice(0..0, prefix.clone());
+                    }
                 }
             }
             _ => continue,

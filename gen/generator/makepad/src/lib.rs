@@ -3,10 +3,9 @@ use std::{fs::File, io::Write};
 use gen::sc_builder_to_token_stream;
 use gen_converter::{
     model::Model,
-    strategy::{class, id, inherits, scirpt_builder, script, style},
+    strategy::{class, id, inherits, script, style},
 };
 use proc_macro2::TokenStream;
-use quote::TokenStreamExt;
 
 pub mod error;
 pub mod gen;
@@ -30,7 +29,7 @@ impl Makepad {
 
         // [完成处理后这个model就是最终的Model，下面就可以开始生成Makepad AST]-----------------------------------------------------
         // 处理script部分
-        
+
         if let Ok(sc) = script(
             model,
             gen::r#use(),
@@ -43,11 +42,11 @@ impl Makepad {
         }
         let res = ast_tt.to_string();
         // E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs
-        let mut f = File::create("/Users/user/Workspace/others/Gen-UI/gen/tests/release/hello.rs").unwrap();
+        let mut f =
+            File::create("/Users/user/Workspace/others/Gen-UI/gen/tests/release/hello.rs").unwrap();
         let _ = f.write(res.as_bytes());
         Makepad(ast_tt)
-        // todo!("{:#?}", &res);
-        // todo!("{:#?}", model.script.unwrap())
+        
     }
 
     pub fn to_token_stream(&self) -> TokenStream {

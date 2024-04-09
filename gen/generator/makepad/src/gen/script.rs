@@ -16,9 +16,7 @@ use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
 
 use crate::{
     utils::{
-        apply_over_and_redraw, derive_default_none, derive_live_livehook, draw_walk,
-        handle_actions, handle_event_widget, handle_shutdown, handle_startup, impl_match_event,
-        impl_target, instance, instance_new_fn, instance_return_self,
+        apply_over_and_redraw, derive_default_none, derive_live_livehook, draw_walk, handle_actions, handle_event_widget, handle_shutdown, handle_startup, impl_match_event, impl_target, instance, instance_new, instance_new_fn, instance_return_self
     },
     widget::Widget,
 };
@@ -436,14 +434,18 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
             };
             let mut start_up_flag = false;
             for lt in lifetimes {
-                let fn_tk = if let LifeTime::StartUp(mut start_up) = lt {
+                let fn_tk = if let LifeTime::StartUp(start_up) = lt {
                     if start_up_flag {
                         panic!("LifeTime StartUp can only be used once");
                     } else {
                         // p_token add to start_up
                         start_up_flag = true;
-                        start_up.extend(p_token.clone());
-                        handle_startup(token_stream_to_tree(start_up))
+                        let mut start_up_tk = TokenStream::new();
+                        start_up_tk.extend(instance_new());
+                        start_up_tk.extend(p_token.clone());
+                        start_up_tk.extend(start_up);
+                       
+                        handle_startup(token_stream_to_tree(start_up_tk))
                     }
                 } else if let LifeTime::ShutDown(shut_down) = lt {
                     handle_shutdown(token_stream_to_tree(shut_down))
@@ -481,6 +483,7 @@ fn widget_prop_main(
                 .or_insert_with(Vec::new)
                 .push((prop, ident, code, is_root))
         });
+        // 收集所有需要的Token
         let mut tk = TokenStream::new();
         let mut ft_tks = Vec::new();
         let mut init_tks = Vec::new();

@@ -1,14 +1,15 @@
-use std::{collections::HashMap, default, fmt::Display};
+use std::{collections::HashMap, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::{
     snake_to_camel, token_stream_to_tree, token_tree_ident, token_tree_punct_alone,
-    trees_to_token_stream,
 };
 use proc_macro2::{TokenStream, TokenTree};
-use quote::TokenStreamExt;
 
-use crate::{gen::FieldTable, utils::{apply_over_and_redraw, live_macro, struct_field_type}};
+use crate::{
+    gen::FieldTable,
+    utils::{apply_over_and_redraw, struct_field_type},
+};
 
 pub mod button;
 pub mod define;
@@ -74,8 +75,8 @@ impl Widget {
         let mut props = TokenStream::new();
         let mut codes = TokenStream::new();
         let mut fields = TokenStream::new();
-       
-        pvs.into_iter().for_each(|(k, ident, code, is_root)| {
+
+        pvs.into_iter().for_each(|(k, ident, code, _)| {
             let (p_tk, ty_tk) = self.prop_from_str(&k, &ident.as_str());
             props.extend(p_tk);
             prop_fts.extend(struct_field_type(&ident, ty_tk));
@@ -103,14 +104,14 @@ impl Widget {
         &self,
         root: Option<String>,
         id: String,
-        pv: (PropsKey, String, TokenStream), 
+        pv: (PropsKey, String, TokenStream),
         field_table: &FieldTable,
-    )->Vec<TokenTree>{
+    ) -> Vec<TokenTree> {
         match self {
             Widget::Window => todo!(),
             Widget::View => todo!(),
             Widget::Label => todo!(),
-            Widget::Button => button::event(root,id,pv,field_table),
+            Widget::Button => button::event(root, id, pv, field_table),
             Widget::Define(_) => todo!(),
         }
     }

@@ -1,4 +1,3 @@
-use gen_parser::Props;
 use gen_utils::common::snake_to_camel;
 use proc_macro2::TokenStream;
 use syn::{Block, Meta, Stmt, StmtMacro};
@@ -71,6 +70,7 @@ where
     f(sc_builder)
 }
 
+#[allow(dead_code)]
 fn extend(iter: &mut TokenStream, ts: Option<TokenStream>) -> () {
     if let Some(value) = ts {
         iter.extend(value);

@@ -18,9 +18,10 @@ impl MatchEvent for App {
         }
     }
     fn handle_startup(&mut self, cx: &mut Cx) {
-        println("{}", "hello");
+        self.instance = Instance::new();
         self.ui
             .view(id!(body))
             .apply_over_and_redraw(cx, live! { show_bg : (self . instance . view_bg) , });
+        println("{}", "hello");
     }
 }

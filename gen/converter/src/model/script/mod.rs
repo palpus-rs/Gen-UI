@@ -1,6 +1,5 @@
-use gen_parser::{PropsKey, Script, Value};
+use gen_parser::{PropsKey, Script};
 use proc_macro2::TokenStream;
-use syn::Stmt;
 
 pub type ConvertScript = Script;
 
@@ -88,7 +87,6 @@ impl ScriptHandle {
     pub fn push_others(&mut self, other: ScriptHandles) {
         self.others.push(other);
     }
-    
 }
 
 #[derive(Debug, Clone)]

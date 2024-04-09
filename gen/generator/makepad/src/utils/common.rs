@@ -1,5 +1,5 @@
 use gen_utils::common::*;
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::TokenTree;
 
 use super::{derive_macros, id_macro};
 
@@ -31,7 +31,6 @@ pub fn apply_over_and_redraw(
             token_tree_ident("id"),
             token_tree_punct_alone('!'),
             token_tree_group_paren(vec![token_tree_ident(&id)]),
-           
         ]),
         token_tree_punct_alone('.'),
         token_tree_ident("apply_over_and_redraw"),
@@ -90,6 +89,21 @@ pub fn instance_return_self(mut init: Vec<TokenTree>, code: Vec<TokenTree>) -> V
     init.extend(vec![token_tree_ident("Self"), token_tree_group(code)]);
     init
 }
+/// generate `self.instance = Instance::new();`
+pub fn instance_new()->Vec<TokenTree>{
+    vec![
+        token_tree_ident("self"),
+        token_tree_punct_alone('.'),
+        token_tree_ident("instance"),
+        token_tree_punct_alone('='),
+        token_tree_ident("Instance"),
+        token_tree_punct_joint(':'),
+        token_tree_punct_joint(':'),
+        token_tree_ident("new"),
+        token_tree_group_paren(vec![]),
+        token_tree_punct_alone(';'),
+    ]
+}
 
 /// generate `pub field: Type,`
 pub fn struct_field_type(field: &str, ty: TokenTree) -> Vec<TokenTree> {
@@ -102,24 +116,24 @@ pub fn struct_field_type(field: &str, ty: TokenTree) -> Vec<TokenTree> {
     ]
 }
 
-pub fn if_group(condition:Vec<TokenTree> ,code: Vec<TokenTree>) -> Vec<TokenTree> {
-    let mut if_tk = vec![
-        token_tree_ident("if"),
-    ];
+pub fn if_group(condition: Vec<TokenTree>, code: Vec<TokenTree>) -> Vec<TokenTree> {
+    let mut if_tk = vec![token_tree_ident("if")];
     if_tk.extend(condition);
-    if_tk.push(
-        token_tree_group(code)
-    );
+    if_tk.push(token_tree_group(code));
     if_tk
 }
 
-/// generate `self.[ui_name].tag_name(id_macro!(id)).event_name(&actions){...}` 
-pub fn self_event_react(ui:Option<String>, tag: &str, id:&str, event:&str, code:Vec<TokenTree>)->Vec<TokenTree>{
-    let mut tk = vec![
-        token_tree_ident("self"),
-    ];
+/// generate `self.[ui_name].tag_name(id_macro!(id)).event_name(&actions){...}`
+pub fn self_event_react(
+    ui: Option<String>,
+    tag: &str,
+    id: &str,
+    event: &str,
+    code: Vec<TokenTree>,
+) -> Vec<TokenTree> {
+    let mut tk = vec![token_tree_ident("self")];
 
-    if ui.is_some(){
+    if ui.is_some() {
         tk.push(token_tree_punct_alone('.'));
         tk.push(token_tree_ident(ui.unwrap().as_str()));
     }
