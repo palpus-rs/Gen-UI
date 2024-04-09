@@ -442,6 +442,7 @@ fn build_instance(
 /// 构建handle_actions
 fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
     return |e| {
+        dbg!(e);
         TokenStream::new()
         //    TokenStream::from_iter(handle_event_widget())
     };

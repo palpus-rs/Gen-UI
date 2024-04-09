@@ -69,7 +69,12 @@ impl Widget {
         let mut props = TokenStream::new();
         let mut codes = TokenStream::new();
         let mut fields = TokenStream::new();
-        pvs.into_iter().for_each(|(k, ident, code, _)| {
+        let mut root = None;
+        pvs.into_iter().for_each(|(k, ident, code, is_root)| {
+            if is_root{
+                let _ = root.replace(id.clone());
+            }
+
             let (p_tk, ty_tk) = self.prop_from_str(&k, &ident.as_str());
             props.extend(p_tk);
             prop_fts.extend(struct_field_type(&ident, ty_tk));
@@ -80,7 +85,7 @@ impl Widget {
             prop_fts,
             codes,
             fields,
-            apply_over_and_redraw(None, tag, id, token_stream_to_tree(props)),
+            apply_over_and_redraw(root, tag, id, token_stream_to_tree(props)),
         )
     }
     fn prop_from_str(&self, k: &PropsKey, v: &str) -> (Vec<TokenTree>, TokenTree) {
