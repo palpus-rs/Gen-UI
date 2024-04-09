@@ -8,7 +8,8 @@ pub fn use_makepad_widget_all() -> Vec<TokenTree> {
         token_tree_ident("makepad_widgets"),
         token_tree_punct_joint(':'),
         token_tree_punct_joint(':'),
-        token_tree_ident("*"),
+        token_tree_punct_alone('*'),
+        token_tree_punct_alone(';'),
     ]
 }
 

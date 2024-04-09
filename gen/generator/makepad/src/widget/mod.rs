@@ -45,13 +45,13 @@ impl Widget {
             _ => todo!(),
         }
     }
-    pub fn props(&self, props: HashMap<&PropsKey, &Value>) -> Vec<TokenTree> {
+    pub fn props(&self, props: &HashMap<PropsKey, Value>) -> Vec<TokenTree> {
         let mut ast = vec![];
         props.iter().for_each(|(prop, value)| {
             let prop_name = prop.name();
             let prop_value = value.is_unknown_and_get().unwrap();
             ast.extend(match self {
-                Widget::Window => todo!(),
+                Widget::Window => window::prop(prop_name, prop_value),
                 Widget::View => view::prop(prop_name, prop_value),
                 Widget::Label => todo!(),
                 Widget::Button => todo!(),
@@ -140,4 +140,8 @@ impl Display for Widget {
             Widget::Define(d) => d,
         })
     }
+}
+
+pub fn prop_ignore(prop: &str) -> bool {
+    ["id", "class"].contains(&prop)
 }

@@ -1,4 +1,7 @@
-use crate::{error::Errors, model::{prop::ConvertStyle, Model}};
+use crate::{
+    error::Errors,
+    model::{prop::ConvertStyle, Model},
+};
 
 pub fn style<F>(model: &mut Model, mut f: F) -> Result<(), Errors>
 where
@@ -7,8 +10,11 @@ where
     if !model.has_template() {
         return Err(Errors::StrategyNoTemplateStyles);
     }
-    let style = model.get_styles_mut().unwrap();
-
-    f(style);
-    Ok(())
+    match model.get_styles_mut() {
+        Some(style) => {
+            f(style);
+            Ok(())
+        }
+        None => Err(Errors::StrategyNoStyle),
+    }
 }

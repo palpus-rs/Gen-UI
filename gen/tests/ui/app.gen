@@ -22,17 +22,8 @@ on_startup!{
 
 <style>
 #ui{
-    width: Fill;
-    height: Fill;
-    background_color: #96CEF8;
     #body{
-       align: 0.5;
-       #t_label{
-            brightness: 1.1;
-            color: #fff;
-            wrap: Word;
-            font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
-       }
+       #btn{}
     }
 }
 </style>

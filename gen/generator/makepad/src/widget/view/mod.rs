@@ -1,17 +1,29 @@
 use gen_utils::common::token_tree_ident;
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::TokenTree;
 
-use crate::prop::{builtin::{show_bg, show_bg_bind}, DRAW_BG, SHOW_BG};
+use crate::prop::{
+    builtin::{align, draw_bg, height, show_bg, show_bg_bind, width}, ALIGN, DRAW_BG, HEIGHT, SHOW_BG, WIDTH
+};
+
+use super::prop_ignore;
 
 /// generate view widget prop
-pub fn prop(prop_name: &str, value: &str)->Vec<TokenTree>{
-
-    match prop_name{
+pub fn prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
+    match prop_name {
         SHOW_BG => show_bg(value),
-        _ => todo!()
+        DRAW_BG => draw_bg(value),
+        HEIGHT => height(value),
+        WIDTH => width(value),
+        ALIGN => align(value),
+        _ => {
+            if !prop_ignore(prop_name) {
+                panic!("cannot match prop");
+            }
+            vec![]
+        }
     }
 
-// match prop_name {
+    // match prop_name {
     //     // match to `draw_bg`
     //     "draw_bg" => prop_bg(v),
     //     // match to `show_bg`
@@ -33,9 +45,9 @@ pub fn prop(prop_name: &str, value: &str)->Vec<TokenTree>{
 
 /// return prop token and prop type token
 /// (prop_tk, type_tk)
-pub fn prop_token(prop_name: &str, value: &str )->(Vec<TokenTree>, TokenTree){
-    match prop_name{
+pub fn prop_token(prop_name: &str, value: &str) -> (Vec<TokenTree>, TokenTree) {
+    match prop_name {
         SHOW_BG => (show_bg_bind(value), token_tree_ident("bool")),
-        _ => todo!()
+        _ => todo!(),
     }
 }

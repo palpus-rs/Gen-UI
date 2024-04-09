@@ -292,6 +292,9 @@ impl TemplateModel {
     pub fn set_event_ptr(&mut self, event_ptr: &str) -> () {
         let _ = self.event_ptr.replace(event_ptr.to_string());
     }
+    pub fn is_component(&self)->bool{
+        self.has_inherit()
+    }
     pub fn get_inherits(&self) -> Option<&String> {
         self.inherits.as_ref()
     }

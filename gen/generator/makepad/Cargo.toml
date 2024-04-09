@@ -12,4 +12,5 @@ gen_parser ={ path = "../../parser"}
 proc-macro2 = "1.0.78"
 quote = "1.0.35"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }
-makepad-widgets = { path = "/Users/user/Downloads/makepad-rik/widgets"}
+makepad-widgets = { path = "E:/Rust/learn/makepad/makepad-rik/widgets"}
+# /Users/user/Downloads/makepad-rik/widgets

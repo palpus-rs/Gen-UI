@@ -29,7 +29,7 @@ pub fn ast(is_app: bool, model: &TemplateModel) {
 /// ```makepad
 /// prop: xxx
 /// ```
-pub fn prop(widget: &Widget, unbind_props:Option<HashMap<&PropsKey,&Value>>)->Vec<TokenTree> {
+pub fn prop(widget: &Widget, unbind_props:Option<&HashMap<PropsKey,Value>>)->Vec<TokenTree> {
     let mut ast = vec![];
     if let Some(props) = unbind_props {
        ast.extend(widget.props(props));

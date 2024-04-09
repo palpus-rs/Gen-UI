@@ -178,10 +178,13 @@ impl Model {
                             }
                         }
                         ConvertResult::Style(s) => {
+                            // if s.is_some() {
+                            //     model.set_style(s.unwrap());
+                            // } else {
+                            //     panic!("style cannot be none in Strategy::All")
+                            // }
                             if s.is_some() {
                                 model.set_style(s.unwrap());
-                            } else {
-                                panic!("style cannot be none in Strategy::All")
                             }
                         }
                     }
