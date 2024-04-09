@@ -160,7 +160,7 @@ pub fn special_struct(s: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
         token_tree_ident(s),
         token_tree_punct_alone('='),
         token_tree_punct_joint('{'),
-        token_tree_punct_joint('{'),
+        token_tree_punct_alone('{'),
         token_tree_ident(s),
         token_tree_punct_joint('}'),
         token_tree_punct_joint('}'),
@@ -171,33 +171,34 @@ pub fn special_struct(s: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
 /// generate `[id] :|= <tag_name>{...prop...}`
 /// - `:`: is app main [0]
 /// - `=`: common
-pub fn component_render(id: Option<&String>, is_root: bool, is_component:bool,tag: &str,props:Option<Vec<TokenTree>>) -> Vec<TokenTree> {
+pub fn component_render(
+    id: Option<&String>,
+    is_root: bool,
+    is_component: bool,
+    tag: &str,
+    props: Option<Vec<TokenTree>>,
+) -> Vec<TokenTree> {
     let mut tk = Vec::new();
     if id.is_some() {
-        tk.push(token_tree_group_bracket(vec![token_tree_ident(
-            id.unwrap(),
-        )]));
+        tk.push(token_tree_ident(id.unwrap()));
 
-        match (is_component,is_root){
+        match (is_component, is_root) {
             (false, true) => tk.push(token_tree_punct_alone(':')),
             _ => tk.push(token_tree_punct_alone('=')),
         };
     }
 
-    tk.extend(
-        vec![
-            token_tree_punct_alone('<'),
-            token_tree_ident(tag),
-            token_tree_punct_alone('>'),
-        ]
-    );
+    tk.extend(vec![
+        token_tree_punct_alone('<'),
+        token_tree_ident(tag),
+        token_tree_punct_joint('>'),
+    ]);
 
-    if props.is_some(){
-        tk.push( token_tree_group(props.unwrap()));
-    }else{
+    if props.is_some() {
+        tk.push(token_tree_group(props.unwrap()));
+    } else {
         tk.push(token_tree_group(vec![]));
     }
 
     tk
 }
-

@@ -18,7 +18,11 @@ fn main() {
     let t = Instant::now();
     let _ = Makepad::ast(view_model);
 
-    dbg!(t.elapsed());
+    // dbg!(t.elapsed());
+
+
+    // let input = r#"live_design! { import makepad_widgets::base::*; import makepad_widgets::theme_desktop_dark::*; App = {{App}}{ [ui] : <Window>{ show_bg : true, } } }"#;
+
     // let input = r#"
     // use makepad_widgets::*;
     // live_design! {

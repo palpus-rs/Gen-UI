@@ -16,7 +16,7 @@ let mut on_clicked = ||{
 };
 
 on_startup!{
-    println("{}","hello");
+    println!("{}","hello");
 }
 </script>
 

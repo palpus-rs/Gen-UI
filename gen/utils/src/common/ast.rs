@@ -41,6 +41,10 @@ pub fn token_tree_ident(input: &str) -> TokenTree {
     TokenTree::Ident(ident(input))
 }
 
+pub fn token_tree_ident_mixed(input: &str) -> TokenTree {
+    TokenTree::Ident(Ident::new(input, Span::mixed_site()))
+}
+
 pub fn token_tree_punct_joint(input: char) -> TokenTree {
     TokenTree::Punct(punct_joint(input))
 }
