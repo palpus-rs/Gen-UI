@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 
 use gen_parser::{PropsKey, Value};
 use gen_traits::prop::Prop;

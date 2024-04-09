@@ -15,9 +15,13 @@ pub fn derive_default_none() -> Vec<TokenTree> {
     vec![token_tree_ident("DefaultNone"), token_tree_punct_alone(',')]
 }
 
-/// generate `live_design!`
-pub fn live_design_macro() -> Vec<TokenTree> {
-    vec![token_tree_ident("live_design"), token_tree_punct_alone('!')]
+/// generate `live_design!{...}`
+pub fn live_design_macro(code: Vec<TokenTree>) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("live_design"),
+        token_tree_punct_alone('!'),
+        token_tree_group(code),
+    ]
 }
 
 /// `#[derive(Debug, Clone, Default)]`

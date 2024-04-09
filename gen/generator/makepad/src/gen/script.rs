@@ -5,18 +5,18 @@ use gen_converter::model::{
     PropTree,
 };
 
-use gen_parser::PropsKey;
 use gen_utils::common::{
-    token_stream_to_tree, token_tree_ident, token_tree_punct_alone, tree_to_token_stream,
-    trees_to_token_stream,
+    token_stream_to_tree, token_tree_ident, token_tree_punct_alone, trees_to_token_stream,
 };
 use proc_macro2::{TokenStream, TokenTree};
-use quote::{ToTokens, TokenStreamExt};
+use quote::ToTokens;
 use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
 
 use crate::{
     utils::{
-        apply_over_and_redraw, derive_default_none, derive_live_livehook, draw_walk, handle_actions, handle_event_widget, handle_shutdown, handle_startup, impl_match_event, impl_target, instance, instance_new, instance_new_fn, instance_return_self
+        derive_default_none, derive_live_livehook, handle_actions, handle_shutdown, handle_startup,
+        impl_match_event, impl_target, instance, instance_new, instance_new_fn,
+        instance_return_self,
     },
     widget::Widget,
 };
@@ -420,15 +420,6 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
                 t_s.extend(instance);
                 fn_tks.extend(e_token);
                 p_token
-                // todo!(
-                //     "{}",
-                //     format!(
-                //         "{:#?}\n{:#?}\n{:#?}",
-                //         p_token.0.to_string(),
-                //         p_token.1.to_string(),
-                //         e_token.to_string()
-                //     )
-                // );
             } else {
                 TokenStream::new()
             };
@@ -444,7 +435,7 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
                         start_up_tk.extend(instance_new());
                         start_up_tk.extend(p_token.clone());
                         start_up_tk.extend(start_up);
-                       
+
                         handle_startup(token_stream_to_tree(start_up_tk))
                     }
                 } else if let LifeTime::ShutDown(shut_down) = lt {

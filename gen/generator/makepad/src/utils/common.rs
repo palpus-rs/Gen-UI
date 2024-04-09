@@ -153,3 +153,24 @@ pub fn self_event_react(
 
     tk
 }
+
+/// generate `special = {{special}}{...}`
+pub fn special_struct(s:&str,code:Vec<TokenTree>)->Vec<TokenTree>{
+    vec![
+        token_tree_ident(s),
+        token_tree_punct_alone('='),
+        token_tree_punct_joint('{'),
+        token_tree_punct_joint('{'),
+        token_tree_ident(s),
+        token_tree_punct_joint('}'),
+        token_tree_punct_joint('}'),
+        token_tree_group(code)
+    ]
+}
+
+/// generate `[id] :|= <tag_name>{...prop...}`
+/// - `:`: is app main [0]
+/// - `=`: common
+pub fn component_render(id:Option<String>)->Vec<TokenTree>{
+    
+}

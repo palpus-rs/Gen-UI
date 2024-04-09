@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write};
 
-use gen::sc_builder_to_token_stream;
+use gen::{sc_builder_to_token_stream, template};
 use gen_converter::{
     model::Model,
     strategy::{class, id, inherits, script, style},
@@ -28,7 +28,10 @@ impl Makepad {
         let _ = style(&mut model, gen::style());
 
         // [完成处理后这个model就是最终的Model，下面就可以开始生成Makepad AST]-----------------------------------------------------
-        // 处理script部分
+       
+        ast_tt.extend(template(model.get_special(),model.get_template()));
+
+        // [处理并生成script部分]------------------------------------------------------------------
 
         if let Ok(sc) = script(
             model,
@@ -51,5 +54,5 @@ impl Makepad {
 
     pub fn to_token_stream(&self) -> TokenStream {
         todo!()
-    }
+    }   
 }
