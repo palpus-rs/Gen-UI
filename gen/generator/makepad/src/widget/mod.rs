@@ -65,6 +65,7 @@ impl Widget {
     /// - field token
     pub fn props_from_tk(
         &self,
+        root: Option<String>,
         tag: String,
         id: String,
         pvs: Vec<(PropsKey, String, TokenStream, bool)>,
@@ -73,12 +74,8 @@ impl Widget {
         let mut props = TokenStream::new();
         let mut codes = TokenStream::new();
         let mut fields = TokenStream::new();
-        let mut root = None;
+       
         pvs.into_iter().for_each(|(k, ident, code, is_root)| {
-            if is_root{
-                let _ = root.replace(id.clone());
-            }
-
             let (p_tk, ty_tk) = self.prop_from_str(&k, &ident.as_str());
             props.extend(p_tk);
             prop_fts.extend(struct_field_type(&ident, ty_tk));

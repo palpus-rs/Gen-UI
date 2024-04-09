@@ -101,6 +101,7 @@ pub struct ScriptBuilder {
     // Widget标识（是Widget对象的名称）
     pub target: String,
     pub is_component: bool,
+    pub root: Option<String>,
 }
 
 impl ScriptBuilder {

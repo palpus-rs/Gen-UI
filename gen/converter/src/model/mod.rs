@@ -114,6 +114,17 @@ impl Model {
     pub fn is_component(&self) -> bool {
         self.template.is_some() && self.get_template().unwrap().has_inherit()
     }
+    /// if model is compoent return None else Some(root_name)
+    pub fn is_component_and_root(&self) -> Option<String> {
+        if self.is_component() {
+            None
+        } else {
+            match self.get_template() {
+                Some(t) => t.id.clone(),
+                None => None,
+            }
+        }
+    }
     pub fn get_binds_tree(&self) -> Option<(PropTree, PropTree)> {
         match self.get_template() {
             Some(template) => Some(template.get_props_tree()),

@@ -42,6 +42,7 @@ where
     let model_name = &model.special;
     // 获取model中的绑定变量和方法
     let binds = model.get_binds_tree();
+    let root = model.is_component_and_root();
     let is_component = model.is_component();
     let script = model.script.unwrap().to_origin();
 
@@ -57,6 +58,7 @@ where
         others: other_f(other, binds),
         target,
         is_component,
+        root,
     };
 
     Ok(tt)

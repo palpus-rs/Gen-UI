@@ -31,15 +31,16 @@ pub fn apply_over_and_redraw(
             token_tree_ident("id"),
             token_tree_punct_alone('!'),
             token_tree_group_paren(vec![token_tree_ident(&id)]),
-            token_tree_punct_alone('.'),
-            token_tree_ident("apply_over_and_redraw"),
-            token_tree_group_paren(vec![
-                token_tree_ident("cx"),
-                token_tree_punct_alone(','),
-                token_tree_ident("live"),
-                token_tree_punct_alone('!'),
-                token_tree_group(pv),
-            ]),
+           
+        ]),
+        token_tree_punct_alone('.'),
+        token_tree_ident("apply_over_and_redraw"),
+        token_tree_group_paren(vec![
+            token_tree_ident("cx"),
+            token_tree_punct_alone(','),
+            token_tree_ident("live"),
+            token_tree_punct_alone('!'),
+            token_tree_group(pv),
         ]),
         token_tree_punct_alone(';'),
     ]);

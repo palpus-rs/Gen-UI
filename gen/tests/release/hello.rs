@@ -11,7 +11,7 @@ impl Instance {
 }
 impl MatchEvent for App {
     fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
-        if self.btn.button(id!(btn)).on_clicked(&actions) {
+        if self.ui.button(id!(btn)).on_clicked(&actions) {
             let mut on_clicked = || {
                 view_bg = false;
             };
@@ -19,8 +19,8 @@ impl MatchEvent for App {
     }
     fn handle_startup(&mut self, cx: &mut Cx) {
         println("{}", "hello");
-        self.body.view(
-            id!(body).apply_over_and_redraw(cx, live! { show_bg : (self . instance . view_bg) , }),
-        );
+        self.ui
+            .view(id!(body))
+            .apply_over_and_redraw(cx, live! { show_bg : (self . instance . view_bg) , });
     }
 }

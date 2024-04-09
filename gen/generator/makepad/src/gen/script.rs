@@ -338,13 +338,14 @@ impl FieldTable {
 
 pub fn schandle_to_token_stream<P, E, O>(
     sh: ScriptHandle,
+    root: Option<String>,
     mut p: P,
     mut e: E,
     mut o: O,
 ) -> ((TokenStream, TokenStream), TokenStream, TokenStream)
 where
-    P: FnMut(Vec<ScriptHandles>) -> (FieldTable, TokenStream, TokenStream),
-    E: FnMut(Vec<ScriptHandles>, &FieldTable) -> TokenStream,
+    P: FnMut(Vec<ScriptHandles>, Option<String>) -> (FieldTable, TokenStream, TokenStream),
+    E: FnMut(Vec<ScriptHandles>, Option<String>, &FieldTable) -> TokenStream,
     O: FnMut(Vec<ScriptHandles>) -> TokenStream,
 {
     let ScriptHandle {
@@ -352,8 +353,12 @@ where
         events,
         others,
     } = sh;
-    let (field_table, instance, prop_impl) = p(props);
-    ((instance, prop_impl), e(events, &field_table), o(others))
+    let (field_table, instance, prop_impl) = p(props, root.clone());
+    (
+        (instance, prop_impl),
+        e(events, root, &field_table),
+        o(others),
+    )
 }
 
 /// 在这里uses,props和events无需处理
@@ -376,6 +381,7 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         target,
         is_component,
         others,
+        root,
     } = sc_builder;
     let impl_target = token_tree_ident(&target);
 
@@ -408,6 +414,7 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
             let p_token = if let Some(sc) = others {
                 let ((instance, p_token), e_token, o_token) = schandle_to_token_stream(
                     sc,
+                    root,
                     widget_prop_main(),
                     widget_event_main(),
                     widget_other(),
@@ -461,8 +468,9 @@ fn widget_other() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
 /// 返回
 /// - Instance struct（这个可以直接写出去）
 /// - handle_startup的内部代码（这个需要进一步加到LifeTime里）
-fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> (FieldTable, TokenStream, TokenStream) {
-    return |p| {
+fn widget_prop_main(
+) -> impl FnMut(Vec<ScriptHandles>, Option<String>) -> (FieldTable, TokenStream, TokenStream) {
+    return |p, root| {
         let mut p_map = HashMap::new();
         // 整理到Map中
         p.into_iter().for_each(|item| {
@@ -479,7 +487,7 @@ fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> (FieldTable, TokenStr
         let mut field_tks = Vec::new();
         p_map.into_iter().for_each(|((tag, id), pvs)| {
             let widget = Widget::from(tag.as_str());
-            let (ft_tk, init_tk, field_tk, p_tk) = widget.props_from_tk(tag, id, pvs);
+            let (ft_tk, init_tk, field_tk, p_tk) = widget.props_from_tk(root.clone(), tag, id, pvs);
             tk.extend(p_tk);
             ft_tks.extend(ft_tk);
             init_tks.extend(init_tk);
@@ -514,20 +522,21 @@ fn build_instance(
 }
 
 /// 构建handle_actions
-fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>, &FieldTable) -> TokenStream {
-    return |e, field_table| {
+fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>, Option<String>, &FieldTable) -> TokenStream
+{
+    return |e, root, field_table| {
         // 事件和属性不同，都是单条的，即使是同一个组件也是单条处理的
 
         let mut tks = Vec::new();
         e.into_iter().for_each(|item| {
-            let (tag, id, event, ident, code, is_root) = item.is_event_and_get();
+            let (tag, id, event, ident, code, _) = item.is_event_and_get();
             let widget = Widget::from(tag.as_str());
             // let tk = if is_root {
             //     widget.events(Some(id.clone()), id, (event, ident, code), field_table)
             // } else {
             //     widget.events(None, id, (event, ident, code), field_table)
             // };
-            let tk = widget.events(Some(id.clone()), id, (event, ident, code), field_table);
+            let tk = widget.events(root.clone(), id, (event, ident, code), field_table);
             tks.extend(tk);
         });
         trees_to_token_stream(handle_actions(tks))
