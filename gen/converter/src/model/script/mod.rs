@@ -24,7 +24,7 @@ impl LifeTime {
 #[derive(Debug, Clone)]
 pub enum ScriptHandles {
     Prop(String, String, PropsKey, String, TokenStream, bool),
-    Event(String, String, PropsKey, TokenStream, bool),
+    Event(String, String, PropsKey, String, TokenStream, bool),
     Other(TokenStream),
 }
 
@@ -37,9 +37,11 @@ impl ScriptHandles {
             _ => panic!("only prop can be get"),
         }
     }
-    pub fn is_event_and_get(self) -> (String, String, PropsKey, TokenStream, bool) {
+    pub fn is_event_and_get(self) -> (String, String, PropsKey, String, TokenStream, bool) {
         match self {
-            ScriptHandles::Event(tag, id, prop, code, is_root) => (tag, id, prop, code, is_root),
+            ScriptHandles::Event(tag, id, event, ident, code, is_root) => {
+                (tag, id, event, ident, code, is_root)
+            }
             _ => panic!("only event can be get"),
         }
     }
@@ -53,9 +55,9 @@ impl ScriptHandles {
 
 #[derive(Debug, Clone, Default)]
 pub struct ScriptHandle {
-    props: Vec<ScriptHandles>,
-    events: Vec<ScriptHandles>,
-    others: Vec<ScriptHandles>,
+    pub props: Vec<ScriptHandles>,
+    pub events: Vec<ScriptHandles>,
+    pub others: Vec<ScriptHandles>,
 }
 
 impl ScriptHandle {
@@ -86,24 +88,7 @@ impl ScriptHandle {
     pub fn push_others(&mut self, other: ScriptHandles) {
         self.others.push(other);
     }
-    pub fn to_token_stream<P, E, O>(
-        self,
-        mut p: P,
-        mut e: E,
-        mut o: O,
-    ) -> ((TokenStream, TokenStream), TokenStream, TokenStream)
-    where
-        P: FnMut(Vec<ScriptHandles>) -> (TokenStream, TokenStream),
-        E: FnMut(Vec<ScriptHandles>) -> TokenStream,
-        O: FnMut(Vec<ScriptHandles>) -> TokenStream,
-    {
-        let ScriptHandle {
-            props,
-            events,
-            others,
-        } = self;
-        (p(props), e(events), o(others))
-    }
+    
 }
 
 #[derive(Debug, Clone)]

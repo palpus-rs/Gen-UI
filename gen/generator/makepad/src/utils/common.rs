@@ -1,7 +1,7 @@
 use gen_utils::common::*;
-use proc_macro2::TokenTree;
+use proc_macro2::{TokenStream, TokenTree};
 
-use super::derive_macros;
+use super::{derive_macros, id_macro};
 
 /// generate `live!{ //.. }`
 pub fn live_macro(code: Vec<TokenTree>) -> Vec<TokenTree> {
@@ -99,4 +99,42 @@ pub fn struct_field_type(field: &str, ty: TokenTree) -> Vec<TokenTree> {
         ty,
         token_tree_punct_alone(','),
     ]
+}
+
+pub fn if_group(condition:Vec<TokenTree> ,code: Vec<TokenTree>) -> Vec<TokenTree> {
+    let mut if_tk = vec![
+        token_tree_ident("if"),
+    ];
+    if_tk.extend(condition);
+    if_tk.push(
+        token_tree_group(code)
+    );
+    if_tk
+}
+
+/// generate `self.[ui_name].tag_name(id_macro!(id)).event_name(&actions){...}` 
+pub fn self_event_react(ui:Option<String>, tag: &str, id:&str, event:&str, code:Vec<TokenTree>)->Vec<TokenTree>{
+    let mut tk = vec![
+        token_tree_ident("self"),
+    ];
+
+    if ui.is_some(){
+        tk.push(token_tree_punct_alone('.'));
+        tk.push(token_tree_ident(ui.unwrap().as_str()));
+    }
+
+    tk.extend(vec![
+        token_tree_punct_alone('.'),
+        token_tree_ident(tag),
+        token_tree_group_paren(id_macro(id)),
+        token_tree_punct_alone('.'),
+        token_tree_ident(event),
+        token_tree_group_paren(vec![
+            token_tree_punct_alone('&'),
+            token_tree_ident("actions"),
+        ]),
+        token_tree_group(code),
+    ]);
+
+    tk
 }

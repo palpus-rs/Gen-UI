@@ -1,4 +1,5 @@
 use gen_parser::Props;
+use gen_utils::common::snake_to_camel;
 use proc_macro2::TokenStream;
 use syn::{Block, Meta, Stmt, StmtMacro};
 
@@ -32,7 +33,7 @@ where
     P: FnMut(Option<syn::ItemStruct>, bool) -> Option<TokenStream>,
     E: FnMut(Option<syn::ItemEnum>) -> Option<TokenStream>,
     L: FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>>,
-    F: FnMut(Vec<Stmt>, Option<(PropTree,PropTree)>) -> Option<ScriptHandle>,
+    F: FnMut(Vec<Stmt>, Option<(PropTree, PropTree)>) -> Option<ScriptHandle>,
 {
     if !model.has_script() {
         return Err(Errors::StrategyNoScript);
@@ -79,8 +80,9 @@ fn get_target_name(name: &str, prop: Option<&syn::ItemStruct>, is_component: boo
         // get the name of the component(from syn::ItemStruct)
         prop.unwrap().ident.to_string()
     } else {
-        // 获取文件名
-        name.split("/").last().unwrap().replace(".gen", "")
+        // 获取文件名且改为首字母大写的camel
+        snake_to_camel(&name.split("/").last().unwrap().replace(".gen", ""))
+            .expect("can not transfer to camel")
     };
 }
 

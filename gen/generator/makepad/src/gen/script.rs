@@ -7,7 +7,8 @@ use gen_converter::model::{
 
 use gen_parser::PropsKey;
 use gen_utils::common::{
-    token_stream_to_tree, token_tree_ident, token_tree_punct_alone, trees_to_token_stream,
+    token_stream_to_tree, token_tree_ident, token_tree_punct_alone, tree_to_token_stream,
+    trees_to_token_stream,
 };
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt};
@@ -16,8 +17,8 @@ use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
 use crate::{
     utils::{
         apply_over_and_redraw, derive_default_none, derive_live_livehook, draw_walk,
-        handle_event_widget, handle_shutdown, handle_startup, impl_match_event, impl_target,
-        instance, instance_new_fn, instance_return_self,
+        handle_actions, handle_event_widget, handle_shutdown, handle_startup, impl_match_event,
+        impl_target, instance, instance_new_fn, instance_return_self,
     },
     widget::Widget,
 };
@@ -246,6 +247,7 @@ fn handle_stmt(
                             tag.unwrap(),
                             id.unwrap(),
                             p.unwrap(),
+                            ident,
                             stmt.to_token_stream(),
                             root,
                         ));
@@ -316,6 +318,44 @@ fn change_derives(attrs: &mut Vec<Attribute>, mut derives: Vec<TokenTree>, targe
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct FieldTable {
+    prefix: TokenStream,
+    fields: Vec<TokenTree>,
+}
+
+impl FieldTable {
+    pub fn new(prefix: TokenStream, fields: Vec<TokenTree>) -> Self {
+        Self { prefix, fields }
+    }
+    pub fn get_prefix(&self) -> TokenStream {
+        self.prefix.clone()
+    }
+    pub fn get_fields(&self) -> &Vec<TokenTree> {
+        self.fields.as_ref()
+    }
+}
+
+pub fn schandle_to_token_stream<P, E, O>(
+    sh: ScriptHandle,
+    mut p: P,
+    mut e: E,
+    mut o: O,
+) -> ((TokenStream, TokenStream), TokenStream, TokenStream)
+where
+    P: FnMut(Vec<ScriptHandles>) -> (FieldTable, TokenStream, TokenStream),
+    E: FnMut(Vec<ScriptHandles>, &FieldTable) -> TokenStream,
+    O: FnMut(Vec<ScriptHandles>) -> TokenStream,
+{
+    let ScriptHandle {
+        props,
+        events,
+        others,
+    } = sh;
+    let (field_table, instance, prop_impl) = p(props);
+    ((instance, prop_impl), e(events, &field_table), o(others))
+}
+
 /// 在这里uses,props和events无需处理
 /// 只需要根据sc_builder中的is_component判断是否是自定义组件还是主组件
 /// ## 主：
@@ -338,6 +378,7 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         others,
     } = sc_builder;
     let impl_target = token_tree_ident(&target);
+
     let mut t_s = TokenStream::new();
     if let Some(uses) = uses {
         t_s.extend(uses);
@@ -364,21 +405,46 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
         } else {
             // 这里需要给生命周期的函数添加Makepad的MatchEvent的外壳
             let mut fn_tks = Vec::new();
-            if let Some(sc) = others {
-                let (p_token, e_token, o_token) =
-                    sc.to_token_stream(widget_prop_main(), widget_event_main(), widget_other());
-                todo!("{:#?}", p_token.0.to_string());
-            }
+            let p_token = if let Some(sc) = others {
+                let ((instance, p_token), e_token, o_token) = schandle_to_token_stream(
+                    sc,
+                    widget_prop_main(),
+                    widget_event_main(),
+                    widget_other(),
+                );
+                t_s.extend(instance);
+                fn_tks.extend(e_token);
+                p_token
+                // todo!(
+                //     "{}",
+                //     format!(
+                //         "{:#?}\n{:#?}\n{:#?}",
+                //         p_token.0.to_string(),
+                //         p_token.1.to_string(),
+                //         e_token.to_string()
+                //     )
+                // );
+            } else {
+                TokenStream::new()
+            };
+            let mut start_up_flag = false;
             for lt in lifetimes {
-                let fn_tk = if let LifeTime::StartUp(start_up) = lt {
-                    handle_startup(token_stream_to_tree(start_up))
+                let fn_tk = if let LifeTime::StartUp(mut start_up) = lt {
+                    if start_up_flag {
+                        panic!("LifeTime StartUp can only be used once");
+                    } else {
+                        // p_token add to start_up
+                        start_up_flag = true;
+                        start_up.extend(p_token.clone());
+                        handle_startup(token_stream_to_tree(start_up))
+                    }
                 } else if let LifeTime::ShutDown(shut_down) = lt {
                     handle_shutdown(token_stream_to_tree(shut_down))
                 } else {
                     panic!("Invalid lifetime macro")
                 };
 
-                fn_tks.push(fn_tk);
+                fn_tks.extend(fn_tk);
             }
             let match_event = impl_match_event(token_tree_ident(&target), fn_tks);
 
@@ -395,12 +461,13 @@ fn widget_other() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
 /// 返回
 /// - Instance struct（这个可以直接写出去）
 /// - handle_startup的内部代码（这个需要进一步加到LifeTime里）
-fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> (TokenStream, TokenStream) {
+fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> (FieldTable, TokenStream, TokenStream) {
     return |p| {
         let mut p_map = HashMap::new();
         // 整理到Map中
         p.into_iter().for_each(|item| {
             let (tag, id, prop, ident, code, is_root) = item.is_prop_and_get();
+
             p_map
                 .entry((tag, id))
                 .or_insert_with(Vec::new)
@@ -418,8 +485,15 @@ fn widget_prop_main() -> impl FnMut(Vec<ScriptHandles>) -> (TokenStream, TokenSt
             init_tks.extend(init_tk);
             field_tks.extend(field_tk);
         });
-        // build Instance
+        // build Instance and back a field table
         (
+            FieldTable::new(
+                trees_to_token_stream(vec![
+                    token_tree_ident("instance"),
+                    token_tree_punct_alone('.'),
+                ]),
+                field_tks.clone(),
+            ),
             trees_to_token_stream(build_instance(ft_tks, init_tks, field_tks)),
             tk,
         )
@@ -440,11 +514,23 @@ fn build_instance(
 }
 
 /// 构建handle_actions
-fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
-    return |e| {
-        dbg!(e);
-        TokenStream::new()
-        //    TokenStream::from_iter(handle_event_widget())
+fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>, &FieldTable) -> TokenStream {
+    return |e, field_table| {
+        // 事件和属性不同，都是单条的，即使是同一个组件也是单条处理的
+
+        let mut tks = Vec::new();
+        e.into_iter().for_each(|item| {
+            let (tag, id, event, ident, code, is_root) = item.is_event_and_get();
+            let widget = Widget::from(tag.as_str());
+            // let tk = if is_root {
+            //     widget.events(Some(id.clone()), id, (event, ident, code), field_table)
+            // } else {
+            //     widget.events(None, id, (event, ident, code), field_table)
+            // };
+            let tk = widget.events(Some(id.clone()), id, (event, ident, code), field_table);
+            tks.extend(tk);
+        });
+        trees_to_token_stream(handle_actions(tks))
     };
 }
 
@@ -452,16 +538,14 @@ fn widget_event_main() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
 fn widget_prop() -> impl FnMut(Vec<ScriptHandles>) -> TokenStream {
     return |p| {
         dbg!(&p);
+
+        let mut tks = TokenStream::new();
         let w_p = p.into_iter().for_each(|item| {
             let (tag, id, prop, ident, code, is_root) = item.is_prop_and_get();
             let widget = Widget::from(tag.as_str());
-            // widget.
-            todo!();
-            // apply_over_and_redraw(None, tag, id, pv);
         });
 
-        //    draw_walk(w_p)
-        todo!()
+        tks
     };
 }
 

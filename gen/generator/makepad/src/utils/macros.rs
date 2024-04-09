@@ -38,3 +38,11 @@ pub fn derive_macros(marcos: Vec<&str>) -> Vec<TokenTree> {
         ]),
     ]
 }
+
+pub fn id_macro(id: &str) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("id"),
+        token_tree_punct_alone('!'),
+        token_tree_group_paren(vec![token_tree_ident(id)]),
+    ]
+}

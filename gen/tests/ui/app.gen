@@ -7,7 +7,7 @@
 </template>
 
 <script>
-use::gen_macros::{on_startup};
+use gen_macros::{on_startup};
 
 let mut view_bg = true;
 

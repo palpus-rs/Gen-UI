@@ -8,7 +8,7 @@ use gen_utils::common::{
 use proc_macro2::{TokenStream, TokenTree};
 use quote::TokenStreamExt;
 
-use crate::utils::{apply_over_and_redraw, live_macro, struct_field_type};
+use crate::{gen::FieldTable, utils::{apply_over_and_redraw, live_macro, struct_field_type}};
 
 pub mod button;
 pub mod define;
@@ -59,6 +59,10 @@ impl Widget {
         });
         ast
     }
+    /// return:
+    /// - pub field: Type token,
+    /// - init code token
+    /// - field token
     pub fn props_from_tk(
         &self,
         tag: String,
@@ -95,6 +99,21 @@ impl Widget {
             Widget::View => view::prop_token(prop_name, v),
             Widget::Label => todo!(),
             Widget::Button => todo!(),
+            Widget::Define(_) => todo!(),
+        }
+    }
+    pub fn events(
+        &self,
+        root: Option<String>,
+        id: String,
+        pv: (PropsKey, String, TokenStream), 
+        field_table: &FieldTable,
+    )->Vec<TokenTree>{
+        match self {
+            Widget::Window => todo!(),
+            Widget::View => todo!(),
+            Widget::Label => todo!(),
+            Widget::Button => button::event(root,id,pv,field_table),
             Widget::Define(_) => todo!(),
         }
     }

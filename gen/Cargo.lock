@@ -45,6 +45,7 @@ dependencies = [
  "gen_macros",
  "gen_parser",
  "gen_traits",
+ "gen_utils",
  "proc-macro2",
  "quote",
  "syn",
