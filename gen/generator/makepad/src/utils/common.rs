@@ -202,3 +202,90 @@ pub fn component_render(
 
     tk
 }
+
+/// generate `self.[ui].handle_event(cx, event, &mut Scope::empty());`
+pub fn self_handle_event(target: Option<String>) -> Vec<TokenTree> {
+    let mut tk = vec![token_tree_ident("self")];
+    if target.is_some() {
+        tk.push(token_tree_punct_alone('.'));
+        tk.push(token_tree_ident(target.unwrap().as_str()));
+    }
+    tk.extend(vec![
+        token_tree_punct_alone('.'),
+        token_tree_ident("handle_event"),
+        token_tree_group_paren(vec![
+            token_tree_ident("cx"),
+            token_tree_punct_alone(','),
+            token_tree_ident("event"),
+            token_tree_punct_alone(','),
+            token_tree_punct_alone('&'),
+            token_tree_ident("mut"),
+            token_tree_ident("Scope"),
+            token_tree_punct_joint(':'),
+            token_tree_punct_alone(':'),
+            token_tree_ident("empty"),
+            token_tree_group_paren(vec![]),
+        ]),
+        token_tree_punct_alone(';'),
+    ]);
+    tk
+}
+
+/// generate `match event{...}`
+pub fn match_event(code: Vec<TokenTree>) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("match"),
+        token_tree_ident("event"),
+        token_tree_group(code),
+    ]
+}
+/// generate `enum => {...},`
+pub fn match_item(enum_item: Vec<TokenTree>, code: Vec<TokenTree>) -> Vec<TokenTree> {
+    let mut tk = enum_item;
+
+    tk.extend(vec![
+        token_tree_punct_joint('='),
+        token_tree_punct_alone('>'),
+        token_tree_group(code),
+        token_tree_punct_alone(','),
+    ]);
+
+    tk
+}
+
+/// generate `_ => (),`
+pub fn match_other() -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("_"),
+        token_tree_punct_joint('='),
+        token_tree_punct_alone('>'),
+        token_tree_group_paren(vec![]),
+        token_tree_punct_alone(','),
+    ]
+}
+
+pub fn event_enum_item(item: &str) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("Event"),
+        token_tree_punct_joint(':'),
+        token_tree_punct_joint(':'),
+        token_tree_ident(item),
+    ]
+}
+
+/// generate `Event::Startup`
+pub fn event_start_up() -> Vec<TokenTree> {
+    event_enum_item("Startup")
+}
+pub fn event_shutdown() -> Vec<TokenTree> {
+    event_enum_item("Shutdown")
+}
+/// `self.handle_startup(cx),`
+pub fn self_handle_startup() -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("self"),
+        token_tree_punct_alone('.'),
+        token_tree_ident("handle_startup"),
+        token_tree_group_paren(vec![token_tree_ident("cx")]),
+    ]
+}

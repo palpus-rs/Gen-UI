@@ -1,8 +1,6 @@
 <template>
     <window id="ui" show_bg="true">
-            <view id="body" :show_bg="view_bg">
-                <button id="btn" @clicked="on_clicked"></button>
-            </view>
+            <view id="body" :show_bg="view_bg" />
     </window>
 </template>
 
@@ -10,10 +8,6 @@
 use gen_macros::{on_startup};
 
 let mut view_bg = true;
-
-let mut on_clicked = ||{
-    view_bg = false;
-};
 
 on_startup!{
     println!("{}","hello");

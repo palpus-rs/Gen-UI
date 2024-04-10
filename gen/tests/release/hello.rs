@@ -1,6 +1,5 @@
 use makepad_widgets::*;
 live_design! { import makepad_widgets :: base ::*; import makepad_widgets :: theme_desktop_dark ::*; App = {{ App }}{ ui : < Window >{ show_bg : true , } } }
-
 #[derive(Debug, Clone, Default)]
 struct Instance {
     pub view_bg: bool,
@@ -11,14 +10,15 @@ impl Instance {
         Self { view_bg }
     }
 }
+#[derive(Live, LiveHook)]
+pub struct App {
+    #[live]
+    pub ui: WidgetRef,
+    #[rust]
+    pub instance: Instance,
+}
 impl MatchEvent for App {
-    fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
-        if self.ui.button(id!(btn)).clicked(&actions) {
-            let mut on_clicked = || {
-                self.instance.view_bg = false;
-            };
-        }
-    }
+    fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {}
     fn handle_startup(&mut self, cx: &mut Cx) {
         self.instance = Instance::new();
         self.ui
@@ -27,8 +27,19 @@ impl MatchEvent for App {
         println!("{}", "hello");
     }
 }
-impl LiveRegister for App {
-    fn live_register(cx: &mut Cx) {
-        crate::ui::live_design(cx)
+impl AppMain for App {
+    fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
+        match event {
+            Event::Startup => self.handle_startup(cx),
+            _ => (),
+        }
+        self.match_event(cx, event);
+        self.ui.handle_event(cx, event, &mut Scope::empty());
     }
 }
+impl LiveRegister for App {
+    fn live_register(cx: &mut Cx) {
+        crate::app::live_design(cx)
+    }
+}
+app_main!(App);

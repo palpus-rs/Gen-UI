@@ -24,7 +24,8 @@ pub fn live_design_macro(code: Vec<TokenTree>) -> Vec<TokenTree> {
     ]
 }
 
-/// `#[derive(Debug, Clone, Default)]`
+/// 按需添加derive宏
+/// `#[derive([Debug, Clone, Default])]`
 pub fn derive_macros(marcos: Vec<&str>) -> Vec<TokenTree> {
     // let len  = marcos.len();
     let mut marcos_tks = Vec::new();
@@ -48,5 +49,18 @@ pub fn id_macro(id: &str) -> Vec<TokenTree> {
         token_tree_ident("id"),
         token_tree_punct_alone('!'),
         token_tree_group_paren(vec![token_tree_ident(id)]),
+    ]
+}
+
+pub fn live_attr() -> Vec<TokenTree> {
+    vec![
+        token_tree_punct_joint('#'),
+        token_tree_group_bracket(vec![token_tree_ident("live")]),
+    ]
+}
+pub fn rust_attr() -> Vec<TokenTree> {
+    vec![
+        token_tree_punct_joint('#'),
+        token_tree_group_bracket(vec![token_tree_ident("rust")]),
     ]
 }

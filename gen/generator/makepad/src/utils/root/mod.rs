@@ -3,12 +3,12 @@ use proc_macro2::TokenTree;
 
 /// generate `impl AppMain for xxx{...}`
 /// code: token_group
-pub fn impl_app_main(target: TokenTree, code: Vec<TokenTree>) -> Vec<TokenTree> {
+pub fn impl_app_main(target: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
     vec![
         token_tree_ident("impl"),
         token_tree_ident("AppMain"),
         token_tree_ident("for"),
-        target,
+        token_tree_ident(target),
         token_tree_group(code),
     ]
 }
@@ -48,22 +48,17 @@ pub fn impl_live_register(target: &str, code: Vec<TokenTree>) -> Vec<TokenTree> 
 }
 
 /// generate `crate[::xxx]::live_design(cx)`
-pub fn makepad_widgets_register(target: Option<String>) -> Vec<TokenTree> {
-    let mut tk = vec![token_tree_ident("crate")];
-    if target.is_some() {
-        tk.extend(vec![
-            token_tree_punct_joint(':'),
-            token_tree_punct_alone(':'),
-            token_tree_ident(&target.unwrap()),
-        ])
-    }
-    tk.extend(vec![
+pub fn makepad_widgets_register(target: &str) -> Vec<TokenTree> {
+    vec![
+        token_tree_ident("crate"),
+        token_tree_punct_joint(':'),
+        token_tree_punct_alone(':'),
+        token_tree_ident(target),
         token_tree_punct_joint(':'),
         token_tree_punct_joint(':'),
         token_tree_ident("live_design"),
         token_tree_group_paren(vec![token_tree_ident("cx")]),
-    ]);
-    tk
+    ]
 }
 
 pub fn handle_startup(code: Vec<TokenTree>) -> Vec<TokenTree> {
@@ -128,9 +123,9 @@ pub fn handle_actions(code: Vec<TokenTree>) -> Vec<TokenTree> {
     ]
 }
 
-/// generate `fn handle_event(&mut self, cx: &mut Cx, event: &Event)` in AppMain trait
-pub fn handle_event(code: Vec<TokenTree>) -> TokenTree {
-    token_tree_group(vec![
+/// generate `fn handle_event(&mut self, cx: &mut Cx, event: &Event){...}` in AppMain trait
+pub fn handle_event(code: Vec<TokenTree>) -> Vec<TokenTree> {
+    vec![
         token_tree_ident("fn"),
         token_tree_ident("handle_event"),
         token_tree_group_paren(vec![
@@ -150,7 +145,7 @@ pub fn handle_event(code: Vec<TokenTree>) -> TokenTree {
             token_tree_ident("Event"),
         ]),
         token_tree_group(code),
-    ])
+    ]
 }
 
 /// generate `self.match_event(cx, event);`
@@ -164,15 +159,16 @@ pub fn self_match_event() -> Vec<TokenTree> {
             token_tree_punct_alone(','),
             token_tree_ident("event"),
         ]),
+        token_tree_punct_alone(';'),
     ]
 }
 
 /// generate `app_main!(XXX);`
-pub fn macro_app_main(target: TokenTree) -> Vec<TokenTree> {
+pub fn macro_app_main(target: &str) -> Vec<TokenTree> {
     vec![
         token_tree_ident("app_main"),
         token_tree_punct_alone('!'),
-        token_tree_group_paren(vec![target]),
+        token_tree_group_paren(vec![token_tree_ident(target)]),
         token_tree_punct_alone(';'),
     ]
 }
