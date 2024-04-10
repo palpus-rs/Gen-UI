@@ -25,19 +25,35 @@ mod other;
 pub use other::*;
 
 #[derive(Debug, Clone)]
+pub struct FieldItem {
+   pub source: Widget,
+   pub prop: String,
+   pub value: String,
+}
+
+impl FieldItem {
+    pub fn to_field_tk(&self)->Vec<TokenTree>{
+        vec![
+            token_tree_ident(&self.value),
+            token_tree_punct_alone(','),
+        ]
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct FieldTable {
     prefix: TokenStream,
-    fields: Vec<TokenTree>,
+    fields: Vec<FieldItem>,
 }
 
 impl FieldTable {
-    pub fn new(prefix: TokenStream, fields: Vec<TokenTree>) -> Self {
+    pub fn new(prefix: TokenStream, fields: Vec<FieldItem>) -> Self {
         Self { prefix, fields }
     }
     pub fn get_prefix(&self) -> TokenStream {
         self.prefix.clone()
     }
-    pub fn get_fields(&self) -> &Vec<TokenTree> {
+    pub fn get_fields(&self) -> &Vec<FieldItem> {
         self.fields.as_ref()
     }
     /// add `self.` to prefix
@@ -47,6 +63,10 @@ impl FieldTable {
         tk.extend(self.prefix.clone());
         tk
     }
+    pub fn to_field_strs(&self) -> Vec<String> {
+        self.fields.iter().map(|item| item.value.clone()).collect()
+    }
+    
 }
 
 pub fn schandle_to_token_stream<P, E, O>(
@@ -254,23 +274,27 @@ fn widget_prop_main(
         let mut tk = TokenStream::new();
         let mut ft_tks = Vec::new();
         let mut init_tks = Vec::new();
-        let mut field_tks = Vec::new();
+        let mut field_items = Vec::new();
         p_map.into_iter().for_each(|((tag, id), pvs)| {
             let widget = Widget::from(tag.as_str());
             let (ft_tk, init_tk, field_tk, p_tk) = widget.props_from_tk(root.clone(), tag, id, pvs);
             tk.extend(p_tk);
             ft_tks.extend(ft_tk);
             init_tks.extend(init_tk);
-            field_tks.extend(field_tk);
+            field_items.extend(field_tk);
         });
         // build Instance and back a field table
+
+        let mut field_tks =Vec::new();
+         field_items.iter().for_each(|item| field_tks.extend(item.to_field_tk()));
+
         (
             FieldTable::new(
                 trees_to_token_stream(vec![
                     token_tree_ident("instance"),
                     token_tree_punct_alone('.'),
                 ]),
-                field_tks.clone(),
+                field_items,
             ),
             trees_to_token_stream(build_instance(ft_tks, init_tks, field_tks)),
             tk,

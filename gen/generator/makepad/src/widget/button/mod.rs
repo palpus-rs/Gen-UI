@@ -58,23 +58,25 @@ fn button_clicked(
 ) -> Vec<TokenTree> {
     // 1. 获取field_table中的fields 并且遍历code中的节点，发现有field_table中的field则替换为field_table的prefix + field
     let prefix = field_table.self_prefix();
-    let fields = field_table
-        .get_fields()
-        .iter()
-        .filter(|item| {
-            if let TokenTree::Ident(_) = item {
-                return true;
-            }
-            false
-        })
-        .map(|item| {
-            return if let TokenTree::Ident(ident) = item {
-                ident.to_string()
-            } else {
-                panic!("field_table中的field必须是Ident类型{:#?}", item)
-            };
-        })
-        .collect::<Vec<String>>();
+    // let fields = field_table
+    //     .get_fields()
+    //     .iter()
+    //     .filter(|item| {
+    //         if let TokenTree::Ident(_) = item {
+    //             return true;
+    //         }
+    //         false
+    //     })
+    //     .map(|item| {
+    //         return if let TokenTree::Ident(ident) = item {
+    //             ident.to_string()
+    //         } else {
+    //             panic!("field_table中的field必须是Ident类型{:#?}", item)
+    //         };
+    //     })
+    //     .collect::<Vec<String>>();
+    let fields = field_table.to_field_strs();
+    
     let visitor = EventVisitor::new(prefix, fields);
 
     let mut code = visitor.visit(token_stream_to_tree(code));
@@ -86,6 +88,11 @@ fn button_clicked(
         token_tree_punct_joint(')'),
         token_tree_punct_alone(';'),
     ]);
+
+    // 完成调用后，再次进行渲染
+    let field_items = field_table.get_fields();
+
+    
 
     // 2. 调用self_event_react方法构造
 

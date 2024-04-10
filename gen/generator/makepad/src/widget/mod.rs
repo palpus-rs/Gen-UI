@@ -7,7 +7,7 @@ use gen_utils::common::{
 use proc_macro2::{TokenStream, TokenTree};
 
 use crate::{
-    gen::FieldTable,
+    gen::{FieldItem, FieldTable},
     utils::{apply_over_and_redraw, struct_field_type},
 };
 
@@ -75,18 +75,24 @@ impl Widget {
         tag: String,
         id: String,
         pvs: Vec<(PropsKey, String, TokenStream, bool)>,
-    ) -> (TokenStream, TokenStream, TokenStream, Vec<TokenTree>) {
+    ) -> (TokenStream, TokenStream, Vec<FieldItem>, Vec<TokenTree>) {
         let mut prop_fts = TokenStream::new();
         let mut props = TokenStream::new();
         let mut codes = TokenStream::new();
-        let mut fields = TokenStream::new();
+        // let mut fields = TokenStream::new();
+        let mut fields = vec![];
 
         pvs.into_iter().for_each(|(k, ident, code, _)| {
             let (p_tk, ty_tk) = self.prop_from_str(&k, &ident.as_str());
             props.extend(p_tk);
             prop_fts.extend(struct_field_type(&ident, ty_tk));
             codes.extend(code);
-            fields.extend(vec![token_tree_ident(&ident), token_tree_punct_alone(',')]);
+            // fields.extend(vec![token_tree_ident(&ident), token_tree_punct_alone(',')]);
+            fields.push(FieldItem{
+                source: self.clone(),
+                prop: k.name().to_string(),
+                value: ident,
+            })
         });
         (
             prop_fts,
