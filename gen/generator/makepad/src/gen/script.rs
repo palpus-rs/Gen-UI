@@ -332,6 +332,13 @@ impl FieldTable {
     pub fn get_fields(&self) -> &Vec<TokenTree> {
         self.fields.as_ref()
     }
+    /// add `self.` to prefix
+    pub fn self_prefix(&self)->TokenStream{
+       let mut tk =  TokenStream::new();
+       tk.extend(vec![token_tree_ident("self"),token_tree_punct_alone('.')]);
+       tk.extend(self.prefix.clone());
+       tk
+    }
 }
 
 pub fn schandle_to_token_stream<P, E, O>(
