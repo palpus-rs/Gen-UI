@@ -18,7 +18,14 @@ pub struct App {
     pub instance: Instance,
 }
 impl MatchEvent for App {
-    fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {}
+    fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
+        if self.ui.button(id!(btn)).clicked(&actions) {
+            let mut on_clicked = || {
+                self.instance.view_bg = false;
+            };
+            on_clicked();
+        }
+    }
     fn handle_startup(&mut self, cx: &mut Cx) {
         self.instance = Instance::new();
         self.ui
@@ -39,7 +46,7 @@ impl AppMain for App {
 }
 impl LiveRegister for App {
     fn live_register(cx: &mut Cx) {
-        crate::app::live_design(cx)
+        crate::makepad_widgets::live_design(cx)
     }
 }
 app_main!(App);

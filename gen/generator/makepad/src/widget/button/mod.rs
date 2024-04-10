@@ -1,5 +1,5 @@
 use gen_parser::PropsKey;
-use gen_utils::common::{token_stream_to_tree, token_tree_ident, trees_to_token_stream};
+use gen_utils::common::{token_stream_to_tree, token_tree_ident, token_tree_punct_alone, token_tree_punct_joint, trees_to_token_stream};
 use proc_macro2::{Group, TokenStream, TokenTree};
 
 use crate::{gen::FieldTable, utils::self_event_react};
@@ -10,10 +10,10 @@ pub fn event(
     pv: (PropsKey, String, TokenStream),
     field_table: &FieldTable,
 ) -> Vec<TokenTree> {
-    let (ep, _, code) = pv;
+    let (ep, call, code) = pv;
 
     match ep.name() {
-        "clicked" => button_clicked(root, id, "clicked", code, field_table),
+        "clicked" => button_clicked(root, id, &call,"clicked", code, field_table),
         _ => panic!("not found event in button"),
     }
 }
@@ -21,6 +21,7 @@ pub fn event(
 fn button_clicked(
     root: Option<String>,
     id: String,
+    call:&str,
     ident: &str,
     code: TokenStream,
     field_table: &FieldTable,
@@ -46,8 +47,16 @@ fn button_clicked(
         .collect::<Vec<String>>();
     let visitor = EventVisitor::new(prefix, fields);
 
-    let code = visitor.visit(token_stream_to_tree(code));
-
+    let mut code = visitor.visit(token_stream_to_tree(code));
+    // 添加调用方法
+    // 后续需要修改来支持参数传入
+    code.extend(vec![
+        token_tree_ident(call),
+        token_tree_punct_joint('('),
+        token_tree_punct_joint(')'),
+        token_tree_punct_alone(';'),
+    ]);
+    
     // 2. 调用self_event_react方法构造
 
     let mut tk = vec![token_tree_ident("if")];
