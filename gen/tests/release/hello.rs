@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 live_design! { import makepad_widgets :: base ::*; import makepad_widgets :: theme_desktop_dark ::*; App = {{ App }}{ ui : < Window >{ show_bg : true , } } }
-use gen_macros::on_startup;
+
 #[derive(Debug, Clone, Default)]
 struct Instance {
     pub view_bg: bool,
@@ -25,5 +25,10 @@ impl MatchEvent for App {
             .view(id!(body))
             .apply_over_and_redraw(cx, live! { show_bg : (self . instance . view_bg) , });
         println!("{}", "hello");
+    }
+}
+impl LiveRegister for App {
+    fn live_register(cx: &mut Cx) {
+        crate::ui::live_design(cx)
     }
 }

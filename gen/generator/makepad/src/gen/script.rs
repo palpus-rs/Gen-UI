@@ -10,13 +10,13 @@ use gen_utils::common::{
 };
 use proc_macro2::{TokenStream, TokenTree};
 use quote::ToTokens;
-use syn::{Attribute, Meta, Pat, Stmt, StmtMacro};
+use syn::{parse2, Attribute, Item, Meta, Pat, Stmt, StmtMacro};
 
 use crate::{
     utils::{
         derive_default_none, derive_live_livehook, handle_actions, handle_shutdown, handle_startup,
-        impl_match_event, impl_target, instance, instance_new, instance_new_fn,
-        instance_return_self,
+        impl_live_register, impl_match_event, impl_target, instance, instance_new, instance_new_fn,
+        instance_return_self, makepad_widgets_register,
     },
     widget::Widget,
 };
@@ -333,11 +333,11 @@ impl FieldTable {
         self.fields.as_ref()
     }
     /// add `self.` to prefix
-    pub fn self_prefix(&self)->TokenStream{
-       let mut tk =  TokenStream::new();
-       tk.extend(vec![token_tree_ident("self"),token_tree_punct_alone('.')]);
-       tk.extend(self.prefix.clone());
-       tk
+    pub fn self_prefix(&self) -> TokenStream {
+        let mut tk = TokenStream::new();
+        tk.extend(vec![token_tree_ident("self"), token_tree_punct_alone('.')]);
+        tk.extend(self.prefix.clone());
+        tk
     }
 }
 
@@ -392,7 +392,18 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
 
     let mut t_s = TokenStream::new();
     if let Some(uses) = uses {
-        t_s.extend(uses);
+        // 将GenUI的use去除
+        let uses = format!("{{ {} }}", uses).parse::<TokenStream>().unwrap();
+
+        let uses_block = parse2::<syn::Block>(uses).unwrap();
+
+        let uses = uses_block
+            .stmts
+            .into_iter()
+            .filter(|stmt| !stmt.to_token_stream().to_string().contains("gen"))
+            .for_each(|item| {
+                t_s.extend(item.to_token_stream());
+            });
     }
     if let Some(props) = props {
         t_s.extend(props);
@@ -419,7 +430,7 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
             let p_token = if let Some(sc) = others {
                 let ((instance, p_token), e_token, o_token) = schandle_to_token_stream(
                     sc,
-                    root,
+                    root.clone(),
                     widget_prop_main(),
                     widget_event_main(),
                     widget_other(),
@@ -457,6 +468,11 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
 
             t_s.extend(match_event);
         }
+    }
+    if is_component {
+    } else {
+        // 添加LiveRegister
+        t_s.extend(impl_live_register(&target, makepad_widgets_register(root)))
     }
 
     t_s

@@ -26,16 +26,18 @@ pub fn impl_match_event(target: TokenTree, code: Vec<TokenTree>) -> Vec<TokenTre
 }
 
 /// generate `impl LiveRegister for xxx{ fn live_register(&mut Cx) {...} }`
-pub fn impl_live_register(target: TokenTree, code: Vec<TokenTree>) -> Vec<TokenTree> {
+pub fn impl_live_register(target: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
     vec![
         token_tree_ident("impl"),
         token_tree_ident("LiveRegister"),
         token_tree_ident("for"),
-        target,
+        token_tree_ident(target),
         token_tree_group(vec![
             token_tree_ident("fn"),
             token_tree_ident("live_register"),
             token_tree_group_paren(vec![
+                token_tree_ident("cx"),
+                token_tree_punct_alone(':'),
                 token_tree_punct_alone('&'),
                 token_tree_ident("mut"),
                 token_tree_ident("Cx"),
@@ -45,17 +47,23 @@ pub fn impl_live_register(target: TokenTree, code: Vec<TokenTree>) -> Vec<TokenT
     ]
 }
 
-/// generate `crate::xxx::live_design(cx)`
-pub fn makepad_widgets_register(target: &str) -> Vec<TokenTree> {
-    vec![
-        token_tree_ident("crate"),
-        token_tree_punct_joint(':'),
-        token_tree_ident(target),
+/// generate `crate[::xxx]::live_design(cx)`
+pub fn makepad_widgets_register(target: Option<String>) -> Vec<TokenTree> {
+    let mut tk = vec![token_tree_ident("crate")];
+    if target.is_some() {
+        tk.extend(vec![
+            token_tree_punct_joint(':'),
+            token_tree_punct_alone(':'),
+            token_tree_ident(&target.unwrap()),
+        ])
+    }
+    tk.extend(vec![
         token_tree_punct_joint(':'),
         token_tree_punct_joint(':'),
         token_tree_ident("live_design"),
         token_tree_group_paren(vec![token_tree_ident("cx")]),
-    ]
+    ]);
+    tk
 }
 
 pub fn handle_startup(code: Vec<TokenTree>) -> Vec<TokenTree> {

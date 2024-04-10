@@ -55,32 +55,6 @@ fn button_clicked(
     tk
 }
 
-// fn visit_tree(tk: &mut TokenStream, prefix: Vec<TokenTree>, fields: &Vec<String>) -> () {
-//     // 直接定位到Group中
-//     let mut indexs = Vec::new();
-//     for (index, item) in tk.clone().into_iter().enumerate() {
-//         match item {
-//             TokenTree::Group(group) => visit_tree(
-//                 &mut group.to_token_stream(),
-//                 prefix.clone(),
-//                 fields,
-//             ),
-//             TokenTree::Ident(ident) => {
-//                 if fields.contains(&ident.to_string()) {
-//                     // 收集需要更改的索引
-//                     indexs.push(index);
-//                 }
-//             }
-//             _ => continue,
-//         }
-//     }
-
-//     // 从后往前替换
-//     for index in indexs.iter().rev() {
-//         tk.splice(*index..*index, prefix.clone());
-//     }
-// }
-
 struct EventVisitor {
     replace: TokenStream,
     fields: Vec<String>,
@@ -112,24 +86,5 @@ impl EventVisitor {
             res.splice(*index..*index, self.replace.clone());
         }
         res
-
-        // let mut indexs = Vec::new();
-        // let mut sp_target = token_stream_to_tree(target.clone());
-        // for (index, item) in target.into_iter().enumerate() {
-        //     if let TokenTree::Group(mut group) = item {
-        //         self.visit(group.stream())
-        //     }
-        //     if let TokenTree::Ident(ident) = item {
-        //         if self.fields.contains(&ident.to_string()) {
-        //             // 收集需要更改的索引
-        //             indexs.push(index);
-        //         };
-        //     }
-        // }
-
-        // for index in indexs.iter().rev() {
-        //     sp_target.splice(*index..*index, self.replace.clone());
-        // }
-        // trees_to_token_stream(target)
     }
 }
