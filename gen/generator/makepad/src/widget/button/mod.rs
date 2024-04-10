@@ -1,8 +1,38 @@
 use gen_parser::PropsKey;
-use gen_utils::common::{token_stream_to_tree, token_tree_ident, token_tree_punct_alone, token_tree_punct_joint, trees_to_token_stream};
+use gen_utils::common::{
+    token_stream_to_tree, token_tree_ident, token_tree_punct_alone, token_tree_punct_joint,
+    trees_to_token_stream,
+};
 use proc_macro2::{Group, TokenStream, TokenTree};
 
-use crate::{gen::FieldTable, utils::self_event_react};
+use crate::{
+    gen::FieldTable,
+    prop::{
+        builtin::{text, text_bind},
+        TEXT,
+    },
+    utils::self_event_react,
+    widget::prop_ignore,
+};
+
+pub fn prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
+    match prop_name {
+        TEXT => text(value),
+        _ => {
+            if !prop_ignore(prop_name) {
+                panic!("cannot match prop");
+            }
+            vec![]
+        }
+    }
+}
+
+pub fn prop_token(prop_name: &str, value: &str) -> (Vec<TokenTree>, TokenTree) {
+    match prop_name {
+        TEXT => (text_bind(value), token_tree_ident("String")),
+        _ => todo!(),
+    }
+}
 
 pub fn event(
     root: Option<String>,
@@ -13,7 +43,7 @@ pub fn event(
     let (ep, call, code) = pv;
 
     match ep.name() {
-        "clicked" => button_clicked(root, id, &call,"clicked", code, field_table),
+        "clicked" => button_clicked(root, id, &call, "clicked", code, field_table),
         _ => panic!("not found event in button"),
     }
 }
@@ -21,7 +51,7 @@ pub fn event(
 fn button_clicked(
     root: Option<String>,
     id: String,
-    call:&str,
+    call: &str,
     ident: &str,
     code: TokenStream,
     field_table: &FieldTable,
@@ -56,7 +86,7 @@ fn button_clicked(
         token_tree_punct_joint(')'),
         token_tree_punct_alone(';'),
     ]);
-    
+
     // 2. 调用self_event_react方法构造
 
     let mut tk = vec![token_tree_ident("if")];

@@ -177,6 +177,7 @@ pub fn component_render(
     is_component: bool,
     tag: &str,
     props: Option<Vec<TokenTree>>,
+    children: Option<Vec<TokenTree>>,
 ) -> Vec<TokenTree> {
     let mut tk = Vec::new();
     if id.is_some() {
@@ -194,11 +195,16 @@ pub fn component_render(
         token_tree_punct_joint('>'),
     ]);
 
-    if props.is_some() {
-        tk.push(token_tree_group(props.unwrap()));
-    } else {
-        tk.push(token_tree_group(vec![]));
+    //先加props再加chidren
+    let mut props_children = vec![];
+   
+    if props.is_some(){
+        props_children.extend(props.unwrap());
     }
+    if children.is_some(){
+        props_children.extend(children.unwrap());
+    }
+    tk.push(token_tree_group(props_children));
 
     tk
 }

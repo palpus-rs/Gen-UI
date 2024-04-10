@@ -49,14 +49,19 @@ impl Widget {
         let mut ast = vec![];
         props.iter().for_each(|(prop, value)| {
             let prop_name = prop.name();
-            let prop_value = value.is_unknown_and_get().unwrap();
-            ast.extend(match self {
-                Widget::Window => window::prop(prop_name, prop_value),
-                Widget::View => view::prop(prop_name, prop_value),
-                Widget::Label => todo!(),
-                Widget::Button => todo!(),
-                Widget::Define(_) => todo!(),
-            });
+            // 非绑定属性， 绑定的直接忽略
+            match value.is_unknown_and_get() {
+                Some(prop_value) => {
+                    ast.extend(match self {
+                        Widget::Window => window::prop(prop_name, prop_value),
+                        Widget::View => view::prop(prop_name, prop_value),
+                        Widget::Label => todo!(),
+                        Widget::Button => button::prop(prop_name, prop_value),
+                        Widget::Define(_) => todo!(),
+                    });
+                }
+                None => (),
+            }
         });
         ast
     }
@@ -96,7 +101,7 @@ impl Widget {
             Widget::Window => todo!(),
             Widget::View => view::prop_token(prop_name, v),
             Widget::Label => todo!(),
-            Widget::Button => todo!(),
+            Widget::Button => button::prop_token(prop_name, v),
             Widget::Define(_) => todo!(),
         }
     }
