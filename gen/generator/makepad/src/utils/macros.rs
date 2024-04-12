@@ -64,3 +64,11 @@ pub fn rust_attr() -> Vec<TokenTree> {
         token_tree_group_bracket(vec![token_tree_ident("rust")]),
     ]
 }
+
+/// generate `#[...]`
+pub fn derive_marco_wrap(target: &str)-> Vec<TokenTree> {
+    vec![
+        token_tree_punct_joint('#'),
+        token_tree_group_bracket(vec![token_tree_ident(target)]),
+    ]
+}
