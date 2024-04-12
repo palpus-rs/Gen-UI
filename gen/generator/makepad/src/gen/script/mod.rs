@@ -31,6 +31,7 @@ pub struct FieldItem {
     pub source: Widget,
     pub prop: String,
     pub value: String,
+    pub id: String,
 }
 
 impl FieldItem {
@@ -276,7 +277,7 @@ fn widget_prop_main(
         p_map.into_iter().for_each(|((tag, id), pvs)| {
             let widget = Widget::from(tag.as_str());
             let (ft_tk, init_tk, field_tk, p_tk) = widget.props_from_tk(root.clone(), tag, id, pvs);
-            dbg!(&trees_to_token_stream(p_tk.clone()).to_string());
+            
             tk.extend(p_tk);
             ft_tks.extend(ft_tk);
             init_tks.extend(init_tk);

@@ -92,13 +92,14 @@ impl Widget {
                 source: self.clone(),
                 prop: k.name().to_string(),
                 value: ident,
+                id: id.clone(),
             })
         });
         (
             prop_fts,
             codes,
             fields,
-            apply_over_and_redraw(root, tag, id, token_stream_to_tree(props)),
+            apply_over_and_redraw(root, tag, &id, token_stream_to_tree(props)),
         )
     }
     fn prop_from_str(&self, k: &PropsKey, v: &str) -> (Vec<TokenTree>, TokenTree) {

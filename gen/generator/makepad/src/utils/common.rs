@@ -16,7 +16,7 @@ pub fn live_macro(code: Vec<TokenTree>) -> Vec<TokenTree> {
 pub fn apply_over_and_redraw(
     ui: Option<String>,
     tag: String,
-    id: String,
+    id: &str,
     pv: Vec<TokenTree>,
 ) -> Vec<TokenTree> {
     let mut f = vec![token_tree_ident("self"), token_tree_punct_joint('.')];
