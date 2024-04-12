@@ -26,17 +26,14 @@ pub use other::*;
 
 #[derive(Debug, Clone)]
 pub struct FieldItem {
-   pub source: Widget,
-   pub prop: String,
-   pub value: String,
+    pub source: Widget,
+    pub prop: String,
+    pub value: String,
 }
 
 impl FieldItem {
-    pub fn to_field_tk(&self)->Vec<TokenTree>{
-        vec![
-            token_tree_ident(&self.value),
-            token_tree_punct_alone(','),
-        ]
+    pub fn to_field_tk(&self) -> Vec<TokenTree> {
+        vec![token_tree_ident(&self.value), token_tree_punct_alone(',')]
     }
 }
 
@@ -66,7 +63,6 @@ impl FieldTable {
     pub fn to_field_strs(&self) -> Vec<String> {
         self.fields.iter().map(|item| item.value.clone()).collect()
     }
-    
 }
 
 pub fn schandle_to_token_stream<P, E, O>(
@@ -278,6 +274,7 @@ fn widget_prop_main(
         p_map.into_iter().for_each(|((tag, id), pvs)| {
             let widget = Widget::from(tag.as_str());
             let (ft_tk, init_tk, field_tk, p_tk) = widget.props_from_tk(root.clone(), tag, id, pvs);
+            dbg!(&trees_to_token_stream(p_tk.clone()).to_string());
             tk.extend(p_tk);
             ft_tks.extend(ft_tk);
             init_tks.extend(init_tk);
@@ -285,8 +282,10 @@ fn widget_prop_main(
         });
         // build Instance and back a field table
 
-        let mut field_tks =Vec::new();
-         field_items.iter().for_each(|item| field_tks.extend(item.to_field_tk()));
+        let mut field_tks = Vec::new();
+        field_items
+            .iter()
+            .for_each(|item| field_tks.extend(item.to_field_tk()));
 
         (
             FieldTable::new(

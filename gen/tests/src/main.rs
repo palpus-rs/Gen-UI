@@ -8,12 +8,12 @@ use quote::quote;
 use syn::{parse2, Block};
 
 fn main() {
-    // E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen
+    // 
     // Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen
     // /Users/user/Workspace/others/Gen-UI/gen/tests/ui/app.gen
 
     let mut view_model = Model::new(Path::new(
-        "/Users/user/Workspace/others/Gen-UI/gen/tests/ui/app.gen",
+        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen",
     ))
     .unwrap();
     // dbg!(&view_model.script);
