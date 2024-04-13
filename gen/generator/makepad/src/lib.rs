@@ -43,17 +43,12 @@ impl Makepad {
         ) {
             let _ = ast_tt.extend(sc_builder_to_token_stream(sc));
         }
-        let res = ast_tt.to_string();
-        // 
-        // /Users/user/Workspace/others/Gen-UI/gen/tests/release/hello.rs
-        let mut f =
-            File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/release/hello.rs").unwrap();
-        let _ = f.write(res.as_bytes());
+        
         Makepad(ast_tt)
         
     }
 
-    pub fn to_token_stream(&self) -> TokenStream {
-        todo!()
+    pub fn to_token_stream(self) -> TokenStream {
+        self.0
     }   
 }
