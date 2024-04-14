@@ -6,6 +6,7 @@ pub mod live_design;
 pub mod attr;
 pub mod field;
 pub mod match_event;
+pub mod traits;
 
 pub enum Model{
     AppMain(app_main::AppMain),
