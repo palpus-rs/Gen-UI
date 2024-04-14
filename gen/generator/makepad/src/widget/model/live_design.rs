@@ -7,5 +7,5 @@ use super::widget::Widget;
 #[derive(Debug,Default,Clone)]
 pub struct LiveDesign{
     imports: Vec<String>,
-    tree: Widget
+    tree: Box<Widget>
 }

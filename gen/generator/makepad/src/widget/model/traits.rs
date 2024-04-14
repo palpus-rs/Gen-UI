@@ -1,4 +1,3 @@
-use makepad_widgets::Widget;
 use proc_macro2::TokenStream;
 /// 对于Widget来说
 /// draw_walk是必须实现的

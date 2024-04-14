@@ -2,15 +2,16 @@ use std::collections::HashMap;
 
 use proc_macro2::TokenStream;
 
-use crate::widget::BuiltIn;
+use crate::widget::{self, BuiltIn};
 
-use super::traits::WidgetTrait;
+use super::{live_design::LiveDesign, traits::WidgetTrait};
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
 /// ## 当生成一个完整的组件时
 #[derive(Debug, Default, Clone)]
 pub struct Widget {
+    pub live_design: LiveDesign,
     pub is_root: bool,
     pub is_prop: bool,
     pub in_live_design: bool,
@@ -22,6 +23,14 @@ pub struct Widget {
     pub props: Option<HashMap<String, String>>,
     pub events: Option<TokenStream>,
     pub children: Option<Vec<Widget>>,
-    pub inherits: BuiltIn,
+    pub inherits: Option<BuiltIn>,
     pub traits: WidgetTrait,
+}
+
+impl Widget {
+    pub fn new(name:&str)->Self{
+        let mut widget = Widget::default();
+        widget.name = name.to_string();
+        widget
+    }
 }

@@ -38,7 +38,7 @@ impl Makepad {
 
         // [完成处理后这个model就是最终的Model，下面就可以开始生成Makepad AST]-----------------------------------------------------
        
-        ast_tt.extend(template(model.get_special(),model.get_template()));
+        // ast_tt.extend(template(model.get_special(),model.get_template()));
 
         // [处理并生成script部分]------------------------------------------------------------------
 

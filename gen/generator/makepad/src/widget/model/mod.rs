@@ -8,9 +8,8 @@ pub mod field;
 pub mod match_event;
 pub mod traits;
 
+#[derive(Debug, Clone)]
 pub enum Model{
     AppMain(app_main::AppMain),
     Widget(widget::Widget),
 }
-
-
