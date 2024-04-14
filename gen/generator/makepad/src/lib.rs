@@ -5,13 +5,22 @@ use gen_converter::{
     model::Model,
     strategy::{class, id, inherits, script, style},
 };
-use proc_macro2::TokenStream;
+use gen_utils::common::token_stream_to_tree;
+use proc_macro2::{TokenStream, TokenTree};
 
 pub mod error;
 pub mod gen;
 pub mod prop;
 pub mod utils;
 pub mod widget;
+pub mod instance;
+
+pub trait ToToken {
+    fn to_token_stream(&self) -> TokenStream;
+    fn to_token_trees(&self) -> Vec<TokenTree>{
+        token_stream_to_tree(self.to_token_stream())
+    }
+}
 
 #[derive(Debug)]
 pub struct Makepad(pub TokenStream);

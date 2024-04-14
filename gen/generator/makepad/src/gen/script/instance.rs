@@ -1,10 +1,8 @@
 mod app_main;
 mod widget;
-mod field;
-mod attr;
 
-use field::Field;
-use attr::Attr;
+
+
 use app_main::AppMain;
 use widget::Widget;
 /// 使用WidgetInstance来实例化Widget

@@ -22,8 +22,6 @@ use crate::{
 };
 
 mod other;
-mod instance;
-pub use instance::*;
 pub use other::*;
 
 #[derive(Debug, Clone)]

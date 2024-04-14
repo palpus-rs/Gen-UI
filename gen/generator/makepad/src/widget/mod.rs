@@ -1,3 +1,10 @@
+//! 将GenUI的Model转换为Makepad的Model，分为两种形式
+//! - 1. AppMain：表示整个应用的入口
+//! - 2. Widget：表示一个组件
+//! 这两种形式都会包含两个部分：
+//! - live_design! 宏编写的DSL模板部分（必须有）
+//! - 构建这个模板的代码部分（可能有）
+//!  
 use std::{collections::HashMap, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
@@ -11,6 +18,7 @@ use crate::{
     utils::{apply_over_and_redraw, struct_field_type},
 };
 
+pub mod model;
 pub mod button;
 pub mod define;
 pub mod label;

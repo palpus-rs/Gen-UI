@@ -2,7 +2,7 @@ use std::default;
 
 use gen_utils::common::trees_to_token_stream;
 
-use crate::{gen::ToToken, utils::derive_marco_wrap};
+use crate::{ToToken, utils::derive_marco_wrap};
 
 #[derive(Debug, Clone, PartialEq,Default)]
 pub enum Attr {
@@ -24,7 +24,7 @@ impl ToToken for Attr {
 
 #[cfg(test)]
 mod attr_test{
-    use crate::gen::ToToken;
+    use crate::ToToken;
     use super::Attr;
 
     #[test]

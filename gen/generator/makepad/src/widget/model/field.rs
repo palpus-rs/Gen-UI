@@ -1,7 +1,7 @@
 use gen_utils::common::{token_tree_ident, token_tree_punct_alone, trees_to_token_stream};
 use proc_macro2::TokenTree;
 
-use crate::gen::ToToken;
+use crate::ToToken;
 
 use super::attr::Attr;
 
@@ -62,8 +62,10 @@ impl ToToken for Field {
 
 #[cfg(test)]
 mod field_test{
-    use crate::gen::{script::instance::attr::Attr, ToToken};
+    
 
+    use crate::widget::model::attr::Attr;
+    use crate::ToToken;
     use super::Field;
 
     #[test]
