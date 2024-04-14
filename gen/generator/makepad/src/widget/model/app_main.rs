@@ -59,18 +59,31 @@
 // }
 // app_main!(App);
 
+
 use proc_macro2::TokenStream;
 
 use super::{field::Field, live_design::LiveDesign, match_event::MatchEvent};
 
+#[derive(Debug,Clone,Default)]
 pub struct AppMain {
-    live_design: LiveDesign,
+    pub live_design: LiveDesign,
     /// 当前实例
-    name: String,
+    pub name: String,
     /// app main的ui入口
-    root_ref: String,
+    pub root_ref: String,
     /// 处理在实例中的属性
-    props: Field,
-    match_event: MatchEvent,
-    app_main: Option<TokenStream>
+    pub props: Field,
+    pub match_event: MatchEvent,
+    pub app_main: Option<TokenStream>,
+    /// 有哪些组件需要被注册
+    pub live_register: Vec<String>,
+}
+
+impl AppMain {
+    pub fn new(name:&str)->Self{
+        let mut app = AppMain::default();
+        app.name = name.to_string();
+        app
+    }
+    
 }

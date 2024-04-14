@@ -5,7 +5,7 @@
 //! - live_design! 宏编写的DSL模板部分（必须有）
 //! - 构建这个模板的代码部分（可能有）
 //!  
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, default, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::{
@@ -164,4 +164,14 @@ impl Display for Widget {
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
+}
+
+#[derive(Debug, Clone, Default)]
+pub enum BuiltIn{
+    Window,
+    View,
+    Label,
+    Button,
+    #[default]
+    Area,
 }
