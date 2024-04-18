@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 
 use crate::widget::{self, BuiltIn};
 
-use super::{live_design::LiveDesign, traits::WidgetTrait};
+use super::{live_design::LiveDesign, role::Role, traits::WidgetTrait};
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
@@ -25,6 +25,7 @@ pub struct Widget {
     pub children: Option<Vec<Widget>>,
     pub inherits: Option<BuiltIn>,
     pub traits: WidgetTrait,
+    pub role: Role
 }
 
 impl Widget {
@@ -33,4 +34,8 @@ impl Widget {
         widget.name = name.to_string();
         widget
     }
+    pub fn set_id(&mut self, id: &str) {
+        self.id = Some(id.to_string());
+    }
 }
+
