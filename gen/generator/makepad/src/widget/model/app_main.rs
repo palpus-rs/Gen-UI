@@ -88,3 +88,9 @@ impl AppMain {
     }
     
 }
+
+impl From<gen_converter::model::Model> for AppMain {
+    fn from(value: gen_converter::model::Model) -> Self {
+        todo!()
+    }
+}

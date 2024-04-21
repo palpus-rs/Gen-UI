@@ -9,9 +9,13 @@ fn main() {
     // Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen
     // /Users/user/Workspace/others/Gen-UI/gen/tests/ui/app.gen
 
-    let mut view_model = Model::new(Path::new(
-        "E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen",
-    ))
+    let current_dir = std::env::current_dir().unwrap();
+
+    let mut view_model = Model::new(
+        Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/components/hello.gen"),
+        current_dir,
+        false,
+    )
     .unwrap();
 
     // let code = Makepad::ast(view_model);

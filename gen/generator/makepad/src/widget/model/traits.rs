@@ -3,7 +3,7 @@ use proc_macro2::TokenStream;
 /// draw_walk是必须实现的
 /// 其他的方法是可选的
 #[derive(Debug, Default, Clone)]
-pub struct WidgetTrait{
+pub struct WidgetTrait {
     /// 必须实现
     pub draw_walk: TokenStream,
     /// 可选实现

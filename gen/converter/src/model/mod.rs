@@ -8,8 +8,8 @@ use std::{
     error::Error,
     fs::File,
     io::Read,
-    path::Path,
-    sync::mpsc::{self},
+    path::{Path, PathBuf},
+    sync::mpsc,
     thread,
 };
 
@@ -17,7 +17,7 @@ use gen_parser::{ParseResult, ParseTarget, Strategy};
 
 pub use template::{PropTree, TemplateModel};
 
-use self::{prop::ConvertStyle, script::ConvertScript, style::handle_styles};
+use self::{prop::ConvertStyle, script::{ConvertScript, GenScriptModel, ScriptModel}, style::handle_styles};
 
 #[derive(Debug, Clone)]
 pub enum ConvertResult {
@@ -42,7 +42,7 @@ pub struct Model {
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
     pub template: Option<TemplateModel>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
-    pub script: Option<ConvertScript>,
+    pub script: Option<ScriptModel>,
     /// 模型的样式部分，即.gen文件的<style>标签包裹的部分
     /// 也可以认为是模型的属性部分，在GenUI中并没有属性与样式的区别
     /// ConvertStyle实际上是被平展的样式列表
@@ -51,20 +51,28 @@ pub struct Model {
     /// 在项目中可能存在一个文件被编写，但没有在项目中使用到
     /// 表现为这个文件没有使用Rust的use语句进行引入
     pub compile: bool,
+    /// 是否是入口文件
+    pub is_entry: bool,
+    pub source: PathBuf
 }
 
 impl Model {
-    pub fn new(path: &Path) -> Result<Self, Box<dyn Error>> {
+    pub fn new(path: &Path, source:PathBuf,is_entry: bool) -> Result<Self, Box<dyn Error>> {
         match file_data(path) {
             Ok(input) => {
                 let mut model = Model::default();
                 let ast =
                     ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
                 let _ = Model::convert(&mut model, ast, path);
+                model.is_entry = is_entry;
+                model.source = source;
                 Ok(model)
             }
             Err(e) => Err(e),
         }
+    }
+    pub fn is_entry(&self) -> bool {
+        self.is_entry
     }
     pub fn get_special(&self) -> &str {
         &self.special
@@ -72,9 +80,9 @@ impl Model {
     pub fn set_template(&mut self, template: TemplateModel) -> () {
         let _ = self.template.replace(template);
     }
-    pub fn set_script(&mut self, script: ConvertScript) -> () {
-        let _ = self.script.replace(script);
-    }
+    // pub fn set_script(&mut self, script: ConvertScript) -> () {
+    //     let _ = self.script.replace(script);
+    // }
     pub fn set_style(&mut self, style: ConvertStyle) -> () {
         let _ = self.style.replace(style);
     }
@@ -102,12 +110,12 @@ impl Model {
     pub fn has_styles(&self) -> bool {
         self.style.is_some()
     }
-    pub fn get_script(&self) -> Option<&ConvertScript> {
-        self.script.as_ref()
-    }
-    pub fn get_script_mut(&mut self) -> Option<&mut ConvertScript> {
-        self.script.as_mut()
-    }
+    // pub fn get_script(&self) -> Option<&ConvertScript> {
+    //     self.script.as_ref()
+    // }
+    // pub fn get_script_mut(&mut self) -> Option<&mut ConvertScript> {
+    //     self.script.as_mut()
+    // }
     pub fn has_script(&self) -> bool {
         self.script.is_some()
     }
@@ -150,8 +158,8 @@ impl Model {
                 let style_sender = sender.clone();
                 let template = ast.template().unwrap()[0].clone();
                 let styles = ast.style().unwrap().clone();
-                let script = ast.script().unwrap().clone();
-                model.set_script(script);
+                let script = ast.script().unwrap().clone().to_origin();
+                // model.set_script(script);
                 let _ = thread::spawn(move || {
                     let convert_res = TemplateModel::convert(&template, true);
                     template_sender
@@ -172,6 +180,7 @@ impl Model {
                     {
                         ConvertResult::Template(t) => {
                             if t.is_some() {
+                               
                                 model.set_template(t.unwrap());
                             } else {
                                 panic!("template cannot be none in Strategy::All")
@@ -188,6 +197,10 @@ impl Model {
                             }
                         }
                     }
+                }
+                // 处理script部分
+                if let Some(tree) =  model.get_binds_tree(){
+                    model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
                 }
             }
             // Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),

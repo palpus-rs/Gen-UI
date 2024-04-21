@@ -43,24 +43,25 @@ where
     let binds = model.get_binds_tree();
     let root = model.is_component_and_root();
     let is_component = model.is_component();
-    let script = model.script.unwrap().to_origin();
+    todo!()
+    // let script = model.script.unwrap().to_origin();
 
-    let (uses, prop, event, lifetime, other) = split_script(script);
-    // target指的是当前Model的名称
-    let target = get_target_name(model_name, prop.as_ref(), is_component);
+    // let (uses, prop, event, lifetime, other) = split_script(script);
+    // // target指的是当前Model的名称
+    // let target = get_target_name(model_name, prop.as_ref(), is_component);
 
-    let tt = ScriptBuilder {
-        uses: use_f(uses),
-        props: prop_f(prop, is_component),
-        events: event_f(event),
-        lifetimes: lifetime_f(lifetime, is_component),
-        others: other_f(other, binds),
-        target,
-        is_component,
-        root,
-    };
+    // let tt = ScriptBuilder {
+    //     uses: use_f(uses),
+    //     props: prop_f(prop, is_component),
+    //     events: event_f(event),
+    //     lifetimes: lifetime_f(lifetime, is_component),
+    //     others: other_f(other, binds),
+    //     target,
+    //     is_component,
+    //     root,
+    // };
 
-    Ok(tt)
+    // Ok(tt)
 }
 
 

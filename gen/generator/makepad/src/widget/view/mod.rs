@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use gen_utils::common::token_tree_ident;
-use proc_macro2::TokenTree;
+use proc_macro2::{TokenStream, TokenTree};
 
 use crate::prop::{
     builtin::{align, draw_bg, height, show_bg, show_bg_bind, width}, ALIGN, DRAW_BG, HEIGHT, SHOW_BG, WIDTH
@@ -8,7 +10,7 @@ use crate::prop::{
 use super::prop_ignore;
 
 /// generate view widget prop
-pub fn prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
+pub fn prop(prop_name: &str, value: &str) ->  (String, Vec<TokenTree>) {
     match prop_name {
         SHOW_BG => show_bg(value),
         DRAW_BG => draw_bg(value),
@@ -19,7 +21,7 @@ pub fn prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
             if !prop_ignore(prop_name) {
                 panic!("cannot match prop");
             }
-            vec![]
+            todo!("unslolved prop")
         }
     }
 

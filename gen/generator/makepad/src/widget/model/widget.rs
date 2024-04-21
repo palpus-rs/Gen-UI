@@ -1,6 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
-use proc_macro2::TokenStream;
+use gen_parser::{PropsKey, Value};
+use gen_utils::common::snake_to_camel;
+use proc_macro2::{TokenStream, TokenTree};
 
 use crate::widget::{self, BuiltIn};
 
@@ -20,8 +22,10 @@ pub struct Widget {
     /// widget id, if widget is prop, id is prop
     pub id: Option<String>,
     pub name: String,
+    pub source: Option<String>,
+    pub compiled_source: Option<PathBuf>,
     /// props in live_design
-    pub props: Option<HashMap<String, TokenStream>>,
+    pub props: Option<HashMap<String, Vec<TokenTree>>>,
     /// events called in makepad
     pub events: Option<HashMap<String, TokenStream>>,
     pub prop_ptr: Option<TokenStream>,
@@ -33,13 +37,28 @@ pub struct Widget {
 }
 
 impl Widget {
-    pub fn new(name: &str) -> Self {
+    pub fn new(special: &str, mut source_dir: PathBuf) -> Self {
+        let mut widget = Widget::default();
+        widget.source = Some(special.to_string());
+        // 获取文件名且改为首字母大写的camel
+        widget.name = snake_to_camel(&special.split("/").last().unwrap().replace(".gen", ""))
+            .expect("can not transfer to camel");
+
+        source_dir.pop();
+        source_dir.push("src-gen");
+
+        widget.compiled_source = Some(source_dir);
+        widget
+    }
+    pub fn new_builtin(name: &str) -> Self {
         let mut widget = Widget::default();
         widget.name = name.to_string();
         widget
     }
-    pub fn set_id(&mut self, id: &str) -> &mut Self {
-        self.id = Some(id.to_string());
+    pub fn set_id(&mut self, id: Option<&String>) -> &mut Self {
+        if let Some(id) = id {
+            self.id = Some(id.to_string());
+        }
         self
     }
 
@@ -59,18 +78,24 @@ impl Widget {
         self.is_built_in = is_built_in;
         self
     }
-    pub fn set_props(&mut self, props: HashMap<String, TokenStream>) -> &mut Self {
-        self.props = Some(props);
-        self
-    }
-    pub fn push_prop(&mut self, key: String, value: TokenStream) -> &mut Self {
-        if self.props.is_none() {
-            self.props.replace(HashMap::new());
+    pub fn set_props(&mut self, props: Option<HashMap<&PropsKey, &Value>>) -> &mut Self {
+        if let Some(props) = props {
+            if self.is_built_in {
+                self.props = Some(BuiltIn::from(&self.name).props(&props));
+            } else {
+                todo!("widget props define unsoloved");
+            }
         }
-        self.props.as_mut().unwrap().insert(key, value);
-
         self
     }
+    // pub fn push_prop(&mut self, key: String, value: TokenStream) -> &mut Self {
+    //     if self.props.is_none() {
+    //         self.props.replace(HashMap::new());
+    //     }
+    //     self.props.as_mut().unwrap().insert(key, value);
+
+    //     self
+    // }
     pub fn set_events(&mut self, events: HashMap<String, TokenStream>) -> &mut Self {
         self.events = Some(events);
         self
@@ -114,5 +139,37 @@ impl Widget {
     pub fn set_role(&mut self, role: Role) -> &mut Self {
         self.role = role;
         self
+    }
+}
+
+impl From<gen_converter::model::Model> for Widget {
+    fn from(value: gen_converter::model::Model) -> Self {
+        let gen_converter::model::Model {
+            special,
+            template,
+            script,
+            style,
+            compile,
+            is_entry,
+            source,
+        } = value;
+
+        let template = template.unwrap();
+        dbg!(&template);
+
+        let widget = if template.get_name().eq("component") {
+            let mut widget = Widget::new(&special, source);
+            let _ = widget.set_inherits(BuiltIn::from(template.get_inherits().unwrap()));
+            widget
+        } else {
+            let mut widget = Widget::new_builtin(template.get_name());
+            widget
+                .set_is_root(template.is_root())
+                .set_id(template.get_id())
+                .set_props(template.get_unbind_props());
+            widget
+        };
+
+        todo!("{:#?}", widget);
     }
 }

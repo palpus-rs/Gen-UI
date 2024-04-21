@@ -1,4 +1,6 @@
-use gen_parser::Value;
+use std::default;
+
+use gen_parser::{Script, Value};
 
 use syn::{Block, Meta, Pat};
 
@@ -6,8 +8,21 @@ use crate::model::PropTree;
 
 use super::{r#use::UseMod, LifeTime, PropFn};
 
+#[derive(Debug, Clone)]
+pub enum ScriptModel{
+    Gen(GenScriptModel),
+    Rs(Block)
+}
+
+impl Default for  ScriptModel {
+    fn default() -> Self {
+        ScriptModel::Gen(GenScriptModel::default())
+    }
+}
+
+
 #[derive(Debug, Clone, Default)]
-pub struct ScriptModel {
+pub struct GenScriptModel {
     /// 使用的包,依赖
     pub uses: Option<UseMod>,
     /// 组件的属性
@@ -51,8 +66,8 @@ pub struct ScriptModel {
     pub other: Option<Vec<syn::Stmt>>,
 }
 
-impl ScriptModel {
-    pub fn new(block: Block, bind_fn_tree: (PropTree, PropTree)) -> Self {
+impl GenScriptModel {
+    pub fn new(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> Self {
         build_script(block, bind_fn_tree)
     }
     pub fn set_uses(&mut self, uses: UseMod) {
@@ -61,14 +76,16 @@ impl ScriptModel {
     pub fn set_prop_ptr(&mut self, prop: syn::ItemStruct) {
         if self.prop_ptr.is_none() {
             let _ = self.prop_ptr.replace(prop);
+            return;
         }
         panic!("Only one struct can be derived from Prop")
     }
     pub fn set_event_ptr(&mut self, event: syn::ItemEnum) {
         if self.event_ptr.is_none() {
             let _ = self.event_ptr.replace(event);
+            return;
         }
-        panic!("Only one enum can be derived from Event")
+        panic!("Only one enum can be derived from Event");
     }
     pub fn set_lifetimes(&mut self, lifetimes: Option<LifeTime>) {
         self.lifetimes = lifetimes;
@@ -133,10 +150,10 @@ impl ScriptModel {
     }
 }
 
-fn build_script(block: Block, bind_fn_tree: (PropTree, PropTree)) -> ScriptModel {
+fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptModel {
     let stmts = block.stmts;
 
-    let mut model = ScriptModel::default();
+    let mut model = GenScriptModel::default();
     let mut lifetimes: Option<LifeTime> = None;
 
     for stmt in &stmts {
@@ -231,7 +248,7 @@ fn build_script(block: Block, bind_fn_tree: (PropTree, PropTree)) -> ScriptModel
 }
 
 fn push_sub_prop_fn<C, F>(
-    target: &mut ScriptModel,
+    target: &mut GenScriptModel,
     bind_tree: &PropTree,
     ident: &str,
     code: &syn::Stmt,
@@ -240,7 +257,7 @@ fn push_sub_prop_fn<C, F>(
 ) -> bool
 where
     C: Fn(&Value) -> &str,
-    F: Fn(&mut ScriptModel, PropFn) -> (),
+    F: Fn(&mut GenScriptModel, PropFn) -> (),
 {
     let mut flag = false;
     'out: for ((widget, id), prop_fn_key) in bind_tree {

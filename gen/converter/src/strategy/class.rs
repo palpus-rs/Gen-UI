@@ -33,7 +33,7 @@ where
         // 但即使是绑定值，也只可能存在最终结果为字符串或字符串数组的情况（String或Vec<String>）
         // 但绑定值无法直接在编译阶段获取必须是在运行时获取
         // 虽然直接在GenUI的脚本部分中获取绑定值几乎不可能，但却可以通过GenUI的标识符把其他部分剔除
-        let _script = model.get_script().ok_or(Errors::StrategyNoScript)?;
+        // let _script = model.get_script().ok_or(Errors::StrategyNoScript)?;
         todo!("class 策略绑定部分暂不处理，需等到确定所有GenUI标识符后再处理")
     };
 

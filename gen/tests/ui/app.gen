@@ -23,6 +23,7 @@ on_startup!{
 
 <style>
 #ui{
+    height: Fill;
     #body{
        #btn{}
     }
