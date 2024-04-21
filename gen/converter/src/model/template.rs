@@ -181,7 +181,7 @@ impl TemplateModel {
 
     pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
         match self.props.as_ref() {
-            Some(props) => Some(props.iter().filter(|(k, _)| !k.is_normal()).collect()),
+            Some(props) => Some(props.iter().filter(|(k, _)| k.is_normal()).collect()),
             None => None,
         }
     }

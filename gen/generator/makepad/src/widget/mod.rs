@@ -188,7 +188,7 @@ impl BuiltIn {
                     let (k,v) = match self {
                         BuiltIn::Window => window::prop(prop_name, prop_value),
                         BuiltIn::View => view::prop(prop_name, prop_value),
-                        BuiltIn::Label => todo!(),
+                        BuiltIn::Label => label::prop(prop_name, prop_value),
                         BuiltIn::Button => button::prop(prop_name, prop_value),
                         _ => todo!(),
                     };

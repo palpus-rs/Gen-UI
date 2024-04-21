@@ -1,5 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
+use gen_converter::model::TemplateModel;
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::snake_to_camel;
 use proc_macro2::{TokenStream, TokenTree};
@@ -80,11 +81,12 @@ impl Widget {
     }
     pub fn set_props(&mut self, props: Option<HashMap<&PropsKey, &Value>>) -> &mut Self {
         if let Some(props) = props {
-            if self.is_built_in {
-                self.props = Some(BuiltIn::from(&self.name).props(&props));
-            } else {
-                todo!("widget props define unsoloved");
-            }
+            // if self.is_built_in {
+            //     self.props = Some(BuiltIn::from(&self.name).props(&props));
+            // } else {
+            //     todo!("widget props define unsoloved => {:#?}",props);
+            // }
+            self.props = Some(BuiltIn::from(&self.name).props(&props));
         }
         self
     }
@@ -157,19 +159,46 @@ impl From<gen_converter::model::Model> for Widget {
         let template = template.unwrap();
         dbg!(&template);
 
-        let widget = if template.get_name().eq("component") {
+        let mut widget = if template.get_name().eq("component") {
             let mut widget = Widget::new(&special, source);
             let _ = widget.set_inherits(BuiltIn::from(template.get_inherits().unwrap()));
             widget
         } else {
-            let mut widget = Widget::new_builtin(template.get_name());
-            widget
-                .set_is_root(template.is_root())
-                .set_id(template.get_id())
-                .set_props(template.get_unbind_props());
-            widget
+            build_widget(&template)
         };
+
+        if template.has_children() {
+            widget.set_children(
+                template
+                    .get_children()
+                    .unwrap()
+                    .iter()
+                    .map(|item| build_widget(item))
+                    .collect(),
+            );
+        }
 
         todo!("{:#?}", widget);
     }
+}
+
+fn build_widget(template: &TemplateModel) -> Widget {
+    let mut widget = Widget::new_builtin(template.get_name());
+    
+    widget
+        .set_is_root(template.is_root())
+        .set_id(template.get_id())
+        .set_props(template.get_unbind_props());
+
+    if template.has_children() {
+        widget.set_children(
+            template
+                .get_children()
+                .unwrap()
+                .iter()
+                .map(|item| build_widget(item))
+                .collect(),
+        );
+    }
+    return widget;
 }
