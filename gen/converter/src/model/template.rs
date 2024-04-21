@@ -34,41 +34,12 @@ pub struct TemplateModel {
     /// 但是，GenUI需要关心这些属性是否是绑定的还是静态的
     /// 对于自定义组件来说，这些属性却是一个重要的部分，因为这些属性需要被外部传入
     props: Props,
-    /// 组件的属性
-    /// 这表示组件允许外部传入给内部的属性，需要使用GenUI的Prop宏进行标注
-    /// 例如：
-    /// ```rust
-    /// #[derive(Debug, Clone, PartialEq, Prop)]
-    /// pub enum Props{
-    ///     text: String,
-    ///     height: f64,
-    /// }
-    /// ```
-    // prop_ptr: Box<dyn Prop>,
-    prop_ptr: Option<String>,
     /// 组件的事件的回调(是指组件内部允许暴露到外部的事件)
     /// 指的是外部组件当组件内部的事件被触发后，进行处理
     /// 回调的参数依赖于组件的事件提供给外部参数
     /// 回调表现为一个闭包或一个函数
     /// 语法：`<define_component @click="do_click" />`
     callbacks: Option<Callbacks>,
-    /// 组件事件
-    /// 事件也可以被认为是组件状态
-    /// 由编写者决定，所以并不一定存在，但若存在则必须要使用GenUI的Event宏进行标注
-    /// 例如，一个按钮组件，它有一个点击事件，那么这个按钮被点击时，这个事件就会被触发，也就是这个按钮进入了点击状态
-    /// GenuI中事件实际上是由外部影响的
-    /// 例如，在组件中有一个按钮，当这个按钮被点击时，这个按钮会激发组件的点击事件并把这个事件传递给外部（连带参数）
-    /// 外部可以根据这个事件来做一些事情
-    /// 对于定义组件时就需要相应的使用Rust编写
-    /// ```rust
-    /// #[derive(Debug, Clone, PartialEq, Event)]
-    /// pub enum Events{
-    ///     #[name("click")]
-    ///     Clicked(//内部给到外部的参数),
-    /// }
-    /// ```
-    // event_ptr: Box<dyn Event>,
-    event_ptr: Option<String>,
     /// 组件是否继承另一个组件
     /// 若继承另一个组件，当前组件就会自动继承另一个组件的所有属性和事件
     /// 注意这个属性只能是normal的不能是动态绑定的
@@ -207,12 +178,7 @@ impl TemplateModel {
             }
         }
     }
-    pub fn get_prop_ptr(&self) -> Option<&String> {
-        self.prop_ptr.as_ref()
-    }
-    pub fn set_prop_ptr(&mut self, prop_ptr: &str) -> () {
-        let _ = self.prop_ptr.replace(prop_ptr.to_string());
-    }
+
     pub fn get_unbind_props(&self) -> Option<HashMap<&PropsKey, &Value>> {
         match self.props.as_ref() {
             Some(props) => Some(props.iter().filter(|(k, _)| !k.is_normal()).collect()),
@@ -286,13 +252,8 @@ impl TemplateModel {
             None => false,
         }
     }
-    pub fn get_event_ptr(&self) -> Option<&String> {
-        self.event_ptr.as_ref()
-    }
-    pub fn set_event_ptr(&mut self, event_ptr: &str) -> () {
-        let _ = self.event_ptr.replace(event_ptr.to_string());
-    }
-    pub fn is_component(&self)->bool{
+
+    pub fn is_component(&self) -> bool {
         self.has_inherit()
     }
     pub fn get_inherits(&self) -> Option<&String> {
@@ -365,7 +326,9 @@ impl TemplateModel {
         }
     }
 
-    // this function is used to get all props from the template model
+    /// this function is used to get all props from the template model
+    /// and return a tuple of two PropTree
+    /// (bind_tree, fn_tree)
     pub fn get_props_tree(&self) -> (PropTree, PropTree) {
         fn append(node: &TemplateModel) -> (PropTree, PropTree) {
             let mut bind_tree = Vec::new();
@@ -374,22 +337,23 @@ impl TemplateModel {
             let name = node.get_name().to_string();
             match node.get_props().clone() {
                 Some(props) => {
-                    
                     bind_tree.push((
                         (name.clone(), id.clone()),
-                        Some(props.clone().into_iter().filter(|(k, _)| k.is_bind()).collect()),
+                        Some(
+                            props
+                                .clone()
+                                .into_iter()
+                                .filter(|(k, _)| k.is_bind())
+                                .collect(),
+                        ),
                     ));
                 }
                 None => (),
             }
-            match node.get_callbacks().clone(){
-                Some(callbacks) =>{
-                    
-                    fn_tree.push((
-                        (name, id),
-                        Some(callbacks.clone().into_iter().collect()),
-                    ));
-                },
+            match node.get_callbacks().clone() {
+                Some(callbacks) => {
+                    fn_tree.push(((name, id), Some(callbacks.clone().into_iter().collect())));
+                }
                 None => (),
             }
 
@@ -471,9 +435,7 @@ impl Default for TemplateModel {
             id: Default::default(),
             name: Default::default(),
             props: Default::default(),
-            prop_ptr: Default::default(),
             callbacks: Default::default(),
-            event_ptr: Default::default(),
             inherits: Default::default(),
             root: Default::default(),
             children: Default::default(),
@@ -490,9 +452,7 @@ impl Clone for TemplateModel {
             id: self.id.clone(),
             name: self.name.clone(),
             props: self.props.clone(),
-            prop_ptr: self.prop_ptr.clone(),
             callbacks: self.callbacks.clone(),
-            event_ptr: self.event_ptr.clone(),
             inherits: self.inherits.clone(),
             root: self.root.clone(),
             children: self.children.clone(),

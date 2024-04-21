@@ -1,24 +1,18 @@
+mod lifetime;
+mod builder;
+mod model;
+mod r#use;
+mod prop_fn;
+
+
 use gen_parser::{PropsKey, Script};
 use proc_macro2::TokenStream;
+pub use lifetime::*;
+pub use model::*;
+pub use prop_fn::*;
 
 pub type ConvertScript = Script;
 
-/// GenUI内置生命周期事件
-/// 目前只设置两种事件
-#[derive(Debug, Clone)]
-pub enum LifeTime {
-    StartUp(TokenStream),
-    ShutDown(TokenStream),
-}
-
-impl LifeTime {
-    pub fn to_token_stream(self) -> TokenStream {
-        match self {
-            LifeTime::StartUp(tt) => tt,
-            LifeTime::ShutDown(tt) => tt,
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub enum ScriptHandles {

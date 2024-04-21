@@ -77,6 +77,7 @@ pub struct AppMain {
     pub app_main: Option<TokenStream>,
     /// 有哪些组件需要被注册
     pub live_register: Vec<String>,
+    
 }
 
 impl AppMain {

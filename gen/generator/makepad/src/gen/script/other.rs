@@ -93,15 +93,16 @@ pub fn lifetime() -> impl FnMut(Vec<StmtMacro>, bool) -> Option<Vec<LifeTime>> {
                 .map(|lifetime| {
                     // let tokens = token_stream_to_tree(lifetime.mac.tokens);
                     let tokens = lifetime.mac.tokens;
-                    return if lifetime.mac.path.is_ident("on_startup") {
-                        // LifeTime::StartUp(tree_to_token_stream(handle_startup(tokens)))
-                        LifeTime::StartUp(tokens)
-                    } else if lifetime.mac.path.is_ident("on_shutdown") {
-                        // LifeTime::ShutDown(tree_to_token_stream(handle_shutdown(tokens)))
-                        LifeTime::ShutDown(tokens)
-                    } else {
-                        panic!("Invalid lifetime macro")
-                    };
+                    // return if lifetime.mac.path.is_ident("on_startup") {
+                    //     // LifeTime::StartUp(tree_to_token_stream(handle_startup(tokens)))
+                    //     LifeTime::StartUp(tokens)
+                    // } else if lifetime.mac.path.is_ident("on_shutdown") {
+                    //     // LifeTime::ShutDown(tree_to_token_stream(handle_shutdown(tokens)))
+                    //     LifeTime::ShutDown(tokens)
+                    // } else {
+                    //     panic!("Invalid lifetime macro")
+                    // };
+                    todo!();
                 })
                 .collect::<Vec<LifeTime>>();
 

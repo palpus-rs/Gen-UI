@@ -168,28 +168,29 @@ pub fn sc_builder_to_token_stream(sc_builder: ScriptBuilder) -> TokenStream {
             };
             let mut start_up_flag = false;
             let mut shut_down_flag = false;
-            for lt in lifetimes {
-                let fn_tk = if let LifeTime::StartUp(start_up) = lt {
-                    if start_up_flag {
-                        panic!("LifeTime StartUp can only be used once");
-                    } else {
-                        // p_token add to start_up
-                        start_up_flag = true;
-                        let mut start_up_tk = TokenStream::new();
-                        start_up_tk.extend(instance_new());
-                        start_up_tk.extend(p_token.clone());
-                        start_up_tk.extend(start_up);
+            todo!();
+            // for lt in lifetimes {
+            //     let fn_tk = if let LifeTime::StartUp(start_up) = lt {
+            //         if start_up_flag {
+            //             panic!("LifeTime StartUp can only be used once");
+            //         } else {
+            //             // p_token add to start_up
+            //             start_up_flag = true;
+            //             let mut start_up_tk = TokenStream::new();
+            //             start_up_tk.extend(instance_new());
+            //             start_up_tk.extend(p_token.clone());
+            //             start_up_tk.extend(start_up);
 
-                        handle_startup(token_stream_to_tree(start_up_tk))
-                    }
-                } else if let LifeTime::ShutDown(shut_down) = lt {
-                    handle_shutdown(token_stream_to_tree(shut_down))
-                } else {
-                    panic!("Invalid lifetime macro")
-                };
+            //             handle_startup(token_stream_to_tree(start_up_tk))
+            //         }
+            //     } else if let LifeTime::ShutDown(shut_down) = lt {
+            //         handle_shutdown(token_stream_to_tree(shut_down))
+            //     } else {
+            //         panic!("Invalid lifetime macro")
+            //     };
 
-                fn_tks.extend(fn_tk);
-            }
+            //     fn_tks.extend(fn_tk);
+            // }
             // build root struct
             t_s.extend(build_root_struct(&target, root.as_ref().unwrap()));
             let match_event_wrap = impl_match_event(token_tree_ident(&target), fn_tks);

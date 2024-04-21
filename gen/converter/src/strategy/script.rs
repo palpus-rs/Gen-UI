@@ -1,6 +1,6 @@
 use gen_utils::common::snake_to_camel;
 use proc_macro2::TokenStream;
-use syn::{Block, Meta, Stmt, StmtMacro};
+use syn::{Block, ItemUse, Meta, Stmt, StmtMacro};
 
 use crate::{
     error::Errors,
@@ -63,6 +63,8 @@ where
     Ok(tt)
 }
 
+
+
 pub fn scirpt_builder<F>(sc_builder: ScriptBuilder, mut f: F) -> ScriptBuilder
 where
     F: FnMut(ScriptBuilder) -> ScriptBuilder,
@@ -88,7 +90,7 @@ fn get_target_name(name: &str, prop: Option<&syn::ItemStruct>, is_component: boo
     };
 }
 
-fn split_script(
+pub fn split_script(
     block: Block,
 ) -> (
     Vec<syn::ItemUse>,
