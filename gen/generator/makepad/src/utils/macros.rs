@@ -1,6 +1,21 @@
 use gen_utils::common::*;
 use proc_macro2::TokenTree;
 
+#[macro_export]
+macro_rules! str_to_string_try_from {
+    ($Target:ty) => {
+        impl TryFrom<&String> for $Target {
+            type Error = Errors;
+
+            fn try_from(value: &String) -> Result<Self, Self::Error> {
+                value.as_str().try_into()
+            }
+        }
+    };
+}
+
+
+
 /// generate `Live, LiveHook,`
 pub fn derive_live_livehook() -> Vec<TokenTree> {
     vec![

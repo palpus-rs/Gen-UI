@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum Errors {
     MissMatchKeyWord,
     StrategyNoTemplateStyles,
@@ -8,7 +8,8 @@ pub enum Errors {
     StrategyNoTemplateClass,
     StrategyNoScript,
     StrategyNoInherits,
-    StrategyNoStyle
+    StrategyNoStyle,
+    PropConvertFail(String),
 }
 
 impl Error for Errors {}
@@ -28,6 +29,7 @@ impl Display for Errors {
             Errors::StrategyNoScript => "Gen-Converter[strategy]: Model not have script",
             Errors::StrategyNoInherits => "Gen-Converter[strategy]: Model not have inherits",
             Errors::StrategyNoStyle => "Gen-Converter[strategy]: Model not have style",
+            Errors::PropConvertFail(e) => &e,
             
         })
     }

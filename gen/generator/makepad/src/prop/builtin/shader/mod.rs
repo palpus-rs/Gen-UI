@@ -1,8 +1,8 @@
-mod draw_color;
-mod draw_cube;
-mod draw_icon;
-mod draw_line;
-mod draw_quad;
-mod draw_text;
-mod draw_trapezoid;
-mod std;
+pub mod draw_color;
+pub mod draw_cube;
+pub mod draw_icon;
+pub mod draw_line;
+pub mod draw_quad;
+pub mod draw_text;
+pub mod draw_trapezoid;
+pub mod std;
