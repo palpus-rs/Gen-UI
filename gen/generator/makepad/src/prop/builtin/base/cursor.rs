@@ -2,11 +2,14 @@ use std::fmt::Display;
 
 use gen_converter::error::Errors;
 
-use crate::{prop::{
-    ARROW, COL_RESIZE, CROSSHAIR, DEFAULT, EW_RESIZE, E_RESIZE, HAND, HELP, HIDDEN, MOVE,
-    NESW_RESIZE, NE_RESIZE, NOT_ALLOWED, NS_RESIZE, NWSE_RESIZE, NW_RESIZE, N_RESIZE,
-    ROW_RESIZE, SE_RESIZE, SW_RESIZE, S_RESIZE, TEXT, WAIT, W_RESIZE,
-}, str_to_string_try_from};
+use crate::{
+    prop::{
+        ARROW, COL_RESIZE, CROSSHAIR, DEFAULT, EW_RESIZE, E_RESIZE, HAND, HELP, HIDDEN, MOVE,
+        NESW_RESIZE, NE_RESIZE, NOT_ALLOWED, NS_RESIZE, NWSE_RESIZE, NW_RESIZE, N_RESIZE,
+        ROW_RESIZE, SE_RESIZE, SW_RESIZE, S_RESIZE, TEXT, WAIT, W_RESIZE,
+    },
+    str_to_string_try_from,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Cursor {
@@ -36,7 +39,6 @@ pub enum Cursor {
     ColResize,
     RowResize,
 }
-
 
 impl TryFrom<&str> for Cursor {
     type Error = Errors;

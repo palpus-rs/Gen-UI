@@ -10,12 +10,11 @@ pub enum DAlign {
     All,
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Align {
     pub x: f64,
-    pub y: f64
+    pub y: f64,
 }
-
 
 impl Align {
     pub fn new(x: f64, y: f64) -> Align {

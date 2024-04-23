@@ -3,7 +3,7 @@ use std::{fmt::Display, num::ParseFloatError};
 use gen_converter::error::Errors;
 
 use crate::str_to_string_try_from;
-#[derive(Debug,Clone)]
+#[derive(Debug,Clone, Default)]
 pub struct Padding {
     pub left: f64,
     pub top: f64,
