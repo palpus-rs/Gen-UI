@@ -1,4 +1,5 @@
 mod align;
+mod cursor;
 mod flow;
 mod layout;
 mod margin;
@@ -8,6 +9,7 @@ mod vec;
 mod walk;
 
 pub use align::*;
+pub use cursor::*;
 pub use flow::*;
 pub use layout::*;
 pub use margin::*;
