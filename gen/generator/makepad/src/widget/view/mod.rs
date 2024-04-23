@@ -15,7 +15,7 @@ use self::prop::ViewProps;
 use super::prop_ignore;
 
 pub fn props(props: &HashMap<PropsKey, Value>)-> HashMap<String, Vec<TokenTree>>{
-    let view_props = ViewProps::
+    let view_props = ViewProps::default();
 }
 
 

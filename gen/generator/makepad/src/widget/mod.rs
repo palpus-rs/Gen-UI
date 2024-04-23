@@ -200,10 +200,10 @@ impl BuiltIn {
         // });
         // ast
         match self {
-            BuiltIn::Window => window::props(prop_name, prop_value),
+            BuiltIn::Window => window::props(props),
             BuiltIn::View => view::props(props),
-            BuiltIn::Label => label::prop(prop_name, prop_value),
-            BuiltIn::Button => button::prop(prop_name, prop_value),
+            BuiltIn::Label => label::props(props),
+            BuiltIn::Button => button::props(props),
             _ => todo!(),
         };
     }

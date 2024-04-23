@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Cursor {
+pub enum MouseCursor {
     Hidden,
     /// default
     Default,
@@ -40,72 +40,72 @@ pub enum Cursor {
     RowResize,
 }
 
-impl TryFrom<&str> for Cursor {
+impl TryFrom<&str> for MouseCursor {
     type Error = Errors;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            HIDDEN => Ok(Cursor::Hidden),
-            DEFAULT => Ok(Cursor::Default),
-            CROSSHAIR => Ok(Cursor::Crosshair),
-            HAND => Ok(Cursor::Hand),
-            ARROW => Ok(Cursor::Arrow),
-            MOVE => Ok(Cursor::Move),
-            TEXT => Ok(Cursor::Text),
-            WAIT => Ok(Cursor::Wait),
-            HELP => Ok(Cursor::Help),
-            NOT_ALLOWED => Ok(Cursor::NotAllowed),
-            N_RESIZE => Ok(Cursor::NResize),
-            NE_RESIZE => Ok(Cursor::NeResize),
-            E_RESIZE => Ok(Cursor::EResize),
-            SE_RESIZE => Ok(Cursor::SeResize),
-            S_RESIZE => Ok(Cursor::SResize),
-            SW_RESIZE => Ok(Cursor::SwResize),
-            W_RESIZE => Ok(Cursor::WResize),
-            NW_RESIZE => Ok(Cursor::NwResize),
-            NS_RESIZE => Ok(Cursor::NsResize),
-            NESW_RESIZE => Ok(Cursor::NeswResize),
-            EW_RESIZE => Ok(Cursor::EwResize),
-            NWSE_RESIZE => Ok(Cursor::NwseResize),
-            COL_RESIZE => Ok(Cursor::ColResize),
-            ROW_RESIZE => Ok(Cursor::RowResize),
+            HIDDEN => Ok(MouseCursor::Hidden),
+            DEFAULT => Ok(MouseCursor::Default),
+            CROSSHAIR => Ok(MouseCursor::Crosshair),
+            HAND => Ok(MouseCursor::Hand),
+            ARROW => Ok(MouseCursor::Arrow),
+            MOVE => Ok(MouseCursor::Move),
+            TEXT => Ok(MouseCursor::Text),
+            WAIT => Ok(MouseCursor::Wait),
+            HELP => Ok(MouseCursor::Help),
+            NOT_ALLOWED => Ok(MouseCursor::NotAllowed),
+            N_RESIZE => Ok(MouseCursor::NResize),
+            NE_RESIZE => Ok(MouseCursor::NeResize),
+            E_RESIZE => Ok(MouseCursor::EResize),
+            SE_RESIZE => Ok(MouseCursor::SeResize),
+            S_RESIZE => Ok(MouseCursor::SResize),
+            SW_RESIZE => Ok(MouseCursor::SwResize),
+            W_RESIZE => Ok(MouseCursor::WResize),
+            NW_RESIZE => Ok(MouseCursor::NwResize),
+            NS_RESIZE => Ok(MouseCursor::NsResize),
+            NESW_RESIZE => Ok(MouseCursor::NeswResize),
+            EW_RESIZE => Ok(MouseCursor::EwResize),
+            NWSE_RESIZE => Ok(MouseCursor::NwseResize),
+            COL_RESIZE => Ok(MouseCursor::ColResize),
+            ROW_RESIZE => Ok(MouseCursor::RowResize),
             _ => Err(Errors::PropConvertFail(format!(
-                "Cursor: {} is not supported",
+                "MouseCursor: {} is not supported",
                 value
             ))),
         }
     }
 }
 
-str_to_string_try_from! {Cursor}
+str_to_string_try_from! {MouseCursor}
 
-impl Display for Cursor {
+impl Display for MouseCursor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-            Cursor::Default => DEFAULT,
-            Cursor::Hidden => HIDDEN,
-            Cursor::Crosshair => CROSSHAIR,
-            Cursor::Hand => HAND,
-            Cursor::Arrow => ARROW,
-            Cursor::Move => MOVE,
-            Cursor::Text => TEXT,
-            Cursor::Wait => WAIT,
-            Cursor::Help => HELP,
-            Cursor::NotAllowed => NOT_ALLOWED,
-            Cursor::NResize => N_RESIZE,
-            Cursor::NeResize => NE_RESIZE,
-            Cursor::EResize => E_RESIZE,
-            Cursor::SeResize => SE_RESIZE,
-            Cursor::SResize => S_RESIZE,
-            Cursor::SwResize => SW_RESIZE,
-            Cursor::WResize => W_RESIZE,
-            Cursor::NwResize => NW_RESIZE,
-            Cursor::NsResize => NS_RESIZE,
-            Cursor::NeswResize => NESW_RESIZE,
-            Cursor::EwResize => EW_RESIZE,
-            Cursor::NwseResize => NWSE_RESIZE,
-            Cursor::ColResize => COL_RESIZE,
-            Cursor::RowResize => ROW_RESIZE,
+            MouseCursor::Default => DEFAULT,
+            MouseCursor::Hidden => HIDDEN,
+            MouseCursor::Crosshair => CROSSHAIR,
+            MouseCursor::Hand => HAND,
+            MouseCursor::Arrow => ARROW,
+            MouseCursor::Move => MOVE,
+            MouseCursor::Text => TEXT,
+            MouseCursor::Wait => WAIT,
+            MouseCursor::Help => HELP,
+            MouseCursor::NotAllowed => NOT_ALLOWED,
+            MouseCursor::NResize => N_RESIZE,
+            MouseCursor::NeResize => NE_RESIZE,
+            MouseCursor::EResize => E_RESIZE,
+            MouseCursor::SeResize => SE_RESIZE,
+            MouseCursor::SResize => S_RESIZE,
+            MouseCursor::SwResize => SW_RESIZE,
+            MouseCursor::WResize => W_RESIZE,
+            MouseCursor::NwResize => NW_RESIZE,
+            MouseCursor::NsResize => NS_RESIZE,
+            MouseCursor::NeswResize => NESW_RESIZE,
+            MouseCursor::EwResize => EW_RESIZE,
+            MouseCursor::NwseResize => NWSE_RESIZE,
+            MouseCursor::ColResize => COL_RESIZE,
+            MouseCursor::RowResize => ROW_RESIZE,
         })
     }
 }

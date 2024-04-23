@@ -8,7 +8,9 @@ mod padding;
 mod size;
 mod vec;
 mod walk;
+mod event_order;
 
+pub use event_order::*;
 pub use align::*;
 pub use cursor::*;
 pub use flow::*;
