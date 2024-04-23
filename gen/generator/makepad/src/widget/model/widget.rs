@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use gen_converter::model::TemplateModel;
+use gen_converter::model::{prop::ConvertStyle, TemplateModel};
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::snake_to_camel;
 use proc_macro2::{TokenStream, TokenTree};
@@ -79,7 +79,8 @@ impl Widget {
         self.is_built_in = is_built_in;
         self
     }
-    pub fn set_props(&mut self, props: Option<HashMap<&PropsKey, &Value>>) -> &mut Self {
+    /// if can not parse by BuiltIn Widget -> panic!
+    pub fn set_props(&mut self, props: Option<HashMap<PropsKey, Value>>) -> &mut Self {
         if let Some(props) = props {
             // if self.is_built_in {
             //     self.props = Some(BuiltIn::from(&self.name).props(&props));
@@ -157,6 +158,7 @@ impl From<gen_converter::model::Model> for Widget {
         } = value;
 
         let template = template.unwrap();
+
         dbg!(&template);
 
         let mut widget = if template.get_name().eq("component") {
@@ -164,7 +166,7 @@ impl From<gen_converter::model::Model> for Widget {
             let _ = widget.set_inherits(BuiltIn::from(template.get_inherits().unwrap()));
             widget
         } else {
-            build_widget(&template)
+            build_widget(&template, style.as_ref())
         };
 
         if template.has_children() {
@@ -173,7 +175,7 @@ impl From<gen_converter::model::Model> for Widget {
                     .get_children()
                     .unwrap()
                     .iter()
-                    .map(|item| build_widget(item))
+                    .map(|item| build_widget(item, style.as_ref()))
                     .collect(),
             );
         }
@@ -182,13 +184,15 @@ impl From<gen_converter::model::Model> for Widget {
     }
 }
 
-fn build_widget(template: &TemplateModel) -> Widget {
+fn build_widget(template: &TemplateModel, style: Option<&ConvertStyle>) -> Widget {
     let mut widget = Widget::new_builtin(template.get_name());
-    
+    // get styles from style by id
+    let widget_styles = get_widget_styles(template.get_id(), style);
+    let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
     widget
         .set_is_root(template.is_root())
         .set_id(template.get_id())
-        .set_props(template.get_unbind_props());
+        .set_props(widget_styles);
 
     if template.has_children() {
         widget.set_children(
@@ -196,9 +200,41 @@ fn build_widget(template: &TemplateModel) -> Widget {
                 .get_children()
                 .unwrap()
                 .iter()
-                .map(|item| build_widget(item))
+                .map(|item| build_widget(item, style))
                 .collect(),
         );
     }
     return widget;
+}
+
+/// get styles from style by id
+fn get_widget_styles(
+    id: Option<&String>,
+    styles: Option<&ConvertStyle>,
+) -> Option<HashMap<PropsKey, Value>> {
+    match styles {
+        Some(styles) => match id {
+            Some(id) => match styles.get(id) {
+                Some(style) => Some(style.clone()),
+                None => None,
+            },
+            None => None,
+        },
+        None => None,
+    }
+}
+
+fn combine_styles(l: Option<HashMap<PropsKey, Value>>, r: Option<HashMap<&PropsKey, &Value>>) -> Option<HashMap<PropsKey, Value>> {
+    match (l, r) {
+        (Some(l), Some(r)) => {
+            let mut styles = l.clone();
+            for (k, v) in r {
+                styles.insert(k.clone(), v.clone());
+            }
+            Some(styles)
+        }
+        (Some(l), None) => Some(l),
+        (None, Some(r)) => Some(r.into_iter().map(|(k,v)| (k.clone(),v.clone())).collect()),
+        (None, None) => None,
+    }
 }

@@ -5,12 +5,17 @@ mod bg;
 mod font;
 mod layout;
 mod walk;
+mod shader;
 
 pub use bg::*;
 pub use font::*;
 pub use layout::*;
 use quote::quote;
 pub use walk::*;
+
+pub fn easy_prop(prop: &str, value: &str) -> (String, Vec<TokenTree>) {
+    (prop.to_string(), vec![token_tree_ident(value)])
+}
 
 pub fn normal_prop(prop_name: &str, value: &str) -> Vec<TokenTree> {
     vec![

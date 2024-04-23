@@ -333,7 +333,7 @@ impl TemplateModel {
         fn append(node: &TemplateModel) -> (PropTree, PropTree) {
             let mut bind_tree = Vec::new();
             let mut fn_tree = Vec::new();
-            if node.get_name().ne("component"){
+            if node.get_name().ne("component") {
                 let id = node.get_id().expect("bind prop need id").to_string();
                 let name = node.get_name().to_string();
                 match node.get_props().clone() {
@@ -358,7 +358,7 @@ impl TemplateModel {
                     None => (),
                 }
             }
-           
+
             match node.get_children() {
                 Some(children) => {
                     for child in children {
@@ -426,9 +426,8 @@ fn convert_template(tag: &Tag, model: &mut TemplateModel, is_root: bool) -> () {
                 model
             })
             .collect();
-        
-        model.set_children(children);
 
+        model.set_children(children);
     }
 }
 

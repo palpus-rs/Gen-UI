@@ -178,26 +178,34 @@ pub enum BuiltIn{
 }
 
 impl BuiltIn {
-    pub fn props(&self, props: &HashMap<&PropsKey, &Value>) -> HashMap<String, Vec<TokenTree>> {
-        let mut ast = HashMap::new();
-        props.iter().for_each(|(prop, value)| {
-            let prop_name = prop.name();
-            // 非绑定属性， 绑定的直接忽略
-            match value.is_unknown_and_get() {
-                Some(prop_value) => {
-                    let (k,v) = match self {
-                        BuiltIn::Window => window::prop(prop_name, prop_value),
-                        BuiltIn::View => view::prop(prop_name, prop_value),
-                        BuiltIn::Label => label::prop(prop_name, prop_value),
-                        BuiltIn::Button => button::prop(prop_name, prop_value),
-                        _ => todo!(),
-                    };
-                    ast.insert(k,v);
-                }
-                None => (),
-            }
-        });
-        ast
+    /// 对内置组件的属性进行处理
+    pub fn props(&self, props: &HashMap<PropsKey, Value>) -> HashMap<String, Vec<TokenTree>> {
+        // let mut ast = HashMap::new();
+        // props.iter().for_each(|(prop, value)| {
+        //     let prop_name = prop.name();
+        //     // 非绑定属性， 绑定的直接忽略
+        //     match value.is_unknown_and_get() {
+        //         Some(prop_value) => {
+        //             let (k,v) = match self {
+        //                 BuiltIn::Window => window::prop(prop_name, prop_value),
+        //                 BuiltIn::View => view::prop(prop_name, prop_value),
+        //                 BuiltIn::Label => label::prop(prop_name, prop_value),
+        //                 BuiltIn::Button => button::prop(prop_name, prop_value),
+        //                 _ => todo!(),
+        //             };
+        //             ast.insert(k,v);
+        //         }
+        //         None => (),
+        //     }
+        // });
+        // ast
+        match self {
+            BuiltIn::Window => window::props(prop_name, prop_value),
+            BuiltIn::View => view::props(props),
+            BuiltIn::Label => label::prop(prop_name, prop_value),
+            BuiltIn::Button => button::prop(prop_name, prop_value),
+            _ => todo!(),
+        };
     }
 }
 

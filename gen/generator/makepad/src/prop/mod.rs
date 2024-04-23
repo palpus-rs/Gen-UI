@@ -3,33 +3,43 @@ pub mod builtin;
 
 pub use enum_ident::*;
 
-pub const DRAW_BG: &str = "draw_bg";
-pub const SHOW_BG: &str = "show_bg";
-pub const OPTIMIZE: &str = "optimize";
-pub const EVENT_ORDER: &str = "event_order";
+
+// -------------------- appearance ----------------
 pub const VISIBLE: &str = "visible";
-pub const GRAB_KEY_FOCUS: &str = "grab_key_focus";
-pub const BLOCK_SIGNAL_EVENT: &str = "block_signal_event";
-pub const CURSOR: &str = "cursor";
-pub const SCROLL_BARS: &str = "scroll_bars";
 pub const HEIGHT: &str = "height";
 pub const WIDTH: &str = "width";
 pub const MARGIN: &str = "margin";
 pub const PADDING: &str = "padding";
-pub const ABS_PROP: &str = "abs_prop";
 pub const ALIGN: &str = "align";
 pub const SPACING: &str = "spacing";
 pub const LINE_SPACING: &str = "line_spacing";
-pub const TEXT: &str = "text";
 pub const CLIP_X: &str = "clip_x";
 pub const CLIP_Y: &str = "clip_y";
 pub const FLOW: &str = "flow";
-pub const SCROLL: &str = "scroll";
+// -------------------- color --------------------
 pub const COLOR: &str = "color";
-pub const FONT_SIZE: &str = "font_size";
-pub const WRAP:&str = "wrap";
-pub const FONT: &str = "font";
 pub const BRIGHTNESS: &str = "brightness";
+pub const DRAW_BG: &str = "draw_bg";
+pub const SHOW_BG: &str = "show_bg";
+// -------------------- font ---------------------
+pub const FONT: &str = "font";
+pub const TEXT: &str = "text";
+pub const FONT_SCALE: &str = "font_scale";
+pub const FONT_SIZE: &str = "font_size";
+pub const DRAW_DEPTH:&str = "draw_depth";
+// -------------------- action -------------------
+/// maybe layout wrap or textwrap
+pub const WRAP:&str = "wrap";
+pub const EVENT_ORDER: &str = "event_order";
+pub const GRAB_KEY_FOCUS: &str = "grab_key_focus";
+pub const BLOCK_SIGNAL_EVENT: &str = "block_signal_event";
+// -------------------- position -----------------
+pub const ABS_POS: &str = "abs_pos";
+// -------------------- other --------------------
+pub const OPTIMIZE: &str = "optimize";
+pub const CURSOR: &str = "cursor";
+pub const SCROLL_BARS: &str = "scroll_bars";
+pub const SCROLL: &str = "scroll";
 pub const CURVE: &str = "curve";
 pub const TOP_DROP: &str = "top_drop";
 pub const HEIGHT_FACTOR: &str = "height_factor";
