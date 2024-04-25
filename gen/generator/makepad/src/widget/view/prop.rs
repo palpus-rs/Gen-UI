@@ -99,8 +99,11 @@ impl ViewProps {
             })
         }
     }
-    fn height(&mut self, value: &Value) -> () {
-       
+    fn height(&mut self, value: &Value) -> Result<(),Errors> {
+       let walk = Walk::default();
+        
+       self.walk.replace(walk);
+        Ok(())
     }
 }
 
