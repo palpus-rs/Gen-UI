@@ -3,9 +3,10 @@ use std::{collections::HashMap, fmt::Display};
 use gen_converter::error::Errors;
 use gen_parser::{PropsKey, Value};
 
-use crate::{prop::builtin::{
-    draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk,
-}, widget::prop_ignore};
+use crate::{
+    prop::builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk},
+    widget::prop_ignore,
+};
 
 #[derive(Debug, Clone, Default)]
 pub struct ViewProps {
@@ -22,15 +23,15 @@ pub struct ViewProps {
 }
 
 impl ViewProps {
-    pub fn props(props: &HashMap<PropsKey, Value>)->Self{
+    pub fn props(props: &HashMap<PropsKey, Value>) -> Self {
         let mut view = ViewProps::default();
-        for (k,v) in props{
+        for (k, v) in props {
             view.prop(k.name(), v.clone())
         }
         view
     }
-    
-    fn prop(&mut self,prop_name: &str, value: Value) -> () {
+
+    fn prop(&mut self, prop_name: &str, value: Value) -> () {
         match prop_name {
             SHOW_BG => self.show_bg(&value),
             DRAW_BG => self.draw_bg(&value),
@@ -42,16 +43,16 @@ impl ViewProps {
                     panic!("cannot match prop");
                 }
                 todo!("unslolved prop")
-            },
+            }
         }
     }
-    fn show_bg(&mut self, value: &Value)->Result<(), Errors>{
+    fn show_bg(&mut self, value: &Value) -> Result<(), Errors> {
         if let Some(s) = value.is_unknown_and_get() {
             match s.parse::<bool>() {
                 Ok(b) => {
                     self.show_bg = Some(b);
                     Ok(())
-                },
+                }
                 Err(_) => Err(Errors::PropConvertFail(format!(
                     "{} can not convert to show_bg",
                     s
@@ -59,59 +60,66 @@ impl ViewProps {
             }
         } else {
             value
-            .is_bool_and_get()
-            .map(|b| {
-                self.show_bg = Some(b);
-                Ok(())
-            })
-            .unwrap_or_else(|| {
-                Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to show_bg",
-                    value
-                )))
-            })
+                .is_bool_and_get()
+                .map(|b| {
+                    self.show_bg = Some(b);
+                    Ok(())
+                })
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{} can not convert to show_bg",
+                        value
+                    )))
+                })
         }
     }
-    fn draw_bg(&mut self,value: &Value)->Result<(), Errors>{
-        if let Some(s) = value.is_unknown_and_get(){
-            match DrawColor::try_from((s,false)){
+    fn draw_bg(&mut self, value: &Value) -> Result<(), Errors> {
+        if let Some(s) = value.is_unknown_and_get() {
+            match DrawColor::try_from((s, false)) {
                 Ok(color) => {
                     self.draw_bg = Some(color);
                     Ok(())
-                },
+                }
                 Err(_) => Err(Errors::PropConvertFail(format!(
                     "{} can not convert to draw_bg",
                     value
                 ))),
             }
-           
-        }else{
-            value.is_string_and_get().map(|s|{
-                if let Ok(color) = DrawColor::try_from(s) {
-                    self.draw_bg = Some(color);
-                }
-                Ok(())
-            }).unwrap_or_else(||{
-                Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to draw_bg",
-                    value
-                )))
-            })
+        } else {
+            value
+                .is_string_and_get()
+                .map(|s| {
+                    if let Ok(color) = DrawColor::try_from(s) {
+                        self.draw_bg = Some(color);
+                    }
+                    Ok(())
+                })
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{} can not convert to draw_bg",
+                        value
+                    )))
+                })
         }
     }
-    fn height(&mut self, value: &Value) -> Result<(),Errors> {
-       let walk = Walk::default();
-        
-       self.walk.replace(walk);
+    fn height(&mut self, value: &Value) -> Result<(), Errors> {
+        let mut walk = Walk::default();
+        walk.height(value)?;
+        self.walk.replace(walk);
+        Ok(())
+    }
+    fn width(&mut self, value: &Value) -> Result<(), Errors> {
+        let mut walk = Walk::default();
+        walk.width(value)?;
+        self.walk.replace(walk);
         Ok(())
     }
 }
 
-
 impl Display for ViewProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_bg) = &self.draw_bg {
-           f.write_fmt(format_args!("draw_bg: {}, ", draw_bg));
+            f.write_fmt(format_args!("draw_bg: {}, ", draw_bg));
         }
         if let Some(show_bg) = &self.show_bg {
             f.write_fmt(format_args!("show_bg: {}, ", show_bg));

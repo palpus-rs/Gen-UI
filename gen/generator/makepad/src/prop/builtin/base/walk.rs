@@ -15,29 +15,14 @@ pub struct Walk {
 
 impl Walk {
     pub fn height(&mut self, value: &Value) -> Result<(), Errors> {
-        if let Some(s) = value.is_unknown_and_get() {
-            let _ = self.height.replace(s.try_into()?);
-            Ok(())
-        } else if let Some(d) = value.is_double_and_get() {
-            let _ = self.height.replace(d.into());
-            Ok(())
-        } else if let Some(d) = value.is_float_and_get() {
-            let _ = self.height.replace((d as f64).into());
-            Ok(())
-        } else {
-            value
-                .is_string_and_get()
-                .map(|s| {
-                    let _ = self.height.replace(s.try_into()?);
-                    Ok(())
-                })
-                .unwrap_or_else(|| {
-                    Err(Errors::PropConvertFail(format!(
-                        "{} can not convert to height",
-                        value
-                    )))
-                })
-        }
+        let size = Size::try_from(value)?;
+        self.height = Some(size);
+        Ok(())
+    }
+    fn width(&mut self, value: &Value) -> Result<(), Errors> {
+        let size = Size::try_from(value)?;
+        self.width = Some(size);
+        Ok(())
     }
 }
 
