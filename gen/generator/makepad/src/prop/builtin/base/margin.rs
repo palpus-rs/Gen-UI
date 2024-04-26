@@ -1,6 +1,7 @@
 use std::{fmt::Display, num::ParseFloatError};
 
 use gen_converter::error::Errors;
+use gen_parser::Value;
 
 use crate::str_to_string_try_from;
 
@@ -60,6 +61,21 @@ impl TryFrom<&str> for Margin {
 }
 
 str_to_string_try_from! {Margin}
+
+impl TryFrom<&Value> for Margin {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            Err(Errors::PropConvertFail(format!(
+                "{} can not convert to Margin",
+                value
+            )))
+        }
+    }
+}
 
 impl Display for Margin {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -19,9 +19,19 @@ impl Walk {
         self.height = Some(size);
         Ok(())
     }
-    fn width(&mut self, value: &Value) -> Result<(), Errors> {
+    pub fn width(&mut self, value: &Value) -> Result<(), Errors> {
         let size = Size::try_from(value)?;
         self.width = Some(size);
+        Ok(())
+    }
+    pub fn abs_pos(&mut self, value: &Value) -> Result<(), Errors> {
+        let abs_pos = DVec2::try_from(value)?;
+        self.abs_pos = Some(abs_pos);
+        Ok(())
+    }
+    pub fn margin(&mut self, value: &Value) -> Result<(), Errors> {
+        let margin = Margin::try_from(value)?;
+        self.margin = Some(margin);
         Ok(())
     }
 }

@@ -3,6 +3,7 @@ use std::fmt::Display;
 use std::num::ParseFloatError;
 
 use gen_converter::error::Errors;
+use gen_parser::Value;
 
 use crate::str_to_string_try_from;
 
@@ -62,6 +63,21 @@ impl TryFrom<&str> for DVec2 {
 }
 
 str_to_string_try_from! {DVec2}
+
+impl TryFrom<&Value> for DVec2{
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get(){
+            s.try_into()
+        }else {
+            Err(Errors::PropConvertFail(format!(
+                "{} can not convert to DVec2",
+                value
+            )))
+        }
+    }
+}
 
 impl Display for DVec2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
