@@ -24,6 +24,7 @@ pub mod define;
 pub mod label;
 pub mod view;
 pub mod window;
+pub mod utils;
 
 // pub use define::*;
 // pub use button::*;

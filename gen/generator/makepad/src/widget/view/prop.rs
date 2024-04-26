@@ -4,8 +4,8 @@ use gen_converter::error::Errors;
 use gen_parser::{PropsKey, Value};
 
 use crate::{
-    prop::builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk},
-    widget::prop_ignore,
+    prop::{builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk}, VISIBLE},
+    widget::{prop_ignore, utils::bool_prop},
 };
 
 #[derive(Debug, Clone, Default)]
@@ -38,40 +38,17 @@ impl ViewProps {
             HEIGHT => self.height(&value),
             WIDTH => self.width(&value),
             ALIGN => self.align(&value),
+            VISIBLE => self.visible(&value),
             _ => {
                 if !prop_ignore(prop_name) {
                     panic!("cannot match prop");
                 }
-                todo!("unslolved prop")
+                panic!("unslolved prop");
             }
-        }
+        };
     }
     fn show_bg(&mut self, value: &Value) -> Result<(), Errors> {
-        if let Some(s) = value.is_unknown_and_get() {
-            match s.parse::<bool>() {
-                Ok(b) => {
-                    self.show_bg = Some(b);
-                    Ok(())
-                }
-                Err(_) => Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to show_bg",
-                    s
-                ))),
-            }
-        } else {
-            value
-                .is_bool_and_get()
-                .map(|b| {
-                    self.show_bg = Some(b);
-                    Ok(())
-                })
-                .unwrap_or_else(|| {
-                    Err(Errors::PropConvertFail(format!(
-                        "{} can not convert to show_bg",
-                        value
-                    )))
-                })
-        }
+        bool_prop(value, |b| { self.show_bg = Some(b);})
     }
     fn draw_bg(&mut self, value: &Value) -> Result<(), Errors> {
         if let Some(s) = value.is_unknown_and_get() {
@@ -113,6 +90,16 @@ impl ViewProps {
         walk.width(value)?;
         self.walk.replace(walk);
         Ok(())
+    }
+    fn align(&mut self, value: &Value)->Result<(),Errors>{
+        let mut layout = Layout::default();
+        layout.align(value)?;
+        self.layout.replace(layout);
+        Ok(())
+    
+    }
+    fn visible(&mut self, value: &Value)->Result<(),Errors>{
+        bool_prop(value, |b| {self.visible = Some(b);})
     }
 }
 

@@ -1,5 +1,10 @@
 use std::fmt::Display;
 
+use gen_converter::error::Errors;
+use gen_parser::Value;
+
+use crate::widget::utils::bool_prop;
+
 use super::{Align, DVec2, Flow, Padding};
 
 #[derive(Debug, Clone, Default)]
@@ -13,6 +18,18 @@ pub struct Layout {
     pub spacing: Option<f64>,
     pub line_spacing: Option<f64>,
 }
+
+impl Layout {
+    pub fn scroll(&mut self, value: &Value) -> Result<(), Errors> {
+        let scroll = DVec2::try_from(value)?;
+        self.scroll = Some(scroll);
+        Ok(())
+    }
+    pub fn clip_x(&mut self, value: &Value) -> Result<(), Errors> {
+       bool_prop(value, |b|{self.clip_x = Some(b);})
+    }
+}
+
 
 impl Display for Layout {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
