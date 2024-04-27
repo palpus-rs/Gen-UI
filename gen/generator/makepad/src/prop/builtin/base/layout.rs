@@ -3,7 +3,7 @@ use std::fmt::Display;
 use gen_converter::error::Errors;
 use gen_parser::Value;
 
-use crate::widget::utils::bool_prop;
+use crate::widget::utils::{bool_prop, f64_prop};
 
 use super::{Align, DVec2, Flow, Padding};
 
@@ -27,6 +27,15 @@ impl Layout {
     }
     pub fn clip_x(&mut self, value: &Value) -> Result<(), Errors> {
        bool_prop(value, |b|{self.clip_x = Some(b);})
+    }
+    pub fn clip_y(&mut self, value: &Value) -> Result<(), Errors> {
+        bool_prop(value, |b|{self.clip_y = Some(b);})
+     }
+    pub fn spacing(&mut self, value: &Value) -> Result<(), Errors> {
+        f64_prop(value, |f|{self.spacing = Some(f);})
+    }
+    pub fn line_spacing(&mut self, value: &Value) -> Result<(), Errors> {
+        f64_prop(value, |f|{self.line_spacing = Some(f);})
     }
 }
 

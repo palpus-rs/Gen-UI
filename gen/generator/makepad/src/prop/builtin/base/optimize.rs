@@ -1,21 +1,18 @@
 use std::fmt::Display;
 
 use gen_converter::error::Errors;
+use gen_parser::Value;
 use syn::parse::Parse;
 
 use crate::{
-   
-    prop::{DRAWLIST, NONE, TEXTURE}, str_to_string_try_from
-    
+    prop::{DRAWLIST, NONE, TEXTURE},
+    str_to_string_try_from,
 };
-
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Optimize {
     View(ViewOptimize),
 }
-
 
 impl Optimize {
     pub fn view(v: ViewOptimize) -> Self {
@@ -39,8 +36,6 @@ pub enum ViewOptimize {
     Texture,
 }
 
-
-
 impl TryFrom<&str> for ViewOptimize {
     type Error = Errors;
 
@@ -58,6 +53,26 @@ impl TryFrom<&str> for ViewOptimize {
 }
 
 str_to_string_try_from! {ViewOptimize}
+
+impl TryFrom<&Value> for ViewOptimize {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            value
+                .is_string_and_get()
+                .map(|s| s.try_into())
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{:?} can not convert to ViewOptimize",
+                        value
+                    )))
+                })
+        }
+    }
+}
 
 impl Display for ViewOptimize {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
