@@ -5,9 +5,12 @@ use gen_parser::{PropsKey, Value};
 
 use crate::{
     prop::{
-        builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk}, ABS_POS, ALIGN, BLOCK_SIGNAL_EVENT, CLIP_X, CLIP_Y, CURSOR, DRAW_BG, EVENT_ORDER, FLOW, GRAB_KEY_FOCUS, HEIGHT, LINE_SPACING, MARGIN, OPTIMIZE, PADDING, SCROLL, SHOW_BG, SPACING, VISIBLE, WIDTH
+        builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk},
+        ABS_POS, ALIGN, BLOCK_SIGNAL_EVENT, CLIP_X, CLIP_Y, CURSOR, DRAW_BG, EVENT_ORDER, FLOW,
+        GRAB_KEY_FOCUS, HEIGHT, LINE_SPACING, MARGIN, OPTIMIZE, PADDING, SCROLL, SHOW_BG, SPACING,
+        VISIBLE, WIDTH,
     },
-    widget::{prop_ignore, utils::bool_prop},
+    widget::{prop_ignore, utils::bool_prop, StaticProps},
 };
 
 #[derive(Debug, Clone, Default)]
@@ -24,15 +27,17 @@ pub struct ViewProps {
     pub cursor: Option<MouseCursor>,
 }
 
-impl ViewProps {
-    pub fn props(props: &HashMap<PropsKey, Value>) -> Self {
+impl StaticProps for ViewProps {
+    fn props(props: &HashMap<PropsKey, Value>) -> Self {
         let mut view = ViewProps::default();
         for (k, v) in props {
             view.prop(k.name(), v.clone())
         }
         view
     }
+}
 
+impl ViewProps {
     fn prop(&mut self, prop_name: &str, value: Value) -> () {
         match prop_name {
             DRAW_BG => self.draw_bg(&value),
@@ -215,6 +220,6 @@ impl Display for ViewProps {
         if let Some(cursor) = &self.cursor {
             f.write_fmt(format_args!("cursor: {}, ", cursor));
         }
-        f.write_str(",")
+        f.write_str("")
     }
 }

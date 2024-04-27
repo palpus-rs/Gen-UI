@@ -1,3 +1,7 @@
+mod prop;
+
+pub use prop::LabelProps;
+
 use proc_macro2::TokenTree;
 
 use crate::{prop::{builtin::text, TEXT}, widget::prop_ignore};

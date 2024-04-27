@@ -41,3 +41,4 @@ pub const ROW_RESIZE: &str = "RowResize";
 //-------------[for Makepad::TextWrap]----------------------------------
 pub const ELLIPSIS: &str = "Ellipsis";
 pub const WORD: &str = "Word";
+pub const LINE: &str = "Line";

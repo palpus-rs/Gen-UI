@@ -1,5 +1,7 @@
 mod prop;
 
+pub use prop::ViewProps;
+
 use std::collections::HashMap;
 
 use gen_parser::{PropsKey, Value};
@@ -10,14 +12,9 @@ use crate::prop::{
     builtin::{align, draw_bg, height, show_bg, show_bg_bind, width}, ALIGN, DRAW_BG, HEIGHT, SHOW_BG, WIDTH
 };
 
-use self::prop::ViewProps;
 
-use super::prop_ignore;
 
-pub fn props(props: &HashMap<PropsKey, Value>)-> HashMap<String, Vec<TokenTree>>{
-    let mut view_props = ViewProps::props(props);
-    view_props.to_map()
-}
+use super::{prop_ignore, StaticProps};
 
 
 /// generate view widget prop

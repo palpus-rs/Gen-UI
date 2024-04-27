@@ -180,33 +180,17 @@ pub enum BuiltIn{
 
 impl BuiltIn {
     /// 对内置组件的属性进行处理
-    pub fn props(&self, props: &HashMap<PropsKey, Value>) -> HashMap<String, Vec<TokenTree>> {
-        // let mut ast = HashMap::new();
-        // props.iter().for_each(|(prop, value)| {
-        //     let prop_name = prop.name();
-        //     // 非绑定属性， 绑定的直接忽略
-        //     match value.is_unknown_and_get() {
-        //         Some(prop_value) => {
-        //             let (k,v) = match self {
-        //                 BuiltIn::Window => window::prop(prop_name, prop_value),
-        //                 BuiltIn::View => view::prop(prop_name, prop_value),
-        //                 BuiltIn::Label => label::prop(prop_name, prop_value),
-        //                 BuiltIn::Button => button::prop(prop_name, prop_value),
-        //                 _ => todo!(),
-        //             };
-        //             ast.insert(k,v);
-        //         }
-        //         None => (),
-        //     }
-        // });
-        // ast
-        match self {
-            BuiltIn::Window => window::props(props),
-            BuiltIn::View => view::props(props),
-            BuiltIn::Label => label::props(props),
-            BuiltIn::Button => button::props(props),
-            _ => todo!(),
-        };
+    pub fn props(&self, props: &HashMap<PropsKey, Value>) -> Box<dyn StaticProps> {
+        
+        Box::new(
+            match self {
+                BuiltIn::Window => window::WindowProps::props(props),
+                BuiltIn::View => view::ViewProps::props(props),
+                BuiltIn::Label => label::props(props),
+                BuiltIn::Button => button::props(props),
+                _ => todo!(),
+            }
+        )
     }
 }
 
@@ -228,4 +212,8 @@ impl From<&String> for BuiltIn {
     fn from(value: &String) -> Self {
         value.as_str().into()
     }
+}
+
+pub trait StaticProps {
+    fn props(props: &HashMap<PropsKey, Value>) -> Self where Self: Sized;
 }

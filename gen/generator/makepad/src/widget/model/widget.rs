@@ -5,7 +5,7 @@ use gen_parser::{PropsKey, Value};
 use gen_utils::common::snake_to_camel;
 use proc_macro2::{TokenStream, TokenTree};
 
-use crate::widget::{self, BuiltIn};
+use crate::widget::{self, BuiltIn, StaticProps};
 
 use super::{live_design::LiveDesign, role::Role, traits::WidgetTrait};
 
@@ -26,7 +26,7 @@ pub struct Widget {
     pub source: Option<String>,
     pub compiled_source: Option<PathBuf>,
     /// props in live_design
-    pub props: Option<HashMap<String, Vec<TokenTree>>>,
+    pub props: Option<Box<dyn StaticProps>>,
     /// events called in makepad
     pub events: Option<HashMap<String, TokenStream>>,
     pub prop_ptr: Option<TokenStream>,

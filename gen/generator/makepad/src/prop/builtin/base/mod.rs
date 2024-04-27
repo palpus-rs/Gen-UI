@@ -9,7 +9,14 @@ mod size;
 mod vec;
 mod walk;
 mod event_order;
+mod wrap;
+mod font;
+mod import;
 
+
+pub use import::*;
+pub use font::*;
+pub use wrap::*;
 pub use event_order::*;
 pub use align::*;
 pub use cursor::*;

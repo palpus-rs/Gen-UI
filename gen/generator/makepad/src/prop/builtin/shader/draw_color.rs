@@ -27,15 +27,6 @@ impl DrawColor {
     }
 }
 
-// impl MapValue for Color {
-//     fn map_value_code(&self) -> String {
-//         match self {
-//             Color::DrawColor(n) => n.to_string(),
-//             Color::Color(f) => f.to_string(),
-//             Color::LinearGradient => todo!(),
-//         }
-//     }
-// }
 
 impl TryFrom<&str> for DrawColor {
     type Error = Errors;
