@@ -1,3 +1,6 @@
+mod prop;
+
+pub use prop::ButtonProps;
 use gen_parser::PropsKey;
 use gen_utils::common::{
     camel_to_snake, token_stream_to_tree, token_tree_group_paren, token_tree_ident,

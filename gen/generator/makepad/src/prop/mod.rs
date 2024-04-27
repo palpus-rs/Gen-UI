@@ -27,6 +27,10 @@ pub const TEXT: &str = "text";
 pub const FONT_SCALE: &str = "font_scale";
 pub const FONT_SIZE: &str = "font_size";
 pub const DRAW_DEPTH:&str = "draw_depth";
+pub const DRAW_TEXT:&str = "draw_text";
+pub const TEXT_STYLE:&str = "text_style";
+pub const INGORE_NEWLINES :&str = "ignore_newlines";
+pub const COMBINE_SPACES :&str = "combine_spaces";
 // -------------------- action -------------------
 /// maybe layout wrap or textwrap
 pub const WRAP:&str = "wrap";

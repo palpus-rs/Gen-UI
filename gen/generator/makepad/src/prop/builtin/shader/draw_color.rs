@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use gen_converter::error::Errors;
-use gen_parser::common::parse_hex_color;
+use gen_parser::{common::parse_hex_color, Value};
 use syn::parse::Parse;
 
 use crate::str_to_string_try_from;
@@ -10,7 +10,9 @@ use crate::str_to_string_try_from;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum DrawColor {
+    /// for view and others
     DrawColor(String),
+    /// for font
     Color(String),
     LinearGradient,
 }
@@ -26,7 +28,6 @@ impl DrawColor {
         matches!(self, DrawColor::Color(_))
     }
 }
-
 
 impl TryFrom<&str> for DrawColor {
     type Error = Errors;
@@ -85,6 +86,27 @@ impl TryFrom<(&String, bool)> for DrawColor {
 
     fn try_from(value: (&String, bool)) -> Result<Self, Self::Error> {
         (value.0.as_str(), value.1).try_into()
+    }
+}
+
+impl TryFrom<(&Value, bool)> for DrawColor {
+    type Error = Errors;
+
+    fn try_from(value: (&Value, bool)) -> Result<Self, Self::Error> {
+        if let Some(s) = value.0.is_unknown_and_get() {
+            (s, value.1).try_into()
+        } else {
+            value
+                .0
+                .is_string_and_get()
+                .map(|s| (s, value.1).try_into())
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{} can not convert to DrawColor",
+                        value.0
+                    )))
+                })
+        }
     }
 }
 

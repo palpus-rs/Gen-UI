@@ -35,9 +35,6 @@ impl StaticProps for ViewProps {
         }
         view
     }
-}
-
-impl ViewProps {
     fn prop(&mut self, prop_name: &str, value: Value) -> () {
         match prop_name {
             DRAW_BG => self.draw_bg(&value),
@@ -56,6 +53,7 @@ impl ViewProps {
             WIDTH => self.width(&value),
             ABS_POS => self.abs_pos(&value),
             MARGIN => self.margin(&value),
+            // ----------------- other -----------------
             OPTIMIZE => self.optimize(&value),
             EVENT_ORDER => self.event_order(&value),
             VISIBLE => self.visible(&value),
@@ -71,6 +69,10 @@ impl ViewProps {
             }
         };
     }
+}
+
+impl ViewProps {
+    
     fn show_bg(&mut self, value: &Value) -> Result<(), Errors> {
         bool_prop(value, |b| {
             self.show_bg = Some(b);
@@ -105,17 +107,17 @@ impl ViewProps {
                 })
         }
     }
-    fn height(&mut self, value: &Value) -> Result<(), Errors> {
+    fn check_walk(&mut self) -> &mut Walk {
         if self.walk.is_none() {
             self.walk = Some(Walk::default());
         }
-        self.walk.as_mut().unwrap().height(value)
+        self.walk.as_mut().unwrap()
+    }
+    fn height(&mut self, value: &Value) -> Result<(), Errors> {
+        self.check_walk().height(value)
     }
     fn width(&mut self, value: &Value) -> Result<(), Errors> {
-        if self.walk.is_none() {
-            self.walk = Some(Walk::default());
-        }
-        self.walk.as_mut().unwrap().width(value)
+        self.check_walk().width(value)
     }
     fn align(&mut self, value: &Value) -> Result<(), Errors> {
         self.check_layout().align(value)
@@ -148,16 +150,10 @@ impl ViewProps {
         Ok(())
     }
     fn abs_pos(&mut self, value: &Value) -> Result<(), Errors> {
-        if self.walk.is_none() {
-            self.walk = Some(Walk::default());
-        }
-        self.walk.as_mut().unwrap().abs_pos(value)
+        self.check_walk().abs_pos(value)
     }
     fn margin(&mut self, value: &Value) -> Result<(), Errors> {
-        if self.walk.is_none() {
-            self.walk = Some(Walk::default());
-        }
-        self.walk.as_mut().unwrap().margin(value)
+        self.check_walk().margin(value)
     }
     fn check_layout(&mut self) -> &mut Layout {
         if self.layout.is_none() {

@@ -5,6 +5,7 @@
 //! - live_design! 宏编写的DSL模板部分（必须有）
 //! - 构建这个模板的代码部分（可能有）
 //!  
+use core::panic;
 use std::{collections::HashMap, default, fmt::Display};
 
 use gen_parser::{PropsKey, Value};
@@ -18,13 +19,13 @@ use proc_macro2::{TokenStream, TokenTree};
 //     utils::{apply_over_and_redraw, struct_field_type},
 // };
 
-pub mod model;
 pub mod button;
 pub mod define;
 pub mod label;
+pub mod model;
+pub mod utils;
 pub mod view;
 pub mod window;
-pub mod utils;
 
 // pub use define::*;
 // pub use button::*;
@@ -169,7 +170,7 @@ pub fn prop_ignore(prop: &str) -> bool {
 }
 
 #[derive(Debug, Clone, Default)]
-pub enum BuiltIn{
+pub enum BuiltIn {
     Window,
     View,
     Label,
@@ -181,16 +182,13 @@ pub enum BuiltIn{
 impl BuiltIn {
     /// 对内置组件的属性进行处理
     pub fn props(&self, props: &HashMap<PropsKey, Value>) -> Box<dyn StaticProps> {
-        
-        Box::new(
-            match self {
-                BuiltIn::Window => window::WindowProps::props(props),
-                BuiltIn::View => view::ViewProps::props(props),
-                BuiltIn::Label => label::props(props),
-                BuiltIn::Button => button::props(props),
-                _ => todo!(),
-            }
-        )
+        match self {
+            BuiltIn::Window => Box::new(window::WindowProps::props(props)),
+            BuiltIn::View => Box::new(view::ViewProps::props(props)),
+            BuiltIn::Label => Box::new(label::LabelProps::props(props)),
+            BuiltIn::Button => Box::new(button::ButtonProps::props(props)),
+            _ => panic!("only built-in widget can be get"),
+        }
     }
 }
 
@@ -215,5 +213,8 @@ impl From<&String> for BuiltIn {
 }
 
 pub trait StaticProps {
-    fn props(props: &HashMap<PropsKey, Value>) -> Self where Self: Sized;
+    fn props(props: &HashMap<PropsKey, Value>) -> Self
+    where
+        Self: Sized;
+    fn prop(&mut self, prop_name: &str, value: Value) -> ();
 }
