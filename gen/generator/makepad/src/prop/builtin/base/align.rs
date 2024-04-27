@@ -1,6 +1,7 @@
 use std::{fmt::Display, num::ParseFloatError};
 
 use gen_converter::error::Errors;
+use gen_parser::Value;
 
 use crate::str_to_string_try_from;
 #[derive(Debug, Clone, PartialEq)]
@@ -94,6 +95,28 @@ impl TryFrom<&str> for Align {
                 "{} cannot be converted to Makepad::Align!",
                 value
             ))),
+        }
+    }
+}
+
+str_to_string_try_from!(Align);
+
+impl TryFrom<&Value> for Align {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            value
+                .is_string_and_get()
+                .map(|s| s.try_into())
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{} cannot be converted to Makepad::Align!",
+                        value
+                    )))
+                })
         }
     }
 }

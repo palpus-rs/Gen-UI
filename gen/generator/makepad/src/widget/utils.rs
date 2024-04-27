@@ -65,3 +65,27 @@ where
             })
     }
 }
+
+
+pub fn string_prop<F>(value: &Value, f: F) -> Result<(), Errors>
+where
+    F: Fn(&str) -> (),
+{
+    if let Some(s) = value.is_unknown_and_get() {
+        f(s);
+        Ok(())
+    } else {
+        value
+            .is_string_and_get()
+            .map(|s| {
+                f(s);
+                Ok(())
+            })
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to show_bg",
+                    value
+                )))
+            })
+    }
+}

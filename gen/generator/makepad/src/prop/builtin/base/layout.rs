@@ -37,6 +37,21 @@ impl Layout {
     pub fn line_spacing(&mut self, value: &Value) -> Result<(), Errors> {
         f64_prop(value, |f|{self.line_spacing = Some(f);})
     }
+    pub fn padding(&mut self, value: &Value) -> Result<(), Errors> {
+        let padding = Padding::try_from(value)?;
+        self.padding = Some(padding);
+        Ok(())
+    }
+    pub fn align(&mut self, value: &Value) -> Result<(), Errors> {
+        let align = Align::try_from(value)?;
+        self.align = Some(align);
+        Ok(())
+    }
+    pub fn flow(&mut self, value: &Value) -> Result<(), Errors> {
+        let flow = Flow::try_from(value)?;
+        self.flow = Some(flow);
+        Ok(())
+    }
 }
 
 

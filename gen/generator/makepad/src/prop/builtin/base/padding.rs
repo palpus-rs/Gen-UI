@@ -1,14 +1,15 @@
 use std::{fmt::Display, num::ParseFloatError};
 
 use gen_converter::error::Errors;
+use gen_parser::Value;
 
 use crate::str_to_string_try_from;
-#[derive(Debug,Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Padding {
     pub left: f64,
     pub top: f64,
     pub right: f64,
-    pub bottom: f64
+    pub bottom: f64,
 }
 
 impl Padding {
@@ -69,6 +70,26 @@ impl TryFrom<&str> for Padding {
 }
 
 str_to_string_try_from! {Padding}
+
+impl TryFrom<&Value> for Padding {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            value
+                .is_string_and_get()
+                .map(|s| s.try_into())
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{} cannot be converted to Padding!",
+                        value
+                    )))
+                })
+        }
+    }
+}
 
 impl Display for Padding {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
