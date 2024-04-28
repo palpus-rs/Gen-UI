@@ -51,3 +51,6 @@ pub const HEIGHT_FACTOR: &str = "height_factor";
 pub const SVG_PATH: &str = "svg_path";
 pub const SVG_FILE: &str = "svg_file";
 pub const LINEARIZE: &str = "linearize";
+pub const DRAW_ICON: &str = "draw_icon";
+pub const ICON_WALK: &str = "icon_walk";
+pub const LABEL_WALK: &str = "label_walk";

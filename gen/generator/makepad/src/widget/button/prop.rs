@@ -1,13 +1,16 @@
+use std::fmt::Display;
+
 use gen_converter::error::Errors;
 use gen_parser::Value;
+use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
         builtin::{draw_color::DrawColor, draw_icon::DrawIcon, draw_text::DrawText, Layout, Walk},
-        ABS_POS, ALIGN, BRIGHTNESS, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, CURVE, DRAW_BG,
-        DRAW_DEPTH, FLOW, FONT, FONT_SCALE, FONT_SIZE, GRAB_KEY_FOCUS, HEIGHT, HEIGHT_FACTOR,
-        INGORE_NEWLINES, LINEARIZE, LINE_SPACING, MARGIN, PADDING, SCALE, SCROLL, SPACING,
-        SVG_FILE, TEXT, TOP_DROP, WIDTH, WRAP,
+        ABS_POS, ALIGN, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, DRAW_BG, DRAW_ICON, DRAW_TEXT, FLOW,
+        FONT, FONT_SCALE, FONT_SIZE, GRAB_KEY_FOCUS, HEIGHT, HEIGHT_FACTOR, ICON_WALK,
+        INGORE_NEWLINES, LABEL_WALK, LINEARIZE, LINE_SPACING, MARGIN, PADDING, SCALE, SCROLL,
+        SPACING, SVG_FILE, TEXT, TOP_DROP, WIDTH, WRAP,
     },
     widget::{
         prop_ignore,
@@ -116,7 +119,7 @@ impl StaticProps for ButtonProps {
 
 impl ToToken for ButtonProps {
     fn to_token_stream(&self) -> proc_macro2::TokenStream {
-        todo!()
+        self.to_string().parse::<TokenStream>().unwrap()
     }
 }
 
@@ -287,5 +290,65 @@ impl ButtonProps {
     }
     fn top_drop(&mut self, value: &Value) -> Result<(), Errors> {
         self.check_draw_text().top_drop(value)
+    }
+}
+
+impl Display for ButtonProps {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(draw_bg) = &self.draw_bg {
+            let _ = f.write_fmt(format_args!("{}: {{ {}: {}}},", DRAW_BG, COLOR, draw_bg));
+        }
+        if let Some(draw_text) = &self.draw_text {
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", DRAW_TEXT, draw_text));
+        }
+        if let Some(draw_icon) = &self.draw_icon {
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", DRAW_ICON, draw_icon));
+        }
+        if let Some(icon_walk) = &self.icon_walk {
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", ICON_WALK, icon_walk));
+        }
+        if let Some(label_walk) = &self.label_walk {
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", LABEL_WALK, label_walk));
+        }
+        if let Some(walk) = &self.walk {
+            let _ = f.write_fmt(format_args!("{},", walk));
+        }
+        if let Some(layout) = &self.layout {
+            let _ = f.write_fmt(format_args!("{},", layout));
+        }
+        if let Some(grab_key_focus) = &self.grab_key_focus {
+            let _ = f.write_fmt(format_args!("{}: {},", GRAB_KEY_FOCUS, grab_key_focus));
+        }
+        if let Some(text) = &self.text {
+            let _ = f.write_fmt(format_args!("{}: \"{}\",", TEXT, text));
+        }
+        write!(f, "")
+    }
+}
+
+#[cfg(test)]
+mod test_button_props {
+    use super::*;
+
+    #[test]
+    fn to_tk() {
+        let mut button = ButtonProps::default();
+        button.draw_bg = Some("#ddd".try_into().unwrap());
+        button.text = Some("hello".to_string());
+        let mut draw_text = DrawText::default();
+        draw_text.color = Some("#fff".try_into().unwrap());
+        draw_text.wrap = Some("Word".try_into().unwrap());
+        button.draw_text = Some(draw_text);
+        let mut draw_icon = DrawIcon::default();
+        draw_icon.brightness = Some(0.5);
+        draw_icon.svg_file = Some(
+            "crate://self/resources/icons/Icon_Search.svg"
+                .try_into()
+                .unwrap(),
+        );
+        button.draw_icon = Some(draw_icon);
+        let tk = button.to_token_stream();
+        let prop = "draw_bg : { color : # dddddd } , draw_text : { wrap : Word , color : { # ffffff } , } , draw_icon : { brightness : 0.5 , svg_file : dep (\"crate://self/resources/icons/Icon_Search.svg\") , } , text : \"hello\" ,";
+        assert_eq!(tk.to_string().as_str(), prop);
     }
 }
