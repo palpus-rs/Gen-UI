@@ -11,6 +11,7 @@ use crate::{
         VISIBLE, WIDTH,
     },
     widget::{prop_ignore, utils::bool_prop, StaticProps},
+    ToToken,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -36,7 +37,7 @@ impl StaticProps for ViewProps {
         view
     }
     fn prop(&mut self, prop_name: &str, value: Value) -> () {
-        match prop_name {
+        let _ = match prop_name {
             DRAW_BG => self.draw_bg(&value),
             SHOW_BG => self.show_bg(&value),
             // ----------------- layout -----------------
@@ -71,8 +72,13 @@ impl StaticProps for ViewProps {
     }
 }
 
+impl ToToken for ViewProps {
+    fn to_token_stream(&self) -> proc_macro2::TokenStream {
+        todo!()
+    }
+}
+
 impl ViewProps {
-    
     fn show_bg(&mut self, value: &Value) -> Result<(), Errors> {
         bool_prop(value, |b| {
             self.show_bg = Some(b);
@@ -187,34 +193,34 @@ impl ViewProps {
 impl Display for ViewProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_bg) = &self.draw_bg {
-            f.write_fmt(format_args!("draw_bg: {}, ", draw_bg));
+            let _ = f.write_fmt(format_args!("draw_bg: {}, ", draw_bg));
         }
         if let Some(show_bg) = &self.show_bg {
-            f.write_fmt(format_args!("show_bg: {}, ", show_bg));
+            let _ = f.write_fmt(format_args!("show_bg: {}, ", show_bg));
         }
         if let Some(layout) = &self.layout {
-            f.write_fmt(format_args!("layout: {}, ", layout));
+            let _ = f.write_fmt(format_args!("layout: {}, ", layout));
         }
         if let Some(walk) = &self.walk {
-            f.write_fmt(format_args!("walk: {}, ", walk));
+            let _ = f.write_fmt(format_args!("walk: {}, ", walk));
         }
         if let Some(optimize) = &self.optimize {
-            f.write_fmt(format_args!("optimize: {}, ", optimize));
+            let _ = f.write_fmt(format_args!("optimize: {}, ", optimize));
         }
         if let Some(event_order) = &self.event_order {
-            f.write_fmt(format_args!("event_order: {}, ", event_order));
+            let _ = f.write_fmt(format_args!("event_order: {}, ", event_order));
         }
         if let Some(visible) = &self.visible {
-            f.write_fmt(format_args!("visible: {}, ", visible));
+            let _ = f.write_fmt(format_args!("visible: {}, ", visible));
         }
         if let Some(grab_key_focus) = &self.grab_key_focus {
-            f.write_fmt(format_args!("grab_key_focus: {}, ", grab_key_focus));
+            let _ = f.write_fmt(format_args!("grab_key_focus: {}, ", grab_key_focus));
         }
         if let Some(block_signal_event) = &self.block_signal_event {
-            f.write_fmt(format_args!("block_signal_event: {}, ", block_signal_event));
+            let _ = f.write_fmt(format_args!("block_signal_event: {}, ", block_signal_event));
         }
         if let Some(cursor) = &self.cursor {
-            f.write_fmt(format_args!("cursor: {}, ", cursor));
+            let _ = f.write_fmt(format_args!("cursor: {}, ", cursor));
         }
         f.write_str("")
     }

@@ -26,7 +26,7 @@ pub struct Widget {
     pub source: Option<String>,
     pub compiled_source: Option<PathBuf>,
     /// props in live_design
-    pub props: Option<Box<dyn StaticProps>>,
+    pub props: Option<TokenStream>,
     /// events called in makepad
     pub events: Option<HashMap<String, TokenStream>>,
     pub prop_ptr: Option<TokenStream>,
@@ -36,6 +36,7 @@ pub struct Widget {
     pub traits: WidgetTrait,
     pub role: Role,
 }
+
 
 impl Widget {
     pub fn new(special: &str, mut source_dir: PathBuf) -> Self {

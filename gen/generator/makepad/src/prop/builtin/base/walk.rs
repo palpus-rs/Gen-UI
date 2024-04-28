@@ -1,7 +1,10 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
+use proc_macro2::TokenStream;
+
+use crate::{prop::{ABS_POS, HEIGHT, MARGIN, WIDTH}, ToToken};
 
 use super::{DVec2, Margin, Size};
 
@@ -36,21 +39,45 @@ impl Walk {
     }
 }
 
+impl ToToken for Walk {
+    fn to_token_stream(&self) -> proc_macro2::TokenStream {
+        self.to_string().parse::<TokenStream>().unwrap()
+    }
+}
+
 impl Display for Walk {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut walk = String::new();
         if let Some(abs_pos) = &self.abs_pos {
-            walk.push_str(&format!("abs_pos: {}, ", abs_pos));
+            walk.push_str(&format!("abs_pos: {}, ", abs_pos.to_string()));
         }
         if let Some(margin) = &self.margin {
-            walk.push_str(&format!("margin: {}, ", margin));
+            walk.push_str(&format!("margin: {}, ", margin.to_string()));
         }
         if let Some(width) = &self.width {
-            walk.push_str(&format!("width: {}, ", width));
+            walk.push_str(&format!("width: {}, ", width.to_string()));
         }
         if let Some(height) = &self.height {
-            walk.push_str(&format!("height: {}, ", height));
+            walk.push_str(&format!("height: {}, ", height.to_string()));
         }
         write!(f, "{}", walk)
+    }
+}
+
+#[cfg(test)]
+mod test_walk {
+    use crate::ToToken;
+
+
+    #[test]
+    fn to_tk() {
+        let mut walk = super::Walk::default();
+        walk.abs_pos = Some(super::DVec2::new(10.0, 10.0));
+        walk.margin = Some(super::Margin::new(10.0, 10.0, 10.0, 10.0));
+        walk.width = Some(super::Size::try_from(100.0).unwrap());
+        walk.height = Some(super::Size::try_from(100.0).unwrap());
+        let tk = walk.to_token_stream();
+        let prop = "abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 ,";
+        assert_eq!(prop, tk.to_string());
     }
 }

@@ -1,9 +1,9 @@
 use gen_converter::error::Errors;
 use gen_parser::Value;
 
-pub fn bool_prop<F>(value: &Value, f: F) -> Result<(), Errors>
+pub fn bool_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
-    F: Fn(bool) -> (),
+    F: FnMut(bool) -> (),
 {
     if let Some(s) = value.is_unknown_and_get() {
         match s.parse::<bool>() {
@@ -32,9 +32,9 @@ where
     }
 }
 
-pub fn f64_prop<F>(value: &Value, f: F) -> Result<(), Errors>
+pub fn f64_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
-    F: Fn(f64) -> (),
+    F: FnMut(f64) -> (),
 {
     if let Some(s) = value.is_unknown_and_get() {
         match s.parse::<f64>() {
@@ -66,9 +66,9 @@ where
     }
 }
 
-pub fn f32_prop<F>(value: &Value, f: F) -> Result<(), Errors>
+pub fn f32_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
-    F: Fn(f32) -> (),
+    F: FnMut(f32) -> (),
 {
     if let Some(s) = value.is_unknown_and_get() {
         match s.parse::<f32>() {
@@ -97,9 +97,9 @@ where
     }
 }
 
-pub fn string_prop<F>(value: &Value, f: F) -> Result<(), Errors>
+pub fn string_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
-    F: Fn(&str) -> (),
+    F: FnMut(&str) -> (),
 {
     if let Some(s) = value.is_unknown_and_get() {
         f(s);

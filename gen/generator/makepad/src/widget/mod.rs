@@ -6,13 +6,19 @@
 //! - 构建这个模板的代码部分（可能有）
 //!  
 use core::panic;
-use std::{collections::HashMap, default, fmt::Display};
+use std::{
+    collections::HashMap,
+    default,
+    fmt::{Debug, Display},
+};
 
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::{
     snake_to_camel, token_stream_to_tree, token_tree_ident, token_tree_punct_alone,
 };
 use proc_macro2::{TokenStream, TokenTree};
+
+use crate::ToToken;
 
 // use crate::{
 //     gen::{FieldItem, FieldTable},
@@ -181,12 +187,12 @@ pub enum BuiltIn {
 
 impl BuiltIn {
     /// 对内置组件的属性进行处理
-    pub fn props(&self, props: &HashMap<PropsKey, Value>) -> Box<dyn StaticProps> {
+    pub fn props(&self, props: &HashMap<PropsKey, Value>) -> TokenStream {
         match self {
-            BuiltIn::Window => Box::new(window::WindowProps::props(props)),
-            BuiltIn::View => Box::new(view::ViewProps::props(props)),
-            BuiltIn::Label => Box::new(label::LabelProps::props(props)),
-            BuiltIn::Button => Box::new(button::ButtonProps::props(props)),
+            BuiltIn::Window => window::WindowProps::props(props).to_token_stream(),
+            BuiltIn::View =>view::ViewProps::props(props).to_token_stream(),
+            BuiltIn::Label => label::LabelProps::props(props).to_token_stream(),
+            BuiltIn::Button => button::ButtonProps::props(props).to_token_stream(),
             _ => panic!("only built-in widget can be get"),
         }
     }
@@ -212,7 +218,7 @@ impl From<&String> for BuiltIn {
     }
 }
 
-pub trait StaticProps {
+pub trait StaticProps: Debug + ToToken {
     fn props(props: &HashMap<PropsKey, Value>) -> Self
     where
         Self: Sized;

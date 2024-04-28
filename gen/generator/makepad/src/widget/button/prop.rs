@@ -1,7 +1,8 @@
-use crate::widget::StaticProps;
+use crate::{widget::StaticProps, ToToken};
 
+#[derive(Debug, Clone, Default)]
 pub struct ButtonProps{
-
+    
 }
 
 impl StaticProps for ButtonProps {
@@ -12,6 +13,12 @@ impl StaticProps for ButtonProps {
     }
 
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+        todo!()
+    }
+}
+
+impl ToToken for ButtonProps {
+    fn to_token_stream(&self) -> proc_macro2::TokenStream {
         todo!()
     }
 }

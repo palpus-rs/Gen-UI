@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
-use crate::widget::{view::ViewProps, StaticProps};
+use crate::{widget::{view::ViewProps, StaticProps}, ToToken};
 
 #[derive(Debug, Clone, Default)]
-pub struct WindowProps(ViewProps);
+pub struct WindowProps(pub ViewProps);
 
 impl StaticProps for WindowProps {
     fn props(props: &std::collections::HashMap<gen_parser::PropsKey, gen_parser::Value>) -> Self
@@ -17,6 +17,13 @@ impl StaticProps for WindowProps {
         self.0.prop(prop_name, value)
     }
 }
+
+impl ToToken for WindowProps {
+    fn to_token_stream(&self) -> proc_macro2::TokenStream {
+        self.0.to_token_stream()
+    }
+}
+
 
 impl Display for WindowProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

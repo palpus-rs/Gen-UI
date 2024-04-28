@@ -165,6 +165,6 @@ impl TryFrom<&Value> for DVec2 {
 
 impl Display for DVec2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("vec2({}, {})", self.x, self.y))
+        f.write_fmt(format_args!("{{x: {}, y: {}}}", self.x, self.y))
     }
 }

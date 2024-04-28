@@ -1,16 +1,17 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
+use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
         builtin::{draw_text::DrawText, Align, Padding, Walk},
-        ABS_POS, ALIGN, BRIGHTNESS, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH, FONT, FONT_SCALE,
-        FONT_SIZE, HEIGHT, HEIGHT_FACTOR, INGORE_NEWLINES, LINE_SPACING, MARGIN, PADDING, TEXT,
-        TOP_DROP, WIDTH, WRAP,
+        ABS_POS, ALIGN, BRIGHTNESS, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH, DRAW_TEXT, FONT,
+        FONT_SCALE, FONT_SIZE, HEIGHT, HEIGHT_FACTOR, INGORE_NEWLINES, LINE_SPACING, MARGIN,
+        PADDING, TEXT, TOP_DROP, WIDTH, WRAP,
     },
-    widget::{prop_ignore, utils::string_prop, StaticProps},
+    widget::{prop_ignore, utils::string_prop, StaticProps}, ToToken,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -69,6 +70,13 @@ impl StaticProps for LabelProps {
     }
 }
 
+impl ToToken for LabelProps {
+    fn to_token_stream(&self) -> proc_macro2::TokenStream {
+        
+        self.to_string().parse::<TokenStream>().unwrap()
+    }
+}
+
 impl LabelProps {
     fn check_draw_text(&mut self) -> &mut DrawText {
         if self.draw_text.is_none() {
@@ -117,7 +125,7 @@ impl LabelProps {
     }
 
     fn text(&mut self, value: &Value) -> Result<(), Errors> {
-        string_prop(value, |s| self.text = Some(s.to_string()))
+        string_prop(value, |s| {let _ = self.text.replace(s.to_string());})
     }
     fn padding(&mut self, value: &Value) -> Result<(), Errors> {
         self.padding = Some(Padding::try_from(value)?);
@@ -149,20 +157,20 @@ impl LabelProps {
 
 impl Display for LabelProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(draw_text) = self.draw_text {
-            f.write_fmt(format_args!("draw_text: {}", draw_text.to_string()));
+        if let Some(draw_text) = &self.draw_text {
+            f.write_fmt(format_args!("draw_text: {},", draw_text.to_string()));
         }
         if let Some(walk) = &self.walk {
-            f.write_fmt(format_args!("walk: {}", walk.to_string()));
+            f.write_fmt(format_args!("{},", walk.to_string()));
         }
         if let Some(align) = &self.align {
-            f.write_fmt(format_args!("align: {}", align.to_string()));
+            f.write_fmt(format_args!("align: {},", align.to_string()));
         }
         if let Some(padding) = &self.padding {
-            f.write_fmt(format_args!("padding: {}", padding.to_string()));
+            f.write_fmt(format_args!("padding: {},", padding.to_string()));
         }
         if let Some(text) = &self.text {
-            f.write_fmt(format_args!("text: {}", text));
+            f.write_fmt(format_args!("text: {},", text));
         }
         write!(f, "")
     }
