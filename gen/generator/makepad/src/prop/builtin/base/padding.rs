@@ -13,7 +13,7 @@ pub struct Padding {
 }
 
 impl Padding {
-    pub fn new(left: f64, top: f64, right: f64, bottom: f64) -> Self {
+    pub fn new(top: f64, right: f64, bottom: f64, left: f64) -> Self {
         Padding {
             left,
             top,
@@ -27,8 +27,8 @@ impl Padding {
     pub fn multi_2(top_bottom: f64, left_right: f64) -> Self {
         Padding::new(left_right, top_bottom, left_right, top_bottom)
     }
-    pub fn multi_4(left: f64, top: f64, right: f64, bottom: f64) -> Self {
-        Padding::new(left, top, right, bottom)
+    pub fn multi_4(top: f64, right: f64, bottom: f64, left: f64) -> Self {
+        Padding::new(top, right, bottom, left)
     }
 }
 
@@ -97,5 +97,17 @@ impl Display for Padding {
             "{{top: {}, right: {}, bottom: {}, left: {}}}",
             self.top, self.right, self.bottom, self.left
         ))
+    }
+}
+
+#[cfg(test)]
+mod test_padding {
+    use super::*;
+    #[test]
+    fn to_tk() {
+        let padding = Padding::try_from("10.0 20.0 0.0 29.0").unwrap();
+        let tk = padding.to_string();
+        let prop = "{top: 10, right: 20, bottom: 0, left: 29}";
+        assert_eq!(tk.as_str(), prop);
     }
 }

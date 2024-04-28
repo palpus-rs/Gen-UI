@@ -55,6 +55,7 @@ impl Widget {
     pub fn new_builtin(name: &str) -> Self {
         let mut widget = Widget::default();
         widget.name = name.to_string();
+        widget.set_is_built_in(BuiltIn::try_from(name).is_ok());
         widget
     }
     pub fn set_id(&mut self, id: Option<&String>) -> &mut Self {

@@ -2,10 +2,16 @@ use std::fmt::Display;
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
+use proc_macro2::TokenStream;
 
 use crate::{
-    prop::builtin::{Font, TextWrap, Vec4},
+    prop::{
+        builtin::{Font, TextWrap},
+        BRIGHTNESS, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH, FONT, FONT_SCALE, FONT_SIZE,
+        HEIGHT_FACTOR, INGORE_NEWLINES, LINE_SPACING, TEXT_STYLE, TOP_DROP, WRAP,
+    },
     widget::utils::{bool_prop, f32_prop, f64_prop},
+    ToToken,
 };
 
 use super::draw_color::DrawColor;
@@ -80,29 +86,35 @@ impl DrawText {
     }
 }
 
+impl ToToken for DrawText {
+    fn to_token_stream(&self) -> TokenStream {
+        self.to_string().parse::<TokenStream>().unwrap()
+    }
+}
+
 impl Display for DrawText {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut draw_text = String::new();
         if let Some(text_style) = &self.text_style {
-            draw_text.push_str(&format!("text_style: {}, ", text_style.to_string()));
+            draw_text.push_str(&format!("{}: {{{}}},", TEXT_STYLE, text_style.to_string()));
         }
         if let Some(wrap) = &self.wrap {
-            draw_text.push_str(&format!("wrap: {}, ", wrap.to_string()));
+            draw_text.push_str(&format!("{}: {},", WRAP, wrap.to_string()));
         }
         if let Some(ignore_newlines) = &self.ignore_newlines {
-            draw_text.push_str(&format!("ignore_newlines: {}, ", ignore_newlines));
+            draw_text.push_str(&format!("{}: {},", INGORE_NEWLINES, ignore_newlines));
         }
         if let Some(combine_spaces) = &self.combine_spaces {
-            draw_text.push_str(&format!("combine_spaces: {}, ", combine_spaces));
+            draw_text.push_str(&format!("{}: {},", COMBINE_SPACES, combine_spaces));
         }
         if let Some(font_scale) = &self.font_scale {
-            draw_text.push_str(&format!("font_scale: {}, ", font_scale));
+            draw_text.push_str(&format!("{}: {},", FONT_SCALE, font_scale));
         }
         if let Some(draw_depth) = &self.draw_depth {
-            draw_text.push_str(&format!("draw_depth: {}, ", draw_depth));
+            draw_text.push_str(&format!("{}: {},", DRAW_DEPTH, draw_depth));
         }
         if let Some(color) = &self.color {
-            draw_text.push_str(&format!("color: {}, ", color.to_string()));
+            draw_text.push_str(&format!("{}: {{{}}},", COLOR, color.to_string()));
         }
         write!(f, "{}", draw_text)
     }
@@ -156,30 +168,89 @@ impl TextStyle {
     }
 }
 
+impl ToToken for TextStyle {
+    fn to_token_stream(&self) -> proc_macro2::TokenStream {
+        self.to_string().parse::<TokenStream>().unwrap()
+    }
+}
+
 impl Display for TextStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut text_style = String::new();
         if let Some(font) = &self.font {
-            text_style.push_str(&format!("font: {}, ", font.to_string()));
+            text_style.push_str(&format!("{}: {},", FONT, font.to_string()));
         }
         if let Some(font_size) = &self.font_size {
-            text_style.push_str(&format!("font_size: {}, ", font_size));
+            text_style.push_str(&format!("{}: {},", FONT_SIZE, font_size));
         }
         if let Some(brightness) = &self.brightness {
-            text_style.push_str(&format!("brightness: {}, ", brightness));
+            text_style.push_str(&format!("{}: {},", BRIGHTNESS, brightness));
         }
         if let Some(curve) = &self.curve {
-            text_style.push_str(&format!("curve: {}, ", curve));
+            text_style.push_str(&format!("{}: {},", CURVE, curve));
         }
         if let Some(line_spacing) = &self.line_spacing {
-            text_style.push_str(&format!("line_spacing: {}, ", line_spacing));
+            text_style.push_str(&format!("{}: {},", LINE_SPACING, line_spacing));
         }
         if let Some(top_drop) = &self.top_drop {
-            text_style.push_str(&format!("top_drop: {}, ", top_drop));
+            text_style.push_str(&format!("{}: {},", TOP_DROP, top_drop));
         }
         if let Some(height_factor) = &self.height_factor {
-            text_style.push_str(&format!("height_factor: {}, ", height_factor));
+            text_style.push_str(&format!("{}: {},", HEIGHT_FACTOR, height_factor));
         }
         write!(f, "{}", text_style)
+    }
+}
+
+#[cfg(test)]
+mod test_draw_text {
+    use super::*;
+    #[test]
+    fn text_style_to_tk() {
+        let mut text_style = TextStyle::default();
+
+        text_style.font = Some(
+            "crate://self/resources/icons/Icon_Search.svg"
+                .try_into()
+                .unwrap(),
+        );
+        text_style.font_size = Some(12.0_f64.try_into().unwrap());
+        text_style.brightness = Some(0.5.try_into().unwrap());
+        text_style.curve = Some(0.5.try_into().unwrap());
+        text_style.line_spacing = Some(1.5_f64.try_into().unwrap());
+        text_style.top_drop = Some(1.0_f64.try_into().unwrap());
+        text_style.height_factor = Some(1.0_f64.try_into().unwrap());
+        let tk = text_style.to_token_stream();
+        let prop = "font : dep (\"crate://self/resources/icons/Icon_Search.svg\") , font_size : 12 , brightness : 0.5 , curve : 0.5 , line_spacing : 1.5 , top_drop : 1 , height_factor : 1 ,";
+
+        assert_eq!(tk.to_string().as_str(), prop);
+    }
+
+    #[test]
+    fn draw_text_to_tk() {
+        let mut draw_text = DrawText::default();
+        draw_text.text_style = Some(TextStyle {
+            font: Some(
+                "crate://self/resources/icons/Icon_Search.svg"
+                    .try_into()
+                    .unwrap(),
+            ),
+            font_size: Some(12.0_f64.try_into().unwrap()),
+            brightness: Some(0.5.try_into().unwrap()),
+            curve: Some(0.5.try_into().unwrap()),
+            line_spacing: Some(1.5_f64.try_into().unwrap()),
+            top_drop: Some(1.0_f64.try_into().unwrap()),
+            height_factor: Some(1.0_f64.try_into().unwrap()),
+        });
+        draw_text.wrap = Some(TextWrap::Ellipsis);
+        draw_text.ignore_newlines = Some(true);
+        draw_text.combine_spaces = Some(true);
+        draw_text.font_scale = Some(1.0_f64.try_into().unwrap());
+        draw_text.draw_depth = Some(0.5_f32.try_into().unwrap());
+        draw_text.color = Some("#445566".try_into().unwrap());
+        let tk = draw_text.to_token_stream();
+        let prop = "text_style : { font : dep (\"crate://self/resources/icons/Icon_Search.svg\") , font_size : 12 , brightness : 0.5 , curve : 0.5 , line_spacing : 1.5 , top_drop : 1 , height_factor : 1 , } , wrap : Ellipsis , ignore_newlines : true , combine_spaces : true , font_scale : 1 , draw_depth : 0.5 , color : { # 445566 } ,";
+
+        assert_eq!(tk.to_string().as_str(), prop);
     }
 }

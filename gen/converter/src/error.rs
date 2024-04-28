@@ -10,6 +10,7 @@ pub enum Errors {
     StrategyNoInherits,
     StrategyNoStyle,
     PropConvertFail(String),
+    BuiltInConvertFail
 }
 
 impl Error for Errors {}
@@ -30,6 +31,7 @@ impl Display for Errors {
             Errors::StrategyNoInherits => "Gen-Converter[strategy]: Model not have inherits",
             Errors::StrategyNoStyle => "Gen-Converter[strategy]: Model not have style",
             Errors::PropConvertFail(e) => &e,
+            Errors::BuiltInConvertFail => "Gen-Converter: BuiltIn convert fail",
             
         })
     }

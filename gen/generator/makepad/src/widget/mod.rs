@@ -12,13 +12,14 @@ use std::{
     fmt::{Debug, Display},
 };
 
+use gen_converter::error::Errors;
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::{
     snake_to_camel, token_stream_to_tree, token_tree_ident, token_tree_punct_alone,
 };
 use proc_macro2::{TokenStream, TokenTree};
 
-use crate::ToToken;
+use crate::{str_to_string_try_from, ToToken};
 
 // use crate::{
 //     gen::{FieldItem, FieldTable},
@@ -196,27 +197,29 @@ impl BuiltIn {
             _ => panic!("only built-in widget can be get"),
         }
     }
+    /// you mut be sure that the value is a built-in widget
+    pub fn from(value:&str) -> Self{
+        value.try_into().unwrap()
+    }
 }
 
-impl From<&str> for BuiltIn {
-    fn from(value: &str) -> Self {
+impl TryFrom<&str> for BuiltIn {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         let widget_name = snake_to_camel(value).unwrap();
         match widget_name.as_str() {
-            WINDOW => BuiltIn::Window,
-            VIEW => BuiltIn::View,
-            LABEL => BuiltIn::Label,
-            BUTTON => BuiltIn::Button,
-            AREA => BuiltIn::Area,
-            _ => panic!("only built-in widget can be get"),
+            WINDOW => Ok(BuiltIn::Window),
+            VIEW => Ok(BuiltIn::View),
+            LABEL => Ok(BuiltIn::Label),
+            BUTTON =>Ok( BuiltIn::Button),
+            AREA => Ok(BuiltIn::Area),
+            _ => Err(Errors::BuiltInConvertFail),
         }
     }
 }
 
-impl From<&String> for BuiltIn {
-    fn from(value: &String) -> Self {
-        value.as_str().into()
-    }
-}
+str_to_string_try_from!(BuiltIn);
 
 pub trait StaticProps: Debug + ToToken {
     fn props(props: &HashMap<PropsKey, Value>) -> Self

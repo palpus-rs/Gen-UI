@@ -41,6 +41,6 @@ impl TryFrom<&Value> for LiveDependency {
 
 impl Display for LiveDependency {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "dep({})", self.0)
+        write!(f, "dep(\"{}\")", self.0)
     }
 }

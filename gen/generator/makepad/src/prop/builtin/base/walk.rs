@@ -1,10 +1,13 @@
-use std::{collections::HashMap, fmt::Display};
+use std::fmt::Display;
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
 use proc_macro2::TokenStream;
 
-use crate::{prop::{ABS_POS, HEIGHT, MARGIN, WIDTH}, ToToken};
+use crate::{
+    prop::{ABS_POS, HEIGHT, MARGIN, WIDTH},
+    ToToken,
+};
 
 use super::{DVec2, Margin, Size};
 
@@ -49,16 +52,16 @@ impl Display for Walk {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut walk = String::new();
         if let Some(abs_pos) = &self.abs_pos {
-            walk.push_str(&format!("abs_pos: {}, ", abs_pos.to_string()));
+            walk.push_str(&format!("{}: {},", ABS_POS, abs_pos.to_string()));
         }
         if let Some(margin) = &self.margin {
-            walk.push_str(&format!("margin: {}, ", margin.to_string()));
+            walk.push_str(&format!("{}: {},", MARGIN, margin.to_string()));
         }
         if let Some(width) = &self.width {
-            walk.push_str(&format!("width: {}, ", width.to_string()));
+            walk.push_str(&format!("{}: {},", WIDTH, width.to_string()));
         }
         if let Some(height) = &self.height {
-            walk.push_str(&format!("height: {}, ", height.to_string()));
+            walk.push_str(&format!("{}: {},", HEIGHT, height.to_string()));
         }
         write!(f, "{}", walk)
     }
@@ -68,16 +71,15 @@ impl Display for Walk {
 mod test_walk {
     use crate::ToToken;
 
-
     #[test]
     fn to_tk() {
         let mut walk = super::Walk::default();
-        walk.abs_pos = Some(super::DVec2::new(10.0, 10.0));
-        walk.margin = Some(super::Margin::new(10.0, 10.0, 10.0, 10.0));
-        walk.width = Some(super::Size::try_from(100.0).unwrap());
-        walk.height = Some(super::Size::try_from(100.0).unwrap());
+        walk.abs_pos = Some("10 10".try_into().unwrap());
+        walk.margin = Some("10 10 10 10".try_into().unwrap());
+        walk.width = Some("100".try_into().unwrap());
+        walk.height = Some("100".try_into().unwrap());
         let tk = walk.to_token_stream();
-        let prop = "abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 ,";
+        let prop ="abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 ,";
         assert_eq!(prop, tk.to_string());
     }
 }
