@@ -160,34 +160,79 @@ impl LabelProps {
 impl Display for LabelProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_text) = &self.draw_text {
-            let _ = f.write_fmt(format_args!("draw_text: {},", draw_text.to_string()));
+            let _ = f.write_fmt(format_args!(
+                "{}: {{{}}},",
+                DRAW_TEXT,
+                draw_text.to_string()
+            ));
         }
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("{},", walk.to_string()));
+            let _ = f.write_fmt(format_args!("{}", walk.to_string()));
         }
         if let Some(align) = &self.align {
-            let _ = f.write_fmt(format_args!("align: {},", align.to_string()));
+            let _ = f.write_fmt(format_args!("{}: {},", ALIGN, align.to_string()));
         }
         if let Some(padding) = &self.padding {
-            let _ = f.write_fmt(format_args!("padding: {},", padding.to_string()));
+            let _ = f.write_fmt(format_args!("{}: {},", PADDING, padding.to_string()));
         }
         if let Some(text) = &self.text {
-            let _ = f.write_fmt(format_args!("text: {},", text));
+            let _ = f.write_fmt(format_args!("{}: \"{}\",", TEXT, text));
         }
         write!(f, "")
     }
 }
 
 #[cfg(test)]
-mod test_label_props{
+mod test_label_props {
+
+    use crate::{
+        prop::builtin::{
+            draw_text::{DrawText, TextStyle},
+            TextWrap, Walk,
+        },
+        ToToken,
+    };
+
     use super::LabelProps;
 
     #[test]
-    fn to_tk(){
+    fn to_tk() {
         let mut label = LabelProps::default();
         label.text = Some("Hello".to_string());
-        
-        
+        let mut draw_text = DrawText::default();
+        draw_text.text_style = Some(TextStyle {
+            font: Some(
+                "crate://self/resources/icons/Icon_Search.svg"
+                    .try_into()
+                    .unwrap(),
+            ),
+            font_size: Some(12.0_f64.try_into().unwrap()),
+            brightness: Some(0.5.try_into().unwrap()),
+            curve: Some(0.5.try_into().unwrap()),
+            line_spacing: Some(1.5_f64.try_into().unwrap()),
+            top_drop: Some(1.0_f64.try_into().unwrap()),
+            height_factor: Some(1.0_f64.try_into().unwrap()),
+        });
+        draw_text.wrap = Some(TextWrap::Ellipsis);
+        draw_text.ignore_newlines = Some(true);
+        draw_text.combine_spaces = Some(true);
+        draw_text.font_scale = Some(1.0_f64.try_into().unwrap());
+        draw_text.draw_depth = Some(0.5_f32.try_into().unwrap());
+        draw_text.color = Some("#445566".try_into().unwrap());
 
+        label.draw_text = Some(draw_text);
+
+        label.align = Some("0.5 0.5".try_into().unwrap());
+        label.padding = Some("6 0.2 0.5 1.5".try_into().unwrap());
+        let mut walk = Walk::default();
+        walk.abs_pos = Some("10 10".try_into().unwrap());
+        walk.margin = Some("10 10 10 10".try_into().unwrap());
+        walk.width = Some("100".try_into().unwrap());
+        walk.height = Some("100".try_into().unwrap());
+        label.walk = Some(walk);
+
+        let tk = label.to_token_stream();
+        let prop = "draw_text : { text_style : { font : dep (\"crate://self/resources/icons/Icon_Search.svg\") , font_size : 12 , brightness : 0.5 , curve : 0.5 , line_spacing : 1.5 , top_drop : 1 , height_factor : 1 , } , wrap : Ellipsis , ignore_newlines : true , combine_spaces : true , font_scale : 1 , draw_depth : 0.5 , color : { # 445566 } , } , abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 , align : { x : 0.5 , y : 0.5 } , padding : { top : 6 , right : 0.2 , bottom : 0.5 , left : 1.5 } , text : \"Hello\" ,";
+        assert_eq!(prop, tk.to_string().as_str());
     }
 }

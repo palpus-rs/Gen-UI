@@ -1,4 +1,5 @@
-use std::fmt::Display;
+#[allow(unused)]
+use std::{default, fmt::Display};
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
@@ -12,10 +13,11 @@ use crate::{
     str_to_string_try_from,
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq,Default)]
 pub enum MouseCursor {
     Hidden,
     /// default
+    #[default]
     Default,
     Crosshair,
     Hand,

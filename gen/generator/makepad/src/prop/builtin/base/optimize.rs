@@ -1,4 +1,5 @@
-use std::fmt::Display;
+#[allow(unused_imports)]
+use std::{default, fmt::Display};
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
@@ -28,9 +29,10 @@ impl Display for Optimize {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub enum ViewOptimize {
     /// defalut
+    #[default]
     None,
     DrawList,
     Texture,

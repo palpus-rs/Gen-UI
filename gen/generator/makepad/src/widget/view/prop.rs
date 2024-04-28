@@ -2,6 +2,7 @@ use std::{collections::HashMap, fmt::Display};
 
 use gen_converter::error::Errors;
 use gen_parser::{PropsKey, Value};
+use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
@@ -74,7 +75,7 @@ impl StaticProps for ViewProps {
 
 impl ToToken for ViewProps {
     fn to_token_stream(&self) -> proc_macro2::TokenStream {
-        todo!()
+        self.to_string().parse::<TokenStream>().unwrap()
     }
 }
 
@@ -193,16 +194,16 @@ impl ViewProps {
 impl Display for ViewProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_bg) = &self.draw_bg {
-            let _ = f.write_fmt(format_args!("draw_bg: {}, ", draw_bg));
+            let _ = f.write_fmt(format_args!("draw_bg: {{{}}}, ", draw_bg));
         }
         if let Some(show_bg) = &self.show_bg {
             let _ = f.write_fmt(format_args!("show_bg: {}, ", show_bg));
         }
         if let Some(layout) = &self.layout {
-            let _ = f.write_fmt(format_args!("layout: {}, ", layout));
+            let _ = f.write_fmt(format_args!("{}, ", layout));
         }
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("walk: {}, ", walk));
+            let _ = f.write_fmt(format_args!("{}, ", walk));
         }
         if let Some(optimize) = &self.optimize {
             let _ = f.write_fmt(format_args!("optimize: {}, ", optimize));
@@ -223,5 +224,43 @@ impl Display for ViewProps {
             let _ = f.write_fmt(format_args!("cursor: {}, ", cursor));
         }
         f.write_str("")
+    }
+}
+
+#[cfg(test)]
+mod test_view_props {
+
+    use super::*;
+    #[test]
+    fn to_tk() {
+        let mut view = ViewProps::default();
+        view.block_signal_event = Some(true);
+        view.draw_bg = Some(DrawColor::default());
+        view.show_bg = Some(true);
+        let mut layout = Layout::default();
+        layout.spacing = Some(10_f64);
+        layout.line_spacing = Some(1.5_f64);
+        layout.clip_x = Some(true);
+        layout.clip_y = Some(false);
+        layout.padding = Some("4 10".try_into().unwrap());
+        layout.align = Some("0.5 1".try_into().unwrap());
+        layout.flow = Some("Down".try_into().unwrap());
+        layout.scroll = Some("1 2".try_into().unwrap());
+        view.layout = Some(layout);
+        let mut walk = super::Walk::default();
+        walk.abs_pos = Some("10 10".try_into().unwrap());
+        walk.margin = Some("10 10 10 10".try_into().unwrap());
+        walk.width = Some("100".try_into().unwrap());
+        walk.height = Some("100".try_into().unwrap());
+        view.walk = Some(walk);
+        view.optimize = Some(ViewOptimize::default());
+        view.event_order = Some(EventOrder::default());
+        view.visible = Some(true);
+        view.grab_key_focus = Some(true);
+        view.cursor = Some(MouseCursor::Hand);
+        let tk = view.to_token_stream();
+        let prop = "draw_bg : { ## 000 } , show_bg : true , scroll : { x : 1 , y : 2 } , clip_x : true , clip_y : false , padding : { top : 10 , right : 4 , bottom : 10 , left : 4 } , align : { x : 0.5 , y : 1 } , flow : Down , spacing : 10 , line_spacing : 1.5 ,, abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 ,, optimize : None , event_order : Up , visible : true , grab_key_focus : true , block_signal_event : true , cursor : Hand ,";
+
+        assert_eq!(prop, tk.to_string().as_str());
     }
 }

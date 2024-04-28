@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use std::{default, fmt::Display};
 
 use gen_converter::error::Errors;

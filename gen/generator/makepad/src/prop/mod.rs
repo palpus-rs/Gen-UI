@@ -16,6 +16,7 @@ pub const LINE_SPACING: &str = "line_spacing";
 pub const CLIP_X: &str = "clip_x";
 pub const CLIP_Y: &str = "clip_y";
 pub const FLOW: &str = "flow";
+pub const SCALE: &str = "scale";
 // -------------------- color --------------------
 pub const COLOR: &str = "color";
 pub const BRIGHTNESS: &str = "brightness";
@@ -47,3 +48,6 @@ pub const SCROLL: &str = "scroll";
 pub const CURVE: &str = "curve";
 pub const TOP_DROP: &str = "top_drop";
 pub const HEIGHT_FACTOR: &str = "height_factor";
+pub const SVG_PATH: &str = "svg_path";
+pub const SVG_FILE: &str = "svg_file";
+pub const LINEARIZE: &str = "linearize";
