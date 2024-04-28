@@ -9,13 +9,61 @@ use crate::widget::{self, BuiltIn, StaticProps};
 
 use super::{live_design::LiveDesign, role::Role, traits::WidgetTrait};
 
+#[derive(Debug, Default, Clone)]
+pub struct Source {
+    /// source file dir
+    pub origin_dir: PathBuf,
+    /// source file path
+    pub origin_file: PathBuf,
+    /// compiled file path
+    pub compiled_dir: PathBuf,
+    pub compiled_file: PathBuf,
+}
+
+impl Source {
+    pub fn source_name(&self) -> String{
+        let name = self.origin_file.file_name().unwrap().to_str().unwrap().to_string().replace(".gen", "");
+        snake_to_camel(&name).unwrap()
+    }
+}
+
+/// one is for source file path another is for source dir
+/// (source file path, source dir path)
+impl From<(&PathBuf,&PathBuf)> for Source {
+    fn from(value: (&PathBuf,&PathBuf)) -> Self {
+        let mut tmp = value.1.clone();
+        tmp.pop();
+        
+        let strip_path = value.0.strip_prefix(&tmp.as_path()).unwrap();
+       
+        let mut target: Vec<&std::ffi::OsStr> = strip_path.iter().collect();
+
+        // 检查是否有足够的组件可以修改
+        if ! target.is_empty() {
+            // 替换第一个组件
+            target[0] = "src-gen".as_ref();
+        }
+
+        // 使用base和修改后的组件重新构建完整的路径
+        let compiled_file = tmp.clone().join(PathBuf::from_iter( target));
+        let mut compiled_dir = tmp;
+        compiled_dir.push("src-gen");
+        Source {
+            origin_dir: value.1.clone(),
+            origin_file: value.0.clone(),
+            compiled_dir,
+            compiled_file,
+        }
+    }
+}
+
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
 /// ## 当生成一个完整的组件时
 #[derive(Debug, Default, Clone)]
 pub struct Widget {
     /// Makepad live_design! macro
-    pub live_design: LiveDesign,
+    pub live_design: Option<LiveDesign>,
     pub is_root: bool,
     pub is_prop: bool,
     pub in_live_design: bool,
@@ -23,8 +71,8 @@ pub struct Widget {
     /// widget id, if widget is prop, id is prop
     pub id: Option<String>,
     pub name: String,
-    pub source: Option<String>,
-    pub compiled_source: Option<PathBuf>,
+    pub source: Option<Source>,
+    // pub compiled_source: Option<PathBuf>,
     /// props in live_design
     pub props: Option<TokenStream>,
     /// events called in makepad
@@ -39,17 +87,11 @@ pub struct Widget {
 
 
 impl Widget {
-    pub fn new(special: &str, mut source_dir: PathBuf) -> Self {
+    pub fn new(special: PathBuf, mut source_dir: PathBuf) -> Self {
         let mut widget = Widget::default();
-        widget.source = Some(special.to_string());
+        widget.source = Some((&special,&source_dir).into());
         // 获取文件名且改为首字母大写的camel
-        widget.name = snake_to_camel(&special.split("/").last().unwrap().replace(".gen", ""))
-            .expect("can not transfer to camel");
-
-        source_dir.pop();
-        source_dir.push("src-gen");
-
-        widget.compiled_source = Some(source_dir);
+        widget.name = widget.source.as_ref().unwrap().source_name();
         widget
     }
     pub fn new_builtin(name: &str) -> Self {
@@ -164,8 +206,11 @@ impl From<gen_converter::model::Model> for Widget {
         dbg!(&template);
 
         let mut widget = if template.get_name().eq("component") {
-            let mut widget = Widget::new(&special, source);
-            let _ = widget.set_inherits(BuiltIn::from(template.get_inherits().unwrap()));
+            let mut widget = Widget::new(special, source);
+            let _ = widget.set_inherits(BuiltIn::from(template.get_inherits().unwrap()))
+            .set_is_root(template.is_root())
+            .set_id(template.get_id());
+            
             widget
         } else {
             build_widget(&template, style.as_ref())
@@ -182,11 +227,12 @@ impl From<gen_converter::model::Model> for Widget {
             );
         }
 
+        // todo!();
         todo!("{:#?}", widget);
     }
 }
 
-fn build_widget(template: &TemplateModel, style: Option<&ConvertStyle>) -> Widget {
+fn build_widget(template: &TemplateModel ,style: Option<&ConvertStyle>) -> Widget {
     let mut widget = Widget::new_builtin(template.get_name());
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), style);

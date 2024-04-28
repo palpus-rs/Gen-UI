@@ -38,7 +38,7 @@ pub enum ConvertResult {
 pub struct Model {
     /// 模型的唯一标识，通常被认为是该模型的文件路径，根据文件路径可以找到这个模型
     /// 这个字段在模型生成时会被设置
-    pub special: String,
+    pub special: PathBuf,
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
     pub template: Option<TemplateModel>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
@@ -74,7 +74,7 @@ impl Model {
     pub fn is_entry(&self) -> bool {
         self.is_entry
     }
-    pub fn get_special(&self) -> &str {
+    pub fn get_special(&self) -> &PathBuf {
         &self.special
     }
     pub fn set_template(&mut self, template: TemplateModel) -> () {
@@ -208,9 +208,9 @@ impl Model {
         }
     }
 
-    pub fn set_special(&mut self, special: &str) -> () {
-        if self.special.is_empty() {
-            self.special = special.to_string();
+    pub fn set_special(&mut self, special: impl Into<PathBuf>) -> () {
+        if self.special.as_os_str().is_empty() {
+            self.special = special.into();
         } else {
             panic!("special is already set");
         }

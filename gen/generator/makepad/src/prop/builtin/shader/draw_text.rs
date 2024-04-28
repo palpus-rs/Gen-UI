@@ -114,7 +114,7 @@ impl Display for DrawText {
             draw_text.push_str(&format!("{}: {},", DRAW_DEPTH, draw_depth));
         }
         if let Some(color) = &self.color {
-            draw_text.push_str(&format!("{}: {{{}}},", COLOR, color.to_string()));
+            draw_text.push_str(&format!("{}: {},", COLOR, color.to_string()));
         }
         write!(f, "{}", draw_text)
     }
@@ -249,7 +249,7 @@ mod test_draw_text {
         draw_text.draw_depth = Some(0.5_f32.try_into().unwrap());
         draw_text.color = Some("#445566".try_into().unwrap());
         let tk = draw_text.to_token_stream();
-        let prop = "text_style : { font : dep (\"crate://self/resources/icons/Icon_Search.svg\") , font_size : 12 , brightness : 0.5 , curve : 0.5 , line_spacing : 1.5 , top_drop : 1 , height_factor : 1 , } , wrap : Ellipsis , ignore_newlines : true , combine_spaces : true , font_scale : 1 , draw_depth : 0.5 , color : { # 445566 } ,";
+        let prop = "text_style : { font : dep (\"crate://self/resources/icons/Icon_Search.svg\") , font_size : 12 , brightness : 0.5 , curve : 0.5 , line_spacing : 1.5 , top_drop : 1 , height_factor : 1 , } , wrap : Ellipsis , ignore_newlines : true , combine_spaces : true , font_scale : 1 , draw_depth : 0.5 , color : # 445566 ,";
 
         assert_eq!(tk.to_string().as_str(), prop);
     }
