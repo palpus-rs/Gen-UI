@@ -1,8 +1,11 @@
 pub mod event;
 pub mod prop;
 pub mod script;
+mod source;
 mod style;
 mod template;
+
+pub use source::Source;
 
 use std::{
     error::Error,
@@ -17,7 +20,11 @@ use gen_parser::{ParseResult, ParseTarget, Strategy};
 
 pub use template::{PropTree, TemplateModel};
 
-use self::{prop::ConvertStyle, script::{ConvertScript, GenScriptModel, ScriptModel}, style::handle_styles};
+use self::{
+    prop::ConvertStyle,
+    script::{ConvertScript, GenScriptModel, ScriptModel},
+    style::handle_styles,
+};
 
 #[derive(Debug, Clone)]
 pub enum ConvertResult {
@@ -38,7 +45,7 @@ pub enum ConvertResult {
 pub struct Model {
     /// 模型的唯一标识，通常被认为是该模型的文件路径，根据文件路径可以找到这个模型
     /// 这个字段在模型生成时会被设置
-    pub special: PathBuf,
+    pub special: Source,
     /// 模型的模版部分，即.gen文件的<template>标签包裹的部分
     pub template: Option<TemplateModel>,
     /// 模型的脚本部分，即.gen文件的<script>标签包裹的部分
@@ -53,19 +60,19 @@ pub struct Model {
     pub compile: bool,
     /// 是否是入口文件
     pub is_entry: bool,
-    pub source: PathBuf
 }
 
 impl Model {
-    pub fn new(path: &Path, source:PathBuf,is_entry: bool) -> Result<Self, Box<dyn Error>> {
+    pub fn new(path: &Path, source: PathBuf, is_entry: bool) -> Result<Self, Box<dyn Error>> {
         match file_data(path) {
             Ok(input) => {
                 let mut model = Model::default();
                 let ast =
                     ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
-                let _ = Model::convert(&mut model, ast, path);
+                model.set_special(&path.into(), &source);
+                let _ = Model::convert(&mut model, ast);
                 model.is_entry = is_entry;
-                model.source = source;
+
                 Ok(model)
             }
             Err(e) => Err(e),
@@ -74,7 +81,7 @@ impl Model {
     pub fn is_entry(&self) -> bool {
         self.is_entry
     }
-    pub fn get_special(&self) -> &PathBuf {
+    pub fn get_special(&self) -> &Source {
         &self.special
     }
     pub fn set_template(&mut self, template: TemplateModel) -> () {
@@ -142,8 +149,8 @@ impl Model {
 
     /// 通过parser层解析的结果和文件路径生成converter层模型
     /// 这一层只需要处理template和style部分，script不变
-    fn convert(model: &mut Model, ast: ParseResult, path: &Path) -> () {
-        let _ = model.set_special(path.to_str().unwrap());
+    fn convert(model: &mut Model, ast: ParseResult) -> () {
+        // let _ = model.set_special(path.to_str().unwrap());
         // get strategy
         match &ast.strategy() {
             Strategy::None => {}
@@ -180,7 +187,6 @@ impl Model {
                     {
                         ConvertResult::Template(t) => {
                             if t.is_some() {
-                               
                                 model.set_template(t.unwrap());
                             } else {
                                 panic!("template cannot be none in Strategy::All")
@@ -199,7 +205,7 @@ impl Model {
                     }
                 }
                 // 处理script部分
-                if let Some(tree) =  model.get_binds_tree(){
+                if let Some(tree) = model.get_binds_tree() {
                     model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
                 }
             }
@@ -208,9 +214,9 @@ impl Model {
         }
     }
 
-    pub fn set_special(&mut self, special: impl Into<PathBuf>) -> () {
+    pub fn set_special(&mut self, special: &PathBuf, source: &PathBuf) -> () {
         if self.special.as_os_str().is_empty() {
-            self.special = special.into();
+            self.special = (special, source).into();
         } else {
             panic!("special is already set");
         }

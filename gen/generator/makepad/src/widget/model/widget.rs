@@ -1,61 +1,13 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 
-use gen_converter::model::{prop::ConvertStyle, TemplateModel};
+use gen_converter::model::{prop::ConvertStyle, Source, TemplateModel};
 use gen_parser::{PropsKey, Value};
-use gen_utils::common::snake_to_camel;
+
 use proc_macro2::{TokenStream, TokenTree};
 
-use crate::widget::{self, BuiltIn, StaticProps};
+use crate::widget::{BuiltIn, StaticProps};
 
 use super::{live_design::LiveDesign, role::Role, traits::WidgetTrait};
-
-#[derive(Debug, Default, Clone)]
-pub struct Source {
-    /// source file dir
-    pub origin_dir: PathBuf,
-    /// source file path
-    pub origin_file: PathBuf,
-    /// compiled file path
-    pub compiled_dir: PathBuf,
-    pub compiled_file: PathBuf,
-}
-
-impl Source {
-    pub fn source_name(&self) -> String{
-        let name = self.origin_file.file_name().unwrap().to_str().unwrap().to_string().replace(".gen", "");
-        snake_to_camel(&name).unwrap()
-    }
-}
-
-/// one is for source file path another is for source dir
-/// (source file path, source dir path)
-impl From<(&PathBuf,&PathBuf)> for Source {
-    fn from(value: (&PathBuf,&PathBuf)) -> Self {
-        let mut tmp = value.1.clone();
-        tmp.pop();
-        
-        let strip_path = value.0.strip_prefix(&tmp.as_path()).unwrap();
-       
-        let mut target: Vec<&std::ffi::OsStr> = strip_path.iter().collect();
-
-        // 检查是否有足够的组件可以修改
-        if ! target.is_empty() {
-            // 替换第一个组件
-            target[0] = "src-gen".as_ref();
-        }
-
-        // 使用base和修改后的组件重新构建完整的路径
-        let compiled_file = tmp.clone().join(PathBuf::from_iter( target));
-        let mut compiled_dir = tmp;
-        compiled_dir.push("src-gen");
-        Source {
-            origin_dir: value.1.clone(),
-            origin_file: value.0.clone(),
-            compiled_dir,
-            compiled_file,
-        }
-    }
-}
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
@@ -71,7 +23,7 @@ pub struct Widget {
     /// widget id, if widget is prop, id is prop
     pub id: Option<String>,
     pub name: String,
-    pub source: Option<Source>,
+    pub source: Source,
     // pub compiled_source: Option<PathBuf>,
     /// props in live_design
     pub props: Option<TokenStream>,
@@ -85,13 +37,12 @@ pub struct Widget {
     pub role: Role,
 }
 
-
 impl Widget {
-    pub fn new(special: PathBuf, mut source_dir: PathBuf) -> Self {
+    pub fn new(special: Source) -> Self {
         let mut widget = Widget::default();
-        widget.source = Some((&special,&source_dir).into());
+        widget.source = special;
         // 获取文件名且改为首字母大写的camel
-        widget.name = widget.source.as_ref().unwrap().source_name();
+        widget.name = widget.source.source_name();
         widget
     }
     pub fn new_builtin(name: &str) -> Self {
@@ -198,7 +149,6 @@ impl From<gen_converter::model::Model> for Widget {
             style,
             compile,
             is_entry,
-            source,
         } = value;
 
         let template = template.unwrap();
@@ -206,11 +156,12 @@ impl From<gen_converter::model::Model> for Widget {
         dbg!(&template);
 
         let mut widget = if template.get_name().eq("component") {
-            let mut widget = Widget::new(special, source);
-            let _ = widget.set_inherits(BuiltIn::from(template.get_inherits().unwrap()))
-            .set_is_root(template.is_root())
-            .set_id(template.get_id());
-            
+            let mut widget = Widget::new(special);
+            let _ = widget
+                .set_inherits(BuiltIn::from(template.get_inherits().unwrap()))
+                .set_is_root(template.is_root())
+                .set_id(template.get_id());
+
             widget
         } else {
             build_widget(&template, style.as_ref())
@@ -232,7 +183,7 @@ impl From<gen_converter::model::Model> for Widget {
     }
 }
 
-fn build_widget(template: &TemplateModel ,style: Option<&ConvertStyle>) -> Widget {
+fn build_widget(template: &TemplateModel, style: Option<&ConvertStyle>) -> Widget {
     let mut widget = Widget::new_builtin(template.get_name());
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), style);
@@ -272,7 +223,10 @@ fn get_widget_styles(
     }
 }
 
-fn combine_styles(l: Option<HashMap<PropsKey, Value>>, r: Option<HashMap<&PropsKey, &Value>>) -> Option<HashMap<PropsKey, Value>> {
+fn combine_styles(
+    l: Option<HashMap<PropsKey, Value>>,
+    r: Option<HashMap<&PropsKey, &Value>>,
+) -> Option<HashMap<PropsKey, Value>> {
     match (l, r) {
         (Some(l), Some(r)) => {
             let mut styles = l.clone();
@@ -282,7 +236,7 @@ fn combine_styles(l: Option<HashMap<PropsKey, Value>>, r: Option<HashMap<&PropsK
             Some(styles)
         }
         (Some(l), None) => Some(l),
-        (None, Some(r)) => Some(r.into_iter().map(|(k,v)| (k.clone(),v.clone())).collect()),
+        (None, Some(r)) => Some(r.into_iter().map(|(k, v)| (k.clone(), v.clone())).collect()),
         (None, None) => None,
     }
 }
