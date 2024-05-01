@@ -70,6 +70,27 @@ impl GenScriptModel {
     pub fn new(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> Self {
         build_script(block, bind_fn_tree)
     }
+    pub fn get_uses(&self)->Option<&UseMod>{
+        self.uses.as_ref()
+    }
+    pub fn get_prop_ptr(&self)->Option<&syn::ItemStruct>{
+        self.prop_ptr.as_ref()
+    }
+    pub fn get_event_ptr(&self)->Option<&syn::ItemEnum>{
+        self.event_ptr.as_ref()
+    }
+    pub fn get_lifetimes(&self)->Option<&LifeTime>{
+        self.lifetimes.as_ref()
+    }
+    pub fn get_sub_prop_binds(&self)->Option<&Vec<PropFn>>{
+        self.sub_prop_binds.as_ref()
+    }
+    pub fn get_sub_event_binds(&self)->Option<&Vec<PropFn>>{
+        self.sub_event_binds.as_ref()
+    }
+    pub fn get_other(&self)->Option<&Vec<syn::Stmt>>{
+        self.other.as_ref()
+    }
     pub fn set_uses(&mut self, uses: UseMod) {
         self.uses = Some(uses);
     }

@@ -1,13 +1,18 @@
 use std::collections::HashMap;
 
-use gen_converter::model::{prop::ConvertStyle, Source, TemplateModel};
+use gen_converter::model::{
+    prop::ConvertStyle,
+    script::{GenScriptModel, ScriptModel},
+    Source, TemplateModel,
+};
 use gen_parser::{PropsKey, Value};
 
 use proc_macro2::{TokenStream, TokenTree};
+use syn::ItemStruct;
 
 use crate::widget::{BuiltIn, StaticProps};
 
-use super::{live_design::LiveDesign, role::Role, traits::WidgetTrait};
+use super::{handler::WidgetHandler, live_design::LiveDesign, role::Role, traits::WidgetTrait};
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
@@ -18,12 +23,11 @@ pub struct Widget {
     pub live_design: Option<LiveDesign>,
     pub is_root: bool,
     pub is_prop: bool,
-    pub in_live_design: bool,
     pub is_built_in: bool,
     /// widget id, if widget is prop, id is prop
     pub id: Option<String>,
     pub name: String,
-    pub source: Source,
+    pub source: Option<Source>,
     // pub compiled_source: Option<PathBuf>,
     /// props in live_design
     pub props: Option<TokenStream>,
@@ -38,11 +42,23 @@ pub struct Widget {
 }
 
 impl Widget {
-    pub fn new(special: Source) -> Self {
+    pub fn new(special: Option<Source>, name: &str) -> Self {
         let mut widget = Widget::default();
-        widget.source = special;
-        // 获取文件名且改为首字母大写的camel
-        widget.name = widget.source.source_name();
+        match special {
+            Some(special) => {
+                widget.source.replace(special);
+                // 获取文件名且改为首字母大写的camel
+                widget.name = widget.source.as_ref().unwrap().source_name();
+                widget.set_inherits(BuiltIn::try_from(name).unwrap());
+            }
+            None => {
+                widget.name = name.to_string();
+                let builtin = BuiltIn::try_from(name);
+                widget
+                    .set_is_built_in(builtin.is_ok())
+                    .set_inherits(builtin.unwrap());
+            }
+        }
         widget
     }
     pub fn new_builtin(name: &str) -> Self {
@@ -66,10 +82,6 @@ impl Widget {
         self.is_prop = is_prop;
         self
     }
-    pub fn set_in_live_design(&mut self, in_live_design: bool) -> &mut Self {
-        self.in_live_design = in_live_design;
-        self
-    }
     pub fn set_is_built_in(&mut self, is_built_in: bool) -> &mut Self {
         self.is_built_in = is_built_in;
         self
@@ -82,7 +94,9 @@ impl Widget {
             // } else {
             //     todo!("widget props define unsoloved => {:#?}",props);
             // }
-            self.props = Some(BuiltIn::from(&self.name).props(&props));
+            if self.is_built_in {
+                self.props = Some(BuiltIn::from(&self.name).props(&props));
+            }
         }
         self
     }
@@ -94,6 +108,39 @@ impl Widget {
 
     //     self
     // }
+    /// - set prop_ptr
+    /// - set event_ptr
+    /// - set lifetime
+    /// - set
+    pub fn set_script(&mut self, script: Option<&ScriptModel>) -> &mut Self {
+        if let Some(sc) = script {
+            if let ScriptModel::Gen(sc) = sc {
+                let GenScriptModel {
+                    uses,
+                    prop_ptr,
+                    event_ptr,
+                    lifetimes,
+                    sub_prop_binds,
+                    sub_event_binds,
+                    other,
+                } = sc;
+                self.set_prop_ptr(prop_ptr);
+                // if let Some(lifetimes) = sc.get_lifetimes(){
+                //     self.set_lifetimes(lifetimes);
+                // }
+                // if let Some(other) = sc.get_other(){
+                //     self.set_other(other);
+                // }
+                // if let Some(sub_prop_binds) = sc.get_sub_prop_binds(){
+                //     self.set_sub_prop_binds(sub_prop_binds);
+                // }
+                // if let Some(sub_event_binds) = sc.get_sub_event_binds(){
+                //     self.set_sub_event_binds(sub_event_binds);
+                // }
+            }
+        }
+        self
+    }
     pub fn set_events(&mut self, events: HashMap<String, TokenStream>) -> &mut Self {
         self.events = Some(events);
         self
@@ -106,8 +153,17 @@ impl Widget {
 
         self
     }
-    pub fn set_prop_ptr(&mut self, prop_ptr: TokenStream) -> &mut Self {
-        self.prop_ptr = Some(prop_ptr);
+    pub fn get_inherits(&self) -> Option<&BuiltIn> {
+        self.inherits.as_ref()
+    }
+    pub fn set_prop_ptr(&mut self, prop_ptr: &Option<ItemStruct>) -> &mut Self {
+        if let Some(prop_ptr) = prop_ptr {
+            self.prop_ptr.replace(WidgetHandler::prop_ptr(
+                prop_ptr,
+                self.get_inherits().unwrap(),
+            ));
+        }
+
         self
     }
     pub fn set_event_ptr(&mut self, event_ptr: TokenStream) -> &mut Self {
@@ -153,45 +209,31 @@ impl From<gen_converter::model::Model> for Widget {
 
         let template = template.unwrap();
 
-        dbg!(&template);
+        // dbg!(&template);
+        // dbg!(&script);
 
-        let mut widget = if template.get_name().eq("component") {
-            let mut widget = Widget::new(special);
-            let _ = widget
-                .set_inherits(BuiltIn::from(template.get_inherits().unwrap()))
-                .set_is_root(template.is_root())
-                .set_id(template.get_id());
-
-            widget
-        } else {
-            build_widget(&template, style.as_ref())
-        };
-
-        if template.has_children() {
-            widget.set_children(
-                template
-                    .get_children()
-                    .unwrap()
-                    .iter()
-                    .map(|item| build_widget(item, style.as_ref()))
-                    .collect(),
-            );
-        }
+        let mut widget = build_widget(Some(special), &template, style.as_ref(), script.as_ref());
 
         // todo!();
         todo!("{:#?}", widget);
     }
 }
 
-fn build_widget(template: &TemplateModel, style: Option<&ConvertStyle>) -> Widget {
-    let mut widget = Widget::new_builtin(template.get_name());
+fn build_widget(
+    special: Option<Source>,
+    template: &TemplateModel,
+    style: Option<&ConvertStyle>,
+    script: Option<&ScriptModel>,
+) -> Widget {
+    let mut widget = Widget::new(special, template.get_name());
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
     widget
         .set_is_root(template.is_root())
         .set_id(template.get_id())
-        .set_props(widget_styles);
+        .set_props(widget_styles)
+        .set_script(script);
 
     if template.has_children() {
         widget.set_children(
@@ -199,7 +241,7 @@ fn build_widget(template: &TemplateModel, style: Option<&ConvertStyle>) -> Widge
                 .get_children()
                 .unwrap()
                 .iter()
-                .map(|item| build_widget(item, style))
+                .map(|item| build_widget(None, item, style, None))
                 .collect(),
         );
     }

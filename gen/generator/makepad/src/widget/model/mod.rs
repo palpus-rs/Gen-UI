@@ -15,6 +15,7 @@ pub mod match_event;
 pub mod role;
 pub mod traits;
 pub mod widget;
+pub mod handler;
 
 
 #[derive(Debug, Clone)]

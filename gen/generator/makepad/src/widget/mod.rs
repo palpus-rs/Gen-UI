@@ -18,6 +18,7 @@ use gen_utils::common::{
     snake_to_camel, token_stream_to_tree, token_tree_ident, token_tree_punct_alone,
 };
 use proc_macro2::{TokenStream, TokenTree};
+use syn::ItemStruct;
 
 use crate::{str_to_string_try_from, ToToken};
 
@@ -33,6 +34,7 @@ pub mod model;
 pub mod utils;
 pub mod view;
 pub mod window;
+pub mod area;
 
 // pub use define::*;
 // pub use button::*;
@@ -45,6 +47,9 @@ const VIEW: &str = "View";
 const LABEL: &str = "Label";
 const BUTTON: &str = "Button";
 const AREA: &str = "Area";
+/// 表示GenUI的声明的单独的一个组件，不是内置组件
+/// 但它会直接认为是Makepad的Area
+const COMPONENT: &str = "Component";
 
 // #[derive(Debug, Clone, PartialEq, Default)]
 // pub enum Widget {
@@ -197,6 +202,15 @@ impl BuiltIn {
             _ => panic!("only built-in widget can be get"),
         }
     }
+    pub fn to_token_stream(&self, ptr: &ItemStruct)->TokenStream{
+        match self{
+            BuiltIn::Window => todo!(),
+            BuiltIn::View => view::ViewPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Label => todo!(),
+            BuiltIn::Button => todo!(),
+            BuiltIn::Area => area,
+        }
+    }
     /// you mut be sure that the value is a built-in widget
     pub fn from(value:&str) -> Self{
         value.try_into().unwrap()
@@ -214,6 +228,7 @@ impl TryFrom<&str> for BuiltIn {
             LABEL => Ok(BuiltIn::Label),
             BUTTON =>Ok( BuiltIn::Button),
             AREA => Ok(BuiltIn::Area),
+            COMPONENT => Ok(BuiltIn::Area),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
