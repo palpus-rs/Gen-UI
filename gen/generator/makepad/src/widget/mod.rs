@@ -211,6 +211,12 @@ impl BuiltIn {
             BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
         }
     }
+    pub fn has_event(&self)->bool{
+        match self {
+            BuiltIn::Button => true,
+            _ => false
+        }
+    }
     /// you mut be sure that the value is a built-in widget
     pub fn from(value:&str) -> Self{
         value.try_into().unwrap()

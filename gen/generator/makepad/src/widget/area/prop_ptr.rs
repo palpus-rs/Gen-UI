@@ -62,3 +62,24 @@ impl ToToken for AreaPropPtr {
         self.0.to_token_stream()
     }
 }
+
+#[cfg(test)]
+mod test_area_prop_ptr {
+    use crate::ToToken;
+
+    #[test]
+    fn ptr() {
+        let item = quote::quote! {
+            #[derive(Prop)]
+            pub struct AreaPropPtr{
+                pub a: u32,
+                pub b: String,
+            }
+        };
+        let item = syn::parse2(item).unwrap();
+        let ptr = crate::widget::area::prop_ptr::AreaPropPtr::from(&item);
+        let token = ptr.to_token_stream();
+        let res = "# [derive (Live , LiveHook , Widget)] pub struct AreaPropPtr { # [live] pub a : u32 , # [live] pub b : String , # [deref] # [rust] pub area : Area , # [layout] pub layout : Layout , # [walk] pub walk : Walk }";
+        assert_eq!(token.to_string().as_str(), res);
+    }
+}

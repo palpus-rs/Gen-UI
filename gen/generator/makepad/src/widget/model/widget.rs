@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use gen_converter::model::{
     prop::ConvertStyle,
-    script::{GenScriptModel, ScriptModel},
+    script::{GenScriptModel, ScriptModel, UseMod},
     Source, TemplateModel,
 };
 use gen_parser::{PropsKey, Value};
 
 use proc_macro2::{TokenStream, TokenTree};
-use syn::ItemStruct;
+use syn::{ItemEnum, ItemStruct, Stmt};
 
 use crate::widget::{BuiltIn, StaticProps};
 
@@ -28,6 +28,7 @@ pub struct Widget {
     pub id: Option<String>,
     pub name: String,
     pub source: Option<Source>,
+    pub uses: Option<TokenStream>,
     // pub compiled_source: Option<PathBuf>,
     /// props in live_design
     pub props: Option<TokenStream>,
@@ -35,6 +36,8 @@ pub struct Widget {
     pub events: Option<HashMap<String, TokenStream>>,
     pub prop_ptr: Option<TokenStream>,
     pub event_ptr: Option<TokenStream>,
+    pub event_ref: Option<TokenStream>,
+    pub event_set: Option<TokenStream>,
     pub children: Option<Vec<Widget>>,
     pub inherits: Option<BuiltIn>,
     pub traits: WidgetTrait,
@@ -119,25 +122,31 @@ impl Widget {
                     uses,
                     prop_ptr,
                     event_ptr,
-                    lifetimes,
                     sub_prop_binds,
                     sub_event_binds,
                     other,
+                    ..
                 } = sc;
-                self.set_prop_ptr(prop_ptr);
-                // if let Some(lifetimes) = sc.get_lifetimes(){
-                //     self.set_lifetimes(lifetimes);
-                // }
-                // if let Some(other) = sc.get_other(){
-                //     self.set_other(other);
-                // }
-                // if let Some(sub_prop_binds) = sc.get_sub_prop_binds(){
-                //     self.set_sub_prop_binds(sub_prop_binds);
-                // }
-                // if let Some(sub_event_binds) = sc.get_sub_event_binds(){
-                //     self.set_sub_event_binds(sub_event_binds);
-                // }
+
+                self.set_uses(uses)
+                    .set_prop_ptr(prop_ptr)
+                    .set_event_ptr(event_ptr)
+                    .draw_walk(other);
+
+                todo!("{:#?}", self);
             }
+        }
+        self
+    }
+    pub fn draw_walk(&mut self, sc: &Option<Vec<Stmt>>) -> &mut Self {
+        if let Some(stmts) = sc {
+            let _ = self.traits.draw_walk(stmts);
+        }
+        self
+    }
+    pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {
+        if let Some(uses) = uses {
+            self.uses = WidgetHandler::uses(uses);
         }
         self
     }
@@ -163,11 +172,13 @@ impl Widget {
                 self.get_inherits().unwrap(),
             ));
         }
-
         self
     }
-    pub fn set_event_ptr(&mut self, event_ptr: TokenStream) -> &mut Self {
-        self.event_ptr = Some(event_ptr);
+    pub fn set_event_ptr(&mut self, event_ptr: &Option<ItemEnum>) -> &mut Self {
+        if let Some(event_ptr) = event_ptr {
+            self.event_ptr.replace(WidgetHandler::event_ptr(event_ptr));
+        }
+
         self
     }
     pub fn set_children(&mut self, children: Vec<Widget>) -> &mut Self {

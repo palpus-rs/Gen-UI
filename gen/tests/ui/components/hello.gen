@@ -11,9 +11,7 @@ use gen_macros::{Event, Props, on_shutdown};
 
 #[derive(Event,Clone,Debug)]
 pub enum Events{
-    #[name("click")]
     Clicked(String),
-    None,
 }
 
 #[derive(Prop)]

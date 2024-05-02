@@ -1,4 +1,6 @@
 use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::Stmt;
 /// 对于Widget来说
 /// draw_walk是必须实现的
 /// 其他的方法是可选的
@@ -21,4 +23,15 @@ pub struct WidgetTrait {
     pub set_text: Option<TokenStream>,
     pub set_text_and_redraw: Option<TokenStream>,
     pub ref_cast_type_id: Option<TokenStream>,
+}
+
+impl WidgetTrait {
+    pub fn new(draw_walk: TokenStream) -> Self {
+        let mut widget_trait = WidgetTrait::default();
+        widget_trait.draw_walk = draw_walk;
+        widget_trait
+    }
+    pub fn draw_walk(&mut self, value: &Vec<Stmt>) ->  (){
+        self.draw_walk = value.into_iter().map(|item| item.to_token_stream()).collect();
+    }
 }

@@ -10,6 +10,7 @@ use proc_macro2::TokenStream;
 pub use lifetime::*;
 pub use model::*;
 pub use prop_fn::*;
+pub use r#use::*;
 
 pub type ConvertScript = Script;
 
