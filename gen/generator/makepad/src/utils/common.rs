@@ -1,5 +1,6 @@
 use gen_utils::common::*;
-use proc_macro2::TokenTree;
+use proc_macro2::{Span, TokenTree};
+use syn::{punctuated::Punctuated, token::{Bracket, Colon, Pound, Pub}, Field, Ident, Path};
 
 use super::{derive_macros, id_macro};
 
@@ -294,4 +295,53 @@ pub fn self_handle_startup() -> Vec<TokenTree> {
         token_tree_ident("handle_startup"),
         token_tree_group_paren(vec![token_tree_ident("cx")]),
     ]
+}
+
+pub fn struct_field(attrs: Vec<&str>, ident:&str, seg:&str )->Field{
+
+    let attrs = attrs.iter().map(|attr| {
+        let attr = syn::Ident::new(attr, proc_macro2::Span::call_site());
+        let mut segments =  Punctuated::new();
+        let path = syn::PathSegment{
+            ident: attr,
+            arguments: syn::PathArguments::None
+        };
+        segments.push(path);
+        syn::Attribute{
+            pound_token: Pound::default(),
+            style: syn::AttrStyle::Outer,
+            bracket_token: Bracket::default(),
+            meta: syn::Meta::Path(Path{
+                leading_colon: None,
+                segments
+            })
+            
+        }
+    }).collect();
+
+    let mut segments = Punctuated::new();
+    let path = syn::PathSegment{
+        ident: Ident::new(seg, Span::call_site()),
+        arguments: syn::PathArguments::None
+    };
+    segments.push(path);
+
+    Field{
+        attrs,
+        vis: syn::Visibility::Public(Pub::default()),
+        mutability: syn::FieldMutability::None,
+        ident: Some(
+            Ident::new(ident, Span::call_site())
+        ),
+        colon_token: Some(
+            Colon::default()
+        ),
+        ty: syn::Type::Path(syn::TypePath{
+            qself: None,
+            path: Path{
+                leading_colon: None,
+                segments,
+            }
+        }),
+    }
 }

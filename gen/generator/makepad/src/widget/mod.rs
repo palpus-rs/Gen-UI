@@ -208,7 +208,7 @@ impl BuiltIn {
             BuiltIn::View => view::ViewPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
-            BuiltIn::Area => area,
+            BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
         }
     }
     /// you mut be sure that the value is a built-in widget

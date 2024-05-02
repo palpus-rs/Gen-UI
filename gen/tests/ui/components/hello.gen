@@ -18,7 +18,7 @@ pub enum Events{
 
 #[derive(Prop)]
 pub struct MyProps{
-    pub label1: String
+    pub label1: String,
 }
 
 let fs: f64 = 18.0;

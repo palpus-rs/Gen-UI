@@ -12,8 +12,9 @@ mod event_order;
 mod wrap;
 mod font;
 mod import;
+mod value;
 
-
+pub use value::*;
 pub use import::*;
 pub use font::*;
 pub use wrap::*;

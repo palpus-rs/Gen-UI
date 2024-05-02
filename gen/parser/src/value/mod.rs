@@ -45,6 +45,7 @@ pub enum Value {
     Color(Color),
     Struct(String),
     UnKnown(String),
+    Dep(String),
 }
 
 impl Value {
@@ -224,6 +225,8 @@ impl Display for Value {
                     .collect::<Vec<String>>()
             ),
             Value::UnKnown(u) => u.to_string(),
+            Value::Dep(dep) => dep.to_string(),
+            
         };
 
         f.write_str(&res)
