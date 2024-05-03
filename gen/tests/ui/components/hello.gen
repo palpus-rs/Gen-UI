@@ -15,7 +15,7 @@ pub enum Events{
 }
 
 #[derive(Prop)]
-pub struct MyProps{
+pub struct Hello{
     pub label1: String,
 }
 
@@ -37,6 +37,6 @@ fn hello(){
     brightness: 1.1;
     color: #fff;
     wrap: Word;
-    font: use("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf");
+    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
 }
 </style>

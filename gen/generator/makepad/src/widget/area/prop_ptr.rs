@@ -42,7 +42,7 @@ impl From<&ItemStruct> for AreaPropPtr {
             // add Area
             fields
                 .named
-                .push(struct_field(vec!["deref", "rust"], "area", "Area"));
+                .push(struct_field(vec!["redraw", "rust"], "area", "Area"));
             // add Layout
             fields
                 .named

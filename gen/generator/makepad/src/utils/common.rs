@@ -1,6 +1,10 @@
 use gen_utils::common::*;
-use proc_macro2::{Span, TokenTree};
-use syn::{punctuated::Punctuated, token::{Bracket, Colon, Pound, Pub}, Field, Ident, Path};
+use proc_macro2::{Span, TokenStream, TokenTree};
+use syn::{
+    punctuated::Punctuated,
+    token::{Bracket, Colon, Pound, Pub},
+    Field, Ident, Path,
+};
 
 use super::{derive_macros, id_macro};
 
@@ -156,8 +160,8 @@ pub fn self_event_react(
 }
 
 /// generate `special = {{special}}{...}`
-pub fn special_struct(s: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
-    vec![
+pub fn special_struct(s: &str, code: Option<TokenStream>) -> Vec<TokenTree> {
+    let mut tk = vec![
         token_tree_ident(s),
         token_tree_punct_alone('='),
         token_tree_punct_joint('{'),
@@ -165,8 +169,12 @@ pub fn special_struct(s: &str, code: Vec<TokenTree>) -> Vec<TokenTree> {
         token_tree_ident(s),
         token_tree_punct_joint('}'),
         token_tree_punct_joint('}'),
-        token_tree_group(code),
-    ]
+    ];
+
+    if let Some(code) = code {
+        tk.push(token_tree_group(token_stream_to_tree(code)));
+    }
+    tk
 }
 
 /// generate `[id] :|= <tag_name>{...prop...}`
@@ -177,8 +185,8 @@ pub fn component_render(
     is_root: bool,
     is_component: bool,
     tag: &str,
-    props: Option<Vec<TokenTree>>,
-    children: Option<Vec<TokenTree>>,
+    props: Option<TokenStream>,
+    children: Option<TokenStream>,
 ) -> Vec<TokenTree> {
     let mut tk = Vec::new();
     if id.is_some() {
@@ -198,11 +206,11 @@ pub fn component_render(
 
     //先加props再加chidren
     let mut props_children = vec![];
-   
-    if props.is_some(){
+
+    if props.is_some() {
         props_children.extend(props.unwrap());
     }
-    if children.is_some(){
+    if children.is_some() {
         props_children.extend(children.unwrap());
     }
     tk.push(token_tree_group(props_children));
@@ -297,51 +305,48 @@ pub fn self_handle_startup() -> Vec<TokenTree> {
     ]
 }
 
-pub fn struct_field(attrs: Vec<&str>, ident:&str, seg:&str )->Field{
-
-    let attrs = attrs.iter().map(|attr| {
-        let attr = syn::Ident::new(attr, proc_macro2::Span::call_site());
-        let mut segments =  Punctuated::new();
-        let path = syn::PathSegment{
-            ident: attr,
-            arguments: syn::PathArguments::None
-        };
-        segments.push(path);
-        syn::Attribute{
-            pound_token: Pound::default(),
-            style: syn::AttrStyle::Outer,
-            bracket_token: Bracket::default(),
-            meta: syn::Meta::Path(Path{
-                leading_colon: None,
-                segments
-            })
-            
-        }
-    }).collect();
+pub fn struct_field(attrs: Vec<&str>, ident: &str, seg: &str) -> Field {
+    let attrs = attrs
+        .iter()
+        .map(|attr| {
+            let attr = syn::Ident::new(attr, proc_macro2::Span::call_site());
+            let mut segments = Punctuated::new();
+            let path = syn::PathSegment {
+                ident: attr,
+                arguments: syn::PathArguments::None,
+            };
+            segments.push(path);
+            syn::Attribute {
+                pound_token: Pound::default(),
+                style: syn::AttrStyle::Outer,
+                bracket_token: Bracket::default(),
+                meta: syn::Meta::Path(Path {
+                    leading_colon: None,
+                    segments,
+                }),
+            }
+        })
+        .collect();
 
     let mut segments = Punctuated::new();
-    let path = syn::PathSegment{
+    let path = syn::PathSegment {
         ident: Ident::new(seg, Span::call_site()),
-        arguments: syn::PathArguments::None
+        arguments: syn::PathArguments::None,
     };
     segments.push(path);
 
-    Field{
+    Field {
         attrs,
         vis: syn::Visibility::Public(Pub::default()),
         mutability: syn::FieldMutability::None,
-        ident: Some(
-            Ident::new(ident, Span::call_site())
-        ),
-        colon_token: Some(
-            Colon::default()
-        ),
-        ty: syn::Type::Path(syn::TypePath{
+        ident: Some(Ident::new(ident, Span::call_site())),
+        colon_token: Some(Colon::default()),
+        ty: syn::Type::Path(syn::TypePath {
             qself: None,
-            path: Path{
+            path: Path {
                 leading_colon: None,
                 segments,
-            }
+            },
         }),
     }
 }

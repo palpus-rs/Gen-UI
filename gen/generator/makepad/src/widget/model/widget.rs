@@ -10,7 +10,11 @@ use gen_parser::{PropsKey, Value};
 use proc_macro2::{TokenStream, TokenTree};
 use syn::{ItemEnum, ItemStruct, Stmt};
 
-use crate::widget::{BuiltIn, StaticProps};
+use crate::{
+    utils::{component_render, special_struct},
+    widget::{BuiltIn, StaticProps},
+    ToToken,
+};
 
 use super::{handler::WidgetHandler, live_design::LiveDesign, role::Role, traits::WidgetTrait};
 
@@ -20,7 +24,7 @@ use super::{handler::WidgetHandler, live_design::LiveDesign, role::Role, traits:
 #[derive(Debug, Default, Clone)]
 pub struct Widget {
     /// Makepad live_design! macro
-    pub live_design: Option<LiveDesign>,
+    // pub live_design: Option<LiveDesign>,
     pub is_root: bool,
     pub is_prop: bool,
     pub is_built_in: bool,
@@ -133,7 +137,7 @@ impl Widget {
                     .set_event_ptr(event_ptr)
                     .draw_walk(other);
 
-                todo!("{:#?}", self);
+                // todo!("{:#?}", self);
             }
         }
         self
@@ -178,7 +182,6 @@ impl Widget {
         if let Some(event_ptr) = event_ptr {
             self.event_ptr.replace(WidgetHandler::event_ptr(event_ptr));
         }
-
         self
     }
     pub fn set_children(&mut self, children: Vec<Widget>) -> &mut Self {
@@ -205,6 +208,71 @@ impl Widget {
         self.role = role;
         self
     }
+    pub fn widget_children_tree(&self) -> Option<TokenStream> {
+        let mut tk = TokenStream::new();
+        if let Some(children) = &self.children {
+            for child in children {
+                let Widget {
+                    is_root,
+                    is_prop,
+                    id,
+                    name,
+                    props,
+                    ..
+                } = child;
+
+                tk.extend(component_render(
+                    id.as_ref(),
+                    *is_root,
+                    *is_prop,
+                    name,
+                    props.clone(),
+                    child.widget_children_tree(),
+                ));
+            }
+            Some(tk)
+        } else {
+            None
+        }
+    }
+    /// get widget tree
+    pub fn widget_tree(&self) -> Option<TokenStream> {
+        let mut tk = TokenStream::new();
+
+        let children = self.widget_children_tree();
+
+        tk.extend(special_struct(&self.name, children));
+
+        if tk.is_empty() {
+            None
+        } else {
+            Some(tk)
+        }
+    }
+    pub fn widget_logic(&self) -> Option<TokenStream> {
+        let mut tk = TokenStream::new();
+        if let Some(uses_tk) = &self.uses {
+            tk.extend(uses_tk.clone());
+        }
+        if let Some(prop_ptr_tk) = &self.prop_ptr {
+            tk.extend(prop_ptr_tk.clone());
+        }
+        if let Some(event_ptr_tk) = &self.event_ptr {
+            tk.extend(event_ptr_tk.clone());
+        }
+        if let Some(event_set_tk) = &self.event_set {
+            tk.extend(event_set_tk.clone());
+        }
+        if let Some(event_ref_tk) = &self.event_ref {
+            tk.extend(event_ref_tk.clone());
+        }
+
+        if tk.is_empty() {
+            None
+        } else {
+            Some(tk)
+        }
+    }
 }
 
 impl From<gen_converter::model::Model> for Widget {
@@ -226,7 +294,11 @@ impl From<gen_converter::model::Model> for Widget {
         let mut widget = build_widget(Some(special), &template, style.as_ref(), script.as_ref());
 
         // todo!();
-        todo!("{:#?}", widget);
+        // todo!("{:#?}", widget);
+
+        let res = LiveDesign::from(widget);
+
+        todo!("{:#?}", res.to_token_stream().to_string());
     }
 }
 
@@ -238,7 +310,7 @@ fn build_widget(
 ) -> Widget {
     let mut widget = Widget::new(special, template.get_name());
     // get styles from style by id
-    let widget_styles = get_widget_styles(template.get_id(), style);
+    let widget_styles = get_widget_styles(template.get_id(), template.get_class(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
     widget
         .set_is_root(template.is_root())
@@ -262,16 +334,35 @@ fn build_widget(
 /// get styles from style by id
 fn get_widget_styles(
     id: Option<&String>,
+    class: Option<&Value>,
     styles: Option<&ConvertStyle>,
 ) -> Option<HashMap<PropsKey, Value>> {
     match styles {
-        Some(styles) => match id {
-            Some(id) => match styles.get(id) {
-                Some(style) => Some(style.clone()),
-                None => None,
-            },
-            None => None,
-        },
+        Some(styles) => {
+            let mut map = HashMap::new();
+            if let Some(id) = id {
+                if let Some(id_styles) = styles.get(id) {
+                    map.extend(id_styles.clone());
+                }
+            }
+            if let Some(class) = class {
+                if let Some(class_styles) = styles.get(class.to_string().as_str()) {
+                    map.extend(class_styles.clone());
+                }
+            }
+            if map.is_empty() {
+                None
+            } else {
+                Some(map)
+            }
+            // match id {
+            //     Some(id) => match styles.get(id) {
+            //         Some(style) => Some(style.clone()),
+            //         None => None,
+            //     },
+            //     None => None,
+            // }
+        }
         None => None,
     }
 }
