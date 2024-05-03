@@ -260,6 +260,7 @@ impl Widget {
         if let Some(event_ptr_tk) = &self.event_ptr {
             tk.extend(event_ptr_tk.clone());
         }
+        tk.extend(self.traits.to_token_stream());
         if let Some(event_set_tk) = &self.event_set {
             tk.extend(event_set_tk.clone());
         }
@@ -289,8 +290,8 @@ impl From<gen_converter::model::Model> for Widget {
         let template = template.unwrap();
 
         // dbg!(&template);
-        // dbg!(&script);
-
+        
+       
         let mut widget = build_widget(Some(special), &template, style.as_ref(), script.as_ref());
 
         // todo!();

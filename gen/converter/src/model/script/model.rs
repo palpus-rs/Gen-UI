@@ -9,17 +9,16 @@ use crate::model::PropTree;
 use super::{r#use::UseMod, LifeTime, PropFn};
 
 #[derive(Debug, Clone)]
-pub enum ScriptModel{
+pub enum ScriptModel {
     Gen(GenScriptModel),
-    Rs(Block)
+    Rs(Block),
 }
 
-impl Default for  ScriptModel {
+impl Default for ScriptModel {
     fn default() -> Self {
         ScriptModel::Gen(GenScriptModel::default())
     }
 }
-
 
 #[derive(Debug, Clone, Default)]
 pub struct GenScriptModel {
@@ -70,25 +69,25 @@ impl GenScriptModel {
     pub fn new(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> Self {
         build_script(block, bind_fn_tree)
     }
-    pub fn get_uses(&self)->Option<&UseMod>{
+    pub fn get_uses(&self) -> Option<&UseMod> {
         self.uses.as_ref()
     }
-    pub fn get_prop_ptr(&self)->Option<&syn::ItemStruct>{
+    pub fn get_prop_ptr(&self) -> Option<&syn::ItemStruct> {
         self.prop_ptr.as_ref()
     }
-    pub fn get_event_ptr(&self)->Option<&syn::ItemEnum>{
+    pub fn get_event_ptr(&self) -> Option<&syn::ItemEnum> {
         self.event_ptr.as_ref()
     }
-    pub fn get_lifetimes(&self)->Option<&LifeTime>{
+    pub fn get_lifetimes(&self) -> Option<&LifeTime> {
         self.lifetimes.as_ref()
     }
-    pub fn get_sub_prop_binds(&self)->Option<&Vec<PropFn>>{
+    pub fn get_sub_prop_binds(&self) -> Option<&Vec<PropFn>> {
         self.sub_prop_binds.as_ref()
     }
-    pub fn get_sub_event_binds(&self)->Option<&Vec<PropFn>>{
+    pub fn get_sub_event_binds(&self) -> Option<&Vec<PropFn>> {
         self.sub_event_binds.as_ref()
     }
-    pub fn get_other(&self)->Option<&Vec<syn::Stmt>>{
+    pub fn get_other(&self) -> Option<&Vec<syn::Stmt>> {
         self.other.as_ref()
     }
     pub fn set_uses(&mut self, uses: UseMod) {
@@ -247,8 +246,19 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
             syn::Stmt::Local(local) => {
                 // 处理属性绑定 和 事件绑定
 
-                if let Pat::Ident(ident) = &local.pat {
-                    let ident = ident.ident.to_string();
+                let ident = match &local.pat {
+                    Pat::Ident(ident) => Some(ident.ident.to_string()),
+                    Pat::Type(ty) => {
+                        if let Pat::Ident(ident) = &*ty.pat {
+                            Some(ident.ident.to_string())
+                        } else {
+                            None
+                        }
+                    }
+                    _ => None,
+                };
+
+                if let Some(ident) = ident {
                     if model.push_sub_prop_fn(&bind_fn_tree, &ident, &stmt) {
                         continue;
                     } else {
@@ -284,7 +294,9 @@ where
     'out: for ((widget, id), prop_fn_key) in bind_tree {
         if prop_fn_key.is_some() {
             for (k, v) in prop_fn_key.as_ref().unwrap() {
-                if condition(v).eq(ident) {
+                let target_ident = condition(v);
+                // dbg!(target_ident, ident);
+                if target_ident.eq(ident) || target_ident.starts_with(ident) {
                     let item = PropFn {
                         widget: widget.to_string(),
                         id: id.to_string(),
@@ -293,9 +305,11 @@ where
                         code: code.clone(),
                     };
                     f(target, item);
+                    flag = true;
+                    break 'out;
+                } else {
+                    continue;
                 }
-                flag = true;
-                break 'out;
             }
         }
     }

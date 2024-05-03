@@ -1,6 +1,6 @@
 <template>
     <component inherits="view">
-        <label id="first_lb" class="t_label" font_size="32" :text="my_props.label1"/>
+        <label id="first_lb" class="t_label" font_size="32" :text="props.label1"/>
         <label id="second_lb" class="t_label" :font_size="fs"  text="label 2"/>
         <button id="bb" text="text btn" @clicked="btn_click" />
     </component>
@@ -19,6 +19,7 @@ pub struct Hello{
     pub label1: String,
 }
 
+let props = Hello::default();
 let fs: f64 = 18.0;
 
 let mut btn_click = ||{
