@@ -38,6 +38,6 @@ fn hello(){
     brightness: 1.1;
     color: #fff;
     wrap: Word;
-    font: "crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf";
+    font: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf");
 }
 </style>

@@ -7,6 +7,7 @@ use gen_converter::model::{
 };
 use gen_parser::{PropsKey, Value};
 
+use gen_utils::common::token_tree_ident;
 use proc_macro2::{TokenStream, TokenTree};
 use syn::{ItemEnum, ItemStruct, Stmt};
 
@@ -137,8 +138,6 @@ impl Widget {
                     .set_event_ptr(event_ptr)
                     .draw_walk(sub_prop_binds)
                     .handle_event(sub_event_binds);
-
-                // todo!("{:#?}", self);
             }
         }
         self
@@ -266,7 +265,7 @@ impl Widget {
         if let Some(event_ptr_tk) = &self.event_ptr {
             tk.extend(event_ptr_tk.clone());
         }
-        tk.extend(self.traits.to_token_stream());
+        tk.extend(self.traits.to_token_stream(token_tree_ident(&self.name)));
         if let Some(event_set_tk) = &self.event_set {
             tk.extend(event_set_tk.clone());
         }
@@ -296,8 +295,7 @@ impl From<gen_converter::model::Model> for Widget {
         let template = template.unwrap();
 
         // dbg!(&template);
-        
-       
+
         let mut widget = build_widget(Some(special), &template, style.as_ref(), script.as_ref());
 
         // todo!();

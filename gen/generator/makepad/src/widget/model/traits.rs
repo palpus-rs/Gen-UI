@@ -1,9 +1,6 @@
-use gen_converter::model::script::PropFn;
-use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
-use syn::Stmt;
+use proc_macro2::{TokenStream, TokenTree};
+use quote::quote;
 
-use crate::ToToken;
 /// 对于Widget来说
 /// draw_walk是必须实现的
 /// 其他的方法是可选的
@@ -49,10 +46,7 @@ impl WidgetTrait {
             }
         });
     }
-}
-
-impl ToToken for WidgetTrait {
-    fn to_token_stream(&self) -> TokenStream {
+    pub fn to_token_stream(&self, target: TokenTree) -> TokenStream {
         let draw_walk = &self.draw_walk;
         let handle_event = &self.handle_event;
         let widget = &self.widget;
@@ -70,7 +64,7 @@ impl ToToken for WidgetTrait {
         let ref_cast_type_id = &self.ref_cast_type_id;
 
         quote! {
-            pub trait Widget {
+            impl Widget for #target{
                 #draw_walk
                 #handle_event
                 #widget

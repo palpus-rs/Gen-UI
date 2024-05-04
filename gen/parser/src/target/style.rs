@@ -91,7 +91,7 @@ fn parse_property(input: &str) -> IResult<&str, (PropsKey, Value)> {
         let (key, value) = match sign {
             "" => (
                 PropsKey::new(key, true, PropertyKeyType::Normal),
-                Value::UnKnown(name.to_string()),
+                Value::UnKnown(name.trim_matches('"').to_string()),
             ),
             "()" => (
                 PropsKey::new(key, true, PropertyKeyType::Function),

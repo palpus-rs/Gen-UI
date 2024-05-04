@@ -178,7 +178,7 @@ impl Display for TextStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut text_style = String::new();
         if let Some(font) = &self.font {
-            text_style.push_str(&format!("{}: {},", FONT, font.to_string()));
+            text_style.push_str(&format!("{}: {{{}}},", FONT, font.to_string()));
         }
         if let Some(font_size) = &self.font_size {
             text_style.push_str(&format!("{}: {},", FONT_SIZE, font_size));

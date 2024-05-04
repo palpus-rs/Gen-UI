@@ -297,9 +297,9 @@ where
                 let target_ident = condition(v);
                 // dbg!(target_ident, ident);
                 let is_prop = if target_ident.eq(ident) {
-                    true
-                } else if target_ident.starts_with(ident) {
                     false
+                } else if target_ident.starts_with(ident) {
+                    true
                 } else {
                     continue;
                 };

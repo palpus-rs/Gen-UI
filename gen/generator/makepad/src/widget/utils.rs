@@ -152,8 +152,20 @@ pub fn quote_prop(keys: Vec<&str>, value: &str) -> TokenStream {
 
     // 根据keys的数量，添加相应数量的闭括号
     for _ in 0..keys.len() - 1 {
-        result.push_str(",}");
+        result.push_str("},");
     }
 
     result.parse().unwrap()
+}
+
+
+#[cfg(test)]
+mod test_utils{
+    #[test]
+    fn test_quote_prop(){
+        let keys = vec!["a", "b", "c"];
+        let value = "1";
+        let result = super::quote_prop(keys, value);
+        assert_eq!(result.to_string(), "a : { b : { c : (1) , } , } ,");
+    }
 }
