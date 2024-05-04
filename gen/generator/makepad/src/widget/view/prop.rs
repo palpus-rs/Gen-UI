@@ -3,15 +3,20 @@ use std::{collections::HashMap, fmt::Display};
 use gen_converter::error::Errors;
 use gen_parser::{PropsKey, Value};
 use proc_macro2::TokenStream;
+use quote::quote;
 
 use crate::{
     prop::{
         builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk},
-        ABS_POS, ALIGN, BLOCK_SIGNAL_EVENT, CLIP_X, CLIP_Y, CURSOR, DRAW_BG, EVENT_ORDER, FLOW,
-        GRAB_KEY_FOCUS, HEIGHT, LINE_SPACING, MARGIN, OPTIMIZE, PADDING, SCROLL, SHOW_BG, SPACING,
-        VISIBLE, WIDTH,
+        ABS_POS, ALIGN, BLOCK_SIGNAL_EVENT, CLIP_X, CLIP_Y, COLOR, CURSOR, DRAW_BG, EVENT_ORDER,
+        FLOW, GRAB_KEY_FOCUS, HEIGHT, LINE_SPACING, MARGIN, OPTIMIZE, PADDING, SCROLL, SHOW_BG,
+        SPACING, VISIBLE, WIDTH,
     },
-    widget::{prop_ignore, utils::bool_prop, StaticProps},
+    widget::{
+        prop_ignore,
+        utils::{bind_prop_value, bool_prop, quote_prop},
+        DynProps, StaticProps,
+    },
     ToToken,
 };
 
@@ -28,6 +33,38 @@ pub struct ViewProps {
     pub block_signal_event: Option<bool>,
     pub cursor: Option<MouseCursor>,
 }
+impl DynProps for ViewProps {
+    fn prop_bind(prop: &PropsKey, value: &Value, is_prop: bool, ident: &str) -> TokenStream {
+        let value = bind_prop_value(value, is_prop, ident);
+
+        match prop.name() {
+            DRAW_BG => quote_prop(vec![DRAW_BG, COLOR], &value),
+            SHOW_BG => quote_prop(vec![SHOW_BG], &value),
+            // ----------------- layout -----------------
+            SCROLL => quote_prop(vec![SCROLL], &value),
+            CLIP_X => quote_prop(vec![CLIP_X], &value),
+            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            PADDING => quote_prop(vec![PADDING], &value),
+            ALIGN => quote_prop(vec![ALIGN], &value),
+            FLOW => quote_prop(vec![FLOW], &value),
+            SPACING => quote_prop(vec![SPACING], &value),
+            LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
+            // ----------------- walk -----------------
+            HEIGHT => quote_prop(vec![HEIGHT], &value),
+            WIDTH => quote_prop(vec![WIDTH], &value),
+            ABS_POS => quote_prop(vec![ABS_POS], &value),
+            MARGIN => quote_prop(vec![MARGIN], &value),
+            // ----------------- other -----------------
+            OPTIMIZE => quote_prop(vec![OPTIMIZE], &value),
+            EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
+            VISIBLE => quote_prop(vec![VISIBLE], &value),
+            GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
+            BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
+            CURSOR => quote_prop(vec![CURSOR], &value),
+            _ => panic!("cannot match prop"),
+        }
+    }
+}
 
 impl StaticProps for ViewProps {
     fn props(props: &HashMap<PropsKey, Value>) -> Self {
@@ -37,6 +74,7 @@ impl StaticProps for ViewProps {
         }
         view
     }
+
     fn prop(&mut self, prop_name: &str, value: Value) -> () {
         let _ = match prop_name {
             DRAW_BG => self.draw_bg(&value),

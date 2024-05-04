@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use gen_converter::model::{
     prop::ConvertStyle,
-    script::{GenScriptModel, ScriptModel, UseMod},
+    script::{GenScriptModel, PropFn, ScriptModel, UseMod},
     Source, TemplateModel,
 };
 use gen_parser::{PropsKey, Value};
@@ -135,17 +135,23 @@ impl Widget {
                 self.set_uses(uses)
                     .set_prop_ptr(prop_ptr)
                     .set_event_ptr(event_ptr)
-                    .draw_walk(other);
+                    .draw_walk(sub_prop_binds)
+                    .handle_event(sub_event_binds);
 
                 // todo!("{:#?}", self);
             }
         }
         self
     }
-    pub fn draw_walk(&mut self, sc: &Option<Vec<Stmt>>) -> &mut Self {
-        if let Some(stmts) = sc {
-            let _ = self.traits.draw_walk(stmts);
-        }
+    pub fn handle_event(&mut self, events: &Option<Vec<PropFn>>) -> &mut Self {
+        // let builtin = self.inherits.as_ref().unwrap();
+        // let _ = self.traits.handle_event(builtin.ha);
+        self
+    }
+    pub fn draw_walk(&mut self, sc: &Option<Vec<PropFn>>) -> &mut Self {
+        // 由BuiltIn确定如何draw_walk
+        let builtin = self.inherits.as_ref().unwrap();
+        let _ = self.traits.draw_walk(builtin.draw_walk(sc));
         self
     }
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {

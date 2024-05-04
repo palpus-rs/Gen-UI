@@ -12,7 +12,7 @@ use std::{
     fmt::{Debug, Display},
 };
 
-use gen_converter::error::Errors;
+use gen_converter::{error::Errors, model::script::PropFn};
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::{
     snake_to_camel, token_stream_to_tree, token_tree_ident, token_tree_punct_alone,
@@ -27,6 +27,7 @@ use crate::{str_to_string_try_from, ToToken};
 //     utils::{apply_over_and_redraw, struct_field_type},
 // };
 
+pub mod area;
 pub mod button;
 pub mod define;
 pub mod label;
@@ -34,7 +35,6 @@ pub mod model;
 pub mod utils;
 pub mod view;
 pub mod window;
-pub mod area;
 
 // pub use define::*;
 // pub use button::*;
@@ -192,18 +192,28 @@ pub enum BuiltIn {
 }
 
 impl BuiltIn {
+    /// 处理内置组件绑定动态属性
+    pub fn prop_bind(&self, prop: &PropsKey, value: &Value, is_prop: bool, ident: &str)->TokenStream{
+        match self{
+            BuiltIn::Window => todo!(),
+            BuiltIn::View => view::ViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Label => label::LabelProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Button => todo!(),
+            BuiltIn::Area => todo!(),
+        }
+    }
     /// 对内置组件的属性进行处理
     pub fn props(&self, props: &HashMap<PropsKey, Value>) -> TokenStream {
         match self {
             BuiltIn::Window => window::WindowProps::props(props).to_token_stream(),
-            BuiltIn::View =>view::ViewProps::props(props).to_token_stream(),
+            BuiltIn::View => view::ViewProps::props(props).to_token_stream(),
             BuiltIn::Label => label::LabelProps::props(props).to_token_stream(),
             BuiltIn::Button => button::ButtonProps::props(props).to_token_stream(),
             _ => panic!("only built-in widget can be get"),
         }
     }
-    pub fn to_token_stream(&self, ptr: &ItemStruct)->TokenStream{
-        match self{
+    pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
+        match self {
             BuiltIn::Window => todo!(),
             BuiltIn::View => view::ViewPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Label => todo!(),
@@ -211,15 +221,24 @@ impl BuiltIn {
             BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
         }
     }
-    pub fn has_event(&self)->bool{
+    pub fn has_event(&self) -> bool {
         match self {
             BuiltIn::Button => true,
-            _ => false
+            _ => false,
         }
     }
     /// you mut be sure that the value is a built-in widget
-    pub fn from(value:&str) -> Self{
+    pub fn from(value: &str) -> Self {
         value.try_into().unwrap()
+    }
+    pub fn draw_walk(&self, draw_walk: &Option<Vec<PropFn>>) -> TokenStream {
+        match self {
+            BuiltIn::Window => todo!(),
+            BuiltIn::View => todo!(),
+            BuiltIn::Label => todo!(),
+            BuiltIn::Button => todo!(),
+            BuiltIn::Area => area::draw_walk(draw_walk),
+        }
     }
 }
 
@@ -232,7 +251,7 @@ impl TryFrom<&str> for BuiltIn {
             WINDOW => Ok(BuiltIn::Window),
             VIEW => Ok(BuiltIn::View),
             LABEL => Ok(BuiltIn::Label),
-            BUTTON =>Ok( BuiltIn::Button),
+            BUTTON => Ok(BuiltIn::Button),
             AREA => Ok(BuiltIn::Area),
             COMPONENT => Ok(BuiltIn::Area),
             _ => Err(Errors::BuiltInConvertFail),
@@ -247,4 +266,8 @@ pub trait StaticProps: Debug + ToToken {
     where
         Self: Sized;
     fn prop(&mut self, prop_name: &str, value: Value) -> ();
+}
+
+pub trait DynProps {
+    fn prop_bind(prop: &PropsKey, value: &Value, is_prop: bool, ident: &str) -> TokenStream;
 }

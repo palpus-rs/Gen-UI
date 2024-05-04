@@ -20,7 +20,7 @@ pub fn live_macro(code: Vec<TokenTree>) -> Vec<TokenTree> {
 /// generate `self.[ui_name].[tag_name].apply_over_and_redraw(cx, live!{...});`
 pub fn apply_over_and_redraw(
     ui: Option<String>,
-    tag: String,
+    tag: &str,
     id: &str,
     pv: Vec<TokenTree>,
 ) -> Vec<TokenTree> {
@@ -31,7 +31,7 @@ pub fn apply_over_and_redraw(
     }
 
     f.extend(vec![
-        token_tree_ident(&tag),
+        token_tree_ident(tag),
         token_tree_group_paren(vec![
             token_tree_ident("id"),
             token_tree_punct_alone('!'),

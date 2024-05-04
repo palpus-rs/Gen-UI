@@ -54,3 +54,4 @@ pub const LINEARIZE: &str = "linearize";
 pub const DRAW_ICON: &str = "draw_icon";
 pub const ICON_WALK: &str = "icon_walk";
 pub const LABEL_WALK: &str = "label_walk";
+pub const PATH: &str = "path";

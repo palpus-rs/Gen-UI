@@ -3,15 +3,20 @@ use std::fmt::Display;
 use gen_converter::error::Errors;
 use gen_parser::Value;
 use proc_macro2::TokenStream;
+use quote::quote;
 
 use crate::{
     prop::{
         builtin::{draw_text::DrawText, Align, Padding, Walk},
         ABS_POS, ALIGN, BRIGHTNESS, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH, DRAW_TEXT, FONT,
         FONT_SCALE, FONT_SIZE, HEIGHT, HEIGHT_FACTOR, INGORE_NEWLINES, LINE_SPACING, MARGIN,
-        PADDING, TEXT, TOP_DROP, WIDTH, WRAP,
+        PADDING, PATH, TEXT, TEXT_STYLE, TOP_DROP, WIDTH, WRAP,
     },
-    widget::{prop_ignore, utils::string_prop, StaticProps},
+    widget::{
+        prop_ignore,
+        utils::{bind_prop_value, quote_prop, string_prop},
+        DynProps, StaticProps,
+    },
     ToToken,
 };
 
@@ -22,6 +27,42 @@ pub struct LabelProps {
     pub align: Option<Align>,
     pub padding: Option<Padding>,
     pub text: Option<String>,
+}
+
+impl DynProps for LabelProps {
+    fn prop_bind(
+        prop: &gen_parser::PropsKey,
+        value: &Value,
+        is_prop: bool,
+        ident: &str,
+    ) -> TokenStream {
+        let value = bind_prop_value(value, is_prop, ident);
+        match prop.name() {
+            // ----------------- draw_text -----------------
+            FONT => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT, PATH], &value),
+            FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
+            BRIGHTNESS => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
+            CURVE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
+            LINE_SPACING => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
+            TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
+            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
+            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
+            // ----------------- walk -----------------
+            HEIGHT => quote_prop(vec![HEIGHT], &value),
+            WIDTH => quote_prop(vec![WIDTH], &value),
+            ABS_POS => quote_prop(vec![ABS_POS], &value),
+            MARGIN => quote_prop(vec![MARGIN], &value),
+            PADDING => quote_prop(vec![PADDING], &value),
+            ALIGN => quote_prop(vec![ALIGN], &value),
+            TEXT => quote_prop(vec![TEXT], &value),
+            _ => panic!("cannot match prop in BuiltIn label"),
+        }
+    }
 }
 
 impl StaticProps for LabelProps {

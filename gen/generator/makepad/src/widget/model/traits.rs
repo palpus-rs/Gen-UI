@@ -1,3 +1,4 @@
+use gen_converter::model::script::PropFn;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::Stmt;
@@ -33,8 +34,20 @@ impl WidgetTrait {
         widget_trait.draw_walk = draw_walk;
         widget_trait
     }
-    pub fn draw_walk(&mut self, value: &Vec<Stmt>) ->  (){
-        self.draw_walk = value.into_iter().map(|item| item.to_token_stream()).collect();
+    pub fn draw_walk(&mut self, tk: TokenStream) -> () {
+        self.draw_walk = quote! {
+            fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+                #tk
+            }
+        }
+        // self.draw_walk = value.into_iter().map(|item| item.to_token_stream()).collect();
+    }
+    pub fn handle_event(&mut self, tk: TokenStream) -> () {
+        self.handle_event = Some(quote! {
+            fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+                #tk
+            }
+        });
     }
 }
 
@@ -58,9 +71,7 @@ impl ToToken for WidgetTrait {
 
         quote! {
             pub trait Widget {
-                fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-                    #draw_walk
-                }
+                #draw_walk
                 #handle_event
                 #widget
                 #widgets

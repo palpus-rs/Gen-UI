@@ -296,20 +296,30 @@ where
             for (k, v) in prop_fn_key.as_ref().unwrap() {
                 let target_ident = condition(v);
                 // dbg!(target_ident, ident);
-                if target_ident.eq(ident) || target_ident.starts_with(ident) {
-                    let item = PropFn {
-                        widget: widget.to_string(),
-                        id: id.to_string(),
-                        key: k.clone(),
-                        ident: v.clone(),
-                        code: code.clone(),
-                    };
-                    f(target, item);
-                    flag = true;
-                    break 'out;
+                let is_prop = if target_ident.eq(ident) {
+                    true
+                } else if target_ident.starts_with(ident) {
+                    false
                 } else {
                     continue;
-                }
+                };
+
+                let item = PropFn {
+                    widget: widget.to_string(),
+                    id: id.to_string(),
+                    key: k.clone(),
+                    ident: v.clone(),
+                    code: code.clone(),
+                    is_prop,
+                };
+                f(target, item);
+                flag = true;
+                break 'out;
+                // if target_ident.eq(ident) || target_ident.starts_with(ident) {
+
+                // } else {
+                //     continue;
+                // }
             }
         }
     }
