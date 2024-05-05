@@ -59,14 +59,19 @@
 // }
 // app_main!(App);
 
-
+use gen_converter::model::{
+    script::{GenScriptModel, LifeTime, PropFn, ScriptModel, UseMod},
+    Source,
+};
 use proc_macro2::TokenStream;
 
 use crate::widget::model::widget::Widget;
 
-use super::{field::Field, live_design::LiveDesign, match_event::MatchEvent};
+use super::{
+    field::Field, handler::WidgetHandler, live_design::LiveDesign, match_event::MatchEvent,
+};
 
-#[derive(Debug,Clone,Default)]
+#[derive(Debug, Clone, Default)]
 pub struct AppMain {
     /// 当前实例
     pub name: String,
@@ -78,20 +83,84 @@ pub struct AppMain {
     pub app_main: Option<TokenStream>,
     /// 有哪些组件需要被注册
     pub live_register: Vec<String>,
-    
+    pub source: Source,
+    /// DSL Tree Node in Live Design
+    pub dsl: TokenStream,
+    pub root_id: String,
+    pub uses: Option<TokenStream>,
 }
 
 impl AppMain {
-    pub fn new(name:&str)->Self{
+    pub fn new(source: &Source) -> Self {
+        let name = source.source_name();
+
         let mut app = AppMain::default();
-        app.name = name.to_string();
+        app.name = name;
+
         app
     }
-    
+    pub fn set_script(&mut self, script: Option<ScriptModel>) -> &mut Self {
+        if let Some(sc) = script {
+            if let ScriptModel::Gen(sc) = sc {
+                dbg!(&sc);
+                let GenScriptModel {
+                    uses,
+                    prop_ptr,
+                    event_ptr,
+                    sub_prop_binds,
+                    sub_event_binds,
+                    other,
+                    lifetimes,
+                } = sc;
+
+                self.set_uses(uses)
+                    .handle_lifetime(sub_prop_binds, lifetimes)
+                    .handle_actions(sub_event_binds);
+                // self.set_uses(uses)
+                //     .set_prop_ptr(prop_ptr)
+                //     .set_event_ptr(event_ptr)
+                //     .draw_walk(sub_prop_binds)
+                //     .handle_event(sub_event_binds);
+            }
+        }
+        self
+    }
+    pub fn handle_actions(&mut self, actions: Option<Vec<PropFn>>) -> &mut Self {
+        if let Some(actions) = actions {
+            self.match_event.handle_actions(&self.root_id, actions);
+        }
+        self
+    }
+    pub fn handle_lifetime(
+        &mut self,
+        binds: Option<Vec<PropFn>>,
+        lifetimes: Option<LifeTime>,
+    ) -> &mut Self {
+        self.match_event
+            .handle_lifetime(&self.root_id, binds, lifetimes);
+        self
+    }
+
+    pub fn set_dsl(&mut self, dsl: TokenStream) -> &mut Self {
+        self.dsl = dsl;
+        self
+    }
+    pub fn set_uses(&mut self, uses: Option<UseMod>) -> &mut Self {
+        if let Some(uses) = uses {
+            self.uses = WidgetHandler::uses(&uses);
+        }
+        self
+    }
+    pub fn set_root_id(&mut self, id: String) -> &mut Self {
+        self.root_id = id;
+        self
+    }
 }
 
 impl From<gen_converter::model::Model> for AppMain {
     fn from(value: gen_converter::model::Model) -> Self {
+        // clone a new script, other make to widget tree
+        let script = value.script.clone();
         // let gen_converter::model::Model {
         //     special,
         //     template,
@@ -100,9 +169,13 @@ impl From<gen_converter::model::Model> for AppMain {
         //     compile,
         //     is_entry,
         // } = value;
+        let mut app = AppMain::new(value.get_special());
 
         let widget = Widget::from(value);
-        
-        todo!("{:#?}", widget.widget_tree().unwrap().to_string());
+        let root_id = widget.id.as_ref().expect("root id is required").to_string();
+        let dsl = widget.widget_tree().unwrap();
+        app.set_root_id(root_id).set_dsl(dsl).set_script(script);
+
+        todo!("{:#?}", app);
     }
 }
