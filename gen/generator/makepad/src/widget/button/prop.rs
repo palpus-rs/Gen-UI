@@ -7,15 +7,15 @@ use proc_macro2::TokenStream;
 use crate::{
     prop::{
         builtin::{draw_color::DrawColor, draw_icon::DrawIcon, draw_text::DrawText, Layout, Walk},
-        ABS_POS, ALIGN, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, DRAW_BG, DRAW_ICON, DRAW_TEXT, FLOW,
-        FONT, FONT_SCALE, FONT_SIZE, GRAB_KEY_FOCUS, HEIGHT, HEIGHT_FACTOR, ICON_WALK,
-        INGORE_NEWLINES, LABEL_WALK, LINEARIZE, LINE_SPACING, MARGIN, PADDING, SCALE, SCROLL,
-        SPACING, SVG_FILE, TEXT, TOP_DROP, WIDTH, WRAP,
+        ABS_POS, ALIGN, BRIGHTNESS, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, CURSOR, CURVE, DRAW_BG,
+        DRAW_DEPTH, DRAW_ICON, DRAW_TEXT, FLOW, FONT, FONT_SCALE, FONT_SIZE, GRAB_KEY_FOCUS,
+        HEIGHT, HEIGHT_FACTOR, ICON_WALK, INGORE_NEWLINES, LABEL_WALK, LINEARIZE, LINE_SPACING,
+        MARGIN, PADDING, SCALE, SCROLL, SPACING, SVG_FILE, TEXT, TEXT_STYLE, TOP_DROP, WIDTH, WRAP,
     },
     widget::{
         prop_ignore,
-        utils::{bool_prop, string_prop},
-        StaticProps,
+        utils::{bind_prop_value, bool_prop, quote_prop, string_prop},
+        DynProps, StaticProps,
     },
     ToToken,
 };
@@ -37,6 +37,73 @@ pub struct ButtonProps {
     pub layout: Option<Layout>,
     pub grab_key_focus: Option<bool>,
     pub text: Option<String>,
+}
+
+impl DynProps for ButtonProps {
+    fn prop_bind(
+        prop: &gen_parser::PropsKey,
+        value: &Value,
+        is_prop: bool,
+        ident: &str,
+    ) -> TokenStream {
+        let value = bind_prop_value(value, is_prop, ident);
+        match prop.name() {
+            // ----------------- draw_bg -----------------
+            DRAW_BG => quote_prop(vec![DRAW_BG, COLOR], &value),
+            // ----------------- draw_text ---------------
+            //      ----------------- text_style
+            FONT => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT], &value),
+            FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
+            "font_brightness" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
+            "font_curve" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
+            "font_line_spacing" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
+            TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
+            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
+            //      ----------------- other
+            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            "font_draw_depth" => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            "font_color" => quote_prop(vec![DRAW_TEXT, COLOR], &value),
+            // ----------------- draw_icon ---------------
+            "icon_brightness" => quote_prop(vec![DRAW_ICON, BRIGHTNESS], &value),
+            "icon_curve" => quote_prop(vec![DRAW_ICON, CURVE], &value),
+            LINEARIZE => quote_prop(vec![DRAW_ICON, LINEARIZE], &value),
+            SVG_FILE => quote_prop(vec![DRAW_ICON, SVG_FILE], &value),
+            SCALE => quote_prop(vec![DRAW_ICON, SCALE], &value),
+            "icon_draw_depth" => quote_prop(vec![DRAW_ICON, DRAW_DEPTH], &value),
+            "icon_color" => quote_prop(vec![DRAW_ICON, COLOR], &value),
+            // ----------------- icon_walk ---------------
+            "icon_height" => quote_prop(vec![ICON_WALK, HEIGHT], &value),
+            "icon_width" => quote_prop(vec![ICON_WALK, WIDTH], &value),
+            "icon_abs_pos" => quote_prop(vec![ICON_WALK, ABS_POS], &value),
+            "icon_margin" => quote_prop(vec![ICON_WALK, MARGIN], &value),
+            // ----------------- label_walk ---------------
+            "label_height" => quote_prop(vec![LABEL_WALK, HEIGHT], &value),
+            "label_width" => quote_prop(vec![LABEL_WALK, WIDTH], &value),
+            "label_abs_pos" => quote_prop(vec![LABEL_WALK, ABS_POS], &value),
+            "label_margin" => quote_prop(vec![LABEL_WALK, MARGIN], &value),
+            // ----------------- walk -----------------
+            HEIGHT => quote_prop(vec![HEIGHT], &value),
+            WIDTH => quote_prop(vec![WIDTH], &value),
+            ABS_POS => quote_prop(vec![ABS_POS], &value),
+            MARGIN => quote_prop(vec![MARGIN], &value),
+            // ------------------- layout -----------------
+            SCROLL => quote_prop(vec![SCROLL], &value),
+            CLIP_X => quote_prop(vec![CLIP_X], &value),
+            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            PADDING => quote_prop(vec![PADDING], &value),
+            ALIGN => quote_prop(vec![ALIGN], &value),
+            FLOW => quote_prop(vec![FLOW], &value),
+            SPACING => quote_prop(vec![SPACING], &value),
+            LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
+            // ------------------- other ------------------
+            GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
+            TEXT => quote_prop(vec![TEXT], &value),
+            _ => panic!("cannot match prop in BuiltIn label"),
+        }
+    }
 }
 
 impl StaticProps for ButtonProps {

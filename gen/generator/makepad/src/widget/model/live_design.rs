@@ -1,5 +1,3 @@
-use std::{fs::File, io::Write, path::Display};
-
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -47,7 +45,7 @@ impl ToToken for LiveDesign {
         let tree = &self.tree;
         let logic = &self.logic;
 
-        let tk = quote! {
+        quote! {
             use makepad_widgets::*;
             live_design!{
                 #imports
@@ -56,13 +54,7 @@ impl ToToken for LiveDesign {
             }
 
             #logic
-        };
-        let gen = tk.to_string();
-        let mut fs =
-            File::create("E:/Rust/learn/makepad/makepad-rik/examples/simple/src/hello.rs").unwrap();
-
-        let _ = fs.write(gen.as_bytes());
-        todo!("{:#?}", gen);
+        }
     }
 }
 

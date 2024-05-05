@@ -62,11 +62,12 @@
 
 use proc_macro2::TokenStream;
 
+use crate::widget::model::widget::Widget;
+
 use super::{field::Field, live_design::LiveDesign, match_event::MatchEvent};
 
 #[derive(Debug,Clone,Default)]
 pub struct AppMain {
-    pub live_design: LiveDesign,
     /// 当前实例
     pub name: String,
     /// app main的ui入口
@@ -91,6 +92,17 @@ impl AppMain {
 
 impl From<gen_converter::model::Model> for AppMain {
     fn from(value: gen_converter::model::Model) -> Self {
-        todo!()
+        // let gen_converter::model::Model {
+        //     special,
+        //     template,
+        //     script,
+        //     style,
+        //     compile,
+        //     is_entry,
+        // } = value;
+
+        let widget = Widget::from(value);
+        
+        todo!("{:#?}", widget.widget_tree().unwrap().to_string());
     }
 }

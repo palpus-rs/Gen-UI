@@ -11,10 +11,17 @@ fn main() {
 
     let current_dir = std::env::current_dir().unwrap();
 
+    // let mut view_model = Model::new(
+    //     Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/components/hello.gen"),
+    //     current_dir,
+    //     false,
+    // )
+    // .unwrap();
+
     let mut view_model = Model::new(
-        Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/components/hello.gen"),
+        Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen"),
         current_dir,
-        false,
+        true,
     )
     .unwrap();
 

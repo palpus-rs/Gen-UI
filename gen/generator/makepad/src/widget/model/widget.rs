@@ -8,16 +8,15 @@ use gen_converter::model::{
 use gen_parser::{PropsKey, Value};
 
 use gen_utils::common::{snake_to_camel, token_tree_ident};
-use proc_macro2::{TokenStream, TokenTree};
-use syn::{ItemEnum, ItemStruct, Stmt};
+use proc_macro2::TokenStream;
+use syn::{ItemEnum, ItemStruct};
 
 use crate::{
     utils::{component_render, special_struct},
-    widget::{BuiltIn, StaticProps},
-    ToToken,
+    widget::BuiltIn,
 };
 
-use super::{handler::WidgetHandler, live_design::LiveDesign, role::Role, traits::WidgetTrait};
+use super::{handler::WidgetHandler, role::Role, traits::WidgetTrait};
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
@@ -294,13 +293,16 @@ impl From<gen_converter::model::Model> for Widget {
 
         let template = template.unwrap();
 
-        // dbg!(&template);
+        build_widget(Some(special), &template, style.as_ref(), script.as_ref())
 
-        let mut widget = build_widget(Some(special), &template, style.as_ref(), script.as_ref());
+        // let res = LiveDesign::from(widget);
 
-        let res = LiveDesign::from(widget);
+        // let gen = res.to_token_stream().to_string();
+        // let mut fs =
+        //     File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/src/hello.rs").unwrap();
 
-        todo!("{:#?}", res.to_token_stream().to_string());
+        // let _ = fs.write(gen.as_bytes());
+        // todo!("{:#?}", gen);
     }
 }
 

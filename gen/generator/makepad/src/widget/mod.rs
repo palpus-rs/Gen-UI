@@ -201,10 +201,10 @@ impl BuiltIn {
         ident: &str,
     ) -> TokenStream {
         match self {
-            BuiltIn::Window => todo!(),
+            BuiltIn::Window => window::WindowProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::View => view::ViewProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Label => label::LabelProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Button => todo!(),
+            BuiltIn::Button => button::ButtonProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Area => todo!(),
         }
     }
@@ -220,10 +220,10 @@ impl BuiltIn {
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
         match self {
-            BuiltIn::Window => todo!(),
+            BuiltIn::Window => window::WindowPropPtr::from(ptr).to_token_stream(),
             BuiltIn::View => view::ViewPropPtr::from(ptr).to_token_stream(),
-            BuiltIn::Label => todo!(),
-            BuiltIn::Button => todo!(),
+            BuiltIn::Label => label::LabelPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Button => button::ButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
         }
     }
