@@ -34,5 +34,6 @@ impl Widget for Hello {
                 btn_click()
             }
         }
+        self.button(id!(bb)).handle_event(cx, event, scope);
     }
 }

@@ -258,8 +258,9 @@ fn local_ident(code: &Stmt) -> String {
 /// 根据widget的事件处理函数生成对应的代码
 /// 生成出对应widget的事件处理函数
 pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>) -> TokenStream {
-    let tk = if let Some(event_tk) = event {
-        let mut tk = TokenStream::new();
+    let (work_tk, draw_tk) = if let Some(event_tk) = event {
+        let mut work_tk = TokenStream::new();
+        let mut draw_tk = TokenStream::new();
         for item in event_tk {
             let PropFn {
                 widget,
@@ -267,19 +268,10 @@ pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>
                 key,
                 ident,
                 code,
-                is_prop,
+                ..
             } = item;
 
-            let fn_ident = ident.is_fn_and_get().unwrap().to_token_easy();
-
-            // check active! macro and change to makepad cx.widget_action
-            let mut code = code.clone();
-            active_macro_to_cx_widget_action(&mut code);
-            let mut code_tk = code.to_token_stream();
-            code_tk.extend(token_stream_to_tree(fn_ident));
-
-            let stmt = vec![
-                token_tree_ident("if"),
+            let get_from_id = vec![
                 token_tree_ident("self"),
                 token_tree_punct_alone('.'),
                 token_tree_ident(widget),
@@ -289,16 +281,35 @@ pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>
                     token_tree_group_paren(vec![token_tree_ident(id)]),
                 ]),
                 token_tree_punct_alone('.'),
+            ];
+            //----------------------------------[work_tk]---------------------------------------
+            let fn_ident = ident.is_fn_and_get().unwrap().to_token_easy();
+
+            // check active! macro and change to makepad cx.widget_action
+            let mut code = code.clone();
+            let _ = active_macro_to_cx_widget_action(&mut code);
+            let mut code_tk = code.to_token_stream();
+            code_tk.extend(token_stream_to_tree(fn_ident));
+
+            let mut stmt = vec![
+                token_tree_ident("if"),
                 token_tree_ident(key.name()),
                 token_tree_group_paren(vec![token_tree_ident("actions")]),
                 token_tree_group(token_stream_to_tree(code_tk)),
             ];
 
-            tk.extend(stmt);
+            stmt.splice(1..1, get_from_id.clone());
+
+            work_tk.extend(stmt);
+
+            //----------------------------------[draw_tk]---------------------------------------
+
+            draw_tk.extend(get_from_id);
+            draw_tk.extend(quote! {handle_event(cx, event, scope);});
         }
-        Some(tk)
+        (Some(work_tk), Some(draw_tk))
     } else {
-        None
+        (None, None)
     };
 
     let target_handle_tk = match target {
@@ -309,8 +320,9 @@ pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>
     quote! {
         let uid = self.widget_uid();
         if let Event::Actions(actions) = event{
-            #tk
+            #work_tk
         }
+        #draw_tk
         #target_handle_tk
     }
 }
