@@ -1,12 +1,11 @@
 mod prop;
 mod prop_ptr;
+mod r#trait;
 
 pub use prop::ViewProps;
 pub use prop_ptr::ViewPropPtr;
+pub use r#trait::*;
 
-use std::collections::HashMap;
-
-use gen_parser::{PropsKey, Value};
 use gen_utils::common::token_tree_ident;
 use proc_macro2::{TokenStream, TokenTree};
 

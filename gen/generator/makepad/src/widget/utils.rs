@@ -6,7 +6,11 @@ use gen_utils::common::{
 };
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};
-use syn::{parse_quote, visit_mut::VisitMut, Stmt};
+use syn::{parse_quote, visit_mut::VisitMut, Attribute, ItemStruct, Meta, Pat, Stmt};
+
+use crate::{prop::builtin::MakepadValue, utils::apply_over_and_redraw};
+
+use super::BuiltIn;
 
 pub fn bool_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
@@ -164,6 +168,95 @@ pub fn quote_prop(keys: Vec<&str>, value: &str) -> TokenStream {
     result.parse().unwrap()
 }
 
+/// 将GenUI的结构体转为Makepad的属性结构体
+pub fn quote_makepad_widget_struct(value: &ItemStruct) -> ItemStruct {
+    let mut new_item = value.clone();
+
+    // 遍历属性并修改,将Prop修改为Live, LiveHook, Widget
+    for attr in new_item.attrs.iter_mut() {
+        if let Meta::List(meta) = &mut attr.meta {
+            if meta.path.is_ident("derive") && meta.tokens.to_string().contains("Prop") {
+                // 使用parse_quote! 宏来创建新的tokens
+                meta.tokens = parse_quote! { Live, LiveHook, Widget };
+                // 将修改后的Meta赋值回Attribute
+                *attr = Attribute {
+                    meta: Meta::List(meta.clone()),
+                    ..attr.clone()
+                }
+            }
+        }
+    }
+    // 对结构体中的字段进行处理，符合的进行宏标记
+    for field in new_item.fields.iter_mut() {
+        let ident = field.ty.to_token_stream().to_string();
+        match MakepadValue::from(&ident) {
+            MakepadValue::Live(_) => {
+                field.attrs.push(parse_quote! { #[live] });
+            }
+            MakepadValue::Rust => {
+                field.attrs.push(parse_quote! { #[rust] });
+            }
+            _ => panic!("prop ptr field not support to convert to MakepadValue"),
+        }
+    }
+    new_item
+}
+
+/// 根据widget的绘制函数生成对应的代码
+/// 生成对应widget的绘制函数中的代码
+/// 这部分很统一，所有的widget都是这样处理的
+pub fn quote_draw_walk(draw_walk: &Option<Vec<PropFn>>) -> Option<TokenStream> {
+    let tk = if let Some(draw_walk_tk) = draw_walk {
+        let mut tk = TokenStream::new();
+        for item in draw_walk_tk {
+            let PropFn {
+                widget,
+                id,
+                key,
+                ident,
+                code,
+                is_prop,
+            } = item;
+            // from widget get prop value
+            // 当前只考虑builtin，自定义类型组件后续增加
+            let builtin = BuiltIn::from(&widget);
+            let pv = builtin.prop_bind(key, ident, *is_prop, &local_ident(code));
+            if !is_prop {
+                tk.extend(code.to_token_stream());
+            }
+            tk.extend(apply_over_and_redraw(
+                None,
+                widget,
+                id,
+                token_stream_to_tree(pv),
+            ));
+        }
+        Some(tk)
+    } else {
+        None
+    };
+    tk
+}
+
+/// get local ident from stmt
+fn local_ident(code: &Stmt) -> String {
+    fn get(pat: &Pat) -> String {
+        match pat {
+            Pat::Ident(ident) => ident.ident.to_string(),
+            Pat::Type(ty) => get(&*ty.pat),
+            _ => panic!("local stmt must be ident|type"),
+        }
+    }
+
+    if let Stmt::Local(local) = code {
+        get(&local.pat)
+    } else {
+        panic!("local stmt must be ident|type")
+    }
+}
+
+/// 根据widget的事件处理函数生成对应的代码
+/// 生成出对应widget的事件处理函数
 pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>) -> TokenStream {
     let tk = if let Some(event_tk) = event {
         let mut tk = TokenStream::new();

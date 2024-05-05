@@ -1,25 +1,11 @@
 use makepad_widgets::*;
-live_design! { 
-    import makepad_widgets :: base ::*; 
-    import makepad_widgets :: theme_desktop_dark ::*; 
-    Hello = {{ Hello }}{ 
-        first_lb = < label >{ draw_text : { text_style : { font_size : 32 , brightness : 1.1 , } , wrap : Word , color : # ffffff , } , } 
-        second_lb = < label >{ draw_text : { text_style : { brightness : 1.1 , } , wrap : Word , color : # ffffff , } , text : "label 2" , } 
-        bb = < button >{ text : "text btn" , }
-    } 
-}
-
+live_design! { import makepad_widgets :: base ::*; import makepad_widgets :: theme_desktop_dark ::*; Hello = {{ Hello }}{ first_lb = < Label >{ draw_text : { text_style : { font_size : 32 , brightness : 1.1 , } , wrap : Word , color : # ffffff , } , } second_lb = < Label >{ draw_text : { text_style : { brightness : 1.1 , } , wrap : Word , color : # ffffff , } , text : "label 2" , } bb = < Button >{ text : "text btn" , } } }
 #[derive(Live, LiveHook, Widget)]
 pub struct Hello {
     #[live]
     pub label1: String,
-    #[redraw]
-    #[rust]
-    pub area: Area,
-    #[layout]
-    pub layout: Layout,
-    #[walk]
-    pub walk: Walk,
+    #[deref]
+    pub view: View,
 }
 #[derive(DefaultNone, Clone, Debug)]
 pub enum Events {
@@ -28,7 +14,6 @@ pub enum Events {
 }
 impl Widget for Hello {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        cx.begin_turtle(walk, self.layout);
         self.label(id!(first_lb))
             .apply_over_and_redraw(cx, live! { text : (self . label1) , });
         let fs: f64 = 18.0;
@@ -36,8 +21,7 @@ impl Widget for Hello {
             cx,
             live! { draw_text : { text_style : { font_size : (fs) , } , } , },
         );
-        cx.end_turtle();
-        DrawStep::done()
+        self.view.draw_walk(cx, scope, walk)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();

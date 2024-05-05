@@ -193,8 +193,14 @@ pub enum BuiltIn {
 
 impl BuiltIn {
     /// 处理内置组件绑定动态属性
-    pub fn prop_bind(&self, prop: &PropsKey, value: &Value, is_prop: bool, ident: &str)->TokenStream{
-        match self{
+    pub fn prop_bind(
+        &self,
+        prop: &PropsKey,
+        value: &Value,
+        is_prop: bool,
+        ident: &str,
+    ) -> TokenStream {
+        match self {
             BuiltIn::Window => todo!(),
             BuiltIn::View => view::ViewProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Label => label::LabelProps::prop_bind(prop, value, is_prop, ident),
@@ -231,19 +237,21 @@ impl BuiltIn {
     pub fn from(value: &str) -> Self {
         value.try_into().unwrap()
     }
+    /// 处理widget的draw_walk绘制函数
     pub fn draw_walk(&self, draw_walk: &Option<Vec<PropFn>>) -> TokenStream {
         match self {
             BuiltIn::Window => todo!(),
-            BuiltIn::View => todo!(),
+            BuiltIn::View => view::draw_walk(draw_walk),
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
             BuiltIn::Area => area::draw_walk(draw_walk),
         }
     }
+    /// 处理widget的事件处理函数
     pub fn handle_event(&self, event: &Option<Vec<PropFn>>) -> TokenStream {
         match self {
             BuiltIn::Window => todo!(),
-            BuiltIn::View => todo!(),
+            BuiltIn::View => view::handle_event(event),
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
             BuiltIn::Area => area::handle_event(event),
@@ -269,6 +277,17 @@ impl TryFrom<&str> for BuiltIn {
 }
 
 str_to_string_try_from!(BuiltIn);
+
+impl TryFrom<Option<&String>> for BuiltIn {
+    type Error = Errors;
+    fn try_from(value: Option<&String>) -> Result<Self, Self::Error> {
+        if let Some(target) = value {
+            target.try_into()
+        } else {
+            Ok(BuiltIn::Area)
+        }
+    }
+}
 
 pub trait StaticProps: Debug + ToToken {
     fn props(props: &HashMap<PropsKey, Value>) -> Self

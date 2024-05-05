@@ -7,7 +7,7 @@ use gen_converter::model::{
 };
 use gen_parser::{PropsKey, Value};
 
-use gen_utils::common::token_tree_ident;
+use gen_utils::common::{snake_to_camel, token_tree_ident};
 use proc_macro2::{TokenStream, TokenTree};
 use syn::{ItemEnum, ItemStruct, Stmt};
 
@@ -50,21 +50,21 @@ pub struct Widget {
 }
 
 impl Widget {
-    pub fn new(special: Option<Source>, name: &str) -> Self {
+    pub fn new(special: Option<Source>, name: &str, inherits: Option<&String>) -> Self {
         let mut widget = Widget::default();
         match special {
             Some(special) => {
                 widget.source.replace(special);
                 // 获取文件名且改为首字母大写的camel
                 widget.name = widget.source.as_ref().unwrap().source_name();
-                widget.set_inherits(BuiltIn::try_from(name).unwrap());
+                widget.set_inherits(BuiltIn::try_from(inherits).unwrap());
             }
             None => {
                 widget.name = name.to_string();
-                let builtin = BuiltIn::try_from(name);
+                let inherits = BuiltIn::try_from(name);
                 widget
-                    .set_is_built_in(builtin.is_ok())
-                    .set_inherits(builtin.unwrap());
+                    .set_is_built_in(inherits.is_ok())
+                    .set_inherits(inherits.unwrap());
             }
         }
         widget
@@ -225,12 +225,12 @@ impl Widget {
                     props,
                     ..
                 } = child;
-
+                let name = snake_to_camel(name).unwrap();
                 tk.extend(component_render(
                     id.as_ref(),
                     *is_root,
                     *is_prop,
-                    name,
+                    &name,
                     props.clone(),
                     child.widget_children_tree(),
                 ));
@@ -298,9 +298,6 @@ impl From<gen_converter::model::Model> for Widget {
 
         let mut widget = build_widget(Some(special), &template, style.as_ref(), script.as_ref());
 
-        // todo!();
-        // todo!("{:#?}", widget);
-
         let res = LiveDesign::from(widget);
 
         todo!("{:#?}", res.to_token_stream().to_string());
@@ -313,7 +310,7 @@ fn build_widget(
     style: Option<&ConvertStyle>,
     script: Option<&ScriptModel>,
 ) -> Widget {
-    let mut widget = Widget::new(special, template.get_name());
+    let mut widget = Widget::new(special, template.get_name(), template.get_inherits());
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), template.get_class(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
