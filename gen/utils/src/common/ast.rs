@@ -53,13 +53,15 @@ pub fn token_tree_punct_alone(input: char) -> TokenTree {
     TokenTree::Punct(punct_alone(input))
 }
 
+/// {}
 pub fn token_tree_group(tree: Vec<TokenTree>) -> TokenTree {
     TokenTree::Group(group(tree))
 }
-
+/// ()
 pub fn token_tree_group_paren(tree: Vec<TokenTree>) -> TokenTree {
     TokenTree::Group(group_paren(tree))
 }
+/// []
 pub fn token_tree_group_bracket(tree: Vec<TokenTree>) -> TokenTree {
     TokenTree::Group(group_bracket(tree))
 }

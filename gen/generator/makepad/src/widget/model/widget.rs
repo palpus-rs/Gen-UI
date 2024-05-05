@@ -143,14 +143,14 @@ impl Widget {
         self
     }
     pub fn handle_event(&mut self, events: &Option<Vec<PropFn>>) -> &mut Self {
-        // let builtin = self.inherits.as_ref().unwrap();
-        // let _ = self.traits.handle_event(builtin.ha);
+        let builtin = self.inherits.as_ref().unwrap();
+        let _ = self.traits.handle_event(builtin.handle_event(events));
         self
     }
-    pub fn draw_walk(&mut self, sc: &Option<Vec<PropFn>>) -> &mut Self {
+    pub fn draw_walk(&mut self, walk: &Option<Vec<PropFn>>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
         let builtin = self.inherits.as_ref().unwrap();
-        let _ = self.traits.draw_walk(builtin.draw_walk(sc));
+        let _ = self.traits.draw_walk(builtin.draw_walk(walk));
         self
     }
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {

@@ -6,6 +6,7 @@ use nom::{
     sequence::delimited,
     IResult,
 };
+use proc_macro2::TokenStream;
 
 use crate::{common::parse_value, target::function};
 
@@ -49,6 +50,16 @@ impl Function {
             Some(params) => Some(params.join(", ")),
             None => None,
         }
+    }
+    pub fn to_token_easy(&self) -> TokenStream {
+        let name = self.get_name();
+        let params = self.to_params_str();
+        match params {
+            Some(p) => format!("{}({})", name, p),
+            None => format!("{}()", name),
+        }
+        .parse()
+        .unwrap()
     }
 }
 

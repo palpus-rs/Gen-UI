@@ -240,6 +240,15 @@ impl BuiltIn {
             BuiltIn::Area => area::draw_walk(draw_walk),
         }
     }
+    pub fn handle_event(&self, event: &Option<Vec<PropFn>>) -> TokenStream {
+        match self {
+            BuiltIn::Window => todo!(),
+            BuiltIn::View => todo!(),
+            BuiltIn::Label => todo!(),
+            BuiltIn::Button => todo!(),
+            BuiltIn::Area => area::handle_event(event),
+        }
+    }
 }
 
 impl TryFrom<&str> for BuiltIn {

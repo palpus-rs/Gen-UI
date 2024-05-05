@@ -1,10 +1,17 @@
 use gen_converter::model::script::PropFn;
-use gen_utils::common::token_stream_to_tree;
+use gen_utils::common::{token_stream_to_tree, token_tree_ident};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{Pat, Stmt};
 
-use crate::{utils::apply_over_and_redraw, widget::BuiltIn};
+use crate::{
+    utils::apply_over_and_redraw,
+    widget::{utils::quote_handle_event, BuiltIn},
+};
+
+pub fn handle_event(event: &Option<Vec<PropFn>>) -> TokenStream {
+    quote_handle_event(event, None)
+}
 
 pub fn draw_walk(draw_walk: &Option<Vec<PropFn>>) -> TokenStream {
     let tk = if let Some(draw_walk_tk) = draw_walk {
