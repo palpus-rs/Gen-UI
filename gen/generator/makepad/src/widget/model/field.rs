@@ -1,3 +1,4 @@
+use gen_converter::model::script::PropFn;
 use gen_utils::common::{token_tree_ident, token_tree_punct_alone, trees_to_token_stream};
 use proc_macro2::TokenTree;
 
@@ -31,11 +32,11 @@ impl Field {
     pub fn ty(&self) -> &str {
         &self.ty
     }
-    pub fn field_tk_only(&self)->Vec<TokenTree>{
-        vec![
-            token_tree_ident(&self.name),
-            token_tree_punct_alone(','),
-        ]
+    pub fn field_tk_only(&self) -> Vec<TokenTree> {
+        vec![token_tree_ident(&self.name), token_tree_punct_alone(',')]
+    }
+    pub fn ui_widget_ref() -> Self {
+        Self::new("ui", "WidgetRef", Attr::Live)
     }
 }
 
@@ -51,7 +52,7 @@ impl ToToken for Field {
         tk.push(token_tree_ident(&self.name));
 
         tk.push(token_tree_punct_alone(':'));
-        
+
         tk.push(token_tree_ident(&self.ty));
 
         tk.push(token_tree_punct_alone(','));
@@ -59,18 +60,36 @@ impl ToToken for Field {
     }
 }
 
+impl From<&PropFn> for Field{
+    fn from(value: &PropFn) -> Self {
+        let PropFn{
+            widget,
+            id,
+            key,
+            ident,
+            code,
+            is_prop,
+        } = value;
+
+        // todo!
+
+        todo!()
+    }
+}
 
 #[cfg(test)]
-mod field_test{
-    
+mod field_test {
 
+    use super::Field;
     use crate::widget::model::attr::Attr;
     use crate::ToToken;
-    use super::Field;
 
     #[test]
-    fn tk(){
+    fn tk() {
         let field = Field::new("ui", "WidgetRef", Attr::Live);
-        assert_eq!(field.to_token_stream().to_string().as_str(),"#[live] pub ui : WidgetRef ,")
+        assert_eq!(
+            field.to_token_stream().to_string().as_str(),
+            "#[live] pub ui : WidgetRef ,"
+        )
     }
 }

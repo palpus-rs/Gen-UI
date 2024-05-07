@@ -84,3 +84,18 @@ impl WidgetTrait {
         }
     }
 }
+
+#[derive(Debug, Default, Clone)]
+pub struct AppMainTrait {
+    pub handle_event: Option<TokenStream>,
+}
+
+impl AppMainTrait {
+    pub fn handle_event(&mut self) -> () {
+        self.handle_event.replace(quote! {
+            fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
+
+            }
+        });
+    }
+}

@@ -16,7 +16,7 @@ use crate::{
     widget::BuiltIn,
 };
 
-use super::{handler::WidgetHandler, role::Role, traits::WidgetTrait};
+use super::{handler::WidgetHandler, role::Role, traits::WidgetTrait, ToLiveDesign};
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
@@ -239,8 +239,11 @@ impl Widget {
             None
         }
     }
+}
+
+impl ToLiveDesign for Widget {
     /// get widget tree
-    pub fn widget_tree(&self) -> Option<TokenStream> {
+    fn widget_tree(&self) -> Option<TokenStream> {
         let mut tk = TokenStream::new();
 
         let children = self.widget_children_tree();
@@ -253,7 +256,7 @@ impl Widget {
             Some(tk)
         }
     }
-    pub fn widget_logic(&self) -> Option<TokenStream> {
+    fn widget_logic(&self) -> Option<TokenStream> {
         let mut tk = TokenStream::new();
         if let Some(uses_tk) = &self.uses {
             tk.extend(uses_tk.clone());
@@ -277,6 +280,10 @@ impl Widget {
         } else {
             Some(tk)
         }
+    }
+
+    fn to_live_design(&self) -> super::live_design::LiveDesign {
+        self.into()
     }
 }
 

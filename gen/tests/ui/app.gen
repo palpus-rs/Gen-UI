@@ -1,13 +1,20 @@
 <template>
-    <window id="ui" show_bg="true">
+    <component>
+        <window id="ui" show_bg="true">
             <view id="body" :show_bg="view_bg">
                 <button id="btn" :text="btn_name" @clicked="on_clicked"></button>
             </view>
-    </window>
+        </window>
+    </component>
 </template>
 
 <script>
-use gen_macros::{on_startup};
+use gen_macros::{Prop};
+
+#[derive(Prop)]
+pub struct Root{
+    pub label1: String,
+}
 
 let mut view_bg = true;
 let mut btn_name = String::from("Click Me!");
@@ -15,10 +22,6 @@ let mut btn_name = String::from("Click Me!");
 let mut on_clicked = ||{
     btn_name = "I have been Clicked!".to_string();
 };
-
-on_startup!{
-    println!("{}","hello");
-}
 </script>
 
 <style>

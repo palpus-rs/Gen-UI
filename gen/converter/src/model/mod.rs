@@ -63,13 +63,13 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new(path: &Path, source: PathBuf, is_entry: bool) -> Result<Self, Box<dyn Error>> {
-        match file_data(path) {
+    pub fn new(path: &PathBuf, source: &PathBuf, is_entry: bool) -> Result<Self, Box<dyn Error>> {
+        match file_data(path.as_path()) {
             Ok(input) => {
                 let mut model = Model::default();
                 let ast =
                     ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
-                model.set_special(&path.into(), &source);
+                model.set_special(&path, &source);
                 let _ = Model::convert(&mut model, ast);
                 model.is_entry = is_entry;
 

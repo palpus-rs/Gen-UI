@@ -1,3 +1,7 @@
+use proc_macro2::TokenStream;
+
+use self::live_design::LiveDesign;
+
 pub mod app_main;
 pub mod attr;
 pub mod field;
@@ -22,4 +26,10 @@ impl Model {
             false => Model::Widget(widget::Widget::from(model)),
         }
     }
+}
+
+pub trait ToLiveDesign {
+    fn widget_tree(&self) -> Option<TokenStream>;
+    fn widget_logic(&self) -> Option<TokenStream>;
+    fn to_live_design(&self) -> LiveDesign;
 }

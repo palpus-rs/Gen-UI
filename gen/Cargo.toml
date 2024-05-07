@@ -7,4 +7,5 @@ members = [
     "tests",
     "macros",
     "traits",
+    "compiler",
 ] 

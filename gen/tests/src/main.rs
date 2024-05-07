@@ -1,9 +1,7 @@
 use std::{fs::File, io::Write, path::Path, process::Command};
 
+use gen_compiler::{app, CompilerTarget};
 use gen_converter::model::Model;
-
-use makepad_gen_plugin::Makepad;
-
 fn main() {
     //
     // Users/user/Workspace/others/Gen-UI/gen/tests/ui/view/easy.gen
@@ -18,15 +16,17 @@ fn main() {
     // )
     // .unwrap();
 
-    let mut view_model = Model::new(
-        Path::new("E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen"),
-        current_dir,
-        true,
-    )
-    .unwrap();
+    // let app = app!{
+    //     Target::Makepad,
+    //     "../app.gen"
+    // };
+
+
+    let app = app(CompilerTarget::Makepad,"E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen");
+
 
     // let code = Makepad::ast(view_model);
-    let code = makepad_gen_plugin::widget::model::Model::new(view_model);
+    
     // let mut f =
     //     File::create("E:/Rust/learn/makepad/makepad-rik/examples/simple/src/app.rs").unwrap();
     // let _ = f.write(code.to_token_stream().to_string().as_bytes());
