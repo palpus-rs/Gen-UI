@@ -28,6 +28,12 @@ impl Source {
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
     }
+    pub fn origin_dir_to_compiled(origin_dir: &PathBuf) -> PathBuf {
+        let mut tmp = origin_dir.clone();
+        tmp.pop();
+        tmp.push("src-gen");
+        tmp
+    }
 }
 
 /// one is for source file path another is for source dir

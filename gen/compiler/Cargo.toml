@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 gen_converter = { path = "../converter" }
 makepad-gen-plugin = { path = "../generator/makepad"}
-toml = "0.8.12"
+toml_edit = "0.22.12"
