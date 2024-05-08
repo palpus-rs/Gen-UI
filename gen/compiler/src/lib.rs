@@ -96,15 +96,14 @@ impl Compiler {
             {
                 continue;
             }
-
-            match (source_path.is_file(), source_path.ends_with(".gen")) {
+            
+            match (source_path.is_file(), source_path.to_str().unwrap().ends_with(".gen")) {
                 (false, true) | (false, false) => {
                     // is dir should loop compile again
-                    Compiler::loop_compile(source_path, compile_fn, visited);
+                    Compiler::loop_compile(target_path.as_path(), compile_fn, visited);
                 }
                 (true, true) => {
                     // is gen file, use target compiler to compile then copy to the compiled project
-                    // let target = PathBuf::from(target.as_ref());
                     let compiled_path = Source::origin_file_to_compiled(source_path, &target_path);
                     let _ = fs::write(
                         compiled_path,
@@ -113,7 +112,6 @@ impl Compiler {
                     .expect("failed to write compiled file");
                 }
                 (true, false) => {
-                    // let target = PathBuf::from(target.as_ref());
                     // is file but not gen file, directly copy to the compiled project
                     // get the compiled path
                     let compiled_path = Source::origin_file_without_gen(source_path, &target_path);
@@ -239,5 +237,16 @@ pub fn app(target: CompilerTarget) -> Compiler {
         origin_path,
         is_dir,
         target,
+    }
+}
+
+#[cfg(test)]
+mod test_compiler{
+    use std::path::PathBuf;
+
+    #[test]
+    fn end_gen(){
+        let path = PathBuf::from("src-gen/main.gen");
+        assert_eq!(path.to_str().unwrap().ends_with(".gen"), true);
     }
 }
