@@ -1,5 +1,7 @@
 use proc_macro2::TokenStream;
 
+use crate::ToToken;
+
 use self::live_design::LiveDesign;
 
 pub mod app_main;
@@ -19,12 +21,18 @@ pub enum Model {
 }
 
 impl Model {
-    pub fn new(mut model: gen_converter::model::Model) -> Self {
+    pub fn new(model: gen_converter::model::Model) -> Self {
         // 判断是否是AppMain
         match model.is_entry() {
             true => Model::AppMain(app_main::AppMain::from(model)),
             false => Model::Widget(widget::Widget::from(model)),
         }
+    }
+}
+
+impl ToToken for Model {
+    fn to_token_stream(&self) -> TokenStream {
+        LiveDesign::from(self).to_token_stream()
     }
 }
 

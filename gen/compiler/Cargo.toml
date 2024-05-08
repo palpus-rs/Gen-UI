@@ -9,3 +9,4 @@ edition = "2021"
 gen_converter = { path = "../converter" }
 makepad-gen-plugin = { path = "../generator/makepad"}
 toml_edit = "0.22.12"
+walkdir = "2.5.0"

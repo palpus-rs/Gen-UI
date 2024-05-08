@@ -34,6 +34,50 @@ impl Source {
         tmp.push("src-gen");
         tmp
     }
+    /// end with .gen
+    pub fn origin_file_to_compiled<P1, P2>(origin_file: P1, origin_dir: P2) -> PathBuf
+    where
+        P1: Into<PathBuf>,
+        P2: Into<PathBuf>,
+    {
+        Source::origin_file_to_compiled_or(origin_file, origin_dir, true)
+    }
+    /// not end with .gen
+    pub fn origin_file_without_gen<P1, P2>(origin_file: P1, origin_dir: P2) -> PathBuf
+    where
+        P1: Into<PathBuf>,
+        P2: Into<PathBuf>,
+    {
+        Source::origin_file_to_compiled_or(origin_file, origin_dir, false)
+    }
+    fn origin_file_to_compiled_or<P1, P2>(origin_file: P1, origin_dir: P2, compile: bool) -> PathBuf
+    where
+        P1: Into<PathBuf>,
+        P2: Into<PathBuf>,
+    {
+        let mut tmp: PathBuf = origin_dir.into();
+        tmp.pop();
+
+        let strip_path: PathBuf = origin_file.into();
+        
+        let strip_path = strip_path.strip_prefix(&tmp.as_path()).unwrap();
+
+        let mut target: Vec<OsString> = strip_path.iter().map(OsString::from).collect();
+
+        // 检查是否有足够可以修改
+        if !target.is_empty() {
+            // 替换第一个
+            target[0] = "src-gen".into();
+            if compile {
+                if let Some(last) = target.last_mut() {
+                    *last = last.to_str().unwrap().replace(".gen", ".rs").into();
+                }
+            }
+        }
+
+        // 使用base和修改后的组件重新构建完整的路径
+        tmp.clone().join(PathBuf::from_iter(target))
+    }
 }
 
 /// one is for source file path another is for source dir
@@ -52,7 +96,6 @@ impl From<(&PathBuf, &PathBuf)> for Source {
             // 替换第一个
             target[0] = "src-gen".into();
             if let Some(last) = target.last_mut() {
-                
                 *last = last.to_str().unwrap().replace(".gen", ".rs").into();
             }
         }
