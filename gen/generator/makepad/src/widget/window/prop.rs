@@ -1,7 +1,5 @@
 use std::fmt::Display;
 
-use syn::ItemStruct;
-
 use crate::{widget::{view::ViewProps, DynProps, StaticProps}, ToToken};
 
 #[derive(Debug, Clone, Default)]

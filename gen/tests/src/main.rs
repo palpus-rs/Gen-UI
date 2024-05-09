@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write, path::Path, process::Command};
 
-use gen_compiler::{app, CompilerTarget};
+use gen_compiler::{app, Target};
 use gen_converter::model::Model;
 fn main() {
     //
@@ -22,7 +22,7 @@ fn main() {
     // };
 
 
-    let app = app(CompilerTarget::Makepad,"E:/Rust/try/makepad/Gen-UI/gen/tests/ui/app.gen");
+    let app = app(Target::Makepad);
 
 
     // let code = Makepad::ast(view_model);

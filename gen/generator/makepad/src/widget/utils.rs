@@ -1,8 +1,8 @@
 use gen_converter::{error::Errors, model::script::PropFn};
-use gen_parser::{Function, Value};
+use gen_parser::Value;
 use gen_utils::common::{
     token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
-    token_tree_punct_alone, trees_to_token_stream,
+    token_tree_punct_alone,
 };
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};

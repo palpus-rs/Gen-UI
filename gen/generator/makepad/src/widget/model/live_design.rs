@@ -6,7 +6,7 @@ use crate::{
     ToToken,
 };
 
-use super::{widget::Widget, ToLiveDesign};
+use super::ToLiveDesign;
 
 /// LiveDesign中包含了Makepad DSL的模板部分，这个部分是必须的
 /// 它由大量虚拟Widget节点组成
@@ -74,12 +74,3 @@ where
         live_design
     }
 }
-
-// impl From<&Model> for LiveDesign {
-//     fn from(value: &Model) -> Self {
-//         match value {
-//             Model::AppMain(app_main) => app_main.to_live_design(),
-//             Model::Widget(widget) => widget.to_live_design(),
-//         }
-//     }
-// }
