@@ -1,0 +1,14 @@
+<template>
+  <window id="ui">
+    <label text="Hello"></label>
+  </window>
+</template>
+
+<style>
+#ui{
+  width: Fill;
+  height: Fill;
+  show_bg: true;
+  draw_bg: #1C2128;
+}
+</style>
