@@ -1,4 +1,7 @@
-use std::{ffi::OsString, path::PathBuf};
+use std::{
+    ffi::OsString,
+    path::{Path, PathBuf},
+};
 
 use gen_utils::common::snake_to_camel;
 
@@ -59,7 +62,7 @@ impl Source {
         tmp.pop();
 
         let strip_path: PathBuf = origin_file.into();
-        
+
         let strip_path = strip_path.strip_prefix(&tmp.as_path()).unwrap();
 
         let mut target: Vec<OsString> = strip_path.iter().map(OsString::from).collect();
@@ -82,12 +85,17 @@ impl Source {
 
 /// one is for source file path another is for source dir
 /// (source file path, source dir path)
-impl From<(&PathBuf, &PathBuf)> for Source {
-    fn from(value: (&PathBuf, &PathBuf)) -> Self {
-        let mut tmp = value.1.clone();
+impl<P1, P2> From<(P1, P2)> for Source
+where
+    P1: AsRef<Path>,
+    P2: AsRef<Path>,
+{
+    fn from(value: (P1, P2)) -> Self {
+        let mut tmp = value.1.as_ref().to_path_buf();
         tmp.pop();
 
-        let strip_path = value.0.strip_prefix(&tmp.as_path()).unwrap();
+        let strip_path = value.0.as_ref().to_path_buf();
+        let strip_path = strip_path.strip_prefix(&tmp.as_path()).unwrap();
 
         let mut target: Vec<OsString> = strip_path.iter().map(OsString::from).collect();
 
@@ -99,14 +107,13 @@ impl From<(&PathBuf, &PathBuf)> for Source {
                 *last = last.to_str().unwrap().replace(".gen", ".rs").into();
             }
         }
-
         // 使用base和修改后的组件重新构建完整的路径
         let compiled_file = tmp.clone().join(PathBuf::from_iter(target));
         let mut compiled_dir = tmp;
         compiled_dir.push("src-gen");
         Source {
-            origin_dir: value.1.clone(),
-            origin_file: value.0.clone(),
+            origin_dir: value.1.as_ref().to_path_buf(),
+            origin_file: value.0.as_ref().to_path_buf(),
             compiled_dir,
             compiled_file,
         }

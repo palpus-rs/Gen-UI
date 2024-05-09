@@ -344,8 +344,8 @@ impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
     }
 }
 
-/// parse whole rsx file from `&str` to `ParseTarget`
-/// recommended to use this method to parse rsx file directly
+/// parse whole gen file from `&str` to `ParseTarget`
+/// recommended to use this method to parse gen file directly
 impl TryFrom<&str> for ParseTarget {
     type Error = crate::error::Error;
 
@@ -358,6 +358,7 @@ impl TryFrom<&str> for ParseTarget {
                 // parse res to ParseTarget
                 return ParseTarget::try_from(res);
             } else {
+                dbg!(remain);
                 return Err(crate::error::Error::new("Parsing file exception. The current file contains content that is not covered by processed tags. If it is a rust script, please wrap it in a `<script>` tag"));
             }
         };
@@ -481,6 +482,27 @@ mod ast_test {
         comment::{offline::OfflineComment, position::OfflinePosition, Comments},
         ParseTarget,
     };
+    #[test]
+    fn parse_t_s(){
+        let input = r#"
+        <template>
+            <window id="ui">
+                <label text="Hello"></label>
+            </window>
+        </template>
+        <style>
+        #ui{
+            width: Fill;
+            height: Fill;
+            show_bg: true;
+            draw_bg: #1C2128
+        }
+        </style>
+        "#;
+
+        let target = ParseTarget::try_from(input).unwrap();
+        dbg!(target);
+    }
 
     #[test]
     fn parse_target() {

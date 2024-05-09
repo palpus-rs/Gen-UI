@@ -184,6 +184,18 @@ mod tag_parser {
     use super::parse_template_tag;
 
     #[test]
+    fn test_template2(){
+        let input = r#"
+        <template>
+            <window id="ui">
+                <label text="Hello"></label>
+            </window> 
+        </template>
+        "#;
+        let (_, _) = parse_template_tag(input).unwrap();
+    }
+
+    #[test]
     fn test_strange_template() {
         let input = r#"<  template >
             <div></div>

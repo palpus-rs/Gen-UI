@@ -28,6 +28,8 @@ pub struct Widget {
     pub is_root: bool,
     pub is_prop: bool,
     pub is_built_in: bool,
+    /// is a define widget
+    pub is_static: bool,
     /// widget id, if widget is prop, id is prop
     pub id: Option<String>,
     pub name: String,
@@ -44,11 +46,20 @@ pub struct Widget {
     pub event_set: Option<TokenStream>,
     pub children: Option<Vec<Widget>>,
     pub inherits: Option<BuiltIn>,
-    pub traits: WidgetTrait,
+    pub traits: Option<WidgetTrait>,
     pub role: Role,
 }
 
 impl Widget {
+    pub fn default_ui_root() -> Self {
+        let mut widget = Widget::default();
+
+        widget.set_is_root(true).set_id(Some(&"ui".to_string()));
+        widget.name = "Window".to_string();
+        widget.is_static = true;
+
+        widget
+    }
     pub fn new(special: Option<Source>, name: &str, inherits: Option<&String>) -> Self {
         let mut widget = Widget::default();
         match special {
@@ -143,13 +154,21 @@ impl Widget {
     }
     pub fn handle_event(&mut self, events: &Option<Vec<PropFn>>) -> &mut Self {
         let builtin = self.inherits.as_ref().unwrap();
-        let _ = self.traits.handle_event(builtin.handle_event(events));
+        let _ = self
+            .traits
+            .as_mut()
+            .unwrap()
+            .handle_event(builtin.handle_event(events));
         self
     }
     pub fn draw_walk(&mut self, walk: &Option<Vec<PropFn>>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
         let builtin = self.inherits.as_ref().unwrap();
-        let _ = self.traits.draw_walk(builtin.draw_walk(walk));
+        let _ = self
+            .traits
+            .as_mut()
+            .unwrap()
+            .draw_walk(builtin.draw_walk(walk));
         self
     }
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {
@@ -205,7 +224,7 @@ impl Widget {
         self
     }
     pub fn set_traits(&mut self, traits: WidgetTrait) -> &mut Self {
-        self.traits = traits;
+        self.traits.replace(traits);
         self
     }
     pub fn set_role(&mut self, role: Role) -> &mut Self {
@@ -257,28 +276,37 @@ impl ToLiveDesign for Widget {
         }
     }
     fn widget_logic(&self) -> Option<TokenStream> {
-        let mut tk = TokenStream::new();
-        if let Some(uses_tk) = &self.uses {
-            tk.extend(uses_tk.clone());
-        }
-        if let Some(prop_ptr_tk) = &self.prop_ptr {
-            tk.extend(prop_ptr_tk.clone());
-        }
-        if let Some(event_ptr_tk) = &self.event_ptr {
-            tk.extend(event_ptr_tk.clone());
-        }
-        tk.extend(self.traits.to_token_stream(token_tree_ident(&self.name)));
-        if let Some(event_set_tk) = &self.event_set {
-            tk.extend(event_set_tk.clone());
-        }
-        if let Some(event_ref_tk) = &self.event_ref {
-            tk.extend(event_ref_tk.clone());
-        }
+        if !self.is_static {
+            let mut tk = TokenStream::new();
+            if let Some(uses_tk) = &self.uses {
+                tk.extend(uses_tk.clone());
+            }
+            if let Some(prop_ptr_tk) = &self.prop_ptr {
+                tk.extend(prop_ptr_tk.clone());
+            }
+            if let Some(event_ptr_tk) = &self.event_ptr {
+                tk.extend(event_ptr_tk.clone());
+            }
+            tk.extend(
+                self.traits
+                    .as_ref()
+                    .unwrap()
+                    .to_token_stream(token_tree_ident(&self.name)),
+            );
+            if let Some(event_set_tk) = &self.event_set {
+                tk.extend(event_set_tk.clone());
+            }
+            if let Some(event_ref_tk) = &self.event_ref {
+                tk.extend(event_ref_tk.clone());
+            }
 
-        if tk.is_empty() {
-            None
+            if tk.is_empty() {
+                None
+            } else {
+                Some(tk)
+            }
         } else {
-            Some(tk)
+            None
         }
     }
 

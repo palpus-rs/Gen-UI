@@ -14,7 +14,7 @@ use crate::{
 };
 
 use super::{
-    field::Field, handler::WidgetHandler, live_design::LiveDesign, match_event::MatchEvent,
+    field::Field, handler::WidgetHandler, live_design::LiveDesign, match_event::MatchEventTrait,
     traits::AppMainTrait,
 };
 
@@ -26,13 +26,13 @@ pub struct AppMain {
     pub root_ref: String,
     /// 处理在实例中的属性
     pub props: Vec<Field>,
-    pub match_event: MatchEvent,
+    pub match_event: MatchEventTrait,
     pub app_main: AppMainTrait,
     /// 有哪些组件需要被注册
+    /// live design import widget
     pub live_register: Option<Vec<String>>,
     pub source: Source,
-    /// DSL Tree Node in Live Design
-    pub dsl: TokenStream,
+    /// rust use code
     pub uses: Option<TokenStream>,
 }
 
@@ -48,7 +48,6 @@ impl AppMain {
             app_main: Default::default(),
             live_register: None,
             source: source.clone(),
-            dsl: Default::default(),
             uses: None,
         }
     }
@@ -95,10 +94,7 @@ impl AppMain {
         self
     }
 
-    pub fn set_dsl(&mut self, dsl: TokenStream) -> &mut Self {
-        self.dsl = dsl;
-        self
-    }
+    
     pub fn set_props(&mut self, props: Option<&Vec<PropFn>>) -> &mut Self {
         if let Some(props) = props {
             for prop in props{
@@ -121,7 +117,25 @@ impl AppMain {
 
 impl ToLiveDesign for AppMain {
     fn widget_tree(&self) -> Option<TokenStream> {
-        Some(self.dsl.clone())
+        let app = token_tree_ident(&self.name);
+        let root = token_tree_ident(&self.root_ref);
+        let imports = if let Some(imports) = self.live_register.as_ref(){
+            let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
+                let item = token_tree_ident(item);
+                acc.extend(quote!{#item,});
+                acc
+            });
+            Some(tk)
+        }else{
+            None
+        };
+        let tk = quote!{
+            #imports
+            #app = {{#app}}{
+                #root: <#root>{}
+            }
+        };
+        Some(tk)
     }
 
     fn widget_logic(&self) -> Option<TokenStream> {
@@ -162,7 +176,7 @@ impl From<gen_converter::model::Model> for AppMain {
         let widget = Widget::from(value);
         let root_id = widget.id.as_ref().expect("root id is required").to_string();
         let dsl = widget.widget_tree().unwrap();
-        app.set_root_ref(root_id).set_dsl(dsl).set_script(script);
+        app.set_root_ref(root_id).set_script(script);
         let app_tk = app.to_live_design().to_token_stream();
 
         let mut f = File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/src/app.rs").unwrap();

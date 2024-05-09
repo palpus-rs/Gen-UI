@@ -14,27 +14,27 @@ pub mod role;
 pub mod traits;
 pub mod widget;
 
-#[derive(Debug, Clone)]
-pub enum Model {
-    AppMain(app_main::AppMain),
-    Widget(widget::Widget),
-}
+// #[derive(Debug, Clone)]
+// pub enum Model {
+//     AppMain(app_main::AppMain),
+//     Widget(widget::Widget),
+// }
 
-impl Model {
-    pub fn new(model: gen_converter::model::Model) -> Self {
-        // 判断是否是AppMain
-        match model.is_entry() {
-            true => Model::AppMain(app_main::AppMain::from(model)),
-            false => Model::Widget(widget::Widget::from(model)),
-        }
-    }
-}
+// impl Model {
+//     pub fn new(model: gen_converter::model::Model) -> Self {
+//         // 判断是否是AppMain
+//         match model.is_entry() {
+//             true => Model::AppMain(app_main::AppMain::from(model)),
+//             false => Model::Widget(widget::Widget::from(model)),
+//         }
+//     }
+// }
 
-impl ToToken for Model {
-    fn to_token_stream(&self) -> TokenStream {
-        LiveDesign::from(self).to_token_stream()
-    }
-}
+// impl ToToken for Model {
+//     fn to_token_stream(&self) -> TokenStream {
+//         LiveDesign::from(self).to_token_stream()
+//     }
+// }
 
 pub trait ToLiveDesign {
     fn widget_tree(&self) -> Option<TokenStream>;

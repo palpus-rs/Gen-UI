@@ -5,12 +5,14 @@ mod macros;
 mod root;
 mod r#use;
 mod common;
+mod fs;
 
 pub use common::*;
 pub use component::*;
 pub use macros::*;
 pub use r#use::*;
 pub use root::*;
+pub use fs::*;
 
 use gen_utils::common::*;
 use proc_macro2::TokenTree;

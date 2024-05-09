@@ -8,7 +8,7 @@ use crate::utils::apply_over_and_redraw;
 
 #[allow(dead_code)]
 #[derive(Debug, Default, Clone)]
-pub struct MatchEvent {
+pub struct MatchEventTrait {
     /// the bind props which can be changed in the app main
     /// this will be set on handle startup
     global: Option<Vec<PropFn>>,
@@ -41,7 +41,7 @@ pub struct MatchEvent {
     match_event_with_draw_2d: Option<TokenStream>,
 }
 
-impl MatchEvent {
+impl MatchEventTrait {
     pub fn handle_actions(&mut self, root_id: &str, actions: Vec<PropFn>) -> &mut Self {
         let mut tk = TokenStream::new();
         for item in actions {

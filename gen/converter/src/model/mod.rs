@@ -22,7 +22,7 @@ pub use template::{PropTree, TemplateModel};
 
 use self::{
     prop::ConvertStyle,
-    script::{ConvertScript, GenScriptModel, ScriptModel},
+    script::{GenScriptModel, ScriptModel},
     style::handle_styles,
 };
 
@@ -63,13 +63,19 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new(path: &PathBuf, source: &PathBuf, is_entry: bool) -> Result<Self, Box<dyn Error>> {
-        match file_data(path.as_path()) {
+    /// path: gen file path
+    /// source: gen file parent dir path
+    pub fn new(
+        file_path: &PathBuf,
+        source: &PathBuf,
+        is_entry: bool,
+    ) -> Result<Self, Box<dyn Error>> {
+        match file_data(file_path.as_path()) {
             Ok(input) => {
                 let mut model = Model::default();
                 let ast =
                     ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
-                model.set_special(&path, &source);
+                model.set_special(&file_path, &source);
                 let _ = Model::convert(&mut model, ast);
                 model.is_entry = is_entry;
 
@@ -154,11 +160,46 @@ impl Model {
         // get strategy
         match &ast.strategy() {
             Strategy::None => {}
-            Strategy::SingleTemplate => todo!(),
+            Strategy::SingleTemplate => {
+                let template = ast.template().unwrap()[0].clone();
+                let convert_template = TemplateModel::convert(&template, true);
+                let _ = model.set_template(
+                    convert_template.expect("template cannot be none in Strategy::SingleTemplate"),
+                );
+            }
             Strategy::SingleScript => todo!(),
             Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other rsx have use to inject the style or not
             Strategy::TemplateScript => todo!(),
-            Strategy::TemplateStyle => todo!(),
+            Strategy::TemplateStyle => {
+                let (sender, receiver) = mpsc::channel();
+                let template = ast.template().unwrap()[0].clone();
+                let styles = ast.style().unwrap().clone();
+                let _ = thread::spawn(move || {
+                    let convert_res = handle_styles(&styles);
+                    sender
+                        .send(ConvertResult::Style(convert_res))
+                        .expect("send style error");
+                });
+
+                match receiver
+                    .recv()
+                    .expect("gen_converter: receive failed when convert!")
+                {
+                    ConvertResult::Style(s) => {
+                        if s.is_some() {
+                            model.set_style(s.unwrap());
+                        } else {
+                            panic!("style cannot be none in Strategy::TemplateStyle")
+                        }
+                    }
+                    _ => panic!("Invalid strategy!"),
+                }
+
+                let convert_template = TemplateModel::convert(&template, true);
+                let _ = model.set_template(
+                    convert_template.expect("template cannot be none in Strategy::TemplateStyle"),
+                );
+            }
             Strategy::All => {
                 let (sender, receiver) = mpsc::channel();
                 let template_sender = sender.clone();
@@ -230,7 +271,9 @@ where
     match File::open(path) {
         Ok(mut file) => {
             let mut buffer = String::new();
-            let _ = file.read_to_string(&mut buffer);
+            let _ = file
+                .read_to_string(&mut buffer)
+                .expect("can not read file buffer");
             Ok(buffer)
         }
         Err(e) => Err(Box::new(e)),

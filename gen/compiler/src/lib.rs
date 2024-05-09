@@ -2,15 +2,15 @@ mod target;
 mod utils;
 use std::{
     collections::HashSet,
-    fmt::Debug,
     fs, mem,
     path::{Path, PathBuf},
     process::Command,
 };
 
 use gen_converter::model::{Model, Source};
-use makepad_gen_plugin::ToToken;
-pub use target::CompilerTarget;
+use makepad_gen_plugin::{Makepad, ToToken};
+use target::CompilerTarget;
+pub use target::Target;
 use toml_edit::DocumentMut;
 pub use utils::*;
 use walkdir::WalkDir;
@@ -29,17 +29,35 @@ pub struct Compiler {
     /// origin path is a dir or a file
     is_dir: bool,
     target: CompilerTarget,
+    entry: String,
+    root: Option<PathBuf>,
 }
 
 impl Compiler {
     pub fn run(&self) -> () {
         let mut super_path = self.origin_path.clone();
         super_path.pop();
-
+        super_path.push("src-gen");
         println!("run app ...");
         let _ = Command::new("cargo")
             .arg("run")
             .current_dir(super_path.as_path());
+    }
+    pub fn entry(&mut self, entry: &str) -> &mut Self {
+        self.entry = entry.to_string();
+        self
+    }
+    pub fn root<P>(&mut self, path: P) -> &mut Self
+    where
+        P: AsRef<Path>,
+    {
+        self.root.replace(path.as_ref().to_path_buf());
+        self
+    }
+    pub fn init_compile_target(&mut self) -> () {
+        let _ = self
+            .target
+            .init(&self.entry, self.origin_path.as_path(), self.root.as_ref());
     }
     /// ## compile the project
     /// ### example
@@ -53,33 +71,17 @@ impl Compiler {
     /// ```
     /// ### tests
     /// - easy compile: 👌
-    pub fn compile(&self) -> () {
+    pub fn compile(&mut self) -> () {
         let _ = self.exist_or_create();
+        let _ = self.init_compile_target();
         let mut visited = HashSet::new();
-        Compiler::loop_compile(
-            self.origin_path.as_path(),
-            |source_path, source_dir| -> String {
-                let model = Model::new(&source_path, source_dir, self.is_dir).unwrap();
-                match &self.target {
-                    CompilerTarget::Makepad => {
-                        let makepad = makepad_gen_plugin::widget::model::Model::new(model);
-                        makepad.to_token_stream().to_string()
-                    }
-                    CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                    CompilerTarget::Dioxus => todo!("dioxus plugin not implemented yet"),
-                }
-            },
-            &mut visited,
-        );
+        // after src-gen project created, get compile target and then use plugin logic to rewrite
+        Compiler::loop_compile(self, &mut visited);
     }
-    fn loop_compile<P, F>(target: P, compile_fn: F, visited: &mut HashSet<PathBuf>)
-    where
-        P: AsRef<Path>,
-        F: Fn(&PathBuf, &PathBuf) -> String + Copy,
-    {
+    fn loop_compile(compiler: &mut Compiler, visited: &mut HashSet<PathBuf>) {
         // Convert to absolute path
         // let target_path = target.as_ref().canonicalize().unwrap();
-        let target_path = target.as_ref().to_path_buf();
+        let target_path = compiler.origin_path.as_path().to_path_buf();
         if !visited.insert(target_path.clone()) {
             return;
         }
@@ -96,20 +98,34 @@ impl Compiler {
             {
                 continue;
             }
-            
-            match (source_path.is_file(), source_path.to_str().unwrap().ends_with(".gen")) {
+
+            match (
+                source_path.is_file(),
+                source_path.to_str().unwrap().ends_with(".gen"),
+            ) {
                 (false, true) | (false, false) => {
                     // is dir should loop compile again
-                    Compiler::loop_compile(target_path.as_path(), compile_fn, visited);
+                    Compiler::loop_compile(compiler, visited);
                 }
                 (true, true) => {
                     // is gen file, use target compiler to compile then copy to the compiled project
-                    let compiled_path = Source::origin_file_to_compiled(source_path, &target_path);
-                    let _ = fs::write(
-                        compiled_path,
-                        compile_fn(&source_path.to_path_buf(), &target_path),
-                    )
-                    .expect("failed to write compiled file");
+                    // let compiled_path = Source::origin_file_to_compiled(source_path, &target_path);
+                    // let _ = fs::write(
+                    //     compiled_path,
+                    //     compile_fn(&source_path.to_path_buf(), &target_path),
+                    // )
+                    // .expect("failed to write compiled file");
+
+                    let model =
+                        Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
+                    match &mut compiler.target {
+                        CompilerTarget::Makepad(makepad) => {
+                            
+                            todo!("{:#?} ,makepad hanvebeen finish", makepad);
+                        }
+                        CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                        CompilerTarget::Dioxus => todo!("dioxus plugin not implemented yet"),
+                    }
                 }
                 (true, false) => {
                     // is file but not gen file, directly copy to the compiled project
@@ -228,24 +244,28 @@ impl Compiler {
 /// - path:compile target path (all folders are compiled, files are compiled as single files)
 /// ### attention
 /// if path is relative path, you should write from project root not the current file
-pub fn app(target: CompilerTarget) -> Compiler {
+pub fn app(target: Target) -> Compiler {
     let origin_path = std::env::current_dir().unwrap();
 
     let is_dir = origin_path.is_dir();
+
+    let target = CompilerTarget::from(target);
 
     Compiler {
         origin_path,
         is_dir,
         target,
+        entry: "app".to_string(),
+        root: None,
     }
 }
 
 #[cfg(test)]
-mod test_compiler{
+mod test_compiler {
     use std::path::PathBuf;
 
     #[test]
-    fn end_gen(){
+    fn end_gen() {
         let path = PathBuf::from("src-gen/main.gen");
         assert_eq!(path.to_str().unwrap().ends_with(".gen"), true);
     }
