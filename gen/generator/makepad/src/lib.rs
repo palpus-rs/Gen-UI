@@ -72,7 +72,6 @@ impl Makepad {
         let live_register = widget_tree.to_lib_list();
         let app_path = path
             .as_ref()
-            .join("src")
             .join(format!("{}.gen", entry).as_str());
         let source = Source::from((app_path.as_path(), path.as_ref()));
         let mut app = AppMain::new(&source);
