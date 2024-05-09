@@ -39,7 +39,6 @@ pub struct AppMain {
 impl AppMain {
     pub fn new(source: &Source) -> Self {
         let name = source.source_name();
-
         AppMain {
             name,
             root_ref: String::new(),
@@ -51,10 +50,13 @@ impl AppMain {
             uses: None,
         }
     }
+    pub fn set_live_register(&mut self, children: Vec<String>) -> &mut Self {
+        self.live_register.replace(children);
+        self
+    }
     pub fn set_script(&mut self, script: Option<ScriptModel>) -> &mut Self {
         if let Some(sc) = script {
             if let ScriptModel::Gen(sc) = sc {
-                // dbg!(&sc);
                 let GenScriptModel {
                     uses,
                     prop_ptr,
@@ -94,10 +96,9 @@ impl AppMain {
         self
     }
 
-    
     pub fn set_props(&mut self, props: Option<&Vec<PropFn>>) -> &mut Self {
         if let Some(props) = props {
-            for prop in props{
+            for prop in props {
                 self.props.push(Field::from(prop));
             }
         }
@@ -119,17 +120,17 @@ impl ToLiveDesign for AppMain {
     fn widget_tree(&self) -> Option<TokenStream> {
         let app = token_tree_ident(&self.name);
         let root = token_tree_ident(&self.root_ref);
-        let imports = if let Some(imports) = self.live_register.as_ref(){
+        let imports = if let Some(imports) = self.live_register.as_ref() {
             let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
                 let item = token_tree_ident(item);
-                acc.extend(quote!{#item,});
+                acc.extend(quote! {#item,});
                 acc
             });
             Some(tk)
-        }else{
+        } else {
             None
         };
-        let tk = quote!{
+        let tk = quote! {
             #imports
             #app = {{#app}}{
                 #root: <#root>{}

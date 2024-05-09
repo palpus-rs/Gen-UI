@@ -17,16 +17,21 @@ pub struct Source {
 }
 
 impl Source {
+    /// get name from source origin file
+    /// eg: src_gen/widget/hello.gen -> Hello
     pub fn source_name(&self) -> String {
-        let name = self
-            .origin_file
+        let name = self.source_name_lower();
+        snake_to_camel(&name).unwrap()
+    }
+    /// get name from source origin file back the file name without suffix
+    pub fn source_name_lower(&self) -> String {
+        self.origin_file
             .file_name()
             .unwrap()
             .to_str()
             .unwrap()
             .to_string()
-            .replace(".gen", "");
-        snake_to_camel(&name).unwrap()
+            .replace(".gen", "")
     }
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
@@ -34,7 +39,7 @@ impl Source {
     pub fn origin_dir_to_compiled(origin_dir: &PathBuf) -> PathBuf {
         let mut tmp = origin_dir.clone();
         tmp.pop();
-        tmp.push("src-gen");
+        tmp.push("src_gen");
         tmp
     }
     /// end with .gen
@@ -70,7 +75,11 @@ impl Source {
         // 检查是否有足够可以修改
         if !target.is_empty() {
             // 替换第一个
-            target[0] = "src-gen".into();
+            target[0] = "src_gen".into();
+            if target.last().unwrap().eq(".gen") {
+                // 在target[0]后面插入一个src
+                target.insert(1, "src".into());
+            }
             if compile {
                 if let Some(last) = target.last_mut() {
                     *last = last.to_str().unwrap().replace(".gen", ".rs").into();
@@ -102,7 +111,13 @@ where
         // 检查是否有足够可以修改
         if !target.is_empty() {
             // 替换第一个
-            target[0] = "src-gen".into();
+            target[0] = "src_gen".into();
+            // 检查当前文件的后缀是否是.gen，如果是则需要将整个父目录移动到src下且将文件后缀改为.rs
+            if target.last().unwrap().to_str().unwrap().ends_with(".gen") {
+                // 在target[0]后面插入一个src
+                target.insert(1, "src".into());
+            }
+
             if let Some(last) = target.last_mut() {
                 *last = last.to_str().unwrap().replace(".gen", ".rs").into();
             }
@@ -110,7 +125,7 @@ where
         // 使用base和修改后的组件重新构建完整的路径
         let compiled_file = tmp.clone().join(PathBuf::from_iter(target));
         let mut compiled_dir = tmp;
-        compiled_dir.push("src-gen");
+        compiled_dir.push("src_gen");
         Source {
             origin_dir: value.1.as_ref().to_path_buf(),
             origin_file: value.0.as_ref().to_path_buf(),

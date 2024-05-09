@@ -30,6 +30,17 @@ impl CompilerTarget {
             }
         }
     }
+    pub fn compile(&self)->(){
+        match self {
+            CompilerTarget::Slint => todo!("Slint Compiler is not supported yet"),
+            CompilerTarget::Dioxus => todo!("Dioxus Compiler is not supported yet"),
+            CompilerTarget::Makepad(makepad) => {
+                if let Some(makepad) = makepad {
+                    makepad.compile();
+                }
+            },
+        }
+    }
 }
 
 impl From<Target> for CompilerTarget {

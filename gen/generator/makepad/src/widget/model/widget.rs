@@ -149,6 +149,8 @@ impl Widget {
                     .draw_walk(sub_prop_binds)
                     .handle_event(sub_event_binds);
             }
+        }else{
+            self.is_static = true;
         }
         self
     }

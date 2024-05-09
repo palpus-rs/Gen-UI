@@ -31,13 +31,14 @@ pub struct Compiler {
     target: CompilerTarget,
     entry: String,
     root: Option<PathBuf>,
+    exclude: Vec<String>,
 }
 
 impl Compiler {
     pub fn run(&self) -> () {
         let mut super_path = self.origin_path.clone();
         super_path.pop();
-        super_path.push("src-gen");
+        super_path.push("src_gen");
         println!("run app ...");
         let _ = Command::new("cargo")
             .arg("run")
@@ -47,10 +48,13 @@ impl Compiler {
         self.entry = entry.to_string();
         self
     }
+    /// set the root path of the project(which need to be excluded from the compile target)
     pub fn root<P>(&mut self, path: P) -> &mut Self
     where
         P: AsRef<Path>,
     {
+        self.exclude
+            .push(path.as_ref().to_str().unwrap().to_string());
         self.root.replace(path.as_ref().to_path_buf());
         self
     }
@@ -75,8 +79,10 @@ impl Compiler {
         let _ = self.exist_or_create();
         let _ = self.init_compile_target();
         let mut visited = HashSet::new();
-        // after src-gen project created, get compile target and then use plugin logic to rewrite
+        // after src_gen project created, get compile target and then use plugin logic to rewrite
         Compiler::loop_compile(self, &mut visited);
+        // after all files compiled
+        let _ = self.target.compile();
     }
     fn loop_compile(compiler: &mut Compiler, visited: &mut HashSet<PathBuf>) {
         // Convert to absolute path
@@ -92,10 +98,10 @@ impl Compiler {
         {
             let source_path = item.path();
 
-            if UNCOMPILED
-                .iter()
-                .any(|&uncompiled_item| source_path.to_str().unwrap().ends_with(uncompiled_item))
-            {
+            if compiler.exclude.iter().any(|uncompiled_item| {
+                source_path.ends_with(uncompiled_item)
+                    || source_path.to_str().unwrap().eq(uncompiled_item)
+            }) {
                 continue;
             }
 
@@ -120,7 +126,6 @@ impl Compiler {
                         Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
                     match &mut compiler.target {
                         CompilerTarget::Makepad(makepad) => {
-                            
                             todo!("{:#?} ,makepad hanvebeen finish", makepad);
                         }
                         CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
@@ -140,15 +145,15 @@ impl Compiler {
     /// ## check if the generate rust project exists, if not create one
     ///
     /// ### details
-    /// - check if the project exists which named "src-gen"
+    /// - check if the project exists which named "src_gen"
     ///     - true: return true
-    ///     - false: create a new rust project named "src-gen"
+    ///     - false: create a new rust project named "src_gen"
     /// - and need to check whether the super project is a rust workspace project
     ///     - if not, panic and tell the user to create a workspace project
-    ///     - if true, check and add the "src-gen" project to the workspace member list
+    ///     - if true, check and add the "src_gen" project to the workspace member list
     /// ### test
-    /// - no src-gen: 👌
-    /// - no src-gen and no workspace: 👌
+    /// - no src_gen: 👌
+    /// - no src_gen and no workspace: 👌
     fn exist_or_create(&self) -> () {
         // check the super project is a workspace project or not
         let mut super_path = self.origin_path.clone();
@@ -173,37 +178,37 @@ impl Compiler {
                 .as_array_mut()
                 .expect("members is not an array");
 
-            // check member list contains the src-gen project or not
+            // check member list contains the src_gen project or not
             if member_list
                 .iter()
-                .find(|item| item.as_str().unwrap() == "src-gen")
+                .find(|item| item.as_str().unwrap() == "src_gen")
                 .is_none()
             {
-                // add the src-gen project to the workspace member list
-                // member_list.push(toml::Value::String("src-gen".to_string()));
-                member_list.push("src-gen");
+                // add the src_gen project to the workspace member list
+                // member_list.push(toml::Value::String("src_gen".to_string()));
+                member_list.push("src_gen");
             }
             // write back
             fs::write(super_toml_path.as_path(), super_toml.to_string())
                 .expect("failed to write super project's Cargo.toml");
         }
 
-        // check the src-gen project exists or not
+        // check the src_gen project exists or not
         let compiled_dir = Source::origin_dir_to_compiled(&self.origin_path);
         if !compiled_dir.exists() {
             // use std::process::Command to create a new rust project
             let status = Command::new("cargo")
-                .args(["new", "src-gen"])
+                .args(["new", "src_gen"])
                 .current_dir(super_path.as_path())
                 .status()
-                .expect("failed to create src-gen project");
+                .expect("failed to create src_gen project");
 
             if !status.success() {
-                panic!("failed to create src-gen project");
+                panic!("failed to create src_gen project");
             }
         }
 
-        // read the origin project's Cargo.toml file and move the [dependencies] to the src-gen project except gen's dependencies
+        // read the origin project's Cargo.toml file and move the [dependencies] to the src_gen project except gen's dependencies
         let origin_toml_path = &self.origin_path.join("Cargo.toml");
         if !origin_toml_path.exists() {
             panic!("Cargo.toml not found in the origin project");
@@ -219,11 +224,11 @@ impl Compiler {
             .expect("dependencies not found in Cargo.toml")
             .clone();
         origin_dependencies.retain(|k, _| !k.starts_with("gen"));
-        // write the dependencies to the src-gen project's Cargo.toml file
+        // write the dependencies to the src_gen project's Cargo.toml file
         let compiled_toml_path = &compiled_dir.join("Cargo.toml");
-        // find the src-gen project's Cargo.toml file's [dependencies] table and replace the origin project's dependencies
+        // find the src_gen project's Cargo.toml file's [dependencies] table and replace the origin project's dependencies
         let compiled_toml_content = fs::read_to_string(compiled_toml_path.as_path())
-            .expect("failed to read src-gen project's Cargo.toml");
+            .expect("failed to read src_gen project's Cargo.toml");
         let mut compiled_toml = compiled_toml_content
             .parse::<DocumentMut>()
             .expect("Failed to parse Cargo.toml");
@@ -236,7 +241,14 @@ impl Compiler {
         // compiled_dependencies.extend(origin_dependencies.iter());
         // write back
         fs::write(compiled_toml_path.as_path(), compiled_toml.to_string())
-            .expect("failed to write src-gen project's Cargo.toml");
+            .expect("failed to write src_gen project's Cargo.toml");
+
+        // command add Makepad widget crate : `cargo add makepad-widgets`
+        let _ = Command::new("cargo")
+            .args(["add", "makepad-widgets"])
+            .current_dir(compiled_dir.as_path())
+            .status()
+            .expect("failed to add makepad-widgets to src_gen project");
     }
 }
 
@@ -257,6 +269,7 @@ pub fn app(target: Target) -> Compiler {
         target,
         entry: "app".to_string(),
         root: None,
+        exclude: UNCOMPILED.iter().map(|item| item.to_string()).collect(),
     }
 }
 
@@ -266,7 +279,7 @@ mod test_compiler {
 
     #[test]
     fn end_gen() {
-        let path = PathBuf::from("src-gen/main.gen");
+        let path = PathBuf::from("src_gen/main.gen");
         assert_eq!(path.to_str().unwrap().ends_with(".gen"), true);
     }
 }

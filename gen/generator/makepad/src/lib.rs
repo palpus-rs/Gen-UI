@@ -4,12 +4,12 @@ use std::{
 };
 
 // use gen::{sc_builder_to_token_stream, template};
-use gen_converter::model::{self, Source};
+use gen_converter::model::Source;
 use gen_utils::common::{token_stream_to_tree, token_tree_ident};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
 use utils::create_file;
-use widget::model::{app_main::AppMain, widget::Widget};
+use widget::model::{app_main::AppMain, widget::Widget, ToLiveDesign};
 
 pub mod error;
 // pub mod gen;
@@ -27,7 +27,7 @@ pub trait ToToken {
 
 #[derive(Debug)]
 pub struct Makepad {
-    // pub app_main: AppMain,
+    pub app_main: AppMain,
     pub widget_tree: Option<WidgetTree>,
     pub main_rs: RsFile,
 }
@@ -43,9 +43,9 @@ impl Makepad {
     {
         let main_rs = Makepad::create_main_rs(entry, path.as_ref());
         let widget_tree = Makepad::create_widget_tree(path.as_ref(), root);
-        // let main_rs = Makepad::create_app_rs(entry, path);
+        let app_main = Makepad::create_app_main(entry, path, &widget_tree);
         Makepad {
-            // app_main: todo!(),
+            app_main,
             widget_tree: Some(widget_tree),
             main_rs,
         }
@@ -64,12 +64,21 @@ impl Makepad {
             None => WidgetTree::default_root(),
         }
     }
-    fn create_app_rs<P>(entry: &str, path: P)
+    fn create_app_main<P>(entry: &str, path: P, widget_tree: &WidgetTree) -> AppMain
     where
         P: AsRef<Path>,
     {
-        let app_path = path.as_ref().join("src").join(entry);
-        let mut app_file = create_file(app_path.as_path());
+        let ui_root = widget_tree.super_ui_root();
+        let live_register = widget_tree.to_lib_list();
+        let app_path = path
+            .as_ref()
+            .join("src")
+            .join(format!("{}.gen", entry).as_str());
+        let source = Source::from((app_path.as_path(), path.as_ref()));
+        let mut app = AppMain::new(&source);
+        app.set_root_ref(ui_root).set_live_register(live_register);
+
+        app
     }
     /// makepad main rs is easy, which just need to use app_main fn to run app
     fn create_main_rs<P>(entry: &str, path: P) -> RsFile
@@ -77,9 +86,8 @@ impl Makepad {
         P: AsRef<Path>,
     {
         let main_path = path.as_ref().join("src").join("main.rs");
-
         let entry = token_tree_ident(entry);
-        let project_name = quote! {src-gen};
+        let project_name = quote! {src_gen};
         // let mut main_file = create_file(main_path.as_path());
 
         let content = quote! {
@@ -92,6 +100,43 @@ impl Makepad {
         //     .write_all(main_content.to_string().as_bytes())
         //     .unwrap();
     }
+    pub fn compile_app_main(&self) -> () {
+        let content = self.app_main.to_live_design().to_token_stream().to_string();
+        let mut file = create_file(self.app_main.source.compiled_file.as_path());
+        file.write_all(content.as_bytes()).unwrap();
+    }
+    pub fn compile_lib_rs(&self) -> () {
+        let lib_mods = self.widget_tree.as_ref().unwrap().to_lib();
+
+        let content = quote! {
+            pub use makepad_widgets;
+            pub use makepad_widgets::makepad_draw;
+            pub mod app;
+            #lib_mods
+        }
+        .to_string();
+
+        let mut lib_path = self.main_rs.source.compiled_file.clone();
+        lib_path.pop();
+        lib_path.push("lib.rs");
+        let mut file = create_file(lib_path.as_path());
+        file.write_all(content.as_bytes()).unwrap();
+    }
+    /// Makepad Compile
+    /// - compile main.rs
+    /// - compile app.rs
+    /// - compile lib.rs
+    /// - compile other widget.rs (which is in WidgetTree, use WidgetTree compile method to compile)
+    pub fn compile(&self) {
+        // compile main.rs
+        self.main_rs.compile();
+        // compile app.rs
+        self.compile_app_main();
+        // compile lib.rs
+        self.compile_lib_rs();
+        // compile other widget.rs
+        self.widget_tree.as_ref().unwrap().compile();
+    }
 }
 
 #[derive(Debug)]
@@ -103,6 +148,10 @@ pub struct RsFile {
 impl RsFile {
     pub fn new(source: Source, content: TokenStream) -> Self {
         RsFile { source, content }
+    }
+    pub fn compile(&self) -> () {
+        let mut file = create_file(self.source.compiled_file.as_path());
+        file.write_all(self.content.to_string().as_bytes()).unwrap();
     }
 }
 
@@ -124,6 +173,44 @@ impl WidgetTree {
             node: Widget::default_ui_root(),
             children: None,
         }
+    }
+    pub fn super_ui_root(&self) -> String {
+        self.node.source.as_ref().unwrap().source_name_lower()
+    }
+    /// convert widget tree to lib.rs mod
+    pub fn to_lib(&self) -> TokenStream {
+        // get node widget source
+        self.to_lib_list()
+            .iter()
+            .fold(TokenStream::new(), |mut acc, item| {
+                let item = token_tree_ident(item);
+                acc.extend(quote! {
+                    pub mod #item;
+                });
+                acc
+            })
+    }
+    pub fn to_lib_list(&self) -> Vec<String> {
+        let mut mods = vec![];
+
+        let source = self.node.source.as_ref().unwrap();
+        
+        mods.push(source.source_name_lower());
+
+        if let Some(children) = &self.children {
+            for child in children {
+                let child_mod = child.to_lib_list();
+                mods.extend(child_mod);
+            }
+        }
+        
+        mods
+    }
+    /// compile widget tree
+    pub fn compile(&self) -> () {
+        let content = self.node.to_live_design().to_token_stream().to_string();
+        let mut file = create_file(self.node.source.as_ref().unwrap().compiled_file.as_path());
+        file.write_all(content.as_bytes()).unwrap();
     }
 }
 
