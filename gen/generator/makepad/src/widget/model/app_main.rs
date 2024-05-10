@@ -164,19 +164,9 @@ impl From<gen_converter::model::Model> for AppMain {
     fn from(value: gen_converter::model::Model) -> Self {
         // clone a new script, other make to widget tree
         let script = value.script.clone();
-        // let gen_converter::model::Model {
-        //     special,
-        //     template,
-        //     script,
-        //     style,
-        //     compile,
-        //     is_entry,
-        // } = value;
         let mut app = AppMain::new(value.get_special());
-
         let widget = Widget::from(value);
         let root_id = widget.id.as_ref().expect("root id is required").to_string();
-        let dsl = widget.widget_tree().unwrap();
         app.set_root_ref(root_id).set_script(script);
         let app_tk = app.to_live_design().to_token_stream();
 

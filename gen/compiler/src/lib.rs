@@ -126,7 +126,9 @@ impl Compiler {
                         Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
                     match &mut compiler.target {
                         CompilerTarget::Makepad(makepad) => {
-                            todo!("{:#?} ,makepad hanvebeen finish", makepad);
+                            makepad.as_mut().unwrap().add(model.into());
+                            // todo!("{:#?} ,makepad hanvebeen finish", makepad);
+                            todo!();
                         }
                         CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
                         CompilerTarget::Dioxus => todo!("dioxus plugin not implemented yet"),

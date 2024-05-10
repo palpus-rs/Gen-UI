@@ -167,7 +167,13 @@ impl Model {
                     convert_template.expect("template cannot be none in Strategy::SingleTemplate"),
                 );
             }
-            Strategy::SingleScript => todo!(),
+            Strategy::SingleScript => {
+                let script = ast.script().unwrap().clone().to_origin();
+                // 处理script部分
+                if let Some(tree) = model.get_binds_tree() {
+                    model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
+                }
+            },
             Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other rsx have use to inject the style or not
             Strategy::TemplateScript => todo!(),
             Strategy::TemplateStyle => {

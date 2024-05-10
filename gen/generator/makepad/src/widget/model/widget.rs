@@ -332,14 +332,6 @@ impl From<gen_converter::model::Model> for Widget {
 
         build_widget(Some(special), &template, style.as_ref(), script.as_ref())
 
-        // let res = LiveDesign::from(widget);
-
-        // let gen = res.to_token_stream().to_string();
-        // let mut fs =
-        //     File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/src/hello.rs").unwrap();
-
-        // let _ = fs.write(gen.as_bytes());
-        // todo!("{:#?}", gen);
     }
 }
 

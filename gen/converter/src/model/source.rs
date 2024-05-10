@@ -33,6 +33,25 @@ impl Source {
             .to_string()
             .replace(".gen", "")
     }
+    /// get level from source compiled file
+    /// - eg1:
+    ///     - dir: a/b/c
+    ///     - file:  a/b/c/d.gen
+    /// > result: 
+    /// - eg2:
+    ///     - dir: a/b/c
+    ///     - file: a/b/c/d/e.gen
+    /// > result: d
+    pub fn level_gen(&self) -> PathBuf {
+        let mut level = self.compiled_file
+            .strip_prefix(self.compiled_dir.as_path())
+            .unwrap()
+            .to_path_buf();
+
+        // remove the last
+        level.pop();
+        level
+    }
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
     }

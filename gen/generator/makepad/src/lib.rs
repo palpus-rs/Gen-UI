@@ -28,7 +28,7 @@ pub trait ToToken {
 #[derive(Debug)]
 pub struct Makepad {
     pub app_main: AppMain,
-    pub widget_tree: Option<WidgetTree>,
+    pub widget_tree: Option<ModelTree>,
     pub main_rs: RsFile,
 }
 
@@ -50,7 +50,7 @@ impl Makepad {
             main_rs,
         }
     }
-    fn create_widget_tree<P>(path: P, root: Option<&PathBuf>) -> WidgetTree
+    fn create_widget_tree<P>(path: P, root: Option<&PathBuf>) -> ModelTree
     where
         P: AsRef<Path>,
     {
@@ -59,20 +59,18 @@ impl Makepad {
                 let gen_model =
                     gen_converter::model::Model::new(root, &path.as_ref().to_path_buf(), false)
                         .unwrap();
-                WidgetTree::new(gen_model.into())
+                ModelTree::new(gen_model.into())
             }
-            None => WidgetTree::default_root(),
+            None => ModelTree::default_root(),
         }
     }
-    fn create_app_main<P>(entry: &str, path: P, widget_tree: &WidgetTree) -> AppMain
+    fn create_app_main<P>(entry: &str, path: P, widget_tree: &ModelTree) -> AppMain
     where
         P: AsRef<Path>,
     {
         let ui_root = widget_tree.super_ui_root();
         let live_register = widget_tree.to_lib_list();
-        let app_path = path
-            .as_ref()
-            .join(format!("{}.gen", entry).as_str());
+        let app_path = path.as_ref().join(format!("{}.gen", entry).as_str());
         let source = Source::from((app_path.as_path(), path.as_ref()));
         let mut app = AppMain::new(&source);
         app.set_root_ref(ui_root).set_live_register(live_register);
@@ -121,11 +119,15 @@ impl Makepad {
         let mut file = create_file(lib_path.as_path());
         file.write_all(content.as_bytes()).unwrap();
     }
+    /// add widget to widget tree
+    pub fn add(&mut self, item: Widget) -> () {
+        self.widget_tree.as_mut().unwrap().add(item);
+    }
     /// Makepad Compile
     /// - compile main.rs
     /// - compile app.rs
     /// - compile lib.rs
-    /// - compile other widget.rs (which is in WidgetTree, use WidgetTree compile method to compile)
+    /// - compile other widget.rs (which is in ModelTree, use ModelTree compile method to compile)
     pub fn compile(&self) {
         // compile main.rs
         self.main_rs.compile();
@@ -155,24 +157,50 @@ impl RsFile {
 }
 
 #[derive(Debug, Clone)]
-pub struct WidgetTree {
+pub struct ModelTree {
     pub node: Widget,
-    pub children: Option<Vec<WidgetTree>>,
+    pub children: Option<Vec<ModelTree>>,
 }
 
-impl WidgetTree {
-    pub fn new(node: Widget) -> WidgetTree {
+impl ModelTree {
+    pub fn new(node: Widget) -> ModelTree {
         Self {
             node,
             children: None,
         }
     }
-    pub fn default_root() -> WidgetTree {
-        WidgetTree {
+    /// add node to widget tree
+    pub fn add(&mut self, item: Widget) -> () {
+        let item = ModelTree::new(item);
+        // get level and compare
+        let (_, item_path) = item.level();
+        let (_, current_path) = self.level();
+
+        // compare path, src is the same root
+        // eg:
+        // - item_path:  src/a1/b/c
+        // - current_path: src/a2
+        dbg!(item_path.as_path());
+        dbg!(current_path.as_path());
+    }
+    /// ## get widget tree level
+    /// tree level can get from node source path
+    /// ### return
+    /// (level, path)
+    /// - `level: usize`: path length which can easy know the level of the tree, if compare with another level can know the tree is child or parent, acturally you can think level is just offset of dir path
+    /// - `path: PathBuf`: level path which only contain dir level
+    pub fn level(&self) -> (usize, PathBuf) {
+        let source = self.node.source.as_ref().unwrap().level_gen();
+
+        (source.components().count(), source)
+    }
+    pub fn default_root() -> ModelTree {
+        ModelTree {
             node: Widget::default_ui_root(),
             children: None,
         }
     }
+    /// get super ui root name
     pub fn super_ui_root(&self) -> String {
         self.node.source.as_ref().unwrap().source_name_lower()
     }
@@ -193,7 +221,7 @@ impl WidgetTree {
         let mut mods = vec![];
 
         let source = self.node.source.as_ref().unwrap();
-        
+
         mods.push(source.source_name_lower());
 
         if let Some(children) = &self.children {
@@ -202,7 +230,7 @@ impl WidgetTree {
                 mods.extend(child_mod);
             }
         }
-        
+
         mods
     }
     /// compile widget tree
@@ -213,7 +241,7 @@ impl WidgetTree {
     }
 }
 
-impl From<Widget> for WidgetTree {
+impl From<Widget> for ModelTree {
     fn from(value: Widget) -> Self {
         Self {
             node: value,
@@ -222,7 +250,7 @@ impl From<Widget> for WidgetTree {
     }
 }
 
-// impl Default for WidgetTree {
+// impl Default for ModelTree {
 //     fn default() -> Self {
 //         Self {
 //             node: Widget::from(value),
