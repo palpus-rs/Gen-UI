@@ -60,6 +60,7 @@ pub struct Model {
     pub compile: bool,
     /// 是否是入口文件
     pub is_entry: bool,
+    pub strategy: Strategy,
 }
 
 impl Model {
@@ -76,6 +77,7 @@ impl Model {
                 let ast =
                     ParseResult::try_from(ParseTarget::try_from(input.as_str()).unwrap()).unwrap();
                 model.set_special(&file_path, &source);
+                model.strategy = ast.strategy();
                 let _ = Model::convert(&mut model, ast);
                 model.is_entry = is_entry;
 

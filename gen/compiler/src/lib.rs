@@ -126,7 +126,7 @@ impl Compiler {
                         Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
                     match &mut compiler.target {
                         CompilerTarget::Makepad(makepad) => {
-                            makepad.as_mut().unwrap().add(model.into());
+                            makepad.as_mut().unwrap().add(model);
                             // todo!("{:#?} ,makepad hanvebeen finish", makepad);
                             todo!();
                         }

@@ -11,7 +11,8 @@ pub use nodes::ASTNodes;
 
 pub use property::*;
 pub use script::Script;
-use std::fmt::Display;
+#[allow(unused_imports)]
+use std::{default, fmt::Display};
 pub use style::{Style,StyleType};
 pub use tag::{Tag,CloseType};
 pub use result::ParseResult;
@@ -25,6 +26,7 @@ use self::nodes::asts_to_string;
 
 /// Parse Strategy
 /// Convert ParseTarget To AST
+#[derive(Debug,Clone,Default)]
 pub enum Strategy {
     /// an empty file
     None,
@@ -50,6 +52,7 @@ pub enum Strategy {
     TemplateScriptComment,
     TemplateStyleComment,
     /// has all means: TemplateScriptStyle
+    #[default]
     All,
     Error(String),
 }

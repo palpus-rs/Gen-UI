@@ -326,6 +326,7 @@ impl From<gen_converter::model::Model> for Widget {
             style,
             compile,
             is_entry,
+            ..
         } = value;
 
         let template = template.unwrap();

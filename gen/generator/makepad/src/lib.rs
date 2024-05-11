@@ -4,7 +4,7 @@ use std::{
 };
 
 // use gen::{sc_builder_to_token_stream, template};
-use gen_converter::model::Source;
+use gen_converter::model::{Model, Source};
 use gen_utils::common::{token_stream_to_tree, token_tree_ident};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
@@ -28,7 +28,7 @@ pub trait ToToken {
 #[derive(Debug)]
 pub struct Makepad {
     pub app_main: AppMain,
-    pub widget_tree: Option<ModelTree>,
+    pub tree: Option<ModelTree>,
     pub main_rs: RsFile,
 }
 
@@ -46,7 +46,7 @@ impl Makepad {
         let app_main = Makepad::create_app_main(entry, path, &widget_tree);
         Makepad {
             app_main,
-            widget_tree: Some(widget_tree),
+            tree: Some(widget_tree),
             main_rs,
         }
     }
@@ -56,9 +56,10 @@ impl Makepad {
     {
         match root {
             Some(root) => {
-                let gen_model =
+                let gen_model: Widget =
                     gen_converter::model::Model::new(root, &path.as_ref().to_path_buf(), false)
-                        .unwrap();
+                        .unwrap()
+                        .into();
                 ModelTree::new(gen_model.into())
             }
             None => ModelTree::default_root(),
@@ -103,7 +104,7 @@ impl Makepad {
         file.write_all(content.as_bytes()).unwrap();
     }
     pub fn compile_lib_rs(&self) -> () {
-        let lib_mods = self.widget_tree.as_ref().unwrap().to_lib();
+        let lib_mods = self.tree.as_ref().unwrap().to_lib();
 
         let content = quote! {
             pub use makepad_widgets;
@@ -119,9 +120,11 @@ impl Makepad {
         let mut file = create_file(lib_path.as_path());
         file.write_all(content.as_bytes()).unwrap();
     }
-    /// add widget to widget tree
-    pub fn add(&mut self, item: Widget) -> () {
-        self.widget_tree.as_mut().unwrap().add(item);
+    /// add item to model tree
+    pub fn add(&mut self, item: Model) -> () {
+        
+
+        self.tree.as_mut().unwrap().add(item.into());
     }
     /// Makepad Compile
     /// - compile main.rs
@@ -136,11 +139,11 @@ impl Makepad {
         // compile lib.rs
         self.compile_lib_rs();
         // compile other widget.rs
-        self.widget_tree.as_ref().unwrap().compile();
+        self.tree.as_ref().unwrap().compile();
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RsFile {
     pub source: Source,
     pub content: TokenStream,
@@ -150,6 +153,12 @@ impl RsFile {
     pub fn new(source: Source, content: TokenStream) -> Self {
         RsFile { source, content }
     }
+    pub fn new_empty(source: Source) -> Self {
+        RsFile {
+            source,
+            content: TokenStream::new(),
+        }
+    }
     pub fn compile(&self) -> () {
         let mut file = create_file(self.source.compiled_file.as_path());
         file.write_all(self.content.to_string().as_bytes()).unwrap();
@@ -157,21 +166,76 @@ impl RsFile {
 }
 
 #[derive(Debug, Clone)]
+pub enum ModelNode {
+    Widget(Widget),
+    RsFile(RsFile),
+}
+
+impl ModelNode {
+    pub fn source(&self) -> Option<&Source> {
+        match self {
+            ModelNode::Widget(widget) => widget.source.as_ref(),
+            ModelNode::RsFile(rs) => Some(&rs.source),
+        }
+    }
+    pub fn content(&self) -> TokenStream {
+        match self {
+            ModelNode::Widget(widget) => widget.to_live_design().to_token_stream(),
+            ModelNode::RsFile(rs) => rs.content.clone(),
+        }
+    }
+}
+
+impl From<Model> for ModelNode {
+    fn from(value: Model) -> Self {
+        let source = value.special;
+        match value.strategy {
+            gen_parser::Strategy::None => RsFile::new_empty(source).into(),
+            gen_parser::Strategy::SingleTemplate => todo!(),
+            gen_parser::Strategy::SingleScript => todo!(),
+            gen_parser::Strategy::SingleStyle => todo!(),
+            gen_parser::Strategy::SingleComment => todo!(),
+            gen_parser::Strategy::TemplateScript => todo!(),
+            gen_parser::Strategy::TemplateStyle => todo!(),
+            gen_parser::Strategy::TemplateComment => todo!(),
+            gen_parser::Strategy::ScriptComment => todo!(),
+            gen_parser::Strategy::StyleComment => todo!(),
+            gen_parser::Strategy::TemplateScriptComment => todo!(),
+            gen_parser::Strategy::TemplateStyleComment => todo!(),
+            gen_parser::Strategy::All => todo!(),
+            gen_parser::Strategy::Error(_) => todo!(),
+        }
+    }
+}
+
+impl From<Widget> for ModelNode {
+    fn from(value: Widget) -> Self {
+        ModelNode::Widget(value)
+    }
+}
+
+impl From<RsFile> for ModelNode {
+    fn from(value: RsFile) -> Self {
+        ModelNode::RsFile(value)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct ModelTree {
-    pub node: Widget,
+    /// model node can be widget or rs file, but the root node must be widget
+    pub node: ModelNode,
     pub children: Option<Vec<ModelTree>>,
 }
 
 impl ModelTree {
-    pub fn new(node: Widget) -> ModelTree {
+    pub fn new(node: ModelNode) -> ModelTree {
         Self {
             node,
             children: None,
         }
     }
     /// add node to widget tree
-    pub fn add(&mut self, item: Widget) -> () {
-        let item = ModelTree::new(item);
+    pub fn add(&mut self, item: ModelTree) -> () {
         // get level and compare
         let (_, item_path) = item.level();
         let (_, current_path) = self.level();
@@ -190,19 +254,19 @@ impl ModelTree {
     /// - `level: usize`: path length which can easy know the level of the tree, if compare with another level can know the tree is child or parent, acturally you can think level is just offset of dir path
     /// - `path: PathBuf`: level path which only contain dir level
     pub fn level(&self) -> (usize, PathBuf) {
-        let source = self.node.source.as_ref().unwrap().level_gen();
+        let source = self.node.source().unwrap().level_gen();
 
         (source.components().count(), source)
     }
     pub fn default_root() -> ModelTree {
         ModelTree {
-            node: Widget::default_ui_root(),
+            node: Widget::default_ui_root().into(),
             children: None,
         }
     }
     /// get super ui root name
     pub fn super_ui_root(&self) -> String {
-        self.node.source.as_ref().unwrap().source_name_lower()
+        self.node.source().unwrap().source_name_lower()
     }
     /// convert widget tree to lib.rs mod
     pub fn to_lib(&self) -> TokenStream {
@@ -220,7 +284,7 @@ impl ModelTree {
     pub fn to_lib_list(&self) -> Vec<String> {
         let mut mods = vec![];
 
-        let source = self.node.source.as_ref().unwrap();
+        let source = self.node.source().unwrap();
 
         mods.push(source.source_name_lower());
 
@@ -235,8 +299,8 @@ impl ModelTree {
     }
     /// compile widget tree
     pub fn compile(&self) -> () {
-        let content = self.node.to_live_design().to_token_stream().to_string();
-        let mut file = create_file(self.node.source.as_ref().unwrap().compiled_file.as_path());
+        let content = self.node.content().to_string();
+        let mut file = create_file(self.node.source().unwrap().compiled_file.as_path());
         file.write_all(content.as_bytes()).unwrap();
     }
 }
@@ -244,7 +308,15 @@ impl ModelTree {
 impl From<Widget> for ModelTree {
     fn from(value: Widget) -> Self {
         Self {
-            node: value,
+            node: value.into(),
+            children: None,
+        }
+    }
+}
+impl From<RsFile> for ModelTree {
+    fn from(value: RsFile) -> Self {
+        Self {
+            node: value.into(),
             children: None,
         }
     }
