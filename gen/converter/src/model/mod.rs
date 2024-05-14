@@ -172,9 +172,10 @@ impl Model {
             Strategy::SingleScript => {
                 let script = ast.script().unwrap().clone().to_origin();
                 // 处理script部分
-                if let Some(tree) = model.get_binds_tree() {
-                    model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
-                }
+                // if let Some(tree) = model.get_binds_tree() {
+                //     model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
+                // }
+                model.script.replace(script.into());
             },
             Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other rsx have use to inject the style or not
             Strategy::TemplateScript => todo!(),

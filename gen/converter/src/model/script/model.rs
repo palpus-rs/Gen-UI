@@ -2,6 +2,7 @@ use std::default;
 
 use gen_parser::{Script, Value};
 
+use quote::{quote, ToTokens};
 use syn::{Block, Meta, Pat};
 
 use crate::model::PropTree;
@@ -17,6 +18,18 @@ pub enum ScriptModel {
 impl Default for ScriptModel {
     fn default() -> Self {
         ScriptModel::Gen(GenScriptModel::default())
+    }
+}
+
+impl From<Block> for ScriptModel {
+    fn from(value: Block) -> Self {
+        ScriptModel::Rs(value)
+    }
+}
+
+impl From<GenScriptModel> for ScriptModel {
+    fn from(value: GenScriptModel) -> Self {
+        ScriptModel::Gen(value)
     }
 }
 

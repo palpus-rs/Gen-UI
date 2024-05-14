@@ -1,4 +1,5 @@
-use quote::ToTokens;
+use proc_macro2::TokenStream;
+use quote::{quote, ToTokens};
 use syn::ItemUse;
 
 /// 用来表示组件引入的依赖
@@ -45,5 +46,28 @@ impl UseMod {
         } else {
             target.as_mut().unwrap().push(item);
         }
+    }
+}
+
+impl ToTokens for UseMod {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let to_token_stream = |value: Option<&Vec<ItemUse>>| -> Option<TokenStream> {
+            value.map(|v| {
+                v.iter().fold(TokenStream::new(), |mut acc, item| {
+                    acc.extend(item.to_token_stream());
+                    acc
+                })
+            })
+        };
+
+        let gen = to_token_stream(self.gen.as_ref());
+        let widget = to_token_stream(self.widget.as_ref());
+        let other = to_token_stream(self.other.as_ref());
+
+        tokens.extend(quote! {
+            #gen
+            #widget
+            #other
+        });
     }
 }

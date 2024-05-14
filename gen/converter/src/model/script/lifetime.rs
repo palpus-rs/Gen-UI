@@ -1,4 +1,5 @@
 use proc_macro2::TokenStream;
+use quote::ToTokens;
 /// GenUI内置组件生命周期事件
 /// 目前只设置两种事件
 #[derive(Debug, Clone, Default)]
@@ -27,6 +28,19 @@ impl LifeTime {
         match &self.shutdown {
             Some(shutdown) => Some(&shutdown.mac.tokens),
             None => None,
+        }
+    }
+}
+
+impl ToTokens for LifeTime {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let LifeTime { startup, shutdown } = self;
+
+        if let Some(startup) = startup {
+            tokens.extend(startup.to_token_stream());
+        }
+        if let Some(shutdown) = shutdown {
+            tokens.extend(shutdown.to_token_stream());
         }
     }
 }

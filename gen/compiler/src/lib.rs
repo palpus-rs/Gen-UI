@@ -115,20 +115,11 @@ impl Compiler {
                 }
                 (true, true) => {
                     // is gen file, use target compiler to compile then copy to the compiled project
-                    // let compiled_path = Source::origin_file_to_compiled(source_path, &target_path);
-                    // let _ = fs::write(
-                    //     compiled_path,
-                    //     compile_fn(&source_path.to_path_buf(), &target_path),
-                    // )
-                    // .expect("failed to write compiled file");
-
                     let model =
                         Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
                     match &mut compiler.target {
                         CompilerTarget::Makepad(makepad) => {
                             makepad.as_mut().unwrap().add(model);
-                            // todo!("{:#?} ,makepad hanvebeen finish", makepad);
-                            todo!();
                         }
                         CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
                         CompilerTarget::Dioxus => todo!("dioxus plugin not implemented yet"),

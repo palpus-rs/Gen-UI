@@ -10,23 +10,23 @@ use comment::offline::OfflineComment;
 pub use nodes::ASTNodes;
 
 pub use property::*;
+pub use result::ParseResult;
 pub use script::Script;
 #[allow(unused_imports)]
 use std::{default, fmt::Display};
-pub use style::{Style,StyleType};
-pub use tag::{Tag,CloseType};
-pub use result::ParseResult;
+pub use style::{Style, StyleType};
+pub use tag::{CloseType, Tag};
 
 use crate::{
     ast::comment::position::OfflinePosition,
-    common::{parse_all, trim}, 
+    common::{parse_all, trim},
 };
 
 use self::nodes::asts_to_string;
 
 /// Parse Strategy
 /// Convert ParseTarget To AST
-#[derive(Debug,Clone,Default)]
+#[derive(Debug, Clone, Default)]
 pub enum Strategy {
     /// an empty file
     None,
@@ -73,7 +73,7 @@ impl<'a> Targets<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct ParseCore{
+pub struct ParseCore {
     /// content of template tag
     template: Option<String>,
     /// content of script tag
@@ -89,7 +89,7 @@ impl From<ParseTarget> for ParseCore {
 }
 
 #[allow(dead_code)]
-impl ParseCore{
+impl ParseCore {
     pub fn template(&self) -> Option<&String> {
         self.template.as_ref()
     }
@@ -111,7 +111,7 @@ impl ParseCore{
     pub fn set_template_directly(&mut self, template: String) {
         let _ = self.template.replace(template);
     }
-    pub fn set_script_directly(&mut self, script:String) {
+    pub fn set_script_directly(&mut self, script: String) {
         let _ = self.script.replace(script);
     }
     pub fn set_style_directly(&mut self, style: String) {
@@ -152,15 +152,15 @@ impl ParseCore{
 impl From<ParseResult> for ParseCore {
     fn from(value: ParseResult) -> Self {
         let mut result = ParseCore::default();
-        if let Some(t) = value.template(){
-           let _ =  result.set_template_directly(asts_to_string(t));
+        if let Some(t) = value.template() {
+            let _ = result.set_template_directly(asts_to_string(t));
         }
-        if let Some(sc) = value.script(){
-            let _ =  result.set_script_directly(sc.to_string());
-         }
-         if let Some(s) = value.style(){
-            let _ =  result.set_style_directly(asts_to_string(s));
-         }
+        if let Some(sc) = value.script() {
+            let _ = result.set_script_directly(sc.to_string());
+        }
+        if let Some(s) = value.style() {
+            let _ = result.set_style_directly(asts_to_string(s));
+        }
         result
     }
 }
@@ -296,12 +296,11 @@ impl ParseTarget {
             (false, false, false, false) => Strategy::None,
         }
     }
-    
 }
 
 impl From<ParseCore> for ParseTarget {
     fn from(value: ParseCore) -> Self {
-        ParseTarget{
+        ParseTarget {
             core: value,
             comment: None,
         }
@@ -486,7 +485,7 @@ mod ast_test {
         ParseTarget,
     };
     #[test]
-    fn parse_t_s(){
+    fn parse_t_s() {
         let input = r#"
         <template>
             <window id="ui">
