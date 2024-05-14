@@ -3,6 +3,7 @@ use std::io::Write;
 use gen_converter::model::{script::ScriptModel, Model, Source};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
+use syn::parse2;
 
 use crate::utils::create_file;
 
@@ -25,6 +26,22 @@ impl RsFile {
     pub fn compile(&self) -> () {
         let mut file = create_file(self.source.compiled_file.as_path());
         file.write_all(self.content.to_string().as_bytes()).unwrap();
+    }
+    pub fn content(&self) -> TokenStream {
+        let origin_content = self.content.clone();
+        // check source name is mod? true => to block and return stmts in block
+        if self.source.source_name_lower().eq("mod") {
+            let content = parse2::<syn::Block>(origin_content).unwrap();
+            content
+                .stmts
+                .into_iter()
+                .fold(TokenStream::new(), |mut acc, item| {
+                    acc.extend(item.to_token_stream());
+                    acc
+                })
+        } else {
+            origin_content
+        }
     }
 }
 

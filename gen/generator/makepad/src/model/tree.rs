@@ -8,7 +8,6 @@ use crate::{utils::create_file, widget::model::widget::Widget};
 
 use super::{ModelNode, RsFile};
 
-
 /// ## 定root多叉模型树
 /// ### struct example
 /// ```
@@ -131,9 +130,9 @@ impl ModelTree {
     pub fn super_ui_root(&self) -> String {
         self.node.source().unwrap().source_name_lower()
     }
-    /// convert widget tree to lib.rs mod
+    /// convert model tree to lib.rs mod
     pub fn to_lib(&self) -> TokenStream {
-        // get node widget source
+        // get node model source
         self.to_lib_list()
             .iter()
             .fold(TokenStream::new(), |mut acc, item| {
@@ -144,17 +143,22 @@ impl ModelTree {
                 acc
             })
     }
+    /// convert model tree to lib.rs mod list
+    /// acutally this method is used to get all mod name
+    /// what need to do is get the first level file name or dir name
     pub fn to_lib_list(&self) -> Vec<String> {
         let mut mods = vec![];
 
-        let source = self.node.source().unwrap();
+        // let source = self.node.source().unwrap();
 
-        mods.push(source.source_name_lower());
+        // mods.push(source.source_name_rs());
 
         if let Some(children) = &self.children {
             for child in children {
-                let child_mod = child.to_lib_list();
-                mods.extend(child_mod);
+                let mod_name = child.node.source().unwrap().source_name_rs();
+                mods.push(mod_name);
+                // let child_mod = child.to_lib_list();
+                // mods.extend(child_mod);
             }
         }
 
@@ -162,14 +166,14 @@ impl ModelTree {
     }
     /// compile model tree
     pub fn compile(&self) -> () {
-        let print = |node: &ModelNode| -> () {
+        let loop_tree = |node: &ModelNode| -> () {
             let content = node.content().to_string();
             let mut file = create_file(node.source().unwrap().compiled_file.as_path());
             file.write_all(content.as_bytes()).unwrap();
         };
 
         // 遍历整个树，将每个节点的内容写入到文件中
-        let _ = print(&self.node);
+        let _ = loop_tree(&self.node);
         // children
         if let Some(children) = self.children.as_ref() {
             for child in children {

@@ -3,7 +3,10 @@ use std::path::PathBuf;
 use gen_converter::model::{Model, Source};
 use proc_macro2::TokenStream;
 
-use crate::{widget::model::{widget::Widget, ToLiveDesign}, ToToken};
+use crate::{
+    widget::model::{widget::Widget, ToLiveDesign},
+    ToToken,
+};
 
 use super::RsFile;
 
@@ -23,7 +26,7 @@ impl ModelNode {
     pub fn content(&self) -> TokenStream {
         match self {
             ModelNode::Widget(widget) => widget.to_live_design().to_token_stream(),
-            ModelNode::RsFile(rs) => rs.content.clone(),
+            ModelNode::RsFile(rs) => rs.content(),
         }
     }
     pub fn level(&self) -> (usize, PathBuf) {

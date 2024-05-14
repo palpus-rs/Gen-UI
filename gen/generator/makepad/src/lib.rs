@@ -106,7 +106,6 @@ impl Makepad {
     }
     pub fn compile_lib_rs(&self) -> () {
         let lib_mods = self.tree.as_ref().unwrap().to_lib();
-
         let content = quote! {
             pub use makepad_widgets;
             pub use makepad_widgets::makepad_draw;

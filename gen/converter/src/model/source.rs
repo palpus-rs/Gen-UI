@@ -33,17 +33,29 @@ impl Source {
             .to_string()
             .replace(".gen", "")
     }
+    /// source name lower and use rust style
+    /// ### attention
+    /// if source name is mod, should use the parent fold name
+    pub fn source_name_rs(&self) -> String {
+        let mut name = self.source_name_lower();
+        if name.eq("mod") {
+            let path = self.origin_file.parent().unwrap().to_path_buf();
+            name = path.iter().last().unwrap().to_str().unwrap().to_string();
+        }
+        name
+    }
     /// get level from source compiled file
     /// - eg1:
     ///     - dir: a/b/c
     ///     - file:  a/b/c/d.gen
-    /// > result: 
+    /// > result:
     /// - eg2:
     ///     - dir: a/b/c
     ///     - file: a/b/c/d/e.gen
     /// > result: d
     pub fn level_gen(&self) -> PathBuf {
-        let mut level = self.compiled_file
+        let mut level = self
+            .compiled_file
             .strip_prefix(self.compiled_dir.as_path())
             .unwrap()
             .to_path_buf();
