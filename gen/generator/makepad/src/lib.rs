@@ -8,7 +8,7 @@ use gen_converter::model::{Model, Source};
 use gen_utils::common::{token_stream_to_tree, token_tree_ident};
 use model::{ModelTree, RsFile};
 use proc_macro2::{TokenStream, TokenTree};
-use quote::{quote, ToTokens};
+use quote::quote;
 use utils::create_file;
 use widget::model::{app_main::AppMain, widget::Widget, ToLiveDesign};
 

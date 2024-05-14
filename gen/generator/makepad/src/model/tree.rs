@@ -1,4 +1,4 @@
-use std::{io::Write, path::PathBuf};
+use std::{collections::HashSet, io::Write, path::PathBuf};
 
 use gen_utils::common::token_tree_ident;
 use proc_macro2::TokenStream;
@@ -147,22 +147,19 @@ impl ModelTree {
     /// acutally this method is used to get all mod name
     /// what need to do is get the first level file name or dir name
     pub fn to_lib_list(&self) -> Vec<String> {
-        let mut mods = vec![];
-
-        // let source = self.node.source().unwrap();
-
-        // mods.push(source.source_name_rs());
+        let mut mods = HashSet::new();
 
         if let Some(children) = &self.children {
             for child in children {
-                let mod_name = child.node.source().unwrap().source_name_rs();
-                mods.push(mod_name);
-                // let child_mod = child.to_lib_list();
-                // mods.extend(child_mod);
+                // let mod_name = child.node.source().unwrap().source_name_rs();
+
+                let mod_name = child.node.source().unwrap().to_lib();
+
+                mods.insert(mod_name);
             }
         }
 
-        mods
+        mods.into_iter().collect()
     }
     /// compile model tree
     pub fn compile(&self) -> () {

@@ -64,6 +64,30 @@ impl Source {
         level.pop();
         level
     }
+    /// to_lib can convert Source to lib.rs pub mod
+    pub fn to_lib(&self) -> String {
+        let path = self
+            .compiled_file
+            .strip_prefix(self.compiled_dir.as_path())
+            .unwrap()
+            .to_path_buf();
+
+        // remove src and get the first path
+        let path = path.strip_prefix("src/").expect("remove src failed");
+        let target = path
+            .iter()
+            .next()
+            .expect("can not get src following folder or file")
+            .to_str()
+            .unwrap()
+            .to_string();
+        if path.is_file() {
+            // remove suffix
+            target.split_once('.').unwrap().0.to_string()
+        } else {
+            target
+        }
+    }
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
     }
