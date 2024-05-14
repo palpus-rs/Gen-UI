@@ -56,3 +56,15 @@ pub fn snake_to_camel(s: &str) -> Option<String> {
         uppercase_title(s)
     }
 }
+
+#[cfg(test)]
+mod test_utils{
+    use super::snake_to_camel;
+
+    #[test]
+    fn snake(){
+        let name = "Hello";
+        let handled = snake_to_camel(name);
+        dbg!(handled);
+    }
+}

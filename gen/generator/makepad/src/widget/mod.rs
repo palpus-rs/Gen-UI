@@ -6,6 +6,7 @@
 //! - 构建这个模板的代码部分（可能有）
 //!  
 use core::panic;
+use std::fmt::Display;
 #[allow(unused_imports)]
 use std::{collections::HashMap, default, fmt::Debug};
 
@@ -155,6 +156,18 @@ impl TryFrom<Option<&String>> for BuiltIn {
         } else {
             Ok(BuiltIn::Area)
         }
+    }
+}
+
+impl Display for BuiltIn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            BuiltIn::Window => WINDOW,
+            BuiltIn::View => VIEW,
+            BuiltIn::Label => LABEL,
+            BuiltIn::Button => BUTTON,
+            BuiltIn::Area => AREA,
+        })
     }
 }
 

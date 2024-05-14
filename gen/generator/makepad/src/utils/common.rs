@@ -6,6 +6,8 @@ use syn::{
     Field, Ident, Path,
 };
 
+use crate::widget::BuiltIn;
+
 use super::{derive_macros, id_macro};
 
 /// generate `live!{ //.. }`
@@ -159,17 +161,34 @@ pub fn self_event_react(
     tk
 }
 
-/// generate `special = {{special}}{...}`
-pub fn special_struct(s: &str, code: Option<TokenStream>) -> Vec<TokenTree> {
-    let mut tk = vec![
-        token_tree_ident(s),
-        token_tree_punct_alone('='),
-        token_tree_punct_joint('{'),
-        token_tree_punct_alone('{'),
-        token_tree_ident(s),
-        token_tree_punct_joint('}'),
-        token_tree_punct_joint('}'),
-    ];
+/// generate widget first node which may define special struct in following script
+/// - is_static = true: `special = <BuiltIn>{...}`
+/// - is_static = flase: `special = {{special}}{...}`
+pub fn special_struct(
+    s: &str,
+    code: Option<TokenStream>,
+    is_static: bool,
+    widget: Option<&BuiltIn>,
+) -> Vec<TokenTree> {
+    let mut tk = if is_static {
+        vec![
+            token_tree_ident(s),
+            token_tree_punct_alone('='),
+            token_tree_punct_joint('<'),
+            token_tree_ident(widget.unwrap().to_string().as_str()),
+            token_tree_punct_joint('>'),
+        ]
+    } else {
+        vec![
+            token_tree_ident(s),
+            token_tree_punct_alone('='),
+            token_tree_punct_joint('{'),
+            token_tree_punct_alone('{'),
+            token_tree_ident(s),
+            token_tree_punct_joint('}'),
+            token_tree_punct_joint('}'),
+        ]
+    };
 
     if let Some(code) = code {
         tk.push(token_tree_group(token_stream_to_tree(code)));

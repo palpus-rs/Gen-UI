@@ -65,9 +65,17 @@ impl Widget {
         match special {
             Some(special) => {
                 widget.source.replace(special);
+                let inherits_widget = BuiltIn::try_from(inherits).unwrap();
                 // 获取文件名且改为首字母大写的camel
-                widget.name = widget.source.as_ref().unwrap().source_name();
-                widget.set_inherits(BuiltIn::try_from(inherits).unwrap());
+                match inherits {
+                    Some(_) => {
+                        widget.name = widget.source.as_ref().unwrap().source_name();
+                    }
+                    None => {
+                        widget.name = inherits_widget.to_string();
+                    }
+                }
+                widget.set_inherits(inherits_widget);
             }
             None => {
                 widget.name = name.to_string();
@@ -77,6 +85,7 @@ impl Widget {
                     .set_inherits(inherits.unwrap());
             }
         }
+        widget.set_traits(WidgetTrait::default());
         widget
     }
     pub fn new_builtin(name: &str) -> Self {
@@ -126,10 +135,12 @@ impl Widget {
 
     //     self
     // }
+    /// ## set widget script
     /// - set prop_ptr
     /// - set event_ptr
-    /// - set lifetime
-    /// - set
+    /// - set uses
+    /// - set draw_walk
+    /// - set handle_event
     pub fn set_script(&mut self, script: Option<&ScriptModel>) -> &mut Self {
         if let Some(sc) = script {
             if let ScriptModel::Gen(sc) = sc {
@@ -149,7 +160,7 @@ impl Widget {
                     .draw_walk(sub_prop_binds)
                     .handle_event(sub_event_binds);
             }
-        }else{
+        } else {
             self.is_static = true;
         }
         self
@@ -269,7 +280,19 @@ impl ToLiveDesign for Widget {
 
         let children = self.widget_children_tree();
 
-        tk.extend(special_struct(&self.name, children));
+        let static_widget = if self.is_static {
+            let builtin = BuiltIn::try_from(&self.name).unwrap();
+            Some(builtin)
+        } else {
+            self.inherits.clone()
+        };
+
+        tk.extend(special_struct(
+            &self.name,
+            children,
+            self.is_static,
+            static_widget.as_ref(),
+        ));
 
         if tk.is_empty() {
             None
@@ -332,7 +355,6 @@ impl From<gen_converter::model::Model> for Widget {
         let template = template.unwrap();
 
         build_widget(Some(special), &template, style.as_ref(), script.as_ref())
-
     }
 }
 

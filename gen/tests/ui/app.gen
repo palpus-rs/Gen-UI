@@ -1,5 +1,5 @@
 <template>
-    <component>
+    <component inherits="view">
         <window id="ui" show_bg="true">
             <view id="body" :show_bg="view_bg">
                 <button id="btn" :text="btn_name" @clicked="on_clicked"></button>
