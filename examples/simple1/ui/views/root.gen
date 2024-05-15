@@ -1,6 +1,6 @@
 <template>
   <window id="ui">
-    <label text="Hello"></label>
+    <label text="Hello" font_size="32"></label>
   </window>
 </template>
 
@@ -9,6 +9,6 @@
   width: Fill;
   height: Fill;
   show_bg: true;
-  draw_bg: #1C2128;
+  draw_bg: #ffffff;
 }
 </style>

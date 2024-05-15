@@ -1,3 +1,4 @@
+use gen_utils::common::token_tree_ident;
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
 
@@ -91,11 +92,18 @@ pub struct AppMainTrait {
 }
 
 impl AppMainTrait {
-    pub fn handle_event(&mut self) -> () {
-        self.handle_event.replace(quote! {
+    pub fn handle_event(&mut self, event: TokenStream) -> () {
+        self.handle_event.replace(event);
+    }
+    pub fn to_token_stream(&self, ui_root: &str) -> TokenStream {
+        let tk = self.handle_event.as_ref();
+        let ui_root = token_tree_ident(ui_root);
+        quote! {
             fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
-
+                #tk
+                self.match_event(cx, event);
+                self.#ui_root.handle_event(cx, event, &mut Scope::empty());
             }
-        });
+        }
     }
 }

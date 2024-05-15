@@ -9,6 +9,7 @@ use gen_parser::{PropsKey, Value};
 
 use gen_utils::common::{snake_to_camel, token_tree_ident};
 use proc_macro2::TokenStream;
+use quote::TokenStreamExt;
 use syn::{ItemEnum, ItemStruct};
 
 use crate::{
@@ -77,6 +78,7 @@ impl Widget {
                             widget.name = inherits_widget.to_string();
                         } else {
                             widget.name = BuiltIn::try_from(name).unwrap().to_string();
+                            widget.set_is_built_in(true);
                         }
                     }
                 }
@@ -282,22 +284,16 @@ impl ToLiveDesign for Widget {
     /// get widget tree
     fn widget_tree(&self) -> Option<TokenStream> {
         let mut tk = TokenStream::new();
-
-        let children = self.widget_children_tree();
-
-        let static_widget = if self.is_static {
-            let builtin = BuiltIn::try_from(&self.name).unwrap();
-            Some(builtin)
-        } else {
-            self.inherits.clone()
-        };
+        // props and children
+        let mut props_children = self.props.clone().unwrap_or_default();
+        props_children.extend(self.widget_children_tree().unwrap_or_default());
 
         tk.extend(special_struct(
             self.id
                 .as_ref()
                 .expect("root widget need id to get widget tree"),
             &self.name,
-            children,
+            Some(props_children),
             self.is_static,
         ));
 

@@ -35,8 +35,8 @@ impl Field {
     pub fn field_tk_only(&self) -> Vec<TokenTree> {
         vec![token_tree_ident(&self.name), token_tree_punct_alone(',')]
     }
-    pub fn ui_widget_ref() -> Self {
-        Self::new("ui", "WidgetRef", Attr::Live)
+    pub fn ui_widget_ref(field:&str) -> Self {
+        Self::new(field, "WidgetRef", Attr::Live)
     }
 }
 

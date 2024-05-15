@@ -25,7 +25,7 @@ pub struct AppMain {
     /// app main的ui入口指向
     pub root_ref_ptr: String,
     /// 处理在实例中的属性
-    pub props: Vec<Field>,
+    pub props: Option<Vec<Field>>,
     pub match_event: MatchEventTrait,
     pub app_main: AppMainTrait,
     /// 有哪些组件需要被注册
@@ -43,7 +43,7 @@ impl AppMain {
             name,
             root_ref: String::from("root"),
             root_ref_ptr: String::new(),
-            props: vec![Field::ui_widget_ref()],
+            props: None,
             match_event: Default::default(),
             app_main: Default::default(),
             live_register: None,
@@ -112,7 +112,14 @@ impl AppMain {
     pub fn set_props(&mut self, props: Option<&Vec<PropFn>>) -> &mut Self {
         if let Some(props) = props {
             for prop in props {
-                self.props.push(Field::from(prop));
+                match self.props.as_mut() {
+                    Some(props) => {
+                        props.push(Field::from(prop));
+                    }
+                    None => {
+                        let _ = self.props.replace(vec![Field::from(prop)]);
+                    }
+                }
             }
         }
         self
@@ -202,11 +209,22 @@ impl ToLiveDesign for AppMain {
 
     fn widget_logic(&self) -> Option<TokenStream> {
         let root_struct = token_tree_ident(&self.name);
-        let root_fields = &self.props.iter().fold(TokenStream::new(), |mut acc, item| {
-            acc.extend(item.to_token_stream());
-            acc
-        });
+        let ui_field = Field::ui_widget_ref(&self.root_ref).to_token_stream();
+        let root_fields = if self.props.is_some() {
+            self.props
+                .as_ref()
+                .unwrap()
+                .iter()
+                .fold(ui_field, |mut acc, item| {
+                    acc.extend(item.to_token_stream());
+                    acc
+                })
+        } else {
+            ui_field
+        };
         let live_register = self.build_live_register();
+
+        let app_main_trait = self.app_main.to_token_stream(&self.root_ref);
 
         let tk = quote! {
             #[derive(Live, LiveHook)]
@@ -216,6 +234,10 @@ impl ToLiveDesign for AppMain {
 
             impl MatchEvent for #root_struct {
 
+            }
+
+            impl AppMain for App {
+                #app_main_trait
             }
 
             impl LiveRegister for #root_struct {

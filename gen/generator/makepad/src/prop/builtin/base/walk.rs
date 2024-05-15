@@ -82,4 +82,14 @@ mod test_walk {
         let prop ="abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 ,";
         assert_eq!(prop, tk.to_string());
     }
+    #[test]
+    fn to_tk2() {
+        let mut walk = super::Walk::default();
+        walk.abs_pos = Some("10 10".try_into().unwrap());
+        walk.margin = Some("10 10 10 10".try_into().unwrap());
+        walk.width = Some("100".try_into().unwrap());
+        walk.height = Some("100".try_into().unwrap());
+        let tk = walk.to_token_stream();
+       dbg!(tk.to_string());
+    }
 }

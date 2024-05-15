@@ -232,16 +232,16 @@ impl ViewProps {
 impl Display for ViewProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_bg) = &self.draw_bg {
-            let _ = f.write_fmt(format_args!("draw_bg: {{{}}}, ", draw_bg));
+            let _ = f.write_fmt(format_args!("draw_bg: {{color: {}}}, ", draw_bg));
         }
         if let Some(show_bg) = &self.show_bg {
             let _ = f.write_fmt(format_args!("show_bg: {}, ", show_bg));
         }
         if let Some(layout) = &self.layout {
-            let _ = f.write_fmt(format_args!("{}, ", layout));
+            let _ = f.write_fmt(format_args!("{}", layout));
         }
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("{}, ", walk));
+            let _ = f.write_fmt(format_args!("{}", walk));
         }
         if let Some(optimize) = &self.optimize {
             let _ = f.write_fmt(format_args!("optimize: {}, ", optimize));
@@ -297,7 +297,7 @@ mod test_view_props {
         view.grab_key_focus = Some(true);
         view.cursor = Some(MouseCursor::Hand);
         let tk = view.to_token_stream();
-        let prop = "draw_bg : { ## 000 } , show_bg : true , scroll : { x : 1 , y : 2 } , clip_x : true , clip_y : false , padding : { top : 10 , right : 4 , bottom : 10 , left : 4 } , align : { x : 0.5 , y : 1 } , flow : Down , spacing : 10 , line_spacing : 1.5 ,, abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 ,, optimize : None , event_order : Up , visible : true , grab_key_focus : true , block_signal_event : true , cursor : Hand ,";
+        let prop = "draw_bg : { ## 000 } , show_bg : true , scroll : { x : 1 , y : 2 } , clip_x : true , clip_y : false , padding : { top : 10 , right : 4 , bottom : 10 , left : 4 } , align : { x : 0.5 , y : 1 } , flow : Down , spacing : 10 , line_spacing : 1.5 , abs_pos : { x : 10 , y : 10 } , margin : { top : 10 , right : 10 , bottom : 10 , left : 10 } , width : 100 , height : 100 , optimize : None , event_order : Up , visible : true , grab_key_focus : true , block_signal_event : true , cursor : Hand ,";
 
         assert_eq!(prop, tk.to_string().as_str());
     }
