@@ -109,6 +109,19 @@ impl ModelTree {
             self.children.replace(vec![item.into()]);
         }
     }
+    /// get live register from tree
+    pub fn to_live_register(&self) -> Vec<String> {
+        // get basic live register => ui widget ref from super ui root
+        let mut live_register = vec![];
+        live_register.push(self.node.source().unwrap().to_live_register());
+        // children
+        if let Some(children) = self.children.as_ref() {
+            for child in children {
+                live_register.extend(child.to_live_register());
+            }
+        }
+        live_register
+    }
     /// ## get widget tree level
     /// tree level can get from node source path
     /// ### return
@@ -152,8 +165,6 @@ impl ModelTree {
 
         if let Some(children) = &self.children {
             for child in children {
-                // let mod_name = child.node.source().unwrap().source_name_rs();
-
                 let mod_name = child.node.source().unwrap().to_lib();
 
                 mods.insert(mod_name);

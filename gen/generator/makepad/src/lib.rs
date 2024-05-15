@@ -71,11 +71,14 @@ impl Makepad {
         P: AsRef<Path>,
     {
         let (ui_root, root_widget) = widget_tree.super_ui_root();
-        let live_register = widget_tree.to_lib_list();
+        let live_register = widget_tree.to_live_register();
+        // dbg!(widget_tree);
+        // dbg!(&live_register);
         let app_path = path.as_ref().join(format!("{}.gen", entry).as_str());
         let source = Source::from((app_path.as_path(), path.as_ref()));
 
         let mut app = AppMain::new(&source);
+        // other will be handle after widget tree add method
         app.set_root_ref(ui_root)
             .set_root_ref_ptr(&root_widget)
             .set_live_register(live_register);
@@ -125,7 +128,9 @@ impl Makepad {
     }
     /// add item to model tree
     pub fn add(&mut self, item: Model) -> () {
-        self.tree.as_mut().unwrap().add(item.into());
+        let _ = self.tree.as_mut().unwrap().add(item.into());
+        let live_register = self.tree.as_ref().unwrap().to_live_register();
+        self.app_main.set_live_register(live_register);
     }
     /// Makepad Compile
     /// - compile main.rs
@@ -135,7 +140,7 @@ impl Makepad {
     pub fn compile(&self) {
         // compile main.rs
         self.main_rs.compile();
-        // compile app.rs
+        // create app main and compile app.rs
         self.compile_app_main();
         // compile lib.rs
         self.compile_lib_rs();

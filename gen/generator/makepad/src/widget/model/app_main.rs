@@ -1,10 +1,8 @@
-use std::{fs::File, io::Write};
-
 use gen_converter::model::{
     script::{GenScriptModel, LifeTime, PropFn, ScriptModel, UseMod},
     Source,
 };
-use gen_utils::common::token_tree_ident;
+use gen_utils::common::{token_tree_ident, token_tree_punct_joint};
 use proc_macro2::TokenStream;
 use quote::quote;
 
@@ -54,7 +52,24 @@ impl AppMain {
         }
     }
     pub fn set_live_register(&mut self, children: Vec<String>) -> &mut Self {
+        let children = children
+            .into_iter()
+            .filter(|item| !item.ends_with("mod"))
+            .collect();
         self.live_register.replace(children);
+        self
+    }
+    pub fn push_live_register(&mut self, child: String) -> &mut Self {
+        if !child.ends_with("mod") {
+            match self.live_register.as_mut() {
+                Some(live_register) => {
+                    let _ = live_register.push(child);
+                }
+                None => {
+                    self.live_register.replace(vec![child]);
+                }
+            }
+        }
         self
     }
     pub fn set_script(&mut self, script: Option<ScriptModel>) -> &mut Self {
@@ -112,9 +127,41 @@ impl AppMain {
         self.root_ref = id;
         self
     }
-    pub fn set_root_ref_ptr(&mut self, widget: &str) -> &mut Self{
+    pub fn set_root_ref_ptr(&mut self, widget: &str) -> &mut Self {
         self.root_ref_ptr = widget.to_string();
         self
+    }
+    fn build_live_register(&self) -> TokenStream {
+        let items = if let Some(imports) = self.live_register.as_ref() {
+            // `crate::a::b::live_design(cx);`
+            let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
+                let mut item = item.split("::").into_iter().fold(
+                    TokenStream::new(),
+                    |mut item_acc, item_value| {
+                        item_acc.extend(vec![
+                            token_tree_ident(item_value),
+                            token_tree_punct_joint(':'),
+                            token_tree_punct_joint(':'),
+                        ]);
+                        item_acc
+                    },
+                );
+                item.extend(quote! {live_design(cx)});
+                acc.extend(quote! {crate::#item;});
+                acc
+            });
+
+            Some(tk)
+        } else {
+            None
+        };
+
+        quote! {
+            fn live_register (cx : & mut Cx) {
+                crate::makepad_widgets::live_design(cx);
+                #items
+            }
+        }
     }
 }
 
@@ -125,8 +172,19 @@ impl ToLiveDesign for AppMain {
         let root_widget = token_tree_ident(&self.root_ref_ptr);
         let imports = if let Some(imports) = self.live_register.as_ref() {
             let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
-                let item = token_tree_ident(item);
-                acc.extend(quote! {#item,});
+                let mut item = item.split("::").into_iter().fold(
+                    TokenStream::new(),
+                    |mut item_acc, item_value| {
+                        item_acc.extend(vec![
+                            token_tree_ident(item_value),
+                            token_tree_punct_joint(':'),
+                            token_tree_punct_joint(':'),
+                        ]);
+                        item_acc
+                    },
+                );
+                item.extend(quote!(*));
+                acc.extend(quote! {import crate::#item;});
                 acc
             });
             Some(tk)
@@ -148,11 +206,23 @@ impl ToLiveDesign for AppMain {
             acc.extend(item.to_token_stream());
             acc
         });
+        let live_register = self.build_live_register();
 
         let tk = quote! {
+            #[derive(Live, LiveHook)]
             pub struct #root_struct{
                 #root_fields
             }
+
+            impl MatchEvent for #root_struct {
+
+            }
+
+            impl LiveRegister for #root_struct {
+                #live_register
+            }
+
+            app_main!(#root_struct);
         };
 
         Some(tk)
@@ -171,11 +241,7 @@ impl From<gen_converter::model::Model> for AppMain {
         let widget = Widget::from(value);
         let root_id = widget.id.as_ref().expect("root id is required").to_string();
         app.set_root_ref(root_id).set_script(script);
-        let app_tk = app.to_live_design().to_token_stream();
-
-        let mut f = File::create("E:/Rust/try/makepad/Gen-UI/gen/tests/src/app.rs").unwrap();
-        f.write(app_tk.to_string().as_bytes()).unwrap();
-        todo!();
-        // todo!("{:#?}", app_tk);
+        // let app_tk = app.to_live_design().to_token_stream();
+        app
     }
 }

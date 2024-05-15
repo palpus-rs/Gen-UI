@@ -66,14 +66,7 @@ impl Source {
     }
     /// to_lib can convert Source to lib.rs pub mod
     pub fn to_lib(&self) -> String {
-        let path = self
-            .compiled_file
-            .strip_prefix(self.compiled_dir.as_path())
-            .unwrap()
-            .to_path_buf();
-
-        // remove src and get the first path
-        let path = path.strip_prefix("src/").expect("remove src failed");
+        let path = self.remove_src();
         let target = path
             .iter()
             .next()
@@ -87,6 +80,30 @@ impl Source {
         } else {
             target
         }
+    }
+    pub fn to_live_register(&self) -> String {
+        let path = self.remove_src();
+        // remove extension
+        let without_ext = path
+            .file_stem()
+            .expect("can not get file name, expect a gen file");
+
+        let path = path.with_file_name(without_ext);
+        path.components()
+            .map(|item| item.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("::")
+    }
+    fn remove_src(&self) -> PathBuf {
+        let path = self
+            .compiled_file
+            .strip_prefix(self.compiled_dir.as_path())
+            .unwrap()
+            .to_path_buf();
+
+        // remove src and get the first path
+        let path = path.strip_prefix("src/").expect("remove src failed");
+        path.to_path_buf()
     }
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
