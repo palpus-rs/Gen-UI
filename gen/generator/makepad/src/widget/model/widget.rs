@@ -72,7 +72,12 @@ impl Widget {
                         widget.name = widget.source.as_ref().unwrap().source_name();
                     }
                     None => {
-                        widget.name = inherits_widget.to_string();
+                        // 首个节点没有inherits且name不是`component`
+                        if name.eq("component") {
+                            widget.name = inherits_widget.to_string();
+                        } else {
+                            widget.name = BuiltIn::try_from(name).unwrap().to_string();
+                        }
                     }
                 }
                 widget.set_inherits(inherits_widget);
@@ -288,10 +293,12 @@ impl ToLiveDesign for Widget {
         };
 
         tk.extend(special_struct(
+            self.id
+                .as_ref()
+                .expect("root widget need id to get widget tree"),
             &self.name,
             children,
             self.is_static,
-            static_widget.as_ref(),
         ));
 
         if tk.is_empty() {

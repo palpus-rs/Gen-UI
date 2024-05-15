@@ -127,8 +127,9 @@ impl ModelTree {
         }
     }
     /// get super ui root name
-    pub fn super_ui_root(&self) -> String {
-        self.node.source().unwrap().source_name_lower()
+    pub fn super_ui_root(&self) -> (String, String) {
+        // self.node.source().unwrap().source_name_lower()
+        self.node.super_ui_root()
     }
     /// convert model tree to lib.rs mod
     pub fn to_lib(&self) -> TokenStream {

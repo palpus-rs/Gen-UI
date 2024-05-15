@@ -22,8 +22,10 @@ use super::{
 pub struct AppMain {
     /// 当前实例
     pub name: String,
-    /// app main的ui入口
+    /// app main的ui入口的name
     pub root_ref: String,
+    /// app main的ui入口指向
+    pub root_ref_ptr: String,
     /// 处理在实例中的属性
     pub props: Vec<Field>,
     pub match_event: MatchEventTrait,
@@ -41,7 +43,8 @@ impl AppMain {
         let name = source.source_name();
         AppMain {
             name,
-            root_ref: String::new(),
+            root_ref: String::from("root"),
+            root_ref_ptr: String::new(),
             props: vec![Field::ui_widget_ref()],
             match_event: Default::default(),
             app_main: Default::default(),
@@ -71,11 +74,6 @@ impl AppMain {
                     .set_props(sub_prop_binds.as_ref())
                     .handle_lifetime(sub_prop_binds, lifetimes)
                     .handle_actions(sub_event_binds);
-                // self.set_uses(uses)
-                //     .set_prop_ptr(prop_ptr)
-                //     .set_event_ptr(event_ptr)
-                //     .draw_walk(sub_prop_binds)
-                //     .handle_event(sub_event_binds);
             }
         }
         self
@@ -114,12 +112,17 @@ impl AppMain {
         self.root_ref = id;
         self
     }
+    pub fn set_root_ref_ptr(&mut self, widget: &str) -> &mut Self{
+        self.root_ref_ptr = widget.to_string();
+        self
+    }
 }
 
 impl ToLiveDesign for AppMain {
     fn widget_tree(&self) -> Option<TokenStream> {
         let app = token_tree_ident(&self.name);
         let root = token_tree_ident(&self.root_ref);
+        let root_widget = token_tree_ident(&self.root_ref_ptr);
         let imports = if let Some(imports) = self.live_register.as_ref() {
             let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
                 let item = token_tree_ident(item);
@@ -133,7 +136,7 @@ impl ToLiveDesign for AppMain {
         let tk = quote! {
             #imports
             #app = {{#app}}{
-                #root: <#root>{}
+                #root: <#root_widget>{}
             }
         };
         Some(tk)

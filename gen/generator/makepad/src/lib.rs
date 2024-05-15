@@ -70,12 +70,15 @@ impl Makepad {
     where
         P: AsRef<Path>,
     {
-        let ui_root = widget_tree.super_ui_root();
+        let (ui_root, root_widget) = widget_tree.super_ui_root();
         let live_register = widget_tree.to_lib_list();
         let app_path = path.as_ref().join(format!("{}.gen", entry).as_str());
         let source = Source::from((app_path.as_path(), path.as_ref()));
+
         let mut app = AppMain::new(&source);
-        app.set_root_ref(ui_root).set_live_register(live_register);
+        app.set_root_ref(ui_root)
+            .set_root_ref_ptr(&root_widget)
+            .set_live_register(live_register);
 
         app
     }

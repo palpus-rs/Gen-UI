@@ -33,6 +33,19 @@ impl ModelNode {
         let path = self.source().unwrap().level_gen();
         (path.components().count(), path)
     }
+    pub fn super_ui_root(&self) -> (String, String) {
+        match self {
+            ModelNode::Widget(widget) => {
+                let root = widget
+                    .source
+                    .as_ref()
+                    .expect("first ui root need source")
+                    .source_name_lower();
+                (root, widget.id.as_ref().unwrap().to_string())
+            }
+            ModelNode::RsFile(_) => panic!("super ui root not exist in rs file"),
+        }
+    }
 }
 
 impl From<Model> for ModelNode {

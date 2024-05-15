@@ -165,26 +165,26 @@ pub fn self_event_react(
 /// - is_static = true: `special = <BuiltIn>{...}`
 /// - is_static = flase: `special = {{special}}{...}`
 pub fn special_struct(
-    s: &str,
+    ui: &str,
+    ptr: &str,
     code: Option<TokenStream>,
     is_static: bool,
-    widget: Option<&BuiltIn>,
 ) -> Vec<TokenTree> {
     let mut tk = if is_static {
         vec![
-            token_tree_ident(s),
+            token_tree_ident(ui),
             token_tree_punct_alone('='),
             token_tree_punct_joint('<'),
-            token_tree_ident(widget.unwrap().to_string().as_str()),
+            token_tree_ident(ptr),
             token_tree_punct_joint('>'),
         ]
     } else {
         vec![
-            token_tree_ident(s),
+            token_tree_ident(ui),
             token_tree_punct_alone('='),
             token_tree_punct_joint('{'),
             token_tree_punct_alone('{'),
-            token_tree_ident(s),
+            token_tree_ident(ptr),
             token_tree_punct_joint('}'),
             token_tree_punct_joint('}'),
         ]
