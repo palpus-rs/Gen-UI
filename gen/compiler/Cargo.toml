@@ -10,3 +10,7 @@ gen_converter = { path = "../converter" }
 makepad-gen-plugin = { path = "../generator/makepad"}
 toml_edit = "0.22.12"
 walkdir = "2.5.0"
+ansi_term = "0.12.1"
+env_logger = "0.11.3"
+log = "0.4.21"
+notify = "6.1.1"
