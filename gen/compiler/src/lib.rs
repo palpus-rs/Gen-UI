@@ -28,7 +28,6 @@ pub fn app(target: Target) -> Compiler {
     let origin_path = std::env::current_dir().unwrap();
     let cache = Cache::new(origin_path.as_path(), target);
     let is_dir = origin_path.is_dir();
-
     let target = CompilerTarget::from(target);
 
     Compiler {

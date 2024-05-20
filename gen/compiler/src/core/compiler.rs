@@ -19,10 +19,15 @@ pub struct Compiler {
     pub origin_path: PathBuf,
     /// origin path is a dir or a file
     pub is_dir: bool,
+    /// compile target default is makepad
     pub target: CompilerTarget,
+    /// entry file name, default is app
     pub entry: String,
+    /// root path of the project
     pub root: Option<PathBuf>,
+    /// exclude files or folders
     pub exclude: Vec<String>,
+    /// gen_cache
     pub cache: Cache,
 }
 

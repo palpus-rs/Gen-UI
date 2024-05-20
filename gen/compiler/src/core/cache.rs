@@ -1,4 +1,4 @@
-use crate::{info, Target};
+use crate::{calc_hash, info, FileState, Target};
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -138,6 +138,62 @@ impl Cache {
                 self.values = Some(values);
             }
         }
+    }
+    pub fn exists<P>(&self, key: P) -> bool
+    where
+        P: AsRef<Path>,
+    {
+        match &self.values {
+            Some(values) => values.contains_key(key.as_ref()),
+            None => false,
+        }
+    }
+    /// if exists, then calc hash with origin, if hash equal, don't insert and return FileState::Unchanged
+    /// if not exists, insert and return FileState::Created
+    /// if exists but hash not equal, insert and return FileState::Modified
+    pub fn exists_or_insert<P>(&mut self, key: P) -> Result<FileState, Box<dyn Error>>
+    where
+        P: AsRef<Path>,
+    {
+        let hash = calc_hash(key.as_ref())?;
+        match &mut self.values {
+            Some(values) => {
+                if let Some(value) = values.get(key.as_ref()) {
+                    if value.eq(&hash) {
+                        return Ok(FileState::Unchanged);
+                    } else {
+                        self.insert(key, hash);
+                        return Ok(FileState::Modified);
+                    }
+                } else {
+                    self.insert(key, hash);
+                    return Ok(FileState::Created);
+                }
+            }
+            None => {
+                self.insert(key, hash);
+                return Ok(FileState::Created);
+            }
+        }
+    }
+    pub fn remove<P>(&mut self, key: P) -> ()
+    where
+        P: AsRef<Path>,
+    {
+        match &mut self.values {
+            Some(values) => {
+                values.remove(key.as_ref());
+            }
+            None => (),
+        }
+    }
+    pub fn insert_and_hash<P>(&mut self, key: P) -> Result<(), Box<dyn Error>>
+    where
+        P: AsRef<Path>,
+    {
+        let hash = calc_hash(key.as_ref())?;
+        self.insert(key, hash);
+        Ok(())
     }
     pub fn clear(&mut self) -> () {
         self.values = None;
