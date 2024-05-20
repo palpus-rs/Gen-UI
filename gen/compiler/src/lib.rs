@@ -8,12 +8,13 @@ pub use utils::*;
 /// it will be ignored when compile
 /// ### todo!
 /// - get uncompiled files from config file (`.genignore`)
-const UNCOMPILED: [&str; 5] = [
+const UNCOMPILED: [&str; 6] = [
     "Cargo.toml",
     "main.rs",
     ".gitignore",
     "Cargo.lock",
     "target",
+    ".gen_cache",
 ];
 
 /// ## compiler app

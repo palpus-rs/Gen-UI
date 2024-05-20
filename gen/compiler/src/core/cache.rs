@@ -1,11 +1,11 @@
 use crate::{info, Target};
-use rmp_serde::Deserializer;
+use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     error::Error,
     fs::File,
-    io::Cursor,
+    io::Write,
     path::{Path, PathBuf},
 };
 
@@ -42,29 +42,28 @@ impl Cache {
         // check cache file is exist? if existed, read and deserialize it to new cache instance and compare to current system
         let cache = Cache::read(path.as_path())
             .map(|v| {
-                return if v.is_same_instance(&instance) {
+                return if v.is_same_except_values(&instance) {
                     // same means no need to create a new cache file, back current
                     v
                 } else {
                     // back new instacne
+                    let _ = instance.write();
                     instance.clone()
                 };
             })
-            .unwrap_or_else(|_|{
+            .unwrap_or_else(|_| {
                 // create a new cache file and return instance
-                instance.create();
+                let _ = instance.write();
                 instance
             });
 
-        // now we can get the cache file instance and know wheather we need to crate a new cache file
-        todo!()
-
-        // cache.create();
+        // now we can get the cache file instance
+        cache
     }
     /// compare two cache instance is same or not (except values field)
-    /// if same return true, else return false
     ///
-    pub fn is_same_instance(&self, another: &Cache) -> bool {
+    /// if same return true, else return false
+    pub fn is_same_except_values(&self, another: &Cache) -> bool {
         let another_path = another.path.to_str().unwrap();
         let self_path = self.path.to_str().unwrap();
 
@@ -75,6 +74,15 @@ impl Cache {
         ) {
             (true, true, true) => true,
             _ => false,
+        }
+    }
+    /// compare two cache instance is same or not
+    /// all field is same return true
+    pub fn is_same(&self, another: &Cache) -> bool {
+        if self.is_same_except_values(another) {
+            return self.values.eq(&another.values);
+        } else {
+            return false;
         }
     }
     // read cache file by path and deserialize it to cache instance
@@ -93,22 +101,54 @@ impl Cache {
         };
     }
 
-    // check current system and init the cache file if sys changed
-    pub fn create(&self) -> () {
+    // create cache file and write cache instance to it
+    pub fn write(&self) -> () {
         let cache_path = self.path.as_path();
-        // create a new file or open the existed file
         let mut file = if !cache_path.exists() {
-            info("creating a new cache file ...");
+            // create a new file
             File::options()
-                .read(true)
                 .write(true)
+                .read(true)
                 .create_new(true)
                 .open(cache_path)
         } else {
             File::open(cache_path)
         }
-        .expect("failed to create cache file");
+        .expect("cache file create or open failed");
 
-        // write the cache file
+        let mut buf = Vec::new();
+
+        let _ = self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+
+        let _ = file.write(&buf).expect("cache file write failed");
+
+        info("cache file write success")
+    }
+    pub fn insert<P>(&mut self, key: P, value: String) -> ()
+    where
+        P: AsRef<Path>,
+    {
+        match &mut self.values {
+            Some(values) => {
+                values.insert(key.as_ref().to_path_buf(), value);
+            }
+            None => {
+                let mut values = HashMap::new();
+                values.insert(key.as_ref().to_path_buf(), value);
+                self.values = Some(values);
+            }
+        }
+    }
+    pub fn clear(&mut self) -> () {
+        self.values = None;
+    }
+    pub fn get<P>(&self, key: P) -> Option<&String>
+    where
+        P: AsRef<Path>,
+    {
+        match &self.values {
+            Some(values) => values.get(key.as_ref()),
+            None => None,
+        }
     }
 }
