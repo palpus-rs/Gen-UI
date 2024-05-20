@@ -1,4 +1,4 @@
-use std::{path::Path, sync::mpsc::channel, time::Duration};
+use std::{path::{Path, PathBuf}, sync::mpsc::channel, time::Duration};
 
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 
@@ -6,7 +6,12 @@ use crate::msg::WATCHER_INIT;
 
 use super::log::{error, info, warn};
 
-pub async fn init_watcher(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+/// ## init watcher
+/// init watcher to watch file change event
+/// - f: compile the file , copy to src_gen and write cache 
+pub async fn init_watcher<F>(path: &Path, f: F) -> Result<(), Box<dyn std::error::Error>> 
+where F: Fn(&Vec<PathBuf>) -> (),
+{
     let (tx, rx) = channel();
 
     let config = Config::default();
@@ -24,7 +29,12 @@ pub async fn init_watcher(path: &Path) -> Result<(), Box<dyn std::error::Error>>
     while let Ok(event) = rx.recv() {
         match event {
             Ok(event) => {
-                info(format!("{:?}", event).as_str());
+                // check event is modify or create
+                // info(format!("{:?}", event).as_str());
+                if event.kind.is_modify() || event.kind.is_create() {
+                    // compile the file , copy to src_gen and write cache
+                    f(&event.paths);
+                }
             }
             Err(e) => {
                 warn(e.to_string().as_str());

@@ -149,7 +149,9 @@ impl Cache {
         }
     }
     /// if exists, then calc hash with origin, if hash equal, don't insert and return FileState::Unchanged
+    /// 
     /// if not exists, insert and return FileState::Created
+    /// 
     /// if exists but hash not equal, insert and return FileState::Modified
     pub fn exists_or_insert<P>(&mut self, key: P) -> Result<FileState, Box<dyn Error>>
     where

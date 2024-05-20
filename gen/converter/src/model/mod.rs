@@ -64,8 +64,8 @@ pub struct Model {
 }
 
 impl Model {
-    /// path: gen file path
-    /// source: gen file parent dir path
+    /// - file_path: gen file path
+    /// - source: gen file parent dir path
     pub fn new(
         file_path: &PathBuf,
         source: &PathBuf,

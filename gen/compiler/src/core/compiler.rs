@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
-    fs::{self, File}, mem,
+    fs::{self, File},
+    mem,
     path::{Path, PathBuf},
     process::{exit, Command},
 };
@@ -43,7 +44,9 @@ impl Compiler {
         info("App is running ...");
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
-            if let Err(e) = init_watcher(self.origin_path.as_path()).await{
+            if let Err(e) = init_watcher(self.origin_path.as_path(), |paths|{
+                todo!("compile the file , copy to src_gen and write cache")
+            }).await {
                 // log error and stop the service
                 error(e.to_string().as_str());
                 return;
@@ -104,7 +107,7 @@ impl Compiler {
             .filter_map(|d| d.ok())
         {
             let source_path = item.path();
-
+            // check if the file or folder is in the exclude list, if true, skip it
             if compiler.exclude.iter().any(|uncompiled_item| {
                 source_path.ends_with(uncompiled_item)
                     || source_path.to_str().unwrap().eq(uncompiled_item)
@@ -122,21 +125,36 @@ impl Compiler {
                 }
                 (true, true) => {
                     // is gen file, use target compiler to compile then copy to the compiled project
-                    let model =
-                        Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
-                    match &mut compiler.target {
-                        CompilerTarget::Makepad(makepad) => {
-                            makepad.as_mut().unwrap().add(model);
-                        }
-                        CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                        CompilerTarget::Dioxus => todo!("dioxus plugin not implemented yet"),
-                    }
+                    compiler
+                        .cache
+                        .exists_or_insert(&source_path)
+                        .unwrap()
+                        .modify_then(|| {
+                            let model = Model::new(&source_path.to_path_buf(), &target_path, false)
+                                .unwrap();
+                            match &mut compiler.target {
+                                CompilerTarget::Makepad(makepad) => {
+                                    makepad.as_mut().unwrap().add(model);
+                                }
+                                CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                                CompilerTarget::Dioxus => {
+                                    todo!("dioxus plugin not implemented yet")
+                                }
+                            }
+                        });
                 }
                 (true, false) => {
                     // is file but not gen file, directly copy to the compiled project
                     // get the compiled path
                     let compiled_path = Source::origin_file_without_gen(source_path, &target_path);
-                    let _ = copy_file(source_path, compiled_path);
+                    // check and insert into cache
+                    let _ = compiler
+                        .cache
+                        .exists_or_insert(compiled_path.as_path())
+                        .unwrap()
+                        .modify_then(|| {
+                            let _ = copy_file(source_path, compiled_path);
+                        });
                 }
             }
         }
@@ -248,5 +266,7 @@ impl Compiler {
             .current_dir(compiled_dir.as_path())
             .status()
             .expect("failed to add makepad-widgets to src_gen project");
+
+        info("src_gen project is created successfully ...");
     }
 }
