@@ -1,13 +1,20 @@
-use std::path::{Path, PathBuf};
+#[allow(unused_imports)]
+use std::{
+    default,
+    path::{Path, PathBuf},
+};
 
 use makepad_gen_plugin::Makepad;
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Target {
     Slint,
     Dioxus,
+    #[default]
     Makepad,
 }
-
+#[derive(Debug)]
 pub enum CompilerTarget {
     Slint,
     Dioxus,
@@ -30,7 +37,7 @@ impl CompilerTarget {
             }
         }
     }
-    pub fn compile(&self)->(){
+    pub fn compile(&self) -> () {
         match self {
             CompilerTarget::Slint => todo!("Slint Compiler is not supported yet"),
             CompilerTarget::Dioxus => todo!("Dioxus Compiler is not supported yet"),
@@ -38,7 +45,7 @@ impl CompilerTarget {
                 if let Some(makepad) = makepad {
                     makepad.compile();
                 }
-            },
+            }
         }
     }
 }

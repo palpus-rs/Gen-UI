@@ -1,17 +1,18 @@
 use std::{
     collections::HashSet,
-    fs, mem,
+    fs::{self, File}, mem,
     path::{Path, PathBuf},
-    process::Command,
+    process::{exit, Command},
 };
 
 use gen_converter::model::{Model, Source};
+use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
-use crate::copy_file;
+use crate::{copy_file, info, init_watcher, Cache};
 
-use super::CompilerTarget;
+use super::{log::error, CompilerTarget};
 
 pub struct Compiler {
     /// origin path is the project path
@@ -22,17 +23,28 @@ pub struct Compiler {
     pub entry: String,
     pub root: Option<PathBuf>,
     pub exclude: Vec<String>,
+    pub cache: Cache,
 }
 
 impl Compiler {
     pub fn run(&self) -> () {
-        let mut super_path = self.origin_path.clone();
-        super_path.pop();
-        super_path.push("src_gen");
-        println!("run app ...");
-        let _ = Command::new("cargo")
-            .arg("run")
-            .current_dir(super_path.as_path());
+        // let mut super_path = self.origin_path.clone();
+        // super_path.pop();
+        // super_path.push("src_gen");
+        // println!("run app ...");
+        // let _ = Command::new("cargo")
+        //     .arg("run")
+        //     .current_dir(super_path.as_path());
+        info("App is running ...");
+        let rt = Runtime::new().unwrap();
+        rt.block_on(async {
+            if let Err(e) = init_watcher(self.origin_path.as_path()).await{
+                // log error and stop the service
+                error(e.to_string().as_str());
+                return;
+            }
+        });
+        exit(-1);
     }
     pub fn entry(&mut self, entry: &str) -> &mut Self {
         self.entry = entry.to_string();
@@ -124,7 +136,6 @@ impl Compiler {
             }
         }
     }
-
     /// ## check if the generate rust project exists, if not create one
     ///
     /// ### details

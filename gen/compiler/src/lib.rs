@@ -22,12 +22,10 @@ const UNCOMPILED: [&str; 5] = [
 /// if path is relative path, you should write from project root not the current file
 pub fn app(target: Target) -> Compiler {
     // [init log service] --------------------------------------------------------------------------
-    let _ =  init_log();
+    let _ = init_log();
     // [get target watcher path] -------------------------------------------------------------------
     let origin_path = std::env::current_dir().unwrap();
-    // [init watcher service] ----------------------------------------------------------------------
-    // let _ = init_watcher(origin_path.as_path());
-
+    let cache = Cache::new(origin_path.as_path(), target);
     let is_dir = origin_path.is_dir();
 
     let target = CompilerTarget::from(target);
@@ -39,6 +37,7 @@ pub fn app(target: Target) -> Compiler {
         entry: "app".to_string(),
         root: None,
         exclude: UNCOMPILED.iter().map(|item| item.to_string()).collect(),
+        cache,
     }
 }
 
