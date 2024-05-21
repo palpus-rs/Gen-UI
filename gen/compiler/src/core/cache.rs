@@ -112,7 +112,7 @@ impl Cache {
                 .create_new(true)
                 .open(cache_path)
         } else {
-            File::open(cache_path)
+            File::options().write(true).read(true).open(cache_path)
         }
         .expect("cache file create or open failed");
 
@@ -122,7 +122,7 @@ impl Cache {
 
         let _ = file.write(&buf).expect("cache file write failed");
 
-        info("cache file write success")
+        info("cache file write success");
     }
     pub fn insert<P>(&mut self, key: P, value: String) -> ()
     where
@@ -149,9 +149,9 @@ impl Cache {
         }
     }
     /// if exists, then calc hash with origin, if hash equal, don't insert and return FileState::Unchanged
-    /// 
+    ///
     /// if not exists, insert and return FileState::Created
-    /// 
+    ///
     /// if exists but hash not equal, insert and return FileState::Modified
     pub fn exists_or_insert<P>(&mut self, key: P) -> Result<FileState, Box<dyn Error>>
     where

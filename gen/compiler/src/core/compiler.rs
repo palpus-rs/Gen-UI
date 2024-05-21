@@ -11,7 +11,7 @@ use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
-use crate::{copy_file, info, init_watcher, Cache};
+use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path, Cache};
 
 use super::{log::error, CompilerTarget};
 
@@ -27,27 +27,34 @@ pub struct Compiler {
     /// root path of the project
     pub root: Option<PathBuf>,
     /// exclude files or folders
-    pub exclude: Vec<String>,
+    pub exclude: Vec<PathBuf>,
     /// gen_cache
     pub cache: Cache,
 }
 
 impl Compiler {
-    pub fn run(&self) -> () {
-        // let mut super_path = self.origin_path.clone();
-        // super_path.pop();
-        // super_path.push("src_gen");
-        // println!("run app ...");
-        // let _ = Command::new("cargo")
-        //     .arg("run")
-        //     .current_dir(super_path.as_path());
+    pub fn run(&mut self) -> () {
         info("App is running ...");
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
-            if let Err(e) = init_watcher(self.origin_path.as_path(), |paths|{
-                dbg!(&paths);
-                // todo!("compile the file , copy to src_gen and write cache")
-            }).await {
+            if let Err(e) = init_watcher(self.origin_path.as_path(),&self.exclude ,|path, kind| {
+                match kind {
+                    notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
+                        // create or modify
+                        info(format!("file {:?} is compiling ...", path).as_str());
+                        let _ = self.cache.exists_or_insert(path);
+                        let _ = self.cache.write();
+                    }
+                    notify::EventKind::Remove(_) => {
+                        info(format!("file {:?} is removing ...", path).as_str());
+                        let _ = self.cache.remove(path);
+                        let _ = self.cache.write();
+                    }
+                    _ => (),
+                }
+            })
+            .await
+            {
                 // log error and stop the service
                 error(e.to_string().as_str());
                 return;
@@ -65,7 +72,7 @@ impl Compiler {
         P: AsRef<Path>,
     {
         self.exclude
-            .push(path.as_ref().to_str().unwrap().to_string());
+            .push(absolute_or_path(path.as_ref()));
         self.root.replace(path.as_ref().to_path_buf());
         self
     }
@@ -94,6 +101,8 @@ impl Compiler {
         Compiler::loop_compile(self, &mut visited);
         // after all files compiled
         let _ = self.target.compile();
+        // write cache
+        let _ = self.cache.write();
     }
     fn loop_compile(compiler: &mut Compiler, visited: &mut HashSet<PathBuf>) {
         // Convert to absolute path
@@ -109,9 +118,15 @@ impl Compiler {
         {
             let source_path = item.path();
             // check if the file or folder is in the exclude list, if true, skip it
+            // if compiler.exclude.iter().any(|uncompiled_item| {
+            //     source_path.ends_with(uncompiled_item)
+            //         || source_path.to_str().unwrap().eq(uncompiled_item)
+            // }) {
+            //     continue;
+            // }
+
             if compiler.exclude.iter().any(|uncompiled_item| {
-                source_path.ends_with(uncompiled_item)
-                    || source_path.to_str().unwrap().eq(uncompiled_item)
+               is_eq_path(source_path, uncompiled_item.as_path(), false)
             }) {
                 continue;
             }

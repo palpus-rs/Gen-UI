@@ -1,4 +1,8 @@
-use std::{path::{Path, PathBuf}, sync::mpsc::channel, time::Duration};
+use std::{
+    path::{Path, PathBuf},
+    sync::mpsc::channel,
+    time::Duration,
+};
 
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 
@@ -8,9 +12,14 @@ use super::log::{error, info, warn};
 
 /// ## init watcher
 /// init watcher to watch file change event
-/// - f: compile the file , copy to src_gen and write cache 
-pub async fn init_watcher<F>(path: &Path, f: F) -> Result<(), Box<dyn std::error::Error>> 
-where F: Fn(&Vec<PathBuf>) -> (),
+/// - f: compile the file , copy to src_gen and write cache
+pub async fn init_watcher<F>(
+    path: &Path,
+    excludes: &Vec<PathBuf>,
+    mut f: F,
+) -> Result<(), Box<dyn std::error::Error>>
+where
+    F: FnMut(&Path, &notify::EventKind) -> (),
 {
     let (tx, rx) = channel();
 
@@ -19,10 +28,7 @@ where F: Fn(&Vec<PathBuf>) -> (),
 
     let mut watcher = RecommendedWatcher::new(tx, config)?;
 
-    watcher.watch(
-        path,
-        RecursiveMode::Recursive,
-    )?;
+    watcher.watch(path, RecursiveMode::Recursive)?;
 
     info(WATCHER_INIT);
 
@@ -31,9 +37,17 @@ where F: Fn(&Vec<PathBuf>) -> (),
             Ok(event) => {
                 // check event is modify or create
                 // info(format!("{:?}", event).as_str());
-                if event.kind.is_modify() || event.kind.is_create() {
+                if match event.kind {
+                    notify::EventKind::Create(_)
+                    | notify::EventKind::Modify(_)
+                    | notify::EventKind::Remove(_) => true,
+                    _ => false,
+                } {
                     // compile the file , copy to src_gen and write cache
-                    f(&event.paths);
+                    // attention: exclude some files
+                    if !excludes.contains(&event.paths[0]) {
+                        f(&event.paths[0], &event.kind);
+                    }
                 }
             }
             Err(e) => {
