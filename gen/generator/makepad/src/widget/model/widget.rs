@@ -288,10 +288,17 @@ impl ToLiveDesign for Widget {
         let mut props_children = self.props.clone().unwrap_or_default();
         props_children.extend(self.widget_children_tree().unwrap_or_default());
 
-        tk.extend(special_struct(
+        let ui = if self.is_static {
             self.id
                 .as_ref()
-                .expect("root widget need id to get widget tree"),
+                .expect("root widget need id to get widget tree")
+                .to_string()
+        } else {
+            self.source.as_ref().unwrap().source_name_lower()
+        };
+
+        tk.extend(special_struct(
+            &ui,
             &self.name,
             Some(props_children),
             self.is_static,

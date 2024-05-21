@@ -45,7 +45,8 @@ impl Compiler {
         let rt = Runtime::new().unwrap();
         rt.block_on(async {
             if let Err(e) = init_watcher(self.origin_path.as_path(), |paths|{
-                todo!("compile the file , copy to src_gen and write cache")
+                dbg!(&paths);
+                // todo!("compile the file , copy to src_gen and write cache")
             }).await {
                 // log error and stop the service
                 error(e.to_string().as_str());
@@ -150,7 +151,7 @@ impl Compiler {
                     // check and insert into cache
                     let _ = compiler
                         .cache
-                        .exists_or_insert(compiled_path.as_path())
+                        .exists_or_insert(source_path)
                         .unwrap()
                         .modify_then(|| {
                             let _ = copy_file(source_path, compiled_path);
