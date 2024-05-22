@@ -1,6 +1,6 @@
 use std::{
     collections::HashSet,
-    fs::{self, File},
+    fs::{self},
     mem,
     path::{Path, PathBuf},
     process::{exit, Command},
@@ -11,9 +11,7 @@ use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
-use crate::{
-    absolute_or_path, copy_file, info, init_watcher, is_eq_path, is_eq_path_exclude, Cache,
-};
+use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path_exclude, Cache};
 
 use super::{log::error, CompilerTarget};
 
@@ -51,14 +49,12 @@ impl Compiler {
                 match kind {
                     notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
                         // create or modify
-                        // let _ = self.cache.exists_or_insert(path);
                         self.compile_one(path);
                     }
                     notify::EventKind::Remove(_) => {
                         info(format!("{:?} is removing ...", path).as_str());
                         // remove from cache and compiled project
                         self.remove_compiled(path);
-                        
                     }
                     _ => (),
                 }
@@ -134,6 +130,7 @@ impl Compiler {
                     .modify_then(|| {
                         let model =
                             Model::new(&path.as_ref().to_path_buf(), &target_path, false).unwrap();
+                        let source = model.get_special().clone();
                         match &mut self.target {
                             CompilerTarget::Makepad(makepad) => {
                                 makepad.as_mut().unwrap().add(model);
@@ -143,6 +140,14 @@ impl Compiler {
                                 todo!("dioxus plugin not implemented yet")
                             }
                         }
+                       
+                        // get the compiled result from target and then copy to the compiled project
+                        
+                        let _ = self
+                            .target
+                            .get(&source)
+                            .expect("node can not be found(system error)")
+                            .compile();
                     });
                 let _ = self.cache.write();
             }

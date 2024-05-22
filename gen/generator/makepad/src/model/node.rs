@@ -1,9 +1,10 @@
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 
 use gen_converter::model::{Model, Source};
 use proc_macro2::TokenStream;
 
 use crate::{
+    utils::create_file,
     widget::model::{widget::Widget, ToLiveDesign},
     ToToken,
 };
@@ -45,6 +46,11 @@ impl ModelNode {
             }
             ModelNode::RsFile(_) => panic!("super ui root not exist in rs file"),
         }
+    }
+    pub fn compile(&self) -> () {
+        let content = self.content().to_string();
+        let mut file = create_file(self.source().unwrap().compiled_file.as_path());
+        file.write_all(content.as_bytes()).unwrap();
     }
 }
 

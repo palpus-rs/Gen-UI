@@ -16,6 +16,12 @@ pub struct Source {
     pub compiled_file: PathBuf,
 }
 
+impl PartialEq for Source {
+    fn eq(&self, other: &Self) -> bool {
+        self.origin_dir == other.origin_dir && self.compiled_file == other.compiled_file
+    }
+}
+
 impl Source {
     /// get name from source origin file
     /// eg: src_gen/widget/hello.gen -> Hello
@@ -108,7 +114,7 @@ impl Source {
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
     }
-    /// origin_dir to compiled_dir replace origin dir to src_gen 
+    /// origin_dir to compiled_dir replace origin dir to src_gen
     pub fn origin_dir_to_compiled(origin_dir: &PathBuf) -> PathBuf {
         let mut tmp = origin_dir.clone();
         tmp.pop();

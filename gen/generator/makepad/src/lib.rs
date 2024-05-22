@@ -6,7 +6,7 @@ use std::{
 // use gen::{sc_builder_to_token_stream, template};
 use gen_converter::model::{Model, Source};
 use gen_utils::common::{token_stream_to_tree, token_tree_ident};
-use model::{ModelTree, RsFile};
+use model::{ModelNode, ModelTree, RsFile};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
 use utils::create_file;
@@ -49,6 +49,13 @@ impl Makepad {
             app_main,
             tree: Some(widget_tree),
             main_rs,
+        }
+    }
+    /// get node from tree
+    pub fn get(&self, key: &Source) -> Option<ModelNode>{
+        match self.tree.as_ref() {
+            Some(tree) => tree.get(key),
+            None => None,
         }
     }
     fn create_widget_tree<P>(path: P, root: Option<&PathBuf>) -> ModelTree

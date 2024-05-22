@@ -4,7 +4,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use makepad_gen_plugin::Makepad;
+use gen_converter::model::Source;
+use makepad_gen_plugin::{model::ModelNode, Makepad};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
@@ -44,6 +45,19 @@ impl CompilerTarget {
             CompilerTarget::Makepad(makepad) => {
                 if let Some(makepad) = makepad {
                     makepad.compile();
+                }
+            }
+        }
+    }
+    pub fn get(&self, key: &Source) -> Option<ModelNode> {
+        match self {
+            CompilerTarget::Slint => todo!("Slint Compiler is not supported yet"),
+            CompilerTarget::Dioxus => todo!("Dioxus Compiler is not supported yet"),
+            CompilerTarget::Makepad(makepad) => {
+                if let Some(makepad) = makepad {
+                    makepad.get(key)
+                } else {
+                    None
                 }
             }
         }

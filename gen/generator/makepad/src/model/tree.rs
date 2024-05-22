@@ -1,5 +1,6 @@
 use std::{collections::HashSet, io::Write, path::PathBuf};
 
+use gen_converter::model::Source;
 use gen_utils::common::token_tree_ident;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -36,6 +37,20 @@ impl ModelTree {
             node,
             children: None,
         }
+    }
+    /// get node from tree
+    pub fn get(&self, key: &Source) -> Option<ModelNode> {
+        if self.node.source().unwrap().eq(key) {
+            return Some(self.node.clone());
+        }
+        if let Some(children) = &self.children {
+            for child in children {
+                if let Some(node) = child.get(key) {
+                    return Some(node);
+                }
+            }
+        }
+        None
     }
     /// add node to widget tree
     /// compare path, src is the same root
@@ -174,15 +189,16 @@ impl ModelTree {
         mods.into_iter().collect()
     }
     /// compile model tree
+    /// 遍历整个树，将每个节点的内容写入到文件中
     pub fn compile(&self) -> () {
-        let loop_tree = |node: &ModelNode| -> () {
-            let content = node.content().to_string();
-            let mut file = create_file(node.source().unwrap().compiled_file.as_path());
-            file.write_all(content.as_bytes()).unwrap();
-        };
+        // let loop_tree = |node: &ModelNode| -> () {
+        //     let content = node.content().to_string();
+        //     let mut file = create_file(node.source().unwrap().compiled_file.as_path());
+        //     file.write_all(content.as_bytes()).unwrap();
+        // };
 
-        // 遍历整个树，将每个节点的内容写入到文件中
-        let _ = loop_tree(&self.node);
+        // let _ = loop_tree(&self.node);
+        let _ = self.node.compile();
         // children
         if let Some(children) = self.children.as_ref() {
             for child in children {
