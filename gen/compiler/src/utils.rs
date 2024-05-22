@@ -70,3 +70,16 @@ where
         _ => !is_strict,
     }
 }
+
+/// eq path exclude when p1 can not be find return true
+/// else compare p1 and p2
+pub fn is_eq_path_exclude<P>(p1: P, p2: P) -> bool
+where
+    P: AsRef<Path>,
+{
+    match (p1.as_ref().exists(), p2.as_ref().exists()) {
+        (true, true) => p1.as_ref().canonicalize().unwrap() == p2.as_ref().canonicalize().unwrap(),
+        (true, false) | (false, false) => false,
+        (false, true) => true,
+    }
+}

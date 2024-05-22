@@ -108,6 +108,7 @@ impl Source {
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
     }
+    /// origin_dir to compiled_dir replace origin dir to src_gen 
     pub fn origin_dir_to_compiled(origin_dir: &PathBuf) -> PathBuf {
         let mut tmp = origin_dir.clone();
         tmp.pop();

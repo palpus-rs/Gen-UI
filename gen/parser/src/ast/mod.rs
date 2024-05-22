@@ -353,7 +353,11 @@ impl TryFrom<&str> for ParseTarget {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         return if value.trim().is_empty() {
-            Err(crate::error::Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
+            // Err(crate::error::Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
+            Ok(ParseTarget{
+                core: Default::default(),
+                comment: None,
+            })
         } else {
             let (remain, res) = trim(parse_all)(value).unwrap();
             if remain.is_empty() {

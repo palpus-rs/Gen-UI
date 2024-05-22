@@ -66,6 +66,7 @@ pub struct Model {
 impl Model {
     /// - file_path: gen file path
     /// - source: gen file parent dir path
+    /// todo!(&Pathbuf -> AsRef<Path>)
     pub fn new(
         file_path: &PathBuf,
         source: &PathBuf,

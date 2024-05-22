@@ -11,10 +11,18 @@ use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
-use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path, Cache};
+use crate::{
+    absolute_or_path, copy_file, info, init_watcher, is_eq_path, is_eq_path_exclude, Cache,
+};
 
 use super::{log::error, CompilerTarget};
 
+/// ## Compile Strategy: Lazy
+/// compiler will compile the file when the file is created or modified
+///
+/// but it will not compile the dir, only compile the file in the dir
+///
+/// dir will be generated after the file in the dir is compiled
 pub struct Compiler {
     /// origin path is the project path
     pub origin_path: PathBuf,
@@ -36,19 +44,21 @@ impl Compiler {
     pub fn run(&mut self) -> () {
         info("App is running ...");
         let rt = Runtime::new().unwrap();
+        let origin_path = self.origin_path.clone();
+        let excludes = self.exclude.clone();
         rt.block_on(async {
-            if let Err(e) = init_watcher(self.origin_path.as_path(),&self.exclude ,|path, kind| {
+            if let Err(e) = init_watcher(origin_path.as_path(), &excludes, |path, kind| {
                 match kind {
                     notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
                         // create or modify
-                        info(format!("file {:?} is compiling ...", path).as_str());
-                        let _ = self.cache.exists_or_insert(path);
-                        let _ = self.cache.write();
+                        // let _ = self.cache.exists_or_insert(path);
+                        self.compile_one(path);
                     }
                     notify::EventKind::Remove(_) => {
-                        info(format!("file {:?} is removing ...", path).as_str());
-                        let _ = self.cache.remove(path);
-                        let _ = self.cache.write();
+                        info(format!("{:?} is removing ...", path).as_str());
+                        // remove from cache and compiled project
+                        self.remove_compiled(path);
+                        
                     }
                     _ => (),
                 }
@@ -71,8 +81,7 @@ impl Compiler {
     where
         P: AsRef<Path>,
     {
-        self.exclude
-            .push(absolute_or_path(path.as_ref()));
+        self.exclude.push(absolute_or_path(path.as_ref()));
         self.root.replace(path.as_ref().to_path_buf());
         self
     }
@@ -104,6 +113,77 @@ impl Compiler {
         // write cache
         let _ = self.cache.write();
     }
+    /// compile single gen / other type file
+    fn compile_one<P>(&mut self, path: P) -> ()
+    where
+        P: AsRef<Path>,
+    {
+        let target_path = self.origin_path.as_path().to_path_buf();
+        match (
+            path.as_ref().is_file(),
+            path.as_ref().to_str().unwrap().ends_with(".gen"),
+        ) {
+            (false, true) | (false, false) => {
+                // if is dir, do nothing , use lazy compile(only dir has file, file will be compiled, dir generate after file compiled)
+                return;
+            }
+            (true, true) => {
+                self.cache
+                    .exists_or_insert(path.as_ref())
+                    .unwrap()
+                    .modify_then(|| {
+                        let model =
+                            Model::new(&path.as_ref().to_path_buf(), &target_path, false).unwrap();
+                        match &mut self.target {
+                            CompilerTarget::Makepad(makepad) => {
+                                makepad.as_mut().unwrap().add(model);
+                            }
+                            CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                            CompilerTarget::Dioxus => {
+                                todo!("dioxus plugin not implemented yet")
+                            }
+                        }
+                    });
+                let _ = self.cache.write();
+            }
+            (true, false) => {
+                // not gen file, directly copy to the compiled project
+                let compiled_path =
+                    Source::origin_file_without_gen(path.as_ref(), target_path.as_path());
+
+                let _ = self
+                    .cache
+                    .exists_or_insert(path.as_ref())
+                    .unwrap()
+                    .modify_then(|| {
+                        let _ = copy_file(path.as_ref(), compiled_path);
+                    });
+                let _ = self.cache.write();
+            }
+        }
+        info(format!("file {:?} is compiling ...", path.as_ref()).as_str());
+    }
+    fn remove_compiled<P>(&mut self, path: P) -> ()
+    where
+        P: AsRef<Path>,
+    {
+        // if path is dir, recursively remove all files in the dir and then remove the dir (also remove cache)
+        if path.as_ref().is_dir() {
+            // get all files in the dir
+            dbg!("remove dir{:?}", path.as_ref());
+        } else {
+            let compiled_path = if path.as_ref().to_str().unwrap().ends_with(".gen") {
+                Source::origin_file_to_compiled(path.as_ref(), self.origin_path.as_path())
+            } else {
+                Source::origin_file_without_gen(path.as_ref(), self.origin_path.as_path())
+            };
+            // remove cache
+            let _ = self.cache.remove(path);
+            // remove compiled file
+            let _ = fs::remove_file(compiled_path.as_path());
+        }
+        let _ = self.cache.write();
+    }
     fn loop_compile(compiler: &mut Compiler, visited: &mut HashSet<PathBuf>) {
         // Convert to absolute path
         // let target_path = target.as_ref().canonicalize().unwrap();
@@ -118,16 +198,11 @@ impl Compiler {
         {
             let source_path = item.path();
             // check if the file or folder is in the exclude list, if true, skip it
-            // if compiler.exclude.iter().any(|uncompiled_item| {
-            //     source_path.ends_with(uncompiled_item)
-            //         || source_path.to_str().unwrap().eq(uncompiled_item)
-            // }) {
-            //     continue;
-            // }
-
-            if compiler.exclude.iter().any(|uncompiled_item| {
-               is_eq_path(source_path, uncompiled_item.as_path(), false)
-            }) {
+            if compiler
+                .exclude
+                .iter()
+                .any(|uncompiled_item| is_eq_path_exclude(source_path, uncompiled_item.as_path()))
+            {
                 continue;
             }
 
