@@ -1,4 +1,4 @@
-use std::{io::Write, path::PathBuf};
+use std::{hash::Hash, io::Write, path::PathBuf};
 
 use gen_converter::model::{Model, Source};
 use proc_macro2::TokenStream;
@@ -15,6 +15,20 @@ use super::RsFile;
 pub enum ModelNode {
     Widget(Widget),
     RsFile(RsFile),
+}
+
+impl PartialEq for ModelNode {
+    fn eq(&self, other: &Self) -> bool {
+        self.source().unwrap() == other.source().unwrap()
+    }
+}
+
+impl Eq for ModelNode {}
+
+impl Hash for ModelNode {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+            self.source().unwrap().hash(state);
+    }
 }
 
 impl ModelNode {
@@ -57,6 +71,7 @@ impl ModelNode {
 impl From<Model> for ModelNode {
     fn from(value: Model) -> Self {
         let source = &value.special;
+        // dbg!(&value);
         match &value.strategy {
             gen_parser::Strategy::None => RsFile::new_empty(source.clone()).into(),
             gen_parser::Strategy::SingleScript => RsFile::from(value).into(),
@@ -75,5 +90,46 @@ impl From<Widget> for ModelNode {
 impl From<RsFile> for ModelNode {
     fn from(value: RsFile) -> Self {
         ModelNode::RsFile(value)
+    }
+}
+
+#[cfg(test)]
+mod test_node {
+    use crate::model::ModelTree;
+
+    use super::*;
+    #[test]
+    fn test_eq() {
+        let source = Source::from((
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui\\a.gen",
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
+        ));
+        let node1 = ModelNode::Widget(Widget::new(
+            Some(source.clone()),
+            "hello",
+            Some(&"view".to_string()),
+        ));
+        let node2 = ModelNode::RsFile(RsFile::new(source, TokenStream::new()));
+
+        assert_eq!(node1, node2);
+    }
+    #[test]
+    fn test_eq_tree() {
+        let source = Source::from((
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui\\a.gen",
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
+        ));
+        let node1 = ModelNode::Widget(Widget::new(
+            Some(source.clone()),
+            "hello",
+            Some(&"view".to_string()),
+        ));
+        let node2 = ModelNode::RsFile(RsFile::new(source, TokenStream::new()));
+        let default_node = ModelNode::Widget(Widget::default_ui_root());
+        let mut tree = ModelTree::new(default_node);
+        tree.children = Some(std::iter::once(ModelTree::from(node1)).collect());
+        tree.add(node2);
+
+        dbg!(tree);
     }
 }

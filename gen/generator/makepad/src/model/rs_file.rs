@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{hash::Hash, io::Write};
 
 use gen_converter::model::{script::ScriptModel, Model, Source};
 use proc_macro2::TokenStream;
@@ -11,6 +11,20 @@ use crate::utils::create_file;
 pub struct RsFile {
     pub source: Source,
     pub content: TokenStream,
+}
+
+impl PartialEq for RsFile {
+    fn eq(&self, other: &Self) -> bool {
+        self.source == other.source
+    }
+}
+
+impl Eq for RsFile {}
+
+impl Hash for RsFile {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.source.hash(state);
+    }
 }
 
 impl RsFile {

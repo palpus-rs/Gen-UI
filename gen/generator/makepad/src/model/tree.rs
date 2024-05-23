@@ -1,4 +1,4 @@
-use std::{collections::HashSet, io::Write, path::PathBuf};
+use std::{collections::HashSet, hash::Hash, io::Write, path::PathBuf};
 
 use gen_converter::model::Source;
 use gen_utils::common::token_tree_ident;
@@ -28,7 +28,22 @@ use super::{ModelNode, RsFile};
 pub struct ModelTree {
     /// model node can be widget or rs file, but the root node must be widget
     pub node: ModelNode,
-    pub children: Option<Vec<ModelTree>>,
+    pub children: Option<HashSet<ModelTree>>,
+}
+
+impl PartialEq for ModelTree {
+    fn eq(&self, other: &Self) -> bool {
+        // self.node.source().unwrap().eq(other.node.source().unwrap())
+        self.node == other.node
+    }
+}
+
+impl Eq for ModelTree {}
+
+impl Hash for ModelTree {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.node.hash(state);
+    }
 }
 
 impl ModelTree {
@@ -77,16 +92,22 @@ impl ModelTree {
         if let Some(children) = &mut self.children {
             // 查找子节点中任意的path的节点，首先使用level匹配，level相同，可以直接push
             // level不同，若当前level比item的level小，继续遍历子节点，大则将当前children放到item的children中，再把item放回父节点进行替换
-            let (current_level, _current_path) = children[0].level();
+            // let (current_level, _current_path) = children[0].level();
+            let (current_level, _current_path) = children.iter().next().unwrap().level();
             let step = item_level - current_level;
             if step.eq(&0_usize) {
-                children.push(item.into())
+                // children.push(item.into())
+                let node: ModelTree = item.into();
+                let _ = children.remove(&node);
+                let _ = children.insert(node);
             } else if step.lt(&0_usize) {
                 // 说明item节点比当前节点层级高，将item节点替换当前的节点
                 let mut node: ModelTree = item.into();
                 node.children.replace(self.children.take().unwrap());
                 // add into parent node
-                let _ = std::mem::replace(&mut self.children, Some(vec![node]));
+                // let _ = std::mem::replace(&mut self.children, Some(vec![node]));
+                let _ =
+                    std::mem::replace(&mut self.children, Some(std::iter::once(node).collect()));
             } else {
                 // 说明item节点比当前节点层级低，继续遍历子节点
                 // 需要查找当前所有子节点的path，找到符合前缀的节点，查看子节点数量，哪个少往哪个去遍历（符合前缀指的是前缀匹配优先级最大的）
@@ -116,12 +137,15 @@ impl ModelTree {
                 if let Some(target_node) = &mut target_node {
                     target_node.add(item);
                 } else {
-                    children.push(item.into());
+                    // children.push(item.into());
+                    children.insert(item.into());
                 }
             }
         } else {
             // now have no children, just set
-            self.children.replace(vec![item.into()]);
+            // self.children.replace(vec![item.into()]);
+            self.children
+                .replace(std::iter::once(item.into()).collect());
         }
     }
     /// get live register from tree

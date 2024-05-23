@@ -6,5 +6,5 @@ pub fn create_file(path: &Path) -> File{
             fs::create_dir_all(parent_dir).expect("Failed to create directory");
         }
     }
-    File::create(path).expect("create main.rs file failed")
+    File::create(path).expect("create | write file failed")
 }

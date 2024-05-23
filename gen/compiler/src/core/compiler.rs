@@ -140,9 +140,7 @@ impl Compiler {
                                 todo!("dioxus plugin not implemented yet")
                             }
                         }
-                       
                         // get the compiled result from target and then copy to the compiled project
-                        
                         let _ = self
                             .target
                             .get(&source)

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 use gen_converter::model::{
     prop::ConvertStyle,
@@ -49,6 +49,20 @@ pub struct Widget {
     pub inherits: Option<BuiltIn>,
     pub traits: Option<WidgetTrait>,
     pub role: Role,
+}
+
+impl PartialEq for Widget {
+    fn eq(&self, other: &Self) -> bool {
+        self.source == other.source
+    }
+}
+
+impl Eq for Widget {}
+
+impl Hash for Widget {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.source.hash(state);
+    }
 }
 
 impl Widget {

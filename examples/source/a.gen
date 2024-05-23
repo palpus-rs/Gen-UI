@@ -1,0 +1,3 @@
+<template>
+  <label id="MyLabel" text="a"></label>
+</template>

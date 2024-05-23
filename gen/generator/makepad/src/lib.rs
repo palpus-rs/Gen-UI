@@ -133,7 +133,7 @@ impl Makepad {
         let mut file = create_file(lib_path.as_path());
         file.write_all(content.as_bytes()).unwrap();
     }
-    /// add item to model tree
+    /// add item to model tree, if item exists, replace it
     pub fn add(&mut self, item: Model) -> () {
         let _ = self.tree.as_mut().unwrap().add(item.into());
         let live_register = self.tree.as_ref().unwrap().to_live_register();

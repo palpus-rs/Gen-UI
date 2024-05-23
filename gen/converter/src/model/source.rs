@@ -1,11 +1,12 @@
 use std::{
     ffi::OsString,
+    hash::Hash,
     path::{Path, PathBuf},
 };
 
 use gen_utils::common::snake_to_camel;
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
 pub struct Source {
     /// source file dir
     pub origin_dir: PathBuf,
@@ -14,12 +15,6 @@ pub struct Source {
     /// compiled file path
     pub compiled_dir: PathBuf,
     pub compiled_file: PathBuf,
-}
-
-impl PartialEq for Source {
-    fn eq(&self, other: &Self) -> bool {
-        self.origin_dir == other.origin_dir && self.compiled_file == other.compiled_file
-    }
 }
 
 impl Source {
