@@ -52,7 +52,6 @@ impl Compiler {
                         self.compile_one(path);
                     }
                     notify::EventKind::Remove(_) => {
-                        info(format!("{:?} is removing ...", path).as_str());
                         // remove from cache and compiled project
                         self.remove_compiled(path);
                     }
@@ -166,24 +165,34 @@ impl Compiler {
         }
         info(format!("file {:?} is compiling ...", path.as_ref()).as_str());
     }
+    /// remove compiled file and remove cache
     fn remove_compiled<P>(&mut self, path: P) -> ()
     where
         P: AsRef<Path>,
     {
+        let remove = |path: &Path| {
+            let compiled_path = if path.to_str().unwrap().ends_with(".gen") {
+                Source::origin_file_to_compiled(path, self.origin_path.as_path())
+            } else {
+                Source::origin_file_without_gen(path, self.origin_path.as_path())
+            };
+            // remove compiled file
+            let _ = fs::remove_file(compiled_path.as_path());
+        };
+        info(format!("{:?} is removing ...", path.as_ref()).as_str());
         // if path is dir, recursively remove all files in the dir and then remove the dir (also remove cache)
         if path.as_ref().is_dir() {
             // get all files in the dir
-            dbg!("remove dir{:?}", path.as_ref());
+            for item in WalkDir::new(path.as_ref()).into_iter().filter_map(|d| d.ok()) {
+                // remove compiled file
+                let _ = remove(item.path());
+            }
+            // remove from cache
+            let _ =  self.cache.remove_all(path.as_ref());
         } else {
-            let compiled_path = if path.as_ref().to_str().unwrap().ends_with(".gen") {
-                Source::origin_file_to_compiled(path.as_ref(), self.origin_path.as_path())
-            } else {
-                Source::origin_file_without_gen(path.as_ref(), self.origin_path.as_path())
-            };
+            remove(path.as_ref());
             // remove cache
             let _ = self.cache.remove(path);
-            // remove compiled file
-            let _ = fs::remove_file(compiled_path.as_path());
         }
         let _ = self.cache.write();
     }

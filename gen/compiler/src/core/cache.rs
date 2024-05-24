@@ -1,4 +1,4 @@
-use crate::{calc_hash, info, FileState, Target};
+use crate::{calc_hash, info, is_eq_path, FileState, Target};
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -187,6 +187,16 @@ impl Cache {
                 values.remove(key.as_ref());
             }
             None => (),
+        }
+    }
+    /// remove all cache values depend on path(path is dir path)
+    /// this function will remove all path which is start with the path
+    pub fn remove_all<P>(&mut self, path: P) -> ()
+    where
+        P: AsRef<Path>,
+    {
+        if let Some(values) = &mut self.values {
+            values.retain(|k, _| is_eq_path(k.as_path(), path.as_ref(), true));
         }
     }
     pub fn insert_and_hash<P>(&mut self, key: P) -> Result<(), Box<dyn Error>>
