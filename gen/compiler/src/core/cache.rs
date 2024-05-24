@@ -196,7 +196,7 @@ impl Cache {
         P: AsRef<Path>,
     {
         if let Some(values) = &mut self.values {
-            values.retain(|k, _| is_eq_path(k.as_path(), path.as_ref(), true));
+            values.retain(|k, _| !is_eq_path(k.as_path(), path.as_ref(), true));
         }
     }
     pub fn insert_and_hash<P>(&mut self, key: P) -> Result<(), Box<dyn Error>>

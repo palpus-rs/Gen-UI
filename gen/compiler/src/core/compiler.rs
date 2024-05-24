@@ -176,8 +176,9 @@ impl Compiler {
             } else {
                 Source::origin_file_without_gen(path, self.origin_path.as_path())
             };
+            dbg!(compiled_path.as_path());
             // remove compiled file
-            let _ = fs::remove_file(compiled_path.as_path());
+            let _ = fs::remove_file(compiled_path.as_path()).unwrap();
         };
         info(format!("{:?} is removing ...", path.as_ref()).as_str());
         // if path is dir, recursively remove all files in the dir and then remove the dir (also remove cache)

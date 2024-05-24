@@ -150,7 +150,7 @@ impl Source {
         if !target.is_empty() {
             // 替换第一个
             target[0] = "src_gen".into();
-            if target.last().unwrap().eq(".gen") {
+            if target.last().unwrap().to_str().unwrap().ends_with(".gen") {
                 // 在target[0]后面插入一个src
                 target.insert(1, "src".into());
             }
@@ -206,5 +206,25 @@ where
             compiled_dir,
             compiled_file,
         }
+    }
+}
+
+#[cfg(test)]
+mod test_source {
+    use super::Source;
+
+    #[test]
+    fn origin_f() {
+        let source1 = Source::origin_file_to_compiled(
+            "E:/Rust/try/makepad/Gen-UI/examples/simple1/ui/views/a/1.gen",
+            "E:/Rust/try/makepad/Gen-UI/examples/simple1/ui",
+        );
+
+        let source2 = Source::from((
+            "E:/Rust/try/makepad/Gen-UI/examples/simple1/ui/views/a/1.gen",
+            "E:/Rust/try/makepad/Gen-UI/examples/simple1/ui",
+        ));
+
+        assert_eq!(source1, source2.compiled_file);
     }
 }
