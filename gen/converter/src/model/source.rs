@@ -1,5 +1,6 @@
 use std::{
     ffi::OsString,
+    fs,
     hash::Hash,
     path::{Path, PathBuf},
 };
@@ -109,9 +110,48 @@ impl Source {
     pub fn as_os_str(&self) -> &std::ffi::OsStr {
         self.compiled_file.as_os_str()
     }
-    /// origin_dir to compiled_dir replace origin dir to src_gen
-    pub fn origin_dir_to_compiled(origin_dir: &PathBuf) -> PathBuf {
-        let mut tmp = origin_dir.clone();
+    /// ## origin_dir to compiled dir
+    /// this function will check whether the origin_dir has `mod.gen` or not
+    ///
+    /// if has, it will be generate path under `src_gen/src` else under `src_gen` (if parent dir is project path)
+    /// ### example
+    /// #### has mod.gen
+    /// - origin_dir: `E:/Rust/try/makepad/Gen-UI/examples/simple1/ui/views/a`
+    /// - compiled_dir: `E:/Rust/try/makepad/Gen-UI/examples/simple1/src_gen/src/views/a`
+    pub fn origin_dir_to_compiled<P>(origin_dir: P, path: P) -> PathBuf
+    where
+        P: AsRef<Path>,
+    {
+        /// check whether has mod.gen?
+        fn check<P>(path: P) -> bool
+        where
+            P: AsRef<Path>,
+        {
+            fs::read_dir(path.as_ref())
+                .unwrap()
+                .any(|item| item.unwrap().file_name().to_str().unwrap().eq("mod.gen"))
+        }
+        let mut compiled_project_path = Source::project_dir_to_compiled(origin_dir.as_ref());
+        let strip_path = path
+            .as_ref()
+            .strip_prefix(origin_dir.as_ref())
+            .unwrap()
+            .to_path_buf();
+        if check(path.as_ref()) || path.as_ref().parent().unwrap().ne(origin_dir.as_ref()) {
+            // strip the origin_dir
+            compiled_project_path.push("src");
+        }
+        // target.push_front("src_gen".into());
+        let path = compiled_project_path.join(strip_path.as_path());
+        path
+    }
+    /// prject_origin_dir to compiled_dir replace origin dir to src_gen
+    /// only use when you need to get path of current project to compiled project's root path
+    pub fn project_dir_to_compiled<P>(origin_dir: P) -> PathBuf
+    where
+        P: AsRef<Path>,
+    {
+        let mut tmp = origin_dir.as_ref().to_path_buf();
         tmp.pop();
         tmp.push("src_gen");
         tmp
@@ -211,6 +251,8 @@ where
 
 #[cfg(test)]
 mod test_source {
+    use std::{path::PathBuf, str::FromStr};
+
     use super::Source;
 
     #[test]
@@ -226,5 +268,25 @@ mod test_source {
         ));
 
         assert_eq!(source1, source2.compiled_file);
+    }
+
+    #[test]
+    fn origin_dir() {
+        let path1 = Source::origin_dir_to_compiled(
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui\\views\\a",
+        );
+        let compiled1 =
+            PathBuf::from_str("E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\src_gen\\src\\views\\a");
+
+        let path2 = Source::origin_dir_to_compiled(
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui\\static",
+        );
+        let compiled2 =
+            PathBuf::from_str("E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\src_gen\\static");
+
+        assert_eq!(path1, compiled1.unwrap());
+        assert_eq!(path2, compiled2.unwrap());
     }
 }

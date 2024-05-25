@@ -13,7 +13,7 @@ use walkdir::WalkDir;
 
 use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path_exclude, Cache};
 
-use super::{log::error, CompilerTarget};
+use super::{log::error, watcher::FKind, CompilerTarget};
 
 /// ## Compile Strategy: Lazy
 /// compiler will compile the file when the file is created or modified
@@ -45,15 +45,15 @@ impl Compiler {
         let origin_path = self.origin_path.clone();
         let excludes = self.exclude.clone();
         rt.block_on(async {
-            if let Err(e) = init_watcher(origin_path.as_path(), &excludes, |path, kind| {
-                match kind {
+            if let Err(e) = init_watcher(origin_path.as_path(), &excludes, |path, e_kind, f_kind| {
+                match e_kind {
                     notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
                         // create or modify
                         self.compile_one(path);
                     }
                     notify::EventKind::Remove(_) => {
-                        // remove from cache and compiled project
-                        self.remove_compiled(path);
+                        // remove from cache and compiled project, after test we know, only remove need f_kind to know the file is dir or file
+                        self.remove_compiled(path, f_kind);
                     }
                     _ => (),
                 }
@@ -166,34 +166,35 @@ impl Compiler {
         info(format!("file {:?} is compiling ...", path.as_ref()).as_str());
     }
     /// remove compiled file and remove cache
-    fn remove_compiled<P>(&mut self, path: P) -> ()
+    fn remove_compiled<P>(&mut self, path: P, f_kind: FKind) -> ()
     where
         P: AsRef<Path>,
     {
-        let remove = |path: &Path| {
-            let compiled_path = if path.to_str().unwrap().ends_with(".gen") {
-                Source::origin_file_to_compiled(path, self.origin_path.as_path())
-            } else {
-                Source::origin_file_without_gen(path, self.origin_path.as_path())
-            };
-            dbg!(compiled_path.as_path());
-            // remove compiled file
-            let _ = fs::remove_file(compiled_path.as_path()).unwrap();
-        };
         info(format!("{:?} is removing ...", path.as_ref()).as_str());
         // if path is dir, recursively remove all files in the dir and then remove the dir (also remove cache)
-        if path.as_ref().is_dir() {
+        dbg!(path.as_ref());
+        
+        if f_kind.is_dir() {
             // get all files in the dir
-            for item in WalkDir::new(path.as_ref()).into_iter().filter_map(|d| d.ok()) {
-                // remove compiled file
-                let _ = remove(item.path());
-            }
+            
+            let compiled_path = Source::origin_dir_to_compiled(self.origin_path.as_path(), path.as_ref());
+            dbg!(compiled_path.as_path());
+            let _ = fs::remove_dir_all(compiled_path.as_path()).expect("remove dir failed");
             // remove from cache
-            let _ =  self.cache.remove_all(path.as_ref());
+            let _ = self.cache.remove_all(path.as_ref());
         } else {
-            remove(path.as_ref());
-            // remove cache
-            let _ = self.cache.remove(path);
+            let compiled_path = if path.as_ref().to_str().unwrap().ends_with(".gen") {
+                Source::origin_file_to_compiled(path.as_ref(), self.origin_path.as_path())
+            } else {
+                Source::origin_file_without_gen(path.as_ref(), self.origin_path.as_path())
+            };
+            
+            if compiled_path.as_path().exists() {
+                // remove compiled file
+                let _ = fs::remove_file(compiled_path.as_path()).unwrap();
+                // remove cache
+                let _ = self.cache.remove(path);
+            }
         }
         let _ = self.cache.write();
     }
@@ -315,7 +316,7 @@ impl Compiler {
         }
 
         // check the src_gen project exists or not
-        let compiled_dir = Source::origin_dir_to_compiled(&self.origin_path);
+        let compiled_dir = Source::project_dir_to_compiled(&self.origin_path);
         if !compiled_dir.exists() {
             // use std::process::Command to create a new rust project
             let status = Command::new("cargo")
