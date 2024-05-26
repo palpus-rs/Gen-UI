@@ -172,11 +172,9 @@ impl Compiler {
     {
         info(format!("{:?} is removing ...", path.as_ref()).as_str());
         // if path is dir, recursively remove all files in the dir and then remove the dir (also remove cache)
-        dbg!(path.as_ref());
         
         if f_kind.is_dir() {
             // get all files in the dir
-            
             let compiled_path = Source::origin_dir_to_compiled(self.origin_path.as_path(), path.as_ref());
             dbg!(compiled_path.as_path());
             let _ = fs::remove_dir_all(compiled_path.as_path()).expect("remove dir failed");

@@ -127,7 +127,7 @@ impl Source {
         where
             P: AsRef<Path>,
         {
-            fs::read_dir(path.as_ref())
+            fs::read_dir(path.as_ref().parent().unwrap())
                 .unwrap()
                 .any(|item| item.unwrap().file_name().to_str().unwrap().eq("mod.gen"))
         }
