@@ -64,6 +64,7 @@ impl ModelTree {
                     return Some(node);
                 }
             }
+            // return children.iter().find_map(|child| child.get(key));
         }
         None
     }
@@ -87,13 +88,12 @@ impl ModelTree {
 
         // get level and compare
         let (item_level, item_path) = item.level();
-        // let (_, current_path) = self.level();
 
         if let Some(children) = &mut self.children {
             // 查找子节点中任意的path的节点，首先使用level匹配，level相同，可以直接push
             // level不同，若当前level比item的level小，继续遍历子节点，大则将当前children放到item的children中，再把item放回父节点进行替换
             // let (current_level, _current_path) = children[0].level();
-            let (current_level, _current_path) = children.iter().next().unwrap().level();
+            let (current_level, _current_path) = children.iter().next().unwrap().level();        
             let step = item_level - current_level;
             if step.eq(&0_usize) {
                 // children.push(item.into())
@@ -134,18 +134,21 @@ impl ModelTree {
                     }
                 }
                 // 查看target_node是否存在，存在说明找到了优先级最大的节点，递归调用这个add方法，不存在则直接push
-                if let Some(target_node) = &mut target_node {
+                let target_node = if let Some(mut target_node) = target_node {
+                    children.remove(&target_node);
                     target_node.add(item);
+                    target_node
                 } else {
                     // children.push(item.into());
-                    children.insert(item.into());
-                }
+                    item.into()
+                };
+                
+                let _ = children.insert(target_node);
             }
         } else {
             // now have no children, just set
             // self.children.replace(vec![item.into()]);
-            self.children
-                .replace(std::iter::once(item.into()).collect());
+            self.children = Some(std::iter::once(item.into()).collect());
         }
     }
     /// get live register from tree

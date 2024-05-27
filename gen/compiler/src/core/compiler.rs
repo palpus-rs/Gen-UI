@@ -140,6 +140,7 @@ impl Compiler {
                             }
                         }
                         // get the compiled result from target and then copy to the compiled project
+                        // this step may faild (2024-05-27)
                         let _ = self
                             .target
                             .get(&source)
