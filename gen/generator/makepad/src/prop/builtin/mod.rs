@@ -7,7 +7,6 @@ mod shader;
 mod base;
 
 pub use bg::*;
-// pub use layout::*;
 use quote::quote;
 pub use base::*;
 pub use shader::*;
