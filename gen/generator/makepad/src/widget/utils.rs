@@ -348,6 +348,37 @@ pub fn active_macro_to_cx_widget_action(code: &mut Stmt) -> TokenStream {
     code.to_token_stream()
 }
 
+#[macro_export]
+macro_rules! from_struct_to_ptr {
+    ($ptr: ty, $field: expr, $field_ty: expr) => {
+        impl From<&ItemStruct> for $ptr {
+            fn from(value: &ItemStruct) -> Self {
+                // 将GenUI的结构体转为Makepad的属性结构体
+                let mut new_item = quote_makepad_widget_struct(value);
+                // 设置#[deref]给当前的属性结构体
+                if let Fields::Named(fields) = &mut new_item.fields {
+                    // add view
+                    fields
+                        .named
+                        .push(struct_field(vec!["deref"], $field, $field_ty));
+                }
+                Self(new_item)
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! ptr_to_token {
+    ($ptr: ty) => {
+        impl ToToken for $ptr {
+            fn to_token_stream(&self) -> TokenStream {
+                self.0.to_token_stream()
+            }
+        }
+    };
+}
+
 #[cfg(test)]
 mod test_utils {
     #[test]

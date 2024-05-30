@@ -18,11 +18,6 @@ use syn::ItemStruct;
 
 use crate::{str_to_string_try_from, ToToken};
 
-// use crate::{
-//     gen::{FieldItem, FieldTable},
-//     utils::{apply_over_and_redraw, struct_field_type},
-// };
-
 pub mod area;
 pub mod button;
 pub mod define;
@@ -31,6 +26,9 @@ pub mod model;
 pub mod utils;
 pub mod view;
 pub mod window;
+pub mod checkbox;
+pub mod color_picker;
+pub mod icon;
 
 // pub use define::*;
 // pub use button::*;
