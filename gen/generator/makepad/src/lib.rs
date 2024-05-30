@@ -13,7 +13,6 @@ use utils::create_file;
 use widget::model::{app_main::AppMain, widget::Widget, ToLiveDesign};
 
 pub mod error;
-// pub mod gen;
 pub mod model;
 pub mod prop;
 pub mod utils;
