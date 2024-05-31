@@ -379,6 +379,18 @@ macro_rules! ptr_to_token {
     };
 }
 
+/// only can use for builtin prop see widget mod
+#[macro_export]
+macro_rules! props_to_token {
+    ($ptr: ty) => {
+        impl ToToken for $ptr {
+            fn to_token_stream(&self) -> proc_macro2::TokenStream {
+                self.to_string().parse::<TokenStream>().unwrap()
+            }
+        }        
+    };
+}
+
 #[cfg(test)]
 mod test_utils {
     #[test]

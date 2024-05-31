@@ -808,19 +808,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tests"
-version = "0.1.0"
-dependencies = [
- "gen_compiler",
- "gen_converter",
- "gen_parser",
- "makepad-gen-plugin",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "tokio"
 version = "1.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

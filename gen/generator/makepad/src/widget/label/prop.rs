@@ -3,7 +3,6 @@ use std::fmt::Display;
 use gen_converter::error::Errors;
 use gen_parser::Value;
 use proc_macro2::TokenStream;
-use quote::quote;
 
 use crate::{
     prop::{

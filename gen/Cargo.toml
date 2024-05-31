@@ -4,7 +4,6 @@ members = [
     "generator/makepad",
     "parser",
     "utils",
-    "tests",
     "macros",
     "traits",
     "compiler",
