@@ -7,7 +7,11 @@ pub use enum_ident::*;
 // -------------------- appearance ----------------
 pub const VISIBLE: &str = "visible";
 pub const HEIGHT: &str = "height";
+pub const MIN_HEIGHT: &str = "min_height";
 pub const WIDTH: &str = "width";
+pub const MIN_WIDTH: &str = "min_width";
+pub const WIDTH_SCALE: &str = "width_scale";
+pub const FIT: &str = "fit";
 pub const MARGIN: &str = "margin";
 pub const PADDING: &str = "padding";
 pub const ALIGN: &str = "align";
@@ -55,3 +59,4 @@ pub const DRAW_ICON: &str = "draw_icon";
 pub const ICON_WALK: &str = "icon_walk";
 pub const LABEL_WALK: &str = "label_walk";
 pub const PATH: &str = "path";
+pub const SOURCE: &str = "source";

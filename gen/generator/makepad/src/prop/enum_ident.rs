@@ -42,3 +42,10 @@ pub const ROW_RESIZE: &str = "RowResize";
 pub const ELLIPSIS: &str = "Ellipsis";
 pub const WORD: &str = "Word";
 pub const LINE: &str = "Line";
+//-------------[for Makepad::ImageFit]----------------------------------
+pub const STRETCH: &str = "Stretch";
+pub const HORIZONTAL: &str = "Horizontal";
+pub const VERTICAL: &str = "Vertical";
+pub const SMALLEST: &str = "Smallest";
+pub const BIGGEST: &str = "Biggest";
+pub const SIZE: &str = "Size";

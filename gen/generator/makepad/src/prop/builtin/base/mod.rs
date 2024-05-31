@@ -13,6 +13,7 @@ mod wrap;
 mod font;
 mod import;
 mod value;
+mod image;
 
 pub use value::*;
 pub use import::*;
@@ -29,3 +30,4 @@ pub use padding::*;
 pub use size::*;
 pub use vec::*;
 pub use walk::*;
+pub use image::*;

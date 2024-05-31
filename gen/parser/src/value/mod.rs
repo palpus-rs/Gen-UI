@@ -61,6 +61,21 @@ impl Value {
             _ => None,
         }
     }
+    pub fn is_int_and_get(&self) -> Option<i64> {
+        match self {
+            Value::U8(n) => Some(*n as i64),
+            Value::U16(n) => Some(*n as i64),
+            Value::U32(n) => Some(*n as i64),
+            Value::U64(n) => Some(*n as i64),
+            Value::USize(n) => Some(*n as i64),
+            Value::I8(n) => Some(*n as i64),
+            Value::I16(n) => Some(*n as i64),
+            Value::I32(n) => Some(*n as i64),
+            Value::I64(n) => Some(*n),
+            Value::ISize(n) => Some(*n as i64),
+            _ => None,
+        }
+    }
     pub fn is_bind_and_get(&self) -> Option<&String> {
         match self {
             Value::Bind(b) => Some(b),

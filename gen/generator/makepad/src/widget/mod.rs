@@ -20,15 +20,23 @@ use crate::{str_to_string_try_from, ToToken};
 
 pub mod area;
 pub mod button;
+pub mod checkbox;
+pub mod color_picker;
 pub mod define;
+pub mod html;
+pub mod icon;
 pub mod label;
+pub mod markdown;
 pub mod model;
+pub mod radio;
+pub mod scroll;
+pub mod splitter;
+pub mod text_input;
 pub mod utils;
 pub mod view;
 pub mod window;
-pub mod checkbox;
-pub mod color_picker;
-pub mod icon;
+pub mod window_menu;
+pub mod image;
 
 // pub use define::*;
 // pub use button::*;

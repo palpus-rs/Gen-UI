@@ -43,6 +43,34 @@ where
     }
 }
 
+pub fn i64_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
+where
+    F: FnMut(i64) -> (),
+{
+    if let Some(s) = value.is_unknown_and_get(){
+        match s.parse::<i64>() {
+            Ok(d) => {
+                f(d);
+                Ok(())
+            },
+            Err(_) => Err(Errors::PropConvertFail(format!(
+                "{} can not convert to i64",
+                s
+            ))),
+        }
+    }else {
+        value.is_int_and_get().map(|int| {
+            f(int);
+            Ok(())
+        }).unwrap_or_else(|| {
+            Err(Errors::PropConvertFail(format!(
+                "{} can not convert to i64",
+                value
+            )))
+        })
+    }
+}
+
 pub fn f64_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
     F: FnMut(f64) -> (),
@@ -54,7 +82,7 @@ where
                 Ok(())
             }
             Err(_) => Err(Errors::PropConvertFail(format!(
-                "{} can not convert to show_bg",
+                "{} can not convert to f64",
                 s
             ))),
         }
@@ -70,7 +98,7 @@ where
             })
             .unwrap_or_else(|| {
                 Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to show_bg",
+                    "{} can not convert to f64",
                     value
                 )))
             })
@@ -88,7 +116,7 @@ where
                 Ok(())
             }
             Err(_) => Err(Errors::PropConvertFail(format!(
-                "{} can not convert to show_bg",
+                "{} can not convert to f32",
                 s
             ))),
         }
@@ -101,7 +129,7 @@ where
             })
             .unwrap_or_else(|| {
                 Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to show_bg",
+                    "{} can not convert to f32",
                     value
                 )))
             })
@@ -124,7 +152,7 @@ where
             })
             .unwrap_or_else(|| {
                 Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to show_bg",
+                    "{} can not convert to str",
                     value
                 )))
             })
