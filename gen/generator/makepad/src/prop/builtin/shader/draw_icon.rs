@@ -35,6 +35,7 @@ impl ToToken for DrawIcon {
 
 impl DrawIcon {
     pub fn brightness(&mut self, value: &Value) -> Result<(), Errors> {
+        dbg!(value);
         f32_prop(value, |b| {
             self.brightness = Some(b);
         })

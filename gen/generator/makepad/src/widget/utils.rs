@@ -47,27 +47,30 @@ pub fn i64_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
     F: FnMut(i64) -> (),
 {
-    if let Some(s) = value.is_unknown_and_get(){
+    if let Some(s) = value.is_unknown_and_get() {
         match s.parse::<i64>() {
             Ok(d) => {
                 f(d);
                 Ok(())
-            },
+            }
             Err(_) => Err(Errors::PropConvertFail(format!(
                 "{} can not convert to i64",
                 s
             ))),
         }
-    }else {
-        value.is_int_and_get().map(|int| {
-            f(int);
-            Ok(())
-        }).unwrap_or_else(|| {
-            Err(Errors::PropConvertFail(format!(
-                "{} can not convert to i64",
-                value
-            )))
-        })
+    } else {
+        value
+            .is_int_and_get()
+            .map(|int| {
+                f(int);
+                Ok(())
+            })
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to i64",
+                    value
+                )))
+            })
     }
 }
 
@@ -120,11 +123,14 @@ where
                 s
             ))),
         }
+    } else if let Some(b) = value.is_float_and_get() {
+        f(b);
+        Ok(())
     } else {
         value
-            .is_float_and_get()
+            .is_double_and_get()
             .map(|b| {
-                f(b);
+                f(b as f32);
                 Ok(())
             })
             .unwrap_or_else(|| {
@@ -415,7 +421,7 @@ macro_rules! props_to_token {
             fn to_token_stream(&self) -> proc_macro2::TokenStream {
                 self.to_string().parse::<TokenStream>().unwrap()
             }
-        }        
+        }
     };
 }
 

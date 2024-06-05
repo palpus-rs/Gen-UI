@@ -25,6 +25,7 @@ pub mod color_picker;
 pub mod define;
 pub mod html;
 pub mod icon;
+pub mod image;
 pub mod label;
 pub mod markdown;
 pub mod model;
@@ -36,7 +37,6 @@ pub mod utils;
 pub mod view;
 pub mod window;
 pub mod window_menu;
-pub mod image;
 
 // pub use define::*;
 // pub use button::*;
@@ -52,6 +52,10 @@ const AREA: &str = "Area";
 /// 表示GenUI的声明的单独的一个组件，不是内置组件
 /// 但它会直接认为是Makepad的Area
 const COMPONENT: &str = "Component";
+const ICON: &str = "Icon";
+const IMAGE: &str = "Image";
+const RADIO: &str = "Radio";
+const CHECKBOX: &str = "Checkbox";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -65,6 +69,10 @@ pub enum BuiltIn {
     Button,
     #[default]
     Area,
+    Icon,
+    Image,
+    Checkbox,
+    Radio,
 }
 
 impl BuiltIn {
@@ -82,6 +90,10 @@ impl BuiltIn {
             BuiltIn::Label => label::LabelProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Button => button::ButtonProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Area => todo!(),
+            BuiltIn::Icon => icon::IconProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Image => image::ImageProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Checkbox => checkbox::CheckboxProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Radio => radio::RadioProps::prop_bind(prop, value, is_prop, ident)
         }
     }
     /// 对内置组件的属性进行处理
@@ -91,6 +103,8 @@ impl BuiltIn {
             BuiltIn::View => view::ViewProps::props(props).to_token_stream(),
             BuiltIn::Label => label::LabelProps::props(props).to_token_stream(),
             BuiltIn::Button => button::ButtonProps::props(props).to_token_stream(),
+            BuiltIn::Icon => icon::IconProps::props(props).to_token_stream(),
+            BuiltIn::Image => image::ImageProps::props(props).to_token_stream(),
             _ => panic!("only built-in widget can be get"),
         }
     }
@@ -101,6 +115,8 @@ impl BuiltIn {
             BuiltIn::Label => label::LabelPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Button => button::ButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Icon => icon::IconPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Image => image::ImagePropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -121,6 +137,8 @@ impl BuiltIn {
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
             BuiltIn::Area => area::draw_walk(draw_walk),
+            BuiltIn::Icon => todo!(),
+            BuiltIn::Image => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -131,6 +149,8 @@ impl BuiltIn {
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
             BuiltIn::Area => area::handle_event(event),
+            BuiltIn::Icon => todo!(),
+            BuiltIn::Image => todo!(),
         }
     }
 }
@@ -147,6 +167,8 @@ impl TryFrom<&str> for BuiltIn {
             BUTTON => Ok(BuiltIn::Button),
             AREA => Ok(BuiltIn::Area),
             COMPONENT => Ok(BuiltIn::Area),
+            ICON => Ok(BuiltIn::Icon),
+            IMAGE => Ok(BuiltIn::Image),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -173,6 +195,8 @@ impl Display for BuiltIn {
             BuiltIn::Label => LABEL,
             BuiltIn::Button => BUTTON,
             BuiltIn::Area => AREA,
+            BuiltIn::Icon => ICON,
+            BuiltIn::Image => IMAGE,
         })
     }
 }

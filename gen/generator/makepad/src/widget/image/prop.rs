@@ -19,7 +19,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Default)]
-pub struct IconProps {
+pub struct ImageProps {
     pub walk: Option<Walk>,
     // pub draw_bg: Option<DrawQuad>,
     pub min_height: Option<i64>,
@@ -30,7 +30,7 @@ pub struct IconProps {
     // todo!(texture: Option<Texture>)
 }
 
-impl DynProps for IconProps {
+impl DynProps for ImageProps {
     fn prop_bind(
         prop: &gen_parser::PropsKey,
         value: &gen_parser::Value,
@@ -55,12 +55,12 @@ impl DynProps for IconProps {
     }
 }
 
-impl StaticProps for IconProps {
+impl StaticProps for ImageProps {
     fn props(props: &std::collections::HashMap<gen_parser::PropsKey, gen_parser::Value>) -> Self
     where
         Self: Sized,
     {
-        let mut icon = IconProps::default();
+        let mut icon = ImageProps::default();
         for (k, v) in props {
             icon.prop(k.name(), v.clone())
         }
@@ -92,7 +92,7 @@ impl StaticProps for IconProps {
 }
 
 #[allow(dead_code)]
-impl IconProps {
+impl ImageProps {
     fn check_walk(&mut self) -> &mut Walk {
         if self.walk.is_none() {
             self.walk = Some(Walk::default());
@@ -137,7 +137,7 @@ impl IconProps {
     }
 }
 
-impl Display for IconProps {
+impl Display for ImageProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // todo!(DrawQuard pixel())
         // if let Some(draw_bg) = &self.draw_bg {
@@ -166,4 +166,4 @@ impl Display for IconProps {
     }
 }
 
-props_to_token!(IconProps);
+props_to_token!(ImageProps);
