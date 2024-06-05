@@ -613,6 +613,7 @@ dependencies = [
  "makepad-shader-compiler",
  "makepad-wasm-bridge",
  "makepad-windows",
+ "smallvec",
  "windows-targets 0.48.5",
 ]
 

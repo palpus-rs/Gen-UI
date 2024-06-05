@@ -26,6 +26,10 @@ let mut btn_click = ||{
     println!("Button bb Clicked");
     active!(Events::Clicked("Hello".to_string()));
 };
+
+fn hello(){
+    println!("{}",hello);
+}
 </script>
 
 <style>

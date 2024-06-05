@@ -1,6 +1,9 @@
 <template>
   <window id="ui">
-    <label text="hello!!!"></label>
+    <view>
+      <label text="hello!!!"></label>
+      <icon id="icon1" svg_file="crate://self/static/all.svg"></icon>
+    </view>
   </window>
 </template>
 
@@ -10,5 +13,8 @@
   height: Fill;
   show_bg: true;
   draw_bg: #1C2128;
+  #icon1{
+    
+  }
 }
 </style>

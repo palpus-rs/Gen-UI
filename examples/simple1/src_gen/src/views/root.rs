@@ -1,0 +1,1 @@
+use makepad_widgets :: * ; live_design ! { import makepad_widgets :: base ::*; import makepad_widgets :: theme_desktop_dark ::*; ui = <Window >{ draw_bg : { color : # ffffff } , show_bg : true , width : Fill , height : Fill , < Label >{ draw_text : { text_style : { font_size : 32 , } , } , text : "Hello" , } } }
