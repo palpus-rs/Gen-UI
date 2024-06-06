@@ -26,7 +26,7 @@ enum NodeType {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct IconProps {
+pub struct RadioButtonProps {
     // todo!(DrawQuad pixel())
     // pub draw_bg: Option<DrawQuad>,
     pub draw_icon: Option<DrawIcon>,
@@ -35,7 +35,7 @@ pub struct IconProps {
     pub layout: Option<Layout>,
 }
 
-impl DynProps for IconProps {
+impl DynProps for RadioButtonProps {
     fn prop_bind(
         prop: &gen_parser::PropsKey,
         value: &gen_parser::Value,
@@ -76,12 +76,12 @@ impl DynProps for IconProps {
     }
 }
 
-impl StaticProps for IconProps {
+impl StaticProps for RadioButtonProps {
     fn props(props: &std::collections::HashMap<gen_parser::PropsKey, gen_parser::Value>) -> Self
     where
         Self: Sized,
     {
-        let mut icon = IconProps::default();
+        let mut icon = RadioButtonProps::default();
         for (k, v) in props {
             icon.prop(k.name(), v.clone())
         }
@@ -129,7 +129,7 @@ impl StaticProps for IconProps {
 }
 
 #[allow(dead_code)]
-impl IconProps {
+impl RadioButtonProps {
     fn check_draw_icon(&mut self) -> &mut DrawIcon {
         if self.draw_icon.is_none() {
             self.draw_icon = Some(DrawIcon::default());
@@ -225,7 +225,7 @@ impl IconProps {
     }
 }
 
-impl Display for IconProps {
+impl Display for RadioButtonProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // todo!(DrawQuard pixel())
         // if let Some(draw_bg) = &self.draw_bg {
@@ -247,17 +247,17 @@ impl Display for IconProps {
     }
 }
 
-props_to_token!(IconProps);
+props_to_token!(RadioButtonProps);
 
 #[cfg(test)]
 mod test_icon {
     use crate::{prop::builtin::draw_icon::DrawIcon, ToToken};
 
-    use super::IconProps;
+    use super::RadioButtonProps;
 
     #[test]
     fn icon() {
-        let mut icon = IconProps::default();
+        let mut icon = RadioButtonProps::default();
         // draw icon
         let mut draw_icon = DrawIcon::default();
         draw_icon.svg_file = Some(

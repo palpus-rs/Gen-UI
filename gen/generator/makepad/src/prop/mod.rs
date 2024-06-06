@@ -15,6 +15,7 @@ pub const FIT: &str = "fit";
 pub const MARGIN: &str = "margin";
 pub const PADDING: &str = "padding";
 pub const ALIGN: &str = "align";
+pub const LABEL_ALIGN: &str = "label_align";
 pub const SPACING: &str = "spacing";
 pub const LINE_SPACING: &str = "line_spacing";
 pub const CLIP_X: &str = "clip_x";
@@ -36,6 +37,12 @@ pub const DRAW_TEXT:&str = "draw_text";
 pub const TEXT_STYLE:&str = "text_style";
 pub const INGORE_NEWLINES :&str = "ignore_newlines";
 pub const COMBINE_SPACES :&str = "combine_spaces";
+// -------------------- checkbox --------------------
+pub const CHECK_TYPE: &str = "check_type";
+pub const HOVER: &str = "hover";
+pub const FOCUS: &str = "focus";
+pub const SELECTED: &str = "selected";
+pub const DRAW_CHECKBOX: &str = "draw_check";
 // -------------------- action -------------------
 /// maybe layout wrap or textwrap
 pub const WRAP:&str = "wrap";
@@ -60,3 +67,4 @@ pub const ICON_WALK: &str = "icon_walk";
 pub const LABEL_WALK: &str = "label_walk";
 pub const PATH: &str = "path";
 pub const SOURCE: &str = "source";
+pub const BIND: &str = "bind";

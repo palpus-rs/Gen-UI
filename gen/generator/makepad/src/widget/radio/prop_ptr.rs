@@ -4,8 +4,8 @@ use syn::{Fields, ItemStruct};
 
 use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils::quote_makepad_widget_struct, ToToken};
 
-pub struct RadioPropPtr(pub ItemStruct);
+pub struct RadioButtonPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{RadioPropPtr, "radio", "Radio"}
+from_struct_to_ptr!{RadioButtonPropPtr, "radio_button", "RadioButton"}
 
-ptr_to_token!(RadioPropPtr);
+ptr_to_token!(RadioButtonPropPtr);

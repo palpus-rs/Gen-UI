@@ -14,7 +14,10 @@ mod font;
 mod import;
 mod value;
 mod image;
+mod check_type;
 
+
+pub use check_type::*;
 pub use value::*;
 pub use import::*;
 pub use font::*;

@@ -6,3 +6,4 @@ pub mod draw_quad;
 pub mod draw_text;
 pub mod draw_trapezoid;
 pub mod std;
+pub mod draw_check_box;

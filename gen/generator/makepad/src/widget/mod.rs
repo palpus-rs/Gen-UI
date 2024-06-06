@@ -54,7 +54,7 @@ const AREA: &str = "Area";
 const COMPONENT: &str = "Component";
 const ICON: &str = "Icon";
 const IMAGE: &str = "Image";
-const RADIO: &str = "Radio";
+const RADIO: &str = "RadioButton";
 const CHECKBOX: &str = "Checkbox";
 
 pub fn prop_ignore(prop: &str) -> bool {
@@ -92,8 +92,8 @@ impl BuiltIn {
             BuiltIn::Area => todo!(),
             BuiltIn::Icon => icon::IconProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Image => image::ImageProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Checkbox => checkbox::CheckboxProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Radio => radio::RadioProps::prop_bind(prop, value, is_prop, ident)
+            BuiltIn::Checkbox => checkbox::CheckBoxProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Radio => radio::RadioButtonProps::prop_bind(prop, value, is_prop, ident)
         }
     }
     /// 对内置组件的属性进行处理
@@ -117,6 +117,9 @@ impl BuiltIn {
             BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Icon => icon::IconPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Image => image::ImagePropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Checkbox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Radio => radio::RadioButtonPropPtr::from(ptr).to_token_stream(),
+            
         }
     }
     pub fn has_event(&self) -> bool {
@@ -139,6 +142,9 @@ impl BuiltIn {
             BuiltIn::Area => area::draw_walk(draw_walk),
             BuiltIn::Icon => todo!(),
             BuiltIn::Image => todo!(),
+            BuiltIn::Checkbox => todo!(),
+            BuiltIn::Radio => todo!(),
+            
         }
     }
     /// 处理widget的事件处理函数
@@ -151,6 +157,9 @@ impl BuiltIn {
             BuiltIn::Area => area::handle_event(event),
             BuiltIn::Icon => todo!(),
             BuiltIn::Image => todo!(),
+            BuiltIn::Checkbox => todo!(),
+            BuiltIn::Radio => todo!(),
+            
         }
     }
 }
@@ -169,6 +178,8 @@ impl TryFrom<&str> for BuiltIn {
             COMPONENT => Ok(BuiltIn::Area),
             ICON => Ok(BuiltIn::Icon),
             IMAGE => Ok(BuiltIn::Image),
+            CHECKBOX => Ok(BuiltIn::Checkbox),
+            RADIO => Ok(BuiltIn::Radio),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -197,6 +208,9 @@ impl Display for BuiltIn {
             BuiltIn::Area => AREA,
             BuiltIn::Icon => ICON,
             BuiltIn::Image => IMAGE,
+            BuiltIn::Checkbox => CHECKBOX,
+            BuiltIn::Radio => RADIO,
+            
         })
     }
 }

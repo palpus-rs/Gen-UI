@@ -46,7 +46,7 @@ impl TryFrom<&str> for Margin {
             Ok(spaces) => match spaces.len() {
                 1 => Ok(Margin::single(spaces[0])),
                 2 => Ok(Margin::multi_2(spaces[0], spaces[1])),
-                4 => Ok(Margin::multi_4(spaces[0], spaces[1], spaces[2], spaces[3])),
+                4 => Ok(Margin::multi_4(spaces[3], spaces[0], spaces[1], spaces[2])),
                 _ => Err(Errors::PropConvertFail(format!(
                     "{} can not convert to margin",
                     value
