@@ -1,10 +1,13 @@
+use std::collections::HashSet;
+
 use gen_converter::model::{
     script::{GenScriptModel, LifeTime, PropFn, ScriptModel, UseMod},
     Source,
 };
-use gen_utils::common::{token_tree_ident, token_tree_punct_joint};
+use gen_utils::common::token_tree_ident;
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::parse_str;
 
 use crate::{
     widget::model::{widget::Widget, ToLiveDesign},
@@ -30,7 +33,9 @@ pub struct AppMain {
     pub app_main: AppMainTrait,
     /// 有哪些组件需要被注册
     /// live design import widget
-    pub live_register: Option<Vec<String>>,
+    // pub live_register: Option<Vec<String>>,
+    pub live_registers: Option<HashSet<String>>,
+    pub imports: Option<TokenStream>,
     pub source: Source,
     /// rust use code
     pub uses: Option<TokenStream>,
@@ -46,36 +51,46 @@ impl AppMain {
             props: None,
             match_event: Default::default(),
             app_main: Default::default(),
-            live_register: None,
+            live_registers: None,
             source: source.clone(),
             uses: None,
+            imports: None,
         }
     }
-    pub fn set_live_register(&mut self, children: Vec<String>) -> &mut Self {
-        let children = children
-            .into_iter()
-            .filter(|item| !item.ends_with("mod"))
-            .collect();
-        self.live_register.replace(children);
+    pub fn set_imports(&mut self, imports: TokenStream) -> &mut Self {
+        self.imports.replace(imports);
         self
     }
-    pub fn push_live_register(&mut self, child: String) -> &mut Self {
-        if !child.ends_with("mod") {
-            match self.live_register.as_mut() {
-                Some(live_register) => {
-                    let _ = live_register.push(child);
-                }
-                None => {
-                    self.live_register.replace(vec![child]);
-                }
-            }
+    pub fn set_live_registers(&mut self, live_registers: HashSet<String>) -> &mut Self {
+        // let children = children
+        //     .into_iter()
+        //     .filter(|item| !item.ends_with("mod"))
+        //     .collect();
+        // self.live_register.replace(children);
+        // self
+        if !live_registers.is_empty(){
+            self.live_registers.replace(live_registers);
         }
         self
     }
+    // pub fn push_live_register(&mut self, child: String) -> &mut Self {
+    //     if !child.ends_with("mod") {
+    //         match self.live_register.as_mut() {
+    //             Some(live_register) => {
+    //                 let _ = live_register.push(child);
+    //             }
+    //             None => {
+    //                 self.live_register.replace(vec![child]);
+    //             }
+    //         }
+    //     }
+    //     self
+    // }
     pub fn set_script(&mut self, script: Option<ScriptModel>) -> &mut Self {
         if let Some(sc) = script {
             if let ScriptModel::Gen(sc) = sc {
                 let GenScriptModel {
+                    imports,
                     uses,
                     prop_ptr,
                     event_ptr,
@@ -139,34 +154,45 @@ impl AppMain {
         self
     }
     fn build_live_register(&self) -> TokenStream {
-        let items = if let Some(imports) = self.live_register.as_ref() {
-            // `crate::a::b::live_design(cx);`
-            let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
-                let mut item = item.split("::").into_iter().fold(
-                    TokenStream::new(),
-                    |mut item_acc, item_value| {
-                        item_acc.extend(vec![
-                            token_tree_ident(item_value),
-                            token_tree_punct_joint(':'),
-                            token_tree_punct_joint(':'),
-                        ]);
-                        item_acc
-                    },
-                );
-                item.extend(quote! {live_design(cx)});
-                acc.extend(quote! {crate::#item;});
-                acc
-            });
+        // let items = if let Some(imports) = self.live_registers.as_ref() {
+        //     // `crate::a::b::live_design(cx);`
+        //     let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
+        //         let mut item = item.split("::").into_iter().fold(
+        //             TokenStream::new(),
+        //             |mut item_acc, item_value| {
+        //                 item_acc.extend(vec![
+        //                     token_tree_ident(item_value),
+        //                     token_tree_punct_joint(':'),
+        //                     token_tree_punct_joint(':'),
+        //                 ]);
+        //                 item_acc
+        //             },
+        //         );
+        //         item.extend(quote! {live_design(cx)});
+        //         acc.extend(quote! {crate::#item;});
+        //         acc
+        //     });
 
+        //     Some(tk)
+        // } else {
+        //     None
+        // };
+        let live_registers = if let Some(live_registers) = self.live_registers.as_ref() {
+            // HashSet -> TokenStream
+            let tk = live_registers
+                .iter()
+                .fold(TokenStream::new(), |mut acc, item| {
+                    acc.extend(parse_str::<TokenStream>(item));
+                    acc
+                });
             Some(tk)
         } else {
             None
         };
-
         quote! {
             fn live_register (cx : & mut Cx) {
                 crate::makepad_widgets::live_design(cx);
-                #items
+                #live_registers
             }
         }
     }
@@ -177,29 +203,29 @@ impl ToLiveDesign for AppMain {
         let app = token_tree_ident(&self.name);
         let root = token_tree_ident(&self.root_ref);
         let root_widget = token_tree_ident(&self.root_ref_ptr);
-        let imports = if let Some(imports) = self.live_register.as_ref() {
-            let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
-                let mut item = item.split("::").into_iter().fold(
-                    TokenStream::new(),
-                    |mut item_acc, item_value| {
-                        item_acc.extend(vec![
-                            token_tree_ident(item_value),
-                            token_tree_punct_joint(':'),
-                            token_tree_punct_joint(':'),
-                        ]);
-                        item_acc
-                    },
-                );
-                item.extend(quote!(*));
-                acc.extend(quote! {import crate::#item;});
-                acc
-            });
-            Some(tk)
-        } else {
-            None
-        };
+        // let imports = if let Some(imports) = self.live_register.as_ref() {
+        //     let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
+        //         let mut item = item.split("::").into_iter().fold(
+        //             TokenStream::new(),
+        //             |mut item_acc, item_value| {
+        //                 item_acc.extend(vec![
+        //                     token_tree_ident(item_value),
+        //                     token_tree_punct_joint(':'),
+        //                     token_tree_punct_joint(':'),
+        //                 ]);
+        //                 item_acc
+        //             },
+        //         );
+        //         item.extend(quote!(*));
+        //         acc.extend(quote! {import crate::#item;});
+        //         acc
+        //     });
+        //     Some(tk)
+        // } else {
+        //     None
+        // };
         let tk = quote! {
-            #imports
+
             #app = {{#app}}{
                 #root: <#root_widget>{}
             }
@@ -252,6 +278,24 @@ impl ToLiveDesign for AppMain {
 
     fn to_live_design(&self) -> LiveDesign {
         self.into()
+    }
+
+    fn widget_imports(&self) -> Option<TokenStream> {
+        self.imports.clone()
+        // if let Some(imports) = self.imports.as_ref() {
+
+        //     let imports = imports.to_string();
+        //     let imports = imports.split(";").filter(|s| !s.is_empty()).collect::<Vec<_>>();
+
+        //     let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
+        //         let item: TokenStream = parse_str(item).unwrap();
+        //         acc.extend(quote! {import #item;});
+        //         acc
+        //     });
+        //     Some(tk)
+        // }else{
+        //     None
+        // }
     }
 }
 

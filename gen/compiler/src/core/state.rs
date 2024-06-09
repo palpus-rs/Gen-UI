@@ -1,6 +1,6 @@
 /// ## File state enum
 /// which should be used to represent the state of a file
-/// 
+///
 /// from notify::EventKind, this enum may change in the future if needed
 /// > todo!("change to `struct FileState(EventKind)`")
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -23,5 +23,11 @@ impl FileState {
             FileState::Modified | FileState::Created => f(),
             _ => (),
         }
+    }
+    pub fn then<F>(&self, f: F) -> ()
+    where
+        F: FnOnce(&Self) -> (),
+    {
+        f(&self);
     }
 }

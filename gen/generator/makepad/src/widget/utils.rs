@@ -381,6 +381,31 @@ pub fn active_macro_to_cx_widget_action(code: &mut Stmt) -> TokenStream {
     MacroModifier.visit_stmt_mut(code);
     code.to_token_stream()
 }
+/// 将import!宏中的TokenStream转化为live_register
+/// - 例如: `crate::views::header::header::*;`
+/// - 转化为: `crate::views::header::header::live_design(cx);`
+/// - 例如: `crate::views::header::header::HeaderExample;`
+/// - 转化为: `crate::views::header::header::live_design(cx);`
+/// convert widget imports to app main live registers
+pub fn imports_to_live_registers(imports: Option<TokenStream>) -> Option<Vec<String>> {
+        // 找到最后一个::的位置将后面的字符替换为`live_design(cx);`
+    if let Some(imports) = imports.as_ref() {
+        // 由于TokenStream中内容无法直接分割为Vec<_>,所以这里需要先通过`;`进行分割，变成多个Vec<String>
+        let imports = imports.to_string();
+        let imports = imports.split(";").filter(|x| !x.is_empty()).collect::<Vec<_>>();
+        // 通过`;`分割后的Vec<String>，再将每个通过`::`进行分割，变成多个Vec<String>,最后将每个Vec<String>的最后一个元素替换为`live_design(cx);`
+        let tk = imports.iter().fold(Vec::new(), |mut acc, item|{
+            let mut item = item.split("::").collect::<Vec<&str>>();
+            item.last_mut().map(|last| *last = "live_design(cx);");
+            let item =  item.join("::");
+            acc.push(item);
+            acc
+        });
+        Some(tk)
+    } else {
+        None
+    }
+}
 
 #[macro_export]
 macro_rules! from_struct_to_ptr {

@@ -43,18 +43,22 @@ impl RsFile {
     }
     pub fn content(&self) -> TokenStream {
         let origin_content = self.content.clone();
-        // check source name is mod? true => to block and return stmts in block
-        if self.source.source_name_lower().eq("mod") {
-            let content = parse2::<syn::Block>(origin_content).unwrap();
-            content
-                .stmts
-                .into_iter()
-                .fold(TokenStream::new(), |mut acc, item| {
-                    acc.extend(item.to_token_stream());
-                    acc
-                })
+        if origin_content.is_empty() {
+            return origin_content;
         } else {
-            origin_content
+            // check source name is mod? true => to block and return stmts in block
+            if self.source.source_name_lower().eq("mod") {
+                let content = parse2::<syn::Block>(origin_content).unwrap();
+                content
+                    .stmts
+                    .into_iter()
+                    .fold(TokenStream::new(), |mut acc, item| {
+                        acc.extend(item.to_token_stream());
+                        acc
+                    })
+            } else {
+                origin_content
+            }
         }
     }
 }

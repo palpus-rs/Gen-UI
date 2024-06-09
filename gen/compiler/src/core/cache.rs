@@ -161,6 +161,7 @@ impl Cache {
         match &mut self.values {
             Some(values) => {
                 if let Some(value) = values.get(key.as_ref()) {
+                    // exist cache
                     if value.eq(&hash) {
                         return Ok(FileState::Unchanged);
                     } else {
@@ -218,5 +219,17 @@ impl Cache {
             Some(values) => values.get(key.as_ref()),
             None => None,
         }
+    }
+    pub fn get_gen(&self) -> Option<Vec<&PathBuf>> {
+        return if let Some(files) = &self.values {
+            Some(
+                files
+                    .keys()
+                    .filter(|item| item.extension().unwrap().eq("gen"))
+                    .collect(),
+            )
+        } else {
+            None
+        };
     }
 }

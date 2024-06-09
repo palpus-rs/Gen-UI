@@ -45,20 +45,21 @@ impl Compiler {
         let origin_path = self.origin_path.clone();
         let excludes = self.exclude.clone();
         rt.block_on(async {
-            if let Err(e) = init_watcher(origin_path.as_path(), &excludes, |path, e_kind, f_kind| {
-                match e_kind {
-                    notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
-                        // create or modify
-                        self.compile_one(path);
+            if let Err(e) =
+                init_watcher(origin_path.as_path(), &excludes, |path, e_kind, f_kind| {
+                    match e_kind {
+                        notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
+                            // create or modify
+                            self.compile_one(path);
+                        }
+                        notify::EventKind::Remove(_) => {
+                            // remove from cache and compiled project, after test we know, only remove need f_kind to know the file is dir or file
+                            self.remove_compiled(path, f_kind);
+                        }
+                        _ => (),
                     }
-                    notify::EventKind::Remove(_) => {
-                        // remove from cache and compiled project, after test we know, only remove need f_kind to know the file is dir or file
-                        self.remove_compiled(path, f_kind);
-                    }
-                    _ => (),
-                }
-            })
-            .await
+                })
+                .await
             {
                 // log error and stop the service
                 error(e.to_string().as_str());
@@ -77,7 +78,10 @@ impl Compiler {
         P: AsRef<Path>,
     {
         self.exclude.push(absolute_or_path(path.as_ref()));
-        self.root.replace(path.as_ref().to_path_buf());
+        let root_path = path.as_ref().to_path_buf();
+        // add root into cache
+        let _ = self.cache.exists_or_insert(root_path.as_path());
+        self.root.replace(root_path);
         self
     }
     pub fn init_compile_target(&mut self) -> () {
@@ -104,7 +108,7 @@ impl Compiler {
         // after src_gen project created, get compile target and then use plugin logic to rewrite
         Compiler::loop_compile(self, &mut visited);
         // after all files compiled
-        let _ = self.target.compile();
+        let _ = self.target.compile(self.cache.get_gen().as_ref());
         // write cache
         let _ = self.cache.write();
     }
@@ -173,10 +177,11 @@ impl Compiler {
     {
         info(format!("{:?} is removing ...", path.as_ref()).as_str());
         // if path is dir, recursively remove all files in the dir and then remove the dir (also remove cache)
-        
+
         if f_kind.is_dir() {
             // get all files in the dir
-            let compiled_path = Source::origin_dir_to_compiled(self.origin_path.as_path(), path.as_ref());
+            let compiled_path =
+                Source::origin_dir_to_compiled(self.origin_path.as_path(), path.as_ref());
             dbg!(compiled_path.as_path());
             let _ = fs::remove_dir_all(compiled_path.as_path()).expect("remove dir failed");
             // remove from cache
@@ -187,7 +192,7 @@ impl Compiler {
             } else {
                 Source::origin_file_without_gen(path.as_ref(), self.origin_path.as_path())
             };
-            
+
             if compiled_path.as_path().exists() {
                 // remove compiled file
                 let _ = fs::remove_file(compiled_path.as_path()).unwrap();

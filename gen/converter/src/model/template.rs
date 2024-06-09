@@ -334,28 +334,33 @@ impl TemplateModel {
             let mut bind_tree = Vec::new();
             let mut fn_tree = Vec::new();
             if node.get_name().ne("component") {
-                let id = node.get_id().expect("bind prop need id").to_string();
-                let name = node.get_name().to_string();
-                match node.get_props().clone() {
-                    Some(props) => {
-                        bind_tree.push((
-                            (name.clone(), id.clone()),
-                            Some(
-                                props
-                                    .clone()
-                                    .into_iter()
-                                    .filter(|(k, _)| k.is_bind())
-                                    .collect(),
-                            ),
-                        ));
+                // let id = node.get_id().expect(format!("bind prop need id: {}", node.get_name()).as_str()).to_string();
+                if let Some(id) = node.get_id() {
+                    let name = node.get_name().to_string();
+                    match node.get_props().clone() {
+                        Some(props) => {
+                            bind_tree.push((
+                                (name.clone(), id.to_string()),
+                                Some(
+                                    props
+                                        .clone()
+                                        .into_iter()
+                                        .filter(|(k, _)| k.is_bind())
+                                        .collect(),
+                                ),
+                            ));
+                        }
+                        None => (),
                     }
-                    None => (),
-                }
-                match node.get_callbacks().clone() {
-                    Some(callbacks) => {
-                        fn_tree.push(((name, id), Some(callbacks.clone().into_iter().collect())));
+                    match node.get_callbacks().clone() {
+                        Some(callbacks) => {
+                            fn_tree.push((
+                                (name, id.to_string()),
+                                Some(callbacks.clone().into_iter().collect()),
+                            ));
+                        }
+                        None => (),
                     }
-                    None => (),
                 }
             }
 

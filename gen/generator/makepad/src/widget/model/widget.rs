@@ -9,8 +9,8 @@ use gen_parser::{PropsKey, Value};
 
 use gen_utils::common::{snake_to_camel, token_tree_ident};
 use proc_macro2::TokenStream;
-use quote::TokenStreamExt;
-use syn::{ItemEnum, ItemStruct};
+use quote::{quote, TokenStreamExt};
+use syn::{parse_str, ItemEnum, ItemStruct, StmtMacro};
 
 use crate::{
     utils::{component_render, special_struct},
@@ -35,6 +35,7 @@ pub struct Widget {
     pub id: Option<String>,
     pub name: String,
     pub source: Option<Source>,
+    pub imports: Option<TokenStream>,
     pub uses: Option<TokenStream>,
     // pub compiled_source: Option<PathBuf>,
     /// props in live_design
@@ -172,10 +173,12 @@ impl Widget {
                     sub_prop_binds,
                     sub_event_binds,
                     other,
+                    imports,
                     ..
                 } = sc;
 
                 self.set_uses(uses)
+                    .set_imports(imports)
                     .set_prop_ptr(prop_ptr)
                     .set_event_ptr(event_ptr)
                     .draw_walk(sub_prop_binds)
@@ -208,6 +211,13 @@ impl Widget {
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {
         if let Some(uses) = uses {
             self.uses = WidgetHandler::uses(uses);
+        }
+        self
+    }
+    pub fn set_imports(&mut self, imports: &Option<StmtMacro>) -> &mut Self {
+        if let Some(imports) = imports {
+            // get mac tokens
+            self.imports.replace(imports.mac.tokens.clone());
         }
         self
     }
@@ -358,7 +368,22 @@ impl ToLiveDesign for Widget {
             None
         }
     }
-
+    fn widget_imports(&self) -> Option<TokenStream> {
+        if let Some(imports) = self.imports.as_ref() {
+           
+            let imports = imports.to_string();
+            let imports = imports.split(";").filter(|s| !s.is_empty()).collect::<Vec<_>>();
+            
+            let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
+                let item: TokenStream = parse_str(item).unwrap();
+                acc.extend(quote! {import #item;});
+                acc
+            });
+            Some(tk)
+        }else{
+            None
+        }
+    }
     fn to_live_design(&self) -> super::live_design::LiveDesign {
         self.into()
     }

@@ -274,7 +274,7 @@ impl Model {
     }
 }
 
-fn file_data<P>(path: P) -> Result<String, Box<dyn Error>>
+pub fn file_data<P>(path: P) -> Result<String, Box<dyn Error>>
 where
     P: AsRef<Path>,
 {

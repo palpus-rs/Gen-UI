@@ -105,6 +105,8 @@ impl BuiltIn {
             BuiltIn::Button => button::ButtonProps::props(props).to_token_stream(),
             BuiltIn::Icon => icon::IconProps::props(props).to_token_stream(),
             BuiltIn::Image => image::ImageProps::props(props).to_token_stream(),
+            BuiltIn::Checkbox => checkbox::CheckBoxProps::props(props).to_token_stream(),
+            BuiltIn::Radio => radio::RadioButtonProps::props(props).to_token_stream(),
             _ => panic!("only built-in widget can be get"),
         }
     }

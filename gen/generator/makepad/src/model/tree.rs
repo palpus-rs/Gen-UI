@@ -4,6 +4,7 @@ use gen_converter::model::Source;
 use gen_utils::common::token_tree_ident;
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::parse_str;
 
 use crate::{utils::create_file, widget::model::widget::Widget};
 
@@ -163,6 +164,13 @@ impl ModelTree {
             }
         }
         live_register
+    }
+    /// get root import
+    pub fn to_imports(&self) -> TokenStream{
+        let mut imports = TokenStream::new();
+        let import_str: TokenStream = parse_str(&self.node.source().unwrap().to_live_register()).unwrap();
+        imports.extend(quote! {import crate::#import_str::*;});
+        imports
     }
     /// ## get widget tree level
     /// tree level can get from node source path

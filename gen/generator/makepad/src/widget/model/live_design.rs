@@ -67,9 +67,13 @@ where
 
         let tree = value.widget_tree();
         let logic = value.widget_logic();
+        let imports = value.widget_imports();
 
         live_design.tree = tree;
         live_design.logic = logic;
+        if let Some(imports) = imports{
+            live_design.imports.extend(imports);
+        }
 
         live_design
     }

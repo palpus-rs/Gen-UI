@@ -1,9 +1,6 @@
-use std::default;
+use gen_parser::Value;
 
-use gen_parser::{Script, Value};
-
-use quote::{quote, ToTokens};
-use syn::{Block, Meta, Pat};
+use syn::{Block, Meta, Pat, StmtMacro};
 
 use crate::model::PropTree;
 
@@ -37,6 +34,15 @@ impl From<GenScriptModel> for ScriptModel {
 pub struct GenScriptModel {
     /// 使用的包,依赖
     pub uses: Option<UseMod>,
+    /// 组件的导入
+    /// 例如：
+    /// ```rust
+    /// // 表示导入my_button mod下所有的组件
+    /// import!{
+    ///     crate::views::my_button::*;
+    /// }
+    /// ```
+    pub imports: Option<StmtMacro>,
     /// 组件的属性
     /// 这表示组件允许外部传入给内部的属性，需要使用GenUI的Prop宏进行标注
     /// 例如：
@@ -105,6 +111,9 @@ impl GenScriptModel {
     }
     pub fn set_uses(&mut self, uses: UseMod) {
         self.uses = Some(uses);
+    }
+    pub fn set_imports(&mut self, imports: Option<StmtMacro>) {
+        self.imports = imports;
     }
     pub fn set_prop_ptr(&mut self, prop: syn::ItemStruct) {
         if self.prop_ptr.is_none() {
@@ -188,6 +197,7 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
 
     let mut model = GenScriptModel::default();
     let mut lifetimes: Option<LifeTime> = None;
+    let mut imports: Option<StmtMacro> = None;
 
     for stmt in &stmts {
         match stmt {
@@ -252,13 +262,19 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
                     lifetimes.as_mut().unwrap().set_startup(item.clone());
                 } else if item.mac.path.is_ident("on_shutdown") {
                     lifetimes.as_mut().unwrap().set_shutdown(item.clone());
+                } else if item.mac.path.is_ident("import") {
+                    // 处理组件导入
+                    if imports.is_none() {
+                        imports.replace(item.clone());
+                    } else {
+                        panic!("Only one import! macro can be used");
+                    }
                 } else {
                     model.push_other(stmt.clone());
                 }
             }
             syn::Stmt::Local(local) => {
                 // 处理属性绑定 和 事件绑定
-
                 let ident = match &local.pat {
                     Pat::Ident(ident) => Some(ident.ident.to_string()),
                     Pat::Type(ty) => {
@@ -288,6 +304,8 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
         }
     }
     model.set_lifetimes(lifetimes);
+    model.set_imports(imports);
+    // dbg!(&model);
     model
 }
 

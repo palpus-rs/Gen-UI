@@ -1,11 +1,18 @@
 <template>
   <window id="ui">
     <view>
-      <label text="hello!!!"></label>
-      <icon id="icon1" svg_file="crate://self/static/all.svg"></icon>
+      <checkbox_view /> 
+      <header_view /> 
     </view>
   </window>
 </template>
+
+<script>
+import!{
+  crate::views::checkbox::*;
+  crate::views::header::header::*;
+}
+</script>
 
 <style>
 #ui{
@@ -13,8 +20,6 @@
   height: Fill;
   show_bg: true;
   draw_bg: #1C2128;
-  #icon1{
-    
-  }
+  flow: Down;
 }
 </style>

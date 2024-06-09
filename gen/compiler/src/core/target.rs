@@ -38,13 +38,13 @@ impl CompilerTarget {
             }
         }
     }
-    pub fn compile(&self) -> () {
+    pub fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>> ) -> () {
         match self {
             CompilerTarget::Slint => todo!("Slint Compiler is not supported yet"),
             CompilerTarget::Dioxus => todo!("Dioxus Compiler is not supported yet"),
             CompilerTarget::Makepad(makepad) => {
                 if let Some(makepad) = makepad {
-                    makepad.compile();
+                    makepad.compile(gen_files);
                 }
             }
         }

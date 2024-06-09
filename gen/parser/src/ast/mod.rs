@@ -9,6 +9,7 @@ mod tag;
 use comment::offline::OfflineComment;
 pub use nodes::ASTNodes;
 
+use proc_macro2::TokenStream;
 pub use property::*;
 pub use result::ParseResult;
 pub use script::Script;
@@ -20,6 +21,7 @@ pub use tag::{CloseType, Tag};
 use crate::{
     ast::comment::position::OfflinePosition,
     common::{parse_all, trim},
+    target::parse_imports_to_token,
 };
 
 use self::nodes::asts_to_string;
@@ -266,6 +268,13 @@ impl ParseTarget {
             _ => {}
         }
     }
+    /// if has script then get imports! macro
+    pub fn has_script_then_imports(&self) -> Option<TokenStream> {
+        if self.has_script().0 {
+            return parse_imports_to_token(self.script().unwrap());
+        }
+        None
+    }
     /// Get ParseTarget Convert to AST Strategy
     /// This strategy affects how many threads are used for conversion
     ///
@@ -354,7 +363,7 @@ impl TryFrom<&str> for ParseTarget {
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         return if value.trim().is_empty() {
             // Err(crate::error::Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
-            Ok(ParseTarget{
+            Ok(ParseTarget {
                 core: Default::default(),
                 comment: None,
             })
@@ -463,21 +472,6 @@ fn is_multi_nodes(t: u32, sc: u32, s: u32) -> bool {
     (t <= 1) && (sc <= 1) && (s <= 1)
 }
 
-/// parse whole rsx file
-/// 1. use nom to get the part of the rsx file (parse to ParseTarget)
-///     1. no <template> tag and no <style> tag  -->  parse as rust script (1 thread)
-///     2. no <template> tag and no rust script has <style> tag  -->  parse as style (1 thread)
-///     3. no <style> tag and no rust script has <template> tag  -->  parse as template (1 thread)
-///     4. has <template> tag and rust script no <style> tag --> parse as template_script (2 thread)
-///     5. has 3 tag --> parse as whole rsx (3 thread)
-// impl TryFrom<&str> for ParseTarget {
-//     type Error = crate::error::Error;
-
-//     fn try_from(value: &str) -> Result<Self, Self::Error> {
-
-//     }
-// }
-
 #[cfg(test)]
 mod ast_test {
     // use std::{fs::File, io::Write};
@@ -561,7 +555,7 @@ mod ast_test {
        
         "#;
         let target = ParseTarget::try_from(input);
-        dbg!(target);
+        assert_eq!(target.unwrap().to_string().as_str(), "\n");
     }
 
     #[test]
@@ -570,7 +564,7 @@ mod ast_test {
         let a:&str = "trest";
         "#;
         let target = ParseTarget::try_from(input);
-        dbg!(target);
+        assert!(target.is_err());
     }
 
     #[test]

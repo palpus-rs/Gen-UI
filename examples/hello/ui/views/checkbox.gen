@@ -1,0 +1,19 @@
+<template>
+  <view id="checkbox_view">
+    <checkbox id="checkbox1"></checkbox>
+  </view>
+</template>
+
+<style>
+#checkbox_view{
+  width: 300;
+  height: 300;
+  flow: Down;
+  #checkbox1{
+    text: "CheckBox1";
+    check_type: Radio;
+    margin: 10;
+    label_margin: 0 0 0 10;
+  }
+}
+</style>
