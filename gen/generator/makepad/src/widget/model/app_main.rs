@@ -68,7 +68,7 @@ impl AppMain {
         //     .collect();
         // self.live_register.replace(children);
         // self
-        if !live_registers.is_empty(){
+        if !live_registers.is_empty() {
             self.live_registers.replace(live_registers);
         }
         self
@@ -90,14 +90,15 @@ impl AppMain {
         if let Some(sc) = script {
             if let ScriptModel::Gen(sc) = sc {
                 let GenScriptModel {
-                    imports,
                     uses,
-                    prop_ptr,
-                    event_ptr,
                     sub_prop_binds,
                     sub_event_binds,
-                    other,
                     lifetimes,
+                    // imports,
+                    // prop_ptr,
+                    // event_ptr,
+                    // other,
+                    ..
                 } = sc;
 
                 self.set_uses(uses)
@@ -282,20 +283,6 @@ impl ToLiveDesign for AppMain {
 
     fn widget_imports(&self) -> Option<TokenStream> {
         self.imports.clone()
-        // if let Some(imports) = self.imports.as_ref() {
-
-        //     let imports = imports.to_string();
-        //     let imports = imports.split(";").filter(|s| !s.is_empty()).collect::<Vec<_>>();
-
-        //     let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
-        //         let item: TokenStream = parse_str(item).unwrap();
-        //         acc.extend(quote! {import #item;});
-        //         acc
-        //     });
-        //     Some(tk)
-        // }else{
-        //     None
-        // }
     }
 }
 

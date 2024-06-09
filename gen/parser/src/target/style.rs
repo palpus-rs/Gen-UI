@@ -178,7 +178,6 @@ pub fn parse_style(input: &str) -> Result<Vec<ASTNodes>, crate::error::Error> {
 
 #[cfg(test)]
 mod test_style {
-    use std::{fs::File, io::Write};
 
     use crate::ast::{ASTNodes, Style};
 

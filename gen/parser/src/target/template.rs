@@ -220,7 +220,7 @@ pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, crate::error::Error>
 #[cfg(test)]
 mod template_parsers {
 
-    use std::{fs::File, io::Write, time::Instant};
+    use std::time::Instant;
 
     use crate::{ast::PropertyKeyType, target::template::parse_tag_name, Value};
 
@@ -273,7 +273,7 @@ mod template_parsers {
             <text-input value="Click to count" class="input1" />
         "#;
         let t = Instant::now();
-        let res = parse_template(template).unwrap();
+        let _ = parse_template(template).unwrap();
         // about 470µs
         dbg!(t.elapsed());
         // let res = res

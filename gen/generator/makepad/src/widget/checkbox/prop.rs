@@ -430,7 +430,7 @@ props_to_token!(CheckBoxProps);
 mod test_checkbox {
     use gen_parser::Value;
 
-    use crate::{prop::builtin::{draw_check_box::DrawCheckBox, draw_icon::DrawIcon, draw_text::DrawText, Layout, Walk}, ToToken};
+    use crate::{prop::builtin::{draw_check_box::DrawCheckBox, draw_text::DrawText, Layout, Walk}, ToToken};
 
     use super::CheckBoxProps;
 

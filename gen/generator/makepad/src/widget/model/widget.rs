@@ -9,7 +9,7 @@ use gen_parser::{PropsKey, Value};
 
 use gen_utils::common::{snake_to_camel, token_tree_ident};
 use proc_macro2::TokenStream;
-use quote::{quote, TokenStreamExt};
+use quote::quote;
 use syn::{parse_str, ItemEnum, ItemStruct, StmtMacro};
 
 use crate::{
@@ -172,7 +172,7 @@ impl Widget {
                     event_ptr,
                     sub_prop_binds,
                     sub_event_binds,
-                    other,
+                    // other,
                     imports,
                     ..
                 } = sc;
@@ -370,17 +370,19 @@ impl ToLiveDesign for Widget {
     }
     fn widget_imports(&self) -> Option<TokenStream> {
         if let Some(imports) = self.imports.as_ref() {
-           
             let imports = imports.to_string();
-            let imports = imports.split(";").filter(|s| !s.is_empty()).collect::<Vec<_>>();
-            
+            let imports = imports
+                .split(";")
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<_>>();
+
             let tk = imports.iter().fold(TokenStream::new(), |mut acc, item| {
                 let item: TokenStream = parse_str(item).unwrap();
                 acc.extend(quote! {import #item;});
                 acc
             });
             Some(tk)
-        }else{
+        } else {
             None
         }
     }
@@ -396,8 +398,8 @@ impl From<gen_converter::model::Model> for Widget {
             template,
             script,
             style,
-            compile,
-            is_entry,
+            // compile,
+            // is_entry,
             ..
         } = value;
 

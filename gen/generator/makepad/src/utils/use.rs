@@ -1,6 +1,5 @@
 use gen_utils::common::*;
 use proc_macro2::TokenTree;
-use quote::quote;
 
 /// generate `use makepad_widgets::*;`
 pub fn use_makepad_widget_all() -> Vec<TokenTree> {

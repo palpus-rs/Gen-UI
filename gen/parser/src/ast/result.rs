@@ -42,14 +42,10 @@ impl ParseResult {
     pub fn has_style(&self) -> bool {
         self.style().is_some()
     }
-     fn has(&self) -> (bool, bool, bool) {
-        (
-            self.has_template(),
-            self.has_script(),
-            self.has_style(),
-        )
+    fn has(&self) -> (bool, bool, bool) {
+        (self.has_template(), self.has_script(), self.has_style())
     }
-    pub fn strategy(&self) -> Strategy{
+    pub fn strategy(&self) -> Strategy {
         match self.has() {
             (true, true, true) => Strategy::All,
             (true, true, false) => Strategy::TemplateScript,
@@ -237,7 +233,7 @@ fn handle_style(result: &mut ParseResult, input: &str) -> Result<(), error::Erro
 
 #[cfg(test)]
 mod test_result {
-    use std::{fs::File, io::Write, time::Instant};
+    use std::time::Instant;
 
     use crate::ast::{ParseResult, ParseTarget};
 

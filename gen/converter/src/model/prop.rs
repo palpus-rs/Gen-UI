@@ -1,7 +1,6 @@
-use std::{collections::HashMap, ops::Deref};
+use std::collections::HashMap;
 
 use gen_parser::{PropsKey, Value};
-use gen_traits::prop::Prop;
 
 /// also name ConvertStyle
 /// in gen-ui no difference between style and props

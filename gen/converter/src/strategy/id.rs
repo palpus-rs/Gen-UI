@@ -4,7 +4,7 @@ use gen_parser::{PropsKey, Value};
 
 use crate::{
     error::Errors,
-    model::{prop::ConvertStyle, Model, TemplateModel},
+    model::{Model, TemplateModel},
 };
 
 /// 对TemplateModel(模板部分)的id的处理的策略器

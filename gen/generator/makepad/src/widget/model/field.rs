@@ -62,14 +62,14 @@ impl ToToken for Field {
 
 impl From<&PropFn> for Field{
     fn from(value: &PropFn) -> Self {
-        let PropFn{
-            widget,
-            id,
-            key,
-            ident,
-            code,
-            is_prop,
-        } = value;
+        // let PropFn{
+        //     widget,
+        //     id,
+        //     key,
+        //     ident,
+        //     code,
+        //     is_prop,
+        // } = value;
 
         // todo!
 

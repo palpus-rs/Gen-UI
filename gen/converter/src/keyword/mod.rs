@@ -1,9 +1,6 @@
 use std::fmt::Display;
 
 use gen_parser::Value;
-use gen_traits::{event::Event, prop::Prop};
-
-use crate::model::{Model, TemplateModel};
 
 const PROPS: &str = "props";
 const ID: &str = "id";
@@ -18,7 +15,6 @@ const FOR: &str = "for";
 /// The key words in gen-ui template
 #[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 pub enum KeyWords {
-    
     /// id
     Id,
     /// class
@@ -67,7 +63,6 @@ impl KeyWords {
 impl Display for KeyWords {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
-           
             KeyWords::Id => ID,
             KeyWords::Class => CLASS,
             KeyWords::Inherits => INHERITS,
@@ -75,9 +70,7 @@ impl Display for KeyWords {
             KeyWords::For => FOR,
             KeyWords::If => IF,
             KeyWords::ElseIf => ELSE_IF,
-            KeyWords::Else =>ELSE,
-            
-
+            KeyWords::Else => ELSE,
         })
     }
 }
@@ -87,7 +80,6 @@ impl TryFrom<&str> for KeyWords {
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
-            
             ID => Ok(KeyWords::Id),
             CLASS => Ok(KeyWords::Class),
             INHERITS => Ok(KeyWords::Inherits),

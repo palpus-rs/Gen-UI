@@ -1,5 +1,6 @@
+#[allow(unused_imports)]
 use std::default;
-use std::{fmt::Display, num::ParseFloatError};
+use std::fmt::Display;
 
 use gen_converter::error::Errors;
 use gen_parser::Value;
@@ -7,7 +8,7 @@ use gen_parser::Value;
 use crate::prop::{ALL, FILL, FIT};
 use crate::str_to_string_try_from;
 
-#[derive(Debug,Clone,Default)]
+#[derive(Debug, Clone, Default)]
 
 /// # Makepad Size
 /// the size of props
@@ -15,13 +16,13 @@ use crate::str_to_string_try_from;
 /// - width
 pub enum Size {
     #[default]
-     /// Fill the size of the parent widget
-     Fill,
-     /// detail size of the current widget
-     Fixed(f64),
-     /// Fit content
-     Fit,
-     All,
+    /// Fill the size of the parent widget
+    Fill,
+    /// detail size of the current widget
+    Fixed(f64),
+    /// Fit content
+    Fit,
+    All,
 }
 
 impl TryFrom<&str> for Size {
@@ -55,20 +56,16 @@ impl TryFrom<&Value> for Size {
     type Error = Errors;
 
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
-       
         if let Some(s) = value.is_unknown_and_get() {
             s.try_into()
         } else if let Some(d) = value.is_double_and_get() {
             Ok(d.into())
         } else if let Some(d) = value.is_float_and_get() {
-            
             Ok((d as f64).into())
         } else {
             value
                 .is_string_and_get()
-                .map(|s| {
-                    s.try_into()
-                })
+                .map(|s| s.try_into())
                 .unwrap_or_else(|| {
                     Err(Errors::PropConvertFail(format!(
                         "{} can not convert to Size",

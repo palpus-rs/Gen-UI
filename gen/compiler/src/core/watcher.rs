@@ -10,7 +10,7 @@ use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 
 use crate::msg::WATCHER_INIT;
 
-use super::log::{error, info, warn};
+use super::log::{info, warn};
 
 /// ## init watcher
 /// init watcher to watch file change event
