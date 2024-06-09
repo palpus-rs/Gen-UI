@@ -127,6 +127,10 @@ impl Widget {
         self.is_root = is_root;
         self
     }
+    pub fn set_is_static(&mut self, is_static: bool) -> &mut Self {
+        self.is_static = is_static;
+        self
+    }
     pub fn set_is_prop(&mut self, is_prop: bool) -> &mut Self {
         self.is_prop = is_prop;
         self
@@ -423,8 +427,8 @@ fn build_widget(
         .set_is_root(template.is_root())
         .set_id(template.get_id())
         .set_props(widget_styles)
-        .set_script(script);
-
+        .set_script(script)
+        .set_is_static(template.is_static());
     if template.has_children() {
         widget.set_children(
             template

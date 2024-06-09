@@ -54,7 +54,6 @@ where
     P: AsRef<Path>,
 {
     let path = path.as_ref();
-    dbg!(path);
     path.canonicalize().unwrap().to_path_buf()
 }
 

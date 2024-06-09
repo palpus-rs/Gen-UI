@@ -55,7 +55,7 @@ const COMPONENT: &str = "Component";
 const ICON: &str = "Icon";
 const IMAGE: &str = "Image";
 const RADIO: &str = "RadioButton";
-const CHECKBOX: &str = "Checkbox";
+const CHECKBOX: &str = "CheckBox";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -71,7 +71,7 @@ pub enum BuiltIn {
     Area,
     Icon,
     Image,
-    Checkbox,
+    CheckBox,
     Radio,
 }
 
@@ -92,7 +92,7 @@ impl BuiltIn {
             BuiltIn::Area => todo!(),
             BuiltIn::Icon => icon::IconProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Image => image::ImageProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Checkbox => checkbox::CheckBoxProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::CheckBox => checkbox::CheckBoxProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Radio => radio::RadioButtonProps::prop_bind(prop, value, is_prop, ident)
         }
     }
@@ -105,7 +105,7 @@ impl BuiltIn {
             BuiltIn::Button => button::ButtonProps::props(props).to_token_stream(),
             BuiltIn::Icon => icon::IconProps::props(props).to_token_stream(),
             BuiltIn::Image => image::ImageProps::props(props).to_token_stream(),
-            BuiltIn::Checkbox => checkbox::CheckBoxProps::props(props).to_token_stream(),
+            BuiltIn::CheckBox => checkbox::CheckBoxProps::props(props).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonProps::props(props).to_token_stream(),
             _ => panic!("only built-in widget can be get"),
         }
@@ -119,7 +119,7 @@ impl BuiltIn {
             BuiltIn::Area => area::AreaPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Icon => icon::IconPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Image => image::ImagePropPtr::from(ptr).to_token_stream(),
-            BuiltIn::Checkbox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::CheckBox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonPropPtr::from(ptr).to_token_stream(),
             
         }
@@ -144,7 +144,7 @@ impl BuiltIn {
             BuiltIn::Area => area::draw_walk(draw_walk),
             BuiltIn::Icon => todo!(),
             BuiltIn::Image => todo!(),
-            BuiltIn::Checkbox => todo!(),
+            BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
             
         }
@@ -159,7 +159,7 @@ impl BuiltIn {
             BuiltIn::Area => area::handle_event(event),
             BuiltIn::Icon => todo!(),
             BuiltIn::Image => todo!(),
-            BuiltIn::Checkbox => todo!(),
+            BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
             
         }
@@ -180,7 +180,7 @@ impl TryFrom<&str> for BuiltIn {
             COMPONENT => Ok(BuiltIn::Area),
             ICON => Ok(BuiltIn::Icon),
             IMAGE => Ok(BuiltIn::Image),
-            CHECKBOX => Ok(BuiltIn::Checkbox),
+            CHECKBOX => Ok(BuiltIn::CheckBox),
             RADIO => Ok(BuiltIn::Radio),
             _ => Err(Errors::BuiltInConvertFail),
         }
@@ -210,7 +210,7 @@ impl Display for BuiltIn {
             BuiltIn::Area => AREA,
             BuiltIn::Icon => ICON,
             BuiltIn::Image => IMAGE,
-            BuiltIn::Checkbox => CHECKBOX,
+            BuiltIn::CheckBox => CHECKBOX,
             BuiltIn::Radio => RADIO,
             
         })

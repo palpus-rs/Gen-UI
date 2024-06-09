@@ -40,6 +40,10 @@ pub fn camel_to_snake(s: &str) -> String {
 }
 
 pub fn snake_to_camel(s: &str) -> Option<String> {
+    if s.eq("checkbox"){
+        return Some("CheckBox".to_string());
+    }
+
     if s.contains("_") {
         Some(
             s.split('_')
@@ -63,7 +67,7 @@ mod test_utils{
 
     #[test]
     fn snake(){
-        let name = "Hello";
+        let name = "checkbox";
         let handled = snake_to_camel(name);
         dbg!(handled);
     }

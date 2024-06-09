@@ -378,4 +378,14 @@ impl Compiler {
 
         info("src_gen project is created successfully ...");
     }
+    /// ## add exclude file or folder
+    /// path root is the project root path
+    pub fn push_exclude<P>(&mut self, path: P) -> &mut Self
+    where
+        P: AsRef<Path>,
+    {
+        let path = self.origin_path.join(path.as_ref());
+        self.exclude.push(path);
+        self
+    }
 }

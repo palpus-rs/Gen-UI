@@ -115,7 +115,6 @@ impl Makepad {
     pub fn compile_app_main(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> () {
         // get imports from gen_files(widget tree just to handle compiled file, if file is in cache, it will not be compiled)
         // get file path and use ParseTarget to compile and get script part
-        // ParseTarget::try_from(value)
         if let Some(files) = gen_files {
             let mut live_registers = HashSet::new();
             for file in files {
@@ -127,6 +126,9 @@ impl Makepad {
                     }
                 }
             }
+            // add root gen as live register
+            live_registers.insert(self.tree.as_ref().unwrap().root_live_register());
+
             // in widget imports are imports
             // but in here, imports are app main live register, so called set_live_register
             let content = self.app_main.set_live_registers(live_registers).to_live_design().to_token_stream().to_string();

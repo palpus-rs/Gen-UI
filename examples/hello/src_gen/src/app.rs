@@ -15,8 +15,9 @@ impl AppMain for App {
 impl LiveRegister for App {
     fn live_register(cx: &mut Cx) {
         crate::makepad_widgets::live_design(cx);
-        crate::views::header::header::live_design(cx);
         crate::views::checkbox::live_design(cx);
+        crate::views::header::header::live_design(cx);
+        crate::views::root::live_design(cx);
     }
 }
 app_main!(App);

@@ -54,6 +54,9 @@ impl ModelTree {
             children: None,
         }
     }
+    pub fn root_live_register(&self) -> String{
+        format!("crate::{}::live_design(cx);", self.node.source().unwrap().to_live_register())
+    }
     /// get node from tree
     pub fn get(&self, key: &Source) -> Option<ModelNode> {
         if self.node.source().unwrap().eq(key) {

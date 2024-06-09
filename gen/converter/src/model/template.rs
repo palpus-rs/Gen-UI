@@ -90,7 +90,10 @@ impl TemplateModel {
     pub fn set_class(&mut self, class: Value) -> () {
         let _ = self.class.replace(class);
     }
-
+    /// judge the root template tag is <component> or not
+    pub fn is_static(&self) -> bool {
+        self.get_name().ne("component")
+    }
     pub fn set_class_from_prop(&mut self) -> bool {
         let tmp_props = self.props.clone();
 
