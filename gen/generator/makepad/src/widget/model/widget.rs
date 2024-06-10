@@ -77,7 +77,6 @@ impl Widget {
         widget
     }
     pub fn new(special: Option<Source>, name: &str, inherits: Option<&String>) -> Self {
-        dbg!(name);
         let mut widget = Widget::default();
         match special {
             Some(special) => {
@@ -102,11 +101,18 @@ impl Widget {
             }
             None => {
                 widget.name = name.to_string();
-                dbg!(name);
-                let inherits = BuiltIn::try_from(name);
-                widget
-                    .set_is_built_in(inherits.is_ok())
-                    .set_inherits(inherits.unwrap());
+                // dbg!(name);
+                // let inherits = BuiltIn::try_from(name);
+                // widget
+                //     .set_is_built_in(inherits.is_ok())
+                //     .set_inherits(inherits.unwrap());
+
+                // dbg!(&widget);
+                if let Ok(inherits) = BuiltIn::try_from(name){
+                    widget
+                    .set_is_built_in(true)
+                    .set_inherits(inherits);
+                }
             }
         }
         widget.set_traits(WidgetTrait::default());
@@ -288,12 +294,20 @@ impl Widget {
                 let Widget {
                     is_root,
                     is_prop,
+                    is_built_in,
                     id,
                     name,
                     props,
                     ..
                 } = child;
-                let name = snake_to_camel(name).unwrap();
+
+                let name = if *is_built_in{
+                    snake_to_camel(name).unwrap()
+                }else{
+                    name.to_string()
+                };
+
+
                 tk.extend(component_render(
                     id.as_ref(),
                     *is_root,
@@ -409,8 +423,7 @@ impl From<gen_converter::model::Model> for Widget {
             ..
         } = value;
 
-        let template = template.unwrap();
-        dbg!(&template);
+        let template = template.unwrap();  
         build_widget(Some(special), &template, style.as_ref(), script.as_ref())
     }
 }
