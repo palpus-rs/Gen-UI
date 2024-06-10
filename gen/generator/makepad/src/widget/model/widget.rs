@@ -77,6 +77,7 @@ impl Widget {
         widget
     }
     pub fn new(special: Option<Source>, name: &str, inherits: Option<&String>) -> Self {
+        dbg!(name);
         let mut widget = Widget::default();
         match special {
             Some(special) => {
@@ -101,6 +102,7 @@ impl Widget {
             }
             None => {
                 widget.name = name.to_string();
+                dbg!(name);
                 let inherits = BuiltIn::try_from(name);
                 widget
                     .set_is_built_in(inherits.is_ok())
@@ -408,7 +410,7 @@ impl From<gen_converter::model::Model> for Widget {
         } = value;
 
         let template = template.unwrap();
-
+        dbg!(&template);
         build_widget(Some(special), &template, style.as_ref(), script.as_ref())
     }
 }

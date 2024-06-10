@@ -26,10 +26,11 @@ use crate::common::parse_normal;
 /// use in tag_start | tag_end to parse the tag_name
 /// ### example
 /// - parse xxx
-/// - parse xxx-zzz
+/// - ~parse xxx-zzz~
+/// - parse xxx_zzz
 #[allow(dead_code)]
 fn parse_tag_name(input: &str) -> IResult<&str, &str> {
-    parse_normal(input, '-')
+    parse_normal(input, '_')
 }
 
 /// ## parse tag start (<) 🆗
