@@ -5,8 +5,6 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*; 
     import gen_components::components::*;
 
-    // FONT = dep("crate://self/resources/IBMPlexSans-BoldItalic.ttf")
-
     App = {{App}}{
         root: <Root>{
             main_window = <Window>{
@@ -18,20 +16,24 @@ live_design! {
                     height: All,
                     width: All,
                     <GLabel>{
-                        text: "Hello, world!",
+                        text: "Hello, world! This is a long message",
                         height: 48.0,
                         width: 120.0,
-                        // wrap: Word,
-                        brightness: 1.5
+                        wrap: Word,
+                        brightness: 1.5,
+                        margin: {left: 12.0},
                     }
                     <GLabel>{
                         text: "bold, test bold!!",
-                        
+                        font_size: 12.0,
+                        padding: 16.0,
+                        color: #FF0000,
                         // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
+                        font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
                     }
-                    // <GLabel>{
-                    //     text: "Hello, world!",
-                    // }
+                    <GButton>{
+                        background_color: #FFFF00,
+                    }
                 }
             }
         }
