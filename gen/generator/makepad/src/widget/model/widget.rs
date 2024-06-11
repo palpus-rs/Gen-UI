@@ -101,13 +101,6 @@ impl Widget {
             }
             None => {
                 widget.name = name.to_string();
-                // dbg!(name);
-                // let inherits = BuiltIn::try_from(name);
-                // widget
-                //     .set_is_built_in(inherits.is_ok())
-                //     .set_inherits(inherits.unwrap());
-
-                // dbg!(&widget);
                 if let Ok(inherits) = BuiltIn::try_from(name){
                     widget
                     .set_is_built_in(true)

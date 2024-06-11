@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "ab_glyph_rasterizer"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c71b1793ee61086797f5c80b6efa2b8ffa6d5dd703f118545808a7f2e27f7046"
+
+[[package]]
 name = "addr2line"
 version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -131,6 +137,12 @@ name = "bumpalo"
 version = "3.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ff69b9dd49fd426c69a0db9fc04dd934cdb6645ff000864d98f7e2af8830eaa"
+
+[[package]]
+name = "bytemuck"
+version = "1.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78834c15cb5d5efe3452d58b1e8ba890dd62d21907f867f383358198e56ebca5"
 
 [[package]]
 name = "byteorder"
@@ -272,6 +284,13 @@ dependencies = [
  "tokio",
  "toml_edit",
  "walkdir",
+]
+
+[[package]]
+name = "gen_components"
+version = "0.1.0"
+dependencies = [
+ "makepad-widgets",
 ]
 
 [[package]]
@@ -454,6 +473,57 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
+name = "makepad-android-state"
+version = "0.1.0"
+dependencies = [
+ "makepad-jni-sys",
+]
+
+[[package]]
+name = "makepad-derive-live"
+version = "0.4.0"
+dependencies = [
+ "makepad-live-id",
+ "makepad-micro-proc-macro",
+]
+
+[[package]]
+name = "makepad-derive-wasm-bridge"
+version = "0.4.0"
+dependencies = [
+ "makepad-micro-proc-macro",
+]
+
+[[package]]
+name = "makepad-derive-widget"
+version = "0.4.0"
+dependencies = [
+ "makepad-live-id",
+ "makepad-micro-proc-macro",
+]
+
+[[package]]
+name = "makepad-draw"
+version = "0.6.0"
+dependencies = [
+ "ab_glyph_rasterizer",
+ "makepad-html",
+ "makepad-platform",
+ "makepad-rustybuzz",
+ "makepad-vector",
+ "sdfer",
+ "unicode-bidi",
+]
+
+[[package]]
+name = "makepad-futures"
+version = "0.4.0"
+
+[[package]]
+name = "makepad-futures-legacy"
+version = "0.7.0"
+
+[[package]]
 name = "makepad-gen-plugin"
 version = "0.1.0"
 dependencies = [
@@ -463,6 +533,188 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "makepad-html"
+version = "0.4.0"
+dependencies = [
+ "makepad-live-id",
+]
+
+[[package]]
+name = "makepad-http"
+version = "0.4.0"
+
+[[package]]
+name = "makepad-jni-sys"
+version = "0.4.0"
+
+[[package]]
+name = "makepad-live-compiler"
+version = "0.5.0"
+dependencies = [
+ "makepad-derive-live",
+ "makepad-live-tokenizer",
+ "makepad-math",
+]
+
+[[package]]
+name = "makepad-live-id"
+version = "0.4.0"
+dependencies = [
+ "makepad-live-id-macros",
+]
+
+[[package]]
+name = "makepad-live-id-macros"
+version = "0.4.0"
+dependencies = [
+ "makepad-micro-proc-macro",
+]
+
+[[package]]
+name = "makepad-live-tokenizer"
+version = "0.4.0"
+dependencies = [
+ "makepad-live-id",
+ "makepad-math",
+ "makepad-micro-serde",
+]
+
+[[package]]
+name = "makepad-markdown"
+version = "0.4.0"
+dependencies = [
+ "makepad-live-id",
+]
+
+[[package]]
+name = "makepad-math"
+version = "0.4.0"
+
+[[package]]
+name = "makepad-micro-proc-macro"
+version = "0.4.0"
+
+[[package]]
+name = "makepad-micro-serde"
+version = "0.4.0"
+dependencies = [
+ "makepad-micro-serde-derive",
+]
+
+[[package]]
+name = "makepad-micro-serde-derive"
+version = "0.4.0"
+dependencies = [
+ "makepad-micro-proc-macro",
+]
+
+[[package]]
+name = "makepad-objc-sys"
+version = "0.4.0"
+
+[[package]]
+name = "makepad-platform"
+version = "0.6.0"
+dependencies = [
+ "makepad-android-state",
+ "makepad-futures",
+ "makepad-futures-legacy",
+ "makepad-http",
+ "makepad-jni-sys",
+ "makepad-objc-sys",
+ "makepad-shader-compiler",
+ "makepad-wasm-bridge",
+ "makepad-windows",
+ "smallvec",
+ "windows-targets 0.48.5",
+]
+
+[[package]]
+name = "makepad-rustybuzz"
+version = "0.8.0"
+dependencies = [
+ "bitflags 1.3.2",
+ "bytemuck",
+ "smallvec",
+ "ttf-parser",
+ "unicode-bidi-mirroring",
+ "unicode-ccc",
+ "unicode-properties",
+ "unicode-script",
+]
+
+[[package]]
+name = "makepad-shader-compiler"
+version = "0.5.0"
+dependencies = [
+ "makepad-live-compiler",
+]
+
+[[package]]
+name = "makepad-vector"
+version = "0.4.0"
+dependencies = [
+ "ttf-parser",
+]
+
+[[package]]
+name = "makepad-wasm-bridge"
+version = "0.4.0"
+dependencies = [
+ "makepad-derive-wasm-bridge",
+ "makepad-live-id",
+]
+
+[[package]]
+name = "makepad-widgets"
+version = "0.6.0"
+dependencies = [
+ "makepad-derive-widget",
+ "makepad-draw",
+ "makepad-html",
+ "makepad-markdown",
+ "makepad-zune-jpeg",
+ "makepad-zune-png",
+]
+
+[[package]]
+name = "makepad-windows"
+version = "0.51.1"
+dependencies = [
+ "windows-core",
+ "windows-targets 0.48.5",
+]
+
+[[package]]
+name = "makepad-zune-core"
+version = "0.2.14"
+dependencies = [
+ "bitflags 2.5.0",
+]
+
+[[package]]
+name = "makepad-zune-inflate"
+version = "0.2.54"
+dependencies = [
+ "simd-adler32",
+]
+
+[[package]]
+name = "makepad-zune-jpeg"
+version = "0.3.17"
+dependencies = [
+ "makepad-zune-core",
+]
+
+[[package]]
+name = "makepad-zune-png"
+version = "0.2.1"
+dependencies = [
+ "makepad-zune-core",
+ "makepad-zune-inflate",
 ]
 
 [[package]]
@@ -741,6 +993,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
+name = "sdfer"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27fd75ebc7c721a70d202c7cdd2beb108bbe5dfaaea68e06aff4de2f4cc240ed"
+
+[[package]]
 name = "serde"
 version = "1.0.202"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -779,6 +1037,12 @@ checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "simd-adler32"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe"
 
 [[package]]
 name = "smallvec"
@@ -855,6 +1119,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ttf-parser"
+version = "0.19.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49d64318d8311fc2668e48b63969f4343e0a85c4a109aa8460d6672e364b8bd1"
+
+[[package]]
 name = "typenum"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -872,10 +1142,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-bidi"
+version = "0.3.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08f95100a766bf4f8f28f90d77e0a5461bbdb219042e7679bebe79004fed8d75"
+
+[[package]]
+name = "unicode-bidi-mirroring"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56d12260fb92d52f9008be7e4bca09f584780eb2266dc8fecc6a192bec561694"
+
+[[package]]
+name = "unicode-ccc"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc2520efa644f8268dce4dcd3050eaa7fc044fca03961e9998ac7e2e92b77cf1"
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+
+[[package]]
+name = "unicode-properties"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4259d9d4425d9f0661581b804cb85fe66a4c631cadd8f490d1c13a35d5d9291"
+
+[[package]]
+name = "unicode-script"
+version = "0.5.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad8d71f5726e5f285a935e9fe8edfd53f0491eb6e9a5774097fdabee7cd8c9cd"
 
 [[package]]
 name = "utf8parse"
@@ -999,6 +1299,13 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "windows-core"
+version = "0.51.1"
+dependencies = [
+ "windows-targets 0.48.5",
+]
 
 [[package]]
 name = "windows-sys"
