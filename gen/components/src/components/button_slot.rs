@@ -14,7 +14,7 @@ live_design! {
     GLOBAL_DURATION = 0.25
 
     GButtonBase = {{GButton}}{
-
+        
         height: Fit,
         width: Fit,
         text_walk: {
@@ -106,6 +106,10 @@ pub struct GButton {
     pub font_family: LiveDependency,
     // define area -----------------
     #[live]
+    pub slot: Option<LivePtr>,
+    #[rust]
+    pub slots: ComponentMap<LiveId, WidgetRef>,
+    #[live]
     draw_text: DrawText,
     #[live]
     text_walk: Walk,
@@ -171,40 +175,49 @@ impl Widget for GButton {
         }
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 500);
-        // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 400);
-        // ------------------ pressed color ---------------------------------------------
-        let pressed_color = get_color(self.theme, self.pressed_color, 600);
-        // ------------------ border color ----------------------------------------------
-        let border_color = get_color(self.theme, self.border_color, 800);
-        // ------------------ font ------------------------------------------------------
-        let font = get_font_family(&self.font_family, cx);
-        let font_color = get_color(self.theme, self.font_color, 100);
-        // apply over props to draw_button ----------------------------------------------
-        self.apply_over(
-            cx,
-            live! {
-                // show_bg: true,
-                draw_button: {
-                    background_color: (bg_color),
-                    border_color: (border_color),
-                    border_width: (self.border_width),
-                    border_radius: (self.border_radius),
-                    pressed_color: (pressed_color),
-                    hover_color: (hover_color),
-                },
-                draw_text: {
-                    color: (font_color),
-                    text_style: {
-                        font_size: (self.font_size),
+       
+        if self.slot.is_some() {
+            let slot_id  = live_id!(slot);
+            self.slots.get_or_insert(cx, slot_id, |cx|{
+                WidgetRef::new_from_ptr(cx, self.slot)
+            });
+            self.slots.retain_visible();
+            // let _ = self.slots.as_mut().unwrap().draw_walk(cx, scope, walk);
+        } 
+            // ----------------- background color -------------------------------------------
+            let bg_color = get_color(self.theme, self.background_color, 500);
+            // ------------------ hover color -----------------------------------------------
+            let hover_color = get_color(self.theme, self.hover_color, 400);
+            // ------------------ pressed color ---------------------------------------------
+            let pressed_color = get_color(self.theme, self.pressed_color, 600);
+            // ------------------ border color ----------------------------------------------
+            let border_color = get_color(self.theme, self.border_color, 800);
+            // ------------------ font ------------------------------------------------------
+            let font = get_font_family(&self.font_family, cx);
+            let font_color = get_color(self.theme, self.font_color, 100);
+            // apply over props to draw_button ----------------------------------------------
+            self.apply_over(
+                cx,
+                live! {
+                    // show_bg: true,
+                    draw_button: {
+                        background_color: (bg_color),
+                        border_color: (border_color),
+                        border_width: (self.border_width),
+                        border_radius: (self.border_radius),
+                        pressed_color: (pressed_color),
+                        hover_color: (hover_color),
                     },
-                }
-            },
-        );
-        self.draw_text.text_style.font = font;
-
+                    draw_text: {
+                        color: (font_color),
+                        text_style: {
+                            font_size: (self.font_size),
+                        },
+                    }
+                },
+            );
+            self.draw_text.text_style.font = font;
+        
         let _ = self.draw_button.begin(cx, walk, self.layout);
 
         let _ = self
