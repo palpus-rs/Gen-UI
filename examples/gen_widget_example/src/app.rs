@@ -34,28 +34,34 @@ live_design! {
                         // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
                         font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
                     }
-                    <Button>{
-                        height: 60,
-                        width: 120,
+                    <GButton>{
                         text: "hello"
                     }
                     <GButton>{
-                        height: 60,
                         theme: Primary,
                         // cover theme color
                         background_color: #FF0000,
                         text: "test"
                     }
                     <GButton>{
-                        height: 60,
-                        width: 120,
+                        height: 46,
+                        width: 160,
                         theme: Success,
                         border_width: 1.4,
                         border_color: #FFF,
-                        border_radius: 6.0,
+                        border_radius: 11.0,
                         text: "Theme Success",
                     }
-
+                    <GButton>{
+                        theme: Dark,
+                        border_width: 1.2,
+                        hover_color: #FF0000,
+                        pressed_color: #00FF00,
+                        text: "GButton!",
+                        font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
+                        font_size: 12.0,
+                        font_color: #000,
+                    }
                 }
             }
         }

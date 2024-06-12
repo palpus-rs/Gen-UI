@@ -82,6 +82,8 @@ live_design!{
     // padding -----------------------------------------------------
     
     GLOBAL_PADDING = {top: 10.0, left: 16.0, bottom: 10.0, right: 16.0};
+    // align -------------------------------------------------------
+    ALIGN_CENTER_WALK = {x: 0.5, y: 0.5};
     // components --------------------------------------------------
 
     // ## GLabel
@@ -100,8 +102,9 @@ live_design!{
     GButton = <GButtonBase>{
         theme: Primary,
         text: "Button",
-        // padding: <GLOBAL_PADDING>{}
+        padding: <GLOBAL_PADDING>{}
         font_size: (FONT_SIZE),
+        align: <ALIGN_CENTER_WALK>{},
     }
 
 }

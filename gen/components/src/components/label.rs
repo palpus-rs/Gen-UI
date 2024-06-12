@@ -40,21 +40,39 @@ pub struct GLabel {
     text: RcStringMut,
 }
 
+pub fn get_font_family(font_family: &LiveDependency, cx: &mut Cx2d) -> Font {
+    let font_family = font_family.clone();
+
+    let atlas = cx.get_global::<CxFontsAtlasRc>().clone();
+    let font_id = Some(
+        atlas
+            .0
+            .borrow_mut()
+            .get_font_by_path(cx, font_family.as_str()),
+    );
+    let font = Font {
+        font_id,
+        path: font_family,
+    };
+    font
+}
+
 impl Widget for GLabel {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
-        let font_family = self.font_family.clone();
+        // let font_family = self.font_family.clone();
 
-        let atlas = cx.get_global::<CxFontsAtlasRc>().clone();
-        let font_id = Some(
-            atlas
-                .0
-                .borrow_mut()
-                .get_font_by_path(cx, font_family.as_str()),
-        );
-        let font = Font {
-            font_id,
-            path: font_family,
-        };
+        // let atlas = cx.get_global::<CxFontsAtlasRc>().clone();
+        // let font_id = Some(
+        //     atlas
+        //         .0
+        //         .borrow_mut()
+        //         .get_font_by_path(cx, font_family.as_str()),
+        // );
+        // let font = Font {
+        //     font_id,
+        //     path: font_family,
+        // };
+        let font = get_font_family(&self.font_family, cx);
 
         self.draw_text.apply_over(
             cx,

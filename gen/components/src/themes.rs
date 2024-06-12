@@ -224,6 +224,22 @@ pub fn hex_to_vec4(hex: &'static str) -> Vec4 {
     }
 }
 
+/// v: color value, range: `[25, 50, 100 ,200, 300, 400, 500, 600, 700, 800, 900]`
+pub fn get_color(theme: Themes,color: Option<Vec4>, v: u32) -> Vec4{
+
+    return if let Some(target) = color {
+       target
+    } else {
+        match theme {
+            Themes::Dark => ThemeDark::v(v),
+            Themes::Primary => ThemePrimary::v(v),
+            Themes::Error => ThemeError::v(v),
+            Themes::Warning => ThemeWarning::v(v),
+            Themes::Success => ThemeSuccess::v(v),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test_themes{
     use super::ThemeColorValue;

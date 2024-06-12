@@ -1,13 +1,18 @@
 use crate::{
     shader::bg_button::DrawGButton,
     themes::{
-        ThemeColorValue, ThemeDark, ThemeError, ThemePrimary, ThemeSuccess, ThemeWarning, Themes,
+        get_color, ThemeColorValue, ThemeDark, ThemeError, ThemePrimary, ThemeSuccess,
+        ThemeWarning, Themes,
     },
 };
 use makepad_widgets::*;
 
+use super::label::get_font_family;
+
 live_design! {
     import makepad_draw::shader::std::*;
+    GLOBAL_DURATION = 0.25
+
     THEME_COLOR_CONTRAST = 1.0
     THEME_COLOR_W = #FFFFFFFF
     THEME_COLOR_W_H = #FFFFFF00
@@ -23,66 +28,79 @@ live_design! {
     THEME_SPACE_2 = (1.0 * (THEME_SPACE_FACTOR))
     THEME_MSPACE_2 = {top: (THEME_SPACE_2), right: (THEME_SPACE_2), bottom: (THEME_SPACE_2), left: (THEME_SPACE_2)}
     GButtonBase = {{GButton}}{
-        // draw_button: {
-        //     instance border_width: 1.0
-        //     instance inset: vec4(0.0, 0.0, 0.0, 0.0)
-        //     instance radius: 2.5
-
-        //     fn get_color(self) -> vec4 {
-        //         return self.background_color
-        //     }
-
-        //     fn get_border_color(self) -> vec4 {
-        //         return self.border_color
-        //     }
-
-        //     fn pixel(self) -> vec4 {
-        //         let sdf = Sdf2d::viewport(self.pos * self.rect_size)
-        //         sdf.box(
-        //             self.inset.x + self.border_width,
-        //             self.inset.y + self.border_width,
-        //             self.rect_size.x - (self.inset.x + self.inset.z + self.border_width * 2.0),
-        //             self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
-        //             max(1.0, self.radius)
-        //         )
-        //         sdf.fill_keep(self.get_color())
-        //         // if self.border_width > 0.0 {
-        //         //     sdf.stroke(self.get_border_color(), self.border_width)
-        //         // }
-
-        //         sdf.stroke(self.get_border_color(), self.border_width)
-        //         return sdf.result;
-        //     }
-        // }
-        
-        draw_text: {
-            instance hover: 0.0,
-            instance pressed: 0.0,
-
-            uniform color: #FFFFFF,
-            uniform color_hover: (THEME_COLOR_TEXT_DEFAULT)
-            uniform color_pressed: (THEME_COLOR_TEXT_DEFAULT)
-
-            text_style: <THEME_FONT_REGULAR> {
-                font_size: (THEME_FONT_SIZE_P)
-            }
-
-            fn get_color(self) -> vec4 {
-                return mix(
-                    self.color,
-                    mix(self.color_hover, self.color_pressed, self.pressed),
-                    self.hover
-                )
-            }
-        }
-        padding: <THEME_MSPACE_2>{}
         height: Fit,
         width: Fit,
         text_walk: {
             height: Fit,
             width: Fit,
         }
-        align: {x: 0.5, y: 0.5},
+
+        draw_text: {
+            instance hover: 0.0,
+            instance pressed: 0.0,
+
+            // uniform color: #FFFFFF,
+            // uniform color_hover: (THEME_COLOR_TEXT_DEFAULT)
+            // uniform color_pressed: (THEME_COLOR_TEXT_DEFAULT)
+
+            // text_style: <THEME_FONT_REGULAR> {
+            //     font_size: (THEME_FONT_SIZE_P)
+            // }
+
+            fn get_color(self) -> vec4 {
+                let hover_color = self.color - vec4(0.0, 0.0, 0.0, 0.1);
+                let pressed_color = self.color - vec4(0.0, 0.0, 0.0, 0.2);
+                // return mix(
+                //     self.color,
+                //     mix(self.color_hover, self.color_pressed, self.pressed),
+                //     self.hover
+                // )
+                return mix(
+                    mix(
+                        self.color,
+                        hover_color,
+                        self.hover
+                    ),
+                    pressed_color,
+                    self.pressed
+                )
+            }
+        }
+
+        animator: {
+            hover = {
+                default: off,
+                off = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_button: {pressed: 0.0, hover: 0.0}
+                        // draw_icon: {pressed: 0.0, hover: 0.0}
+                        draw_text: {pressed: 0.0, hover: 0.0}
+                    }
+                }
+
+                on = {
+                    from: {
+                        all: Forward {duration: (GLOBAL_DURATION)}
+                        pressed: Forward {duration: (GLOBAL_DURATION)}
+                    }
+                    apply: {
+                        draw_button: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        // draw_icon: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                        draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
+                    }
+                }
+
+                pressed = {
+                    from: {all: Forward {duration: (GLOBAL_DURATION)}}
+                    apply: {
+                        draw_button: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        // draw_icon: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                        draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -93,6 +111,10 @@ pub struct GButton {
     #[live]
     pub background_color: Option<Vec4>,
     #[live]
+    pub hover_color: Option<Vec4>,
+    #[live]
+    pub pressed_color: Option<Vec4>,
+    #[live]
     pub border_color: Option<Vec4>,
     #[live(0.0)]
     pub border_width: f32,
@@ -101,14 +123,18 @@ pub struct GButton {
     // text-----------------
     #[live]
     pub text: RcStringMut,
-    #[live]
+    #[live(10.0)]
     pub font_size: f64,
     #[live]
-    pub font_color: Vec4,
+    pub font_color: Option<Vec4>,
+    #[live]
+    pub font_family: LiveDependency,
     #[live]
     draw_text: DrawText,
     #[live]
     text_walk: Walk,
+    #[live(true)]
+    grab_key_focus: bool,
     // animator -----------------
     #[animator]
     animator: Animator,
@@ -126,13 +152,24 @@ pub struct GButton {
 pub enum GButtonEvent {
     Clicked(KeyModifiers),
     Released(KeyModifiers),
+    Pressed(KeyModifiers),
     None,
 }
 
 impl Widget for GButton {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         let uid = self.widget_uid();
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.draw_button.redraw(cx);
+        }
         match event.hits(cx, self.draw_button.area()) {
+            Hit::FingerDown(f_down) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(self.draw_button.area());
+                }
+                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.modifiers));
+                self.animator_play(cx, id!(hover.pressed));
+            }
             Hit::FingerHoverIn(_) => {
                 cx.set_cursor(MouseCursor::Hand);
                 self.animator_play(cx, id!(hover.on));
@@ -158,32 +195,18 @@ impl Widget for GButton {
         }
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        // ----------------- background color ------------------------------------------
-        let bg_color = if let Some(bg_color) = self.background_color {
-            bg_color
-        } else {
-            match self.theme {
-                Themes::Dark => ThemeDark::default().get(),
-                Themes::Primary => ThemePrimary::default().get(),
-                Themes::Error => ThemeError::default().get(),
-                Themes::Warning => ThemeWarning::default().get(),
-                Themes::Success => ThemeSuccess::default().get(),
-            }
-        };
+        // ----------------- background color -------------------------------------------
+        let bg_color = get_color(self.theme, self.background_color, 500);
+        // ------------------ hover color -----------------------------------------------
+        let hover_color = get_color(self.theme, self.hover_color, 400);
+        // ------------------ pressed color ---------------------------------------------
+        let pressed_color = get_color(self.theme, self.pressed_color, 600);
         // ------------------ border color ----------------------------------------------
-        let border_color = if let Some(border_color) = self.border_color {
-            border_color
-        } else {
-            match self.theme {
-                Themes::Dark => ThemeDark::v(800),
-                Themes::Primary => ThemePrimary::v(800),
-                Themes::Error => ThemeError::v(800),
-                Themes::Warning => ThemeWarning::v(800),
-                Themes::Success => ThemeSuccess::v(800),
-            }
-        };
-        // ------------------ calc padding ----------------------------------------------
-
+        let border_color = get_color(self.theme, self.border_color, 800);
+        // ------------------ font ------------------------------------------------------
+        let font = get_font_family(&self.font_family, cx);
+        let font_color = get_color(self.theme, self.font_color, 100);
+        // apply over props to draw_button ----------------------------------------------
         self.apply_over(
             cx,
             live! {
@@ -193,17 +216,24 @@ impl Widget for GButton {
                     border_color: (border_color),
                     border_width: (self.border_width),
                     border_radius: (self.border_radius),
+                    pressed_color: (pressed_color),
+                    hover_color: (hover_color),
+                },
+                draw_text: {
+                    color: (font_color),
+                    text_style: {
+                        font_size: (self.font_size),
+                    },
                 }
             },
         );
-        // self.redraw(cx);
-        
+        self.draw_text.text_style.font = font;
         let _ = self.draw_button.begin(cx, walk, self.layout);
-        
+
         let _ = self
             .draw_text
             .draw_walk(cx, self.text_walk, Align::default(), self.text.as_ref());
-        
+
         self.draw_button.end(cx);
         DrawStep::done()
     }
@@ -223,6 +253,13 @@ impl Widget for GButton {
 impl GButton {
     pub fn clicked(&self, actions: &Actions) -> bool {
         if let GButtonEvent::Clicked(_) = actions.find_widget_action(self.widget_uid()).cast() {
+            true
+        } else {
+            false
+        }
+    }
+    pub fn pressed(&self, actions: &Actions) -> bool {
+        if let GButtonEvent::Pressed(_) = actions.find_widget_action(self.widget_uid()).cast() {
             true
         } else {
             false
@@ -250,15 +287,21 @@ impl GButtonRef {
         }
         false
     }
+    pub fn pressed(&self, actions: &Actions) -> bool {
+        if let Some(btn_ref) = self.borrow() {
+            return btn_ref.pressed(actions);
+        }
+        false
+    }
 }
 
 impl GButtonSet {
     pub fn clicked(&self, actions: &Actions) -> bool {
         self.iter().any(|btn_ref| btn_ref.clicked(actions))
     }
-    // pub fn pressed(&self, actions: &Actions) -> bool {
-    //     self.iter().any(|v| v.pressed(actions))
-    // }
+    pub fn pressed(&self, actions: &Actions) -> bool {
+        self.iter().any(|btn_ref| btn_ref.pressed(actions))
+    }
     pub fn released(&self, actions: &Actions) -> bool {
         self.iter().any(|btn_ref| btn_ref.released(actions))
     }

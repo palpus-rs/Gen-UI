@@ -4,9 +4,19 @@ live_design!{
     import makepad_draw::shader::std::*;
     DrawGButton = {{DrawGButton}}{
         instance inset: vec4(0.0, 0.0, 0.0, 0.0)
+        instance hover: 0.0,
+        instance pressed: 0.0,
         
         fn get_color(self) -> vec4 {
-            return self.background_color
+            return mix(
+                mix(
+                    self.background_color,
+                    self.hover_color,
+                    self.hover
+                ),
+                self.pressed_color,
+                self.pressed
+            )
         }
 
         fn get_border_color(self) -> vec4 {
@@ -19,6 +29,8 @@ live_design!{
 
         fn pixel(self) -> vec4 {
             let sdf = Sdf2d::viewport(self.pos * self.rect_size)
+
+
             sdf.box(
                 self.inset.x + self.border_width,
                 self.inset.y + self.border_width,
@@ -27,9 +39,6 @@ live_design!{
                 max(1.0, self.border_radius)
             )
             sdf.fill_keep(self.get_color())
-            // if self.border_width > 0.0 {
-            //     sdf.stroke(self.get_border_color(), self.border_width)
-            // }
 
             sdf.stroke(self.get_border_color(), self.border_width)
             return sdf.result;
@@ -45,4 +54,6 @@ pub struct DrawGButton{
     #[live] pub border_color: Vec4,
     #[live(0.0)] pub border_width: f32,
     #[live(4.0)] pub border_radius: f32,
+    #[live] pub hover_color: Vec4,
+    #[live] pub pressed_color: Vec4,
 }
