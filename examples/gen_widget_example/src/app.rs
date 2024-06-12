@@ -15,6 +15,9 @@ live_design! {
                 body = <View>{
                     height: All,
                     width: All,
+                    flow: Down,
+                    spacing: 10.0,
+                    padding: 10.0,
                     <GLabel>{
                         text: "Hello, world! This is a long message",
                         height: 48.0,
@@ -31,9 +34,28 @@ live_design! {
                         // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
                         font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
                     }
-                    <GButton>{
-                        background_color: #FFFF00,
+                    <Button>{
+                        height: 60,
+                        width: 120,
+                        text: "hello"
                     }
+                    <GButton>{
+                        height: 60,
+                        theme: Primary,
+                        // cover theme color
+                        background_color: #FF0000,
+                        text: "test"
+                    }
+                    <GButton>{
+                        height: 60,
+                        width: 120,
+                        theme: Success,
+                        border_width: 1.4,
+                        border_color: #FFF,
+                        border_radius: 6.0,
+                        text: "Theme Success",
+                    }
+
                 }
             }
         }

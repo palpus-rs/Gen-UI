@@ -74,6 +74,7 @@ color_v_trait!(ThemeDark);
 // COLOR_PRIMARY_700 = #0E6F90;
 // COLOR_PRIMARY_800 = #155B75;
 // COLOR_PRIMARY_900 = #164C63;
+// default:  vec3(0.023529412,0.68235296,0.83137256)
 #[derive(Debug, Clone)]
 pub struct ThemePrimary(Vec4);
 
@@ -205,6 +206,7 @@ color_v_trait!(ThemePrimary);
 color_v_trait!(ThemeError);
 color_v_trait!(ThemeSuccess);
 color_v_trait!(ThemeWarning);
+
 pub fn hex_to_vec4(hex: &'static str) -> Vec4 {
     // 去掉开头的 '#' 符号
     let hex = hex.trim_start_matches('#');
@@ -219,5 +221,16 @@ pub fn hex_to_vec4(hex: &'static str) -> Vec4 {
         y: g as f32 / 255.0,
         z: b as f32 / 255.0,
         w: 1.0, // opacity 1.0
+    }
+}
+
+#[cfg(test)]
+mod test_themes{
+    use super::ThemeColorValue;
+
+    #[test]
+    fn v4(){
+        let v = super::ThemePrimary::default().get();
+        dbg!(v);
     }
 }

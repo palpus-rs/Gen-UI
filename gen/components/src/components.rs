@@ -76,8 +76,12 @@ live_design!{
     COLOR_SUCCESS_800 = #05603A;
     COLOR_SUCCESS_900 = #054F31;
     // -------- font-family ------------------------------------
-    FONT_FAMILY = dep("crate://self/resources/font/GoNotoKurrent-Regular.ttf")
-    FONT_FAMILY_BOLD = dep("crate://self/resources/font/GoNotoKurrent-Bold.ttf")
+    FONT_FAMILY = dep("crate://self/resources/font/GoNotoKurrent-Regular.ttf");
+    FONT_FAMILY_BOLD = dep("crate://self/resources/font/GoNotoKurrent-Bold.ttf");
+    FONT_SIZE = 10.0;
+    // padding -----------------------------------------------------
+    
+    GLOBAL_PADDING = {top: 10.0, left: 16.0, bottom: 10.0, right: 16.0};
     // components --------------------------------------------------
 
     // ## GLabel
@@ -90,15 +94,14 @@ live_design!{
         brightness: 1.0,
         top_drop: 1.5,
         line_spacing: 1.5,
-        font_size: 10.0,
+        font_size: (FONT_SIZE),
     }
 
     GButton = <GButtonBase>{
-        width: 120.0, 
-        height: 46.0,
         theme: Primary,
         text: "Button",
-        
+        // padding: <GLOBAL_PADDING>{}
+        font_size: (FONT_SIZE),
     }
 
 }
