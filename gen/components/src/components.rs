@@ -2,11 +2,13 @@ use makepad_widgets::*;
 
 pub mod label;
 pub mod button;
+pub mod card;
 
 live_design!{
     // imports -----------------------------------------------------
     import crate::components::label::GLabelBase;
     import crate::components::button::GButtonBase;
+    import crate::components::card::CardBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -105,6 +107,13 @@ live_design!{
         padding: <GLOBAL_PADDING>{}
         font_size: (FONT_SIZE),
         align: <ALIGN_CENTER_WALK>{},
+    }
+
+    GCard = <CardBase>{
+        width: 200.0,
+        height: 200.0,
+        // padding: <GLOBAL_PADDING>{},
+        // align: <ALIGN_CENTER_WALK>{},
     }
 
 }
