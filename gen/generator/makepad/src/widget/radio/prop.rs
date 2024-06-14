@@ -264,8 +264,14 @@ impl RadioButtonProps {
             let _ = self.bind.replace(s.to_string());
         })
     }
+    fn check_draw_radio(&mut self) -> &mut DrawRadioButton {
+        if self.draw_radio.is_none() {
+            self.draw_radio = Some(DrawRadioButton::default());
+        }
+        self.draw_radio.as_mut().unwrap()
+    }
     fn radio_type(&mut self, value: &Value) -> Result<(), Errors> {
-        self.draw_radio.as_mut().unwrap().radio_type(value)
+        self.check_draw_radio().radio_type(value)
     }
     fn media(&mut self, value: &Value) -> Result<(), Errors> {
         self.media.replace(value.try_into()?);
@@ -476,10 +482,10 @@ impl Display for RadioButtonProps {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", ICON_WALK, icon_walk));
         }
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("{},", walk));
+            let _ = f.write_fmt(format_args!("{}", walk));
         }
         if let Some(layout) = &self.layout {
-            let _ = f.write_fmt(format_args!("{},", layout));
+            let _ = f.write_fmt(format_args!("{}", layout));
         }
         if let Some(label_walk) = self.label_walk.as_ref() {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", "label_walk", label_walk));

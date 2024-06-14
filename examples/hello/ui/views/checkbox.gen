@@ -2,7 +2,11 @@
   <view id="checkbox_view">
     <checkbox class="checkbox1" check_type="Radio"></checkbox>
     <checkbox class="checkbox1"></checkbox>
+    <checkbox id="checkbox2"></checkbox>
     <radio_button id="radio1"></radio_button>
+    <radio_button id="radio2"></radio_button>
+    <checkbox class="checkbox1" check_type="None"></checkbox>
+    <label text="this is a test label!" margin="16.0"></label>
   </view>
 </template>
 
@@ -16,8 +20,26 @@
     margin: 10;
     label_margin: 0 0 0 10;
   }
+  #checkbox2{
+    text: "Checkbox Toggle";
+    label_margin: 0 0 0 16.0;
+    font_brightness: 1.5;
+    check_type: Toggle;
+  }
   #radio1{
     text: "Radio1";
+    margin: 16.0;
+    font_size: 16.0;
+  }
+  #radio2{
+    radio_type: Tab;
+    text: "Radio Tab";
+    margin: 0 16.0;
+    padding: 12.0;
+    height: 32.0;
+    label_align: 0.5;
+    label_margin: 0 0 0 0;
+
   }
 }
 </style>
