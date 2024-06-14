@@ -2,21 +2,7 @@ mod core;
 mod utils;
 
 pub use core::*;
-use std::path::PathBuf;
 pub use utils::*;
-
-/// default uncompiled files
-/// it will be ignored when compile
-/// ### todo!
-/// - get uncompiled files from config file (`.genignore`)
-const UNCOMPILED: [&str; 6] = [
-    "Cargo.toml",
-    "src/main.rs",
-    ".gitignore",
-    "Cargo.lock",
-    "target",
-    ".gen_cache",
-];
 
 /// ## compiler app
 /// - path:compile target path (all folders are compiled, files are compiled as single files)
@@ -27,10 +13,7 @@ pub fn app(target: Target) -> Compiler {
     let _ = init_log();
     // [get target watcher path] -------------------------------------------------------------------
     let origin_path = std::env::current_dir().unwrap();
-    let exclude = UNCOMPILED
-        .iter()
-        .map(|item| origin_path.join(item))
-        .collect::<Vec<PathBuf>>();
+    let exclude = Ignore::new(origin_path.as_path()).expect("ignore file error").into();
     let cache = Cache::new(origin_path.as_path(), target);
     let is_dir = origin_path.is_dir();
     let target = CompilerTarget::from(target);

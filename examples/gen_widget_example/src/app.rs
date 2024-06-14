@@ -34,15 +34,36 @@ live_design! {
                         // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
                         font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
                     }
-                    <GButton>{
-                        text: "hello"
+                    
+                    <GCard>{
+                        height: 300,
+                        width: 300,
+                        draw_card: {
+                            background_color: #FFFFFF,
+                        }
+                        <View>{
+                            show_bg: true,
+                            draw_bg: {color: #FF0000},
+                            height: 100.0,
+                            width: 100.0,
+                        }
+                        <View>{
+                            show_bg: true,
+                            draw_bg: {color: #FFFF00},
+                            height: 100.0,
+                            width: 100.0,
+                        }
+                        <GButton>{
+                            text: "hello"
+                        }
+                        <GButton>{
+                            theme: Primary,
+                            // cover theme color
+                            background_color: #FF0000,
+                            text: "test"
+                        }
                     }
-                    <GButton>{
-                        theme: Primary,
-                        // cover theme color
-                        background_color: #FF0000,
-                        text: "test"
-                    }
+                    
                     <GButton>{
                         height: 46,
                         width: 160,

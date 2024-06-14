@@ -1,4 +1,4 @@
-use crate::{calc_hash, info, is_eq_path, FileState, Target};
+use crate::{calc_hash, info, is_eq_path, msg::{CACHE_NOT_EXIST, CACHE_OPEN_CREATE_FAIL, CACHE_WRITE, CACHE_WRITE_FAIL}, FileState, Target};
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -97,7 +97,7 @@ impl Cache {
             Ok(cache)
         } else {
             // cache file not exist
-            Err("cache file not exist".into())
+            Err(CACHE_NOT_EXIST.into())
         };
     }
 
@@ -114,15 +114,15 @@ impl Cache {
         } else {
             File::options().write(true).read(true).open(cache_path)
         }
-        .expect("cache file create or open failed");
+        .expect(CACHE_OPEN_CREATE_FAIL);
 
         let mut buf = Vec::new();
 
         let _ = self.serialize(&mut Serializer::new(&mut buf)).unwrap();
 
-        let _ = file.write(&buf).expect("cache file write failed");
+        let _ = file.write(&buf).expect(CACHE_WRITE_FAIL);
 
-        info("cache file write success");
+        info(CACHE_WRITE);
     }
     pub fn insert<P>(&mut self, key: P, value: String) -> ()
     where
@@ -241,4 +241,5 @@ impl Cache {
             None
         }
     }
+    
 }

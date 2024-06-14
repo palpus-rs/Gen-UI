@@ -7,6 +7,7 @@ mod cache;
 mod hash;
 mod state;
 mod dep;
+mod ignore;
 
 pub use compiler::Compiler;
 pub use log::{info, init_log};
@@ -16,3 +17,4 @@ pub use cache::Cache;
 pub use hash::*;
 pub use state::FileState;
 pub use dep::*;
+pub use ignore::*;

@@ -3,9 +3,19 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use toml_edit::{value, InlineTable, Item, Table};
+use toml_edit::{value, Item, Table};
 
+/// ## Rust Dependence
 /// 描述Cargo.toml中的依赖的写法
+/// 
+/// format: `name = { version = "0.1.0", features = ["feature1", "feature2"], default-features = false, git/path = "git/path", branch = "git branch", rev = "git rev", tag = "git tag"}`
+/// ### Example
+/// ```rust
+/// let mut makepad_widget = RustDependence::new("makepad-widgets");
+/// makepad_widget.set_ty(DepType::local(
+///     "E:/Rust/try/makepad/makepad/rik/makepad/widgets",
+/// ));
+/// ```
 #[derive(Debug, Clone)]
 pub struct RustDependence {
     name: String,
@@ -79,6 +89,12 @@ impl RustDependence {
         (self.name.to_string(), item)
     }
 }
+
+/// ## The type of dependence
+/// 
+/// - Crate
+/// - Remote
+/// - Local
 #[derive(Debug, Clone)]
 pub enum DepType {
     /// crate 表示来自crates.io的依赖使用cargo install安装
@@ -110,6 +126,12 @@ impl Display for DepType {
     }
 }
 
+/// ## Git remote dependence
+/// format: `url = "git/url", branch = "git branch", rev = "git rev", tag = "git tag"`
+/// ### Example
+/// ```toml
+/// serde = { git = "https://serde/git/url", branch = "master" }
+/// ```
 #[derive(Debug, Clone)]
 pub struct RemoteDep {
     pub url: String,
@@ -150,8 +172,6 @@ impl Display for RemoteDep {
 
 #[cfg(test)]
 mod test_dep {
-    use std::str::FromStr;
-
     use toml_edit::{value, Item, Table};
 
     #[test]

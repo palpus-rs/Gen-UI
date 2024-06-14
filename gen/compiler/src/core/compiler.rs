@@ -243,24 +243,35 @@ impl Compiler {
                 }
                 (true, true) => {
                     // is gen file, use target compiler to compile then copy to the compiled project
-                    compiler
-                        .cache
-                        .exists_or_insert(&source_path)
-                        .unwrap()
-                        .modify_then(|| {
-                            dbg!(&source_path);
-                            let model = Model::new(&source_path.to_path_buf(), &target_path, false)
-                                .unwrap();
-                            match &mut compiler.target {
-                                CompilerTarget::Makepad(makepad) => {
-                                    makepad.as_mut().unwrap().add(model);
-                                }
-                                CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                                CompilerTarget::Dioxus => {
-                                    todo!("dioxus plugin not implemented yet")
-                                }
-                            }
-                        });
+                    // compiler
+                    //     .cache
+                    //     .exists_or_insert(&source_path)
+                    //     .unwrap()
+                    //     .modify_then(|| {
+                    //         dbg!(&source_path);
+                    //         let model = Model::new(&source_path.to_path_buf(), &target_path, false)
+                    //             .unwrap();
+                    //         match &mut compiler.target {
+                    //             CompilerTarget::Makepad(makepad) => {
+                    //                 makepad.as_mut().unwrap().add(model);
+                    //             }
+                    //             CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                    //             CompilerTarget::Dioxus => {
+                    //                 todo!("dioxus plugin not implemented yet")
+                    //             }
+                    //         }
+                    //     });
+                    let model =
+                        Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
+                    match &mut compiler.target {
+                        CompilerTarget::Makepad(makepad) => {
+                            makepad.as_mut().unwrap().add(model);
+                        }
+                        CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                        CompilerTarget::Dioxus => {
+                            todo!("dioxus plugin not implemented yet")
+                        }
+                    }
                 }
                 (true, false) => {
                     // is file but not gen file, directly copy to the compiled project
@@ -272,7 +283,6 @@ impl Compiler {
                         .exists_or_insert(source_path)
                         .unwrap()
                         .modify_then(|| {
-                            dbg!("static file copy");
                             let _ = copy_file(source_path, compiled_path);
                         });
                 }
