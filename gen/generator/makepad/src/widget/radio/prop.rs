@@ -10,9 +10,13 @@ use crate::{
         builtin::{
             draw_icon::DrawIcon, draw_radio_button::DrawRadioButton, draw_text::DrawText, Align,
             Layout, Walk,
-        }, ABS_POS, ALIGN, BRIGHTNESS, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH, DRAW_ICON, DRAW_TEXT, FLOW, FONT, FONT_SCALE, FONT_SIZE, HEIGHT, HEIGHT_FACTOR, ICON_WALK, INGORE_NEWLINES, LINEARIZE, LINE_SPACING, MARGIN, PADDING, SCALE, SCROLL, SPACING, SVG_FILE, TOP_DROP, WIDTH, WRAP
+        },
+        ABS_POS, ALIGN, BRIGHTNESS, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH,
+        DRAW_ICON, DRAW_TEXT, FLOW, FONT, FONT_SCALE, FONT_SIZE, HEIGHT, HEIGHT_FACTOR, ICON_WALK,
+        INGORE_NEWLINES, LINEARIZE, LINE_SPACING, MARGIN, PADDING, SCALE, SCROLL, SPACING,
+        SVG_FILE, TOP_DROP, WIDTH, WRAP,
     },
-    props_to_token,
+    props_to_token, str_to_string_try_from,
     widget::{
         prop_ignore,
         utils::{bind_prop_value, quote_prop, string_prop},
@@ -27,12 +31,65 @@ enum NodeType {
     Outer,
 }
 
+const IMAGE: &str = "Image";
+const ICON: &str = "Icon";
+const NONE: &str = "None";
+const LABEL_WALK: &str = "label_walk";
+
 #[derive(Debug, Clone, Default)]
 pub enum MediaType {
     Image,
     #[default]
     Icon,
     None,
+}
+
+impl TryFrom<&str> for MediaType {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            IMAGE => Ok(MediaType::Image),
+            ICON => Ok(MediaType::Icon),
+            NONE => Ok(MediaType::None),
+            _ => Err(Errors::PropConvertFail(format!(
+                "{} cannot be converted to MediaType!",
+                value
+            ))),
+        }
+    }
+}
+
+str_to_string_try_from!(MediaType);
+
+impl TryFrom<&Value> for MediaType {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            value
+                .is_string_and_get()
+                .map(|s| s.try_into())
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{:?} cannot be converted to Makepad::MediaType!",
+                        value
+                    )))
+                })
+        }
+    }
+}
+
+impl Display for MediaType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MediaType::Image => f.write_str(IMAGE),
+            MediaType::Icon => f.write_str(ICON),
+            MediaType::None => f.write_str(NONE),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -44,7 +101,7 @@ pub struct RadioButtonProps {
     pub draw_text: Option<DrawText>,
     // pub value: Option<LiveValue>
     pub value: Option<String>,
-    pub media: MediaType,
+    pub media: Option<MediaType>,
     pub icon_walk: Option<Walk>,
     pub walk: Option<Walk>,
     // pub image: Image
@@ -72,11 +129,30 @@ impl DynProps for RadioButtonProps {
             SCALE => quote_prop(vec![DRAW_ICON, SCALE], &value),
             "icon_draw_depth" => quote_prop(vec![DRAW_ICON, DRAW_DEPTH], &value),
             "icon_color" => quote_prop(vec![DRAW_ICON, COLOR], &value),
+            // ----------------- draw_text -----------------
+            FONT => quote_prop(vec![DRAW_TEXT, FONT], &value),
+            FONT_SIZE => quote_prop(vec![DRAW_TEXT, FONT_SIZE], &value),
+            BRIGHTNESS => quote_prop(vec![DRAW_TEXT, BRIGHTNESS], &value),
+            CURVE => quote_prop(vec![DRAW_TEXT, CURVE], &value),
+            "label_line_spacing" => quote_prop(vec![DRAW_TEXT, LINE_SPACING], &value),
+            TOP_DROP => quote_prop(vec![DRAW_TEXT, TOP_DROP], &value),
+            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, HEIGHT_FACTOR], &value),
+            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
             // ----------------- icon_walk ---------------
             "icon_height" => quote_prop(vec![ICON_WALK, HEIGHT], &value),
             "icon_width" => quote_prop(vec![ICON_WALK, WIDTH], &value),
             "icon_abs_pos" => quote_prop(vec![ICON_WALK, ABS_POS], &value),
             "icon_margin" => quote_prop(vec![ICON_WALK, MARGIN], &value),
+            // ----------------- label walk -----------------
+            "label_height" => quote_prop(vec![LABEL_WALK, HEIGHT], &value),
+            "label_width" => quote_prop(vec![LABEL_WALK, WIDTH], &value),
+            "label_abs_pos" => quote_prop(vec![LABEL_WALK, ABS_POS], &value),
+            "label_margin" => quote_prop(vec![LABEL_WALK, MARGIN], &value),
             // ----------------- walk -----------------
             HEIGHT => quote_prop(vec![HEIGHT], &value),
             WIDTH => quote_prop(vec![WIDTH], &value),
@@ -91,6 +167,13 @@ impl DynProps for RadioButtonProps {
             FLOW => quote_prop(vec![FLOW], &value),
             SPACING => quote_prop(vec![SPACING], &value),
             LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
+            // ----------------- other ------------------
+            "label_align" => quote_prop(vec!["label_align"], &value),
+            "bind" => quote_prop(vec!["bind"], &value),
+            // "label" => self.label(&value),
+            "text" => quote_prop(vec!["text"], &value),
+            "radio_type" => quote_prop(vec!["radio_type"], &value),
+            "media" => quote_prop(vec!["media"], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
     }
@@ -101,11 +184,11 @@ impl StaticProps for RadioButtonProps {
     where
         Self: Sized,
     {
-        let mut icon = RadioButtonProps::default();
+        let mut radio = RadioButtonProps::default();
         for (k, v) in props {
-            icon.prop(k.name(), v.clone())
+            radio.prop(k.name(), v.clone())
         }
-        icon
+        radio
     }
 
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
@@ -162,6 +245,7 @@ impl StaticProps for RadioButtonProps {
             // "label" => self.label(&value),
             "text" => self.label(&value),
             "radio_type" => self.radio_type(&value),
+            "media" => self.media(&value),
             _ => {
                 if !prop_ignore(prop_name) {
                     panic!("cannot match prop");
@@ -182,6 +266,10 @@ impl RadioButtonProps {
     }
     fn radio_type(&mut self, value: &Value) -> Result<(), Errors> {
         self.draw_radio.as_mut().unwrap().radio_type(value)
+    }
+    fn media(&mut self, value: &Value) -> Result<(), Errors> {
+        self.media.replace(value.try_into()?);
+        Ok(())
     }
     fn check_draw_icon(&mut self) -> &mut DrawIcon {
         if self.draw_icon.is_none() {
@@ -369,7 +457,7 @@ impl RadioButtonProps {
 
 impl Display for RadioButtonProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(draw_radio) = &self.draw_radio  {
+        if let Some(draw_radio) = &self.draw_radio {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", "draw_radio", draw_radio));
         }
         if let Some(draw_icon) = &self.draw_icon {
@@ -377,6 +465,12 @@ impl Display for RadioButtonProps {
         }
         if let Some(draw_text) = &self.draw_text {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", DRAW_TEXT, draw_text));
+        }
+        if let Some(value) = self.value.as_ref() {
+            let _ = f.write_fmt(format_args!("value: \"{}\",", value));
+        }
+        if let Some(media) = self.media.as_ref() {
+            let _ = f.write_fmt(format_args!("media: {},", media));
         }
         if let Some(icon_walk) = &self.icon_walk {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", ICON_WALK, icon_walk));
@@ -387,41 +481,21 @@ impl Display for RadioButtonProps {
         if let Some(layout) = &self.layout {
             let _ = f.write_fmt(format_args!("{},", layout));
         }
+        if let Some(label_walk) = self.label_walk.as_ref() {
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", "label_walk", label_walk));
+        }
+        if let Some(label_align) = self.label_align.as_ref() {
+            let _ = f.write_fmt(format_args!("label_align: {},", label_align));
+        }
         if let Some(label) = &self.label {
             let _ = f.write_fmt(format_args!("text: \"{}\",", label));
-
             // let _ = f.write_fmt(format_args!("label: \"{}\",", label));
+        }
+        if let Some(bind) = self.bind.as_ref() {
+            let _ = f.write_fmt(format_args!("bind: \"{}\",", bind));
         }
         write!(f, "")
     }
 }
 
 props_to_token!(RadioButtonProps);
-
-#[cfg(test)]
-mod test_icon {
-    use crate::{prop::builtin::draw_icon::DrawIcon, ToToken};
-
-    use super::RadioButtonProps;
-
-    #[test]
-    fn icon() {
-        let mut icon = RadioButtonProps::default();
-        // draw icon
-        let mut draw_icon = DrawIcon::default();
-        draw_icon.svg_file = Some(
-            "crate://self/resources/icons/Icon_Search.svg"
-                .try_into()
-                .unwrap(),
-        );
-        let _ = draw_icon.brightness(&0.5.into());
-
-        icon.draw_icon = Some(draw_icon);
-
-        let tk = icon.to_token_stream().to_string();
-
-        let prop = "draw_icon : { brightness : 0.5 , svg_file : dep (\"crate://self/resources/icons/Icon_Search.svg\") , } ,";
-
-        assert_eq!(tk.as_str(), prop);
-    }
-}

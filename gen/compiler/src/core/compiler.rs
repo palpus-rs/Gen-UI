@@ -11,7 +11,7 @@ use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
-use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path_exclude, Cache};
+use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path_exclude, msg::{APP_RUNNING, SRC_GEN_INIT}, Cache};
 
 use super::{dep::RustDependence, log::error, watcher::FKind, CompilerTarget};
 
@@ -45,7 +45,7 @@ pub struct Compiler {
 
 impl Compiler {
     pub fn run(&mut self) -> () {
-        info("App is running ...");
+        info(APP_RUNNING);
         let rt = Runtime::new().unwrap();
         let origin_path = self.origin_path.clone();
         let excludes = self.exclude.clone();
@@ -77,6 +77,7 @@ impl Compiler {
         self.dependencies.push(dep);
         self
     }
+    /// set app entry name
     pub fn entry(&mut self, entry: &str) -> &mut Self {
         self.entry = entry.to_string();
         self
@@ -177,7 +178,7 @@ impl Compiler {
                 let _ = self.cache.write();
             }
         }
-        info(format!("file {:?} is compiling ...", path.as_ref()).as_str());
+        info(format!("file {:?} is compiled successfully.", path.as_ref()).as_str());
     }
     /// remove compiled file and remove cache
     fn remove_compiled<P>(&mut self, path: P, f_kind: FKind) -> ()
@@ -403,7 +404,7 @@ impl Compiler {
         //     .status()
         //     .expect("failed to add makepad-widgets to src_gen project");
 
-        info("src_gen project is created successfully ...");
+        info(SRC_GEN_INIT);
     }
     /// ## add exclude file or folder
     /// path root is the project root path
