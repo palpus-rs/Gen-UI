@@ -5,6 +5,7 @@ use std::{
     time::Duration,
 };
 
+/// copy file from source_path to compiled_path
 pub fn copy_file<P, Q>(from: P, to: Q) -> ()
 where
     P: AsRef<Path>,
@@ -24,6 +25,7 @@ where
     let _ = copy_with_retries(from, to, 5, Duration::from_millis(500)).unwrap();
 }
 
+/// copy file from source_path to compiled_path with retries
 fn copy_with_retries<P, Q>(
     from: P,
     to: Q,

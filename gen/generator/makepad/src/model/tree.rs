@@ -1,4 +1,4 @@
-use std::{collections::HashSet, hash::Hash, io::Write, path::PathBuf};
+use std::{collections::HashSet, hash::Hash, path::PathBuf};
 
 use gen_converter::model::Source;
 use gen_utils::common::token_tree_ident;
@@ -6,7 +6,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
 
-use crate::{utils::create_file, widget::model::widget::Widget};
+use crate::widget::model::widget::Widget;
 
 use super::{ModelNode, RsFile};
 
@@ -54,8 +54,11 @@ impl ModelTree {
             children: None,
         }
     }
-    pub fn root_live_register(&self) -> String{
-        format!("crate::{}::live_design(cx);", self.node.source().unwrap().to_live_register())
+    pub fn root_live_register(&self) -> String {
+        format!(
+            "crate::{}::live_design(cx);",
+            self.node.source().unwrap().to_live_register()
+        )
     }
     /// get node from tree
     pub fn get(&self, key: &Source) -> Option<ModelNode> {
@@ -97,7 +100,7 @@ impl ModelTree {
             // 查找子节点中任意的path的节点，首先使用level匹配，level相同，可以直接push
             // level不同，若当前level比item的level小，继续遍历子节点，大则将当前children放到item的children中，再把item放回父节点进行替换
             // let (current_level, _current_path) = children[0].level();
-            let (current_level, _current_path) = children.iter().next().unwrap().level();        
+            let (current_level, _current_path) = children.iter().next().unwrap().level();
             let step = item_level - current_level;
             if step.eq(&0_usize) {
                 // children.push(item.into())
@@ -146,7 +149,7 @@ impl ModelTree {
                     // children.push(item.into());
                     item.into()
                 };
-                
+
                 let _ = children.insert(target_node);
             }
         } else {
@@ -169,9 +172,10 @@ impl ModelTree {
         live_register
     }
     /// get root import
-    pub fn to_imports(&self) -> TokenStream{
+    pub fn to_imports(&self) -> TokenStream {
         let mut imports = TokenStream::new();
-        let import_str: TokenStream = parse_str(&self.node.source().unwrap().to_live_register()).unwrap();
+        let import_str: TokenStream =
+            parse_str(&self.node.source().unwrap().to_live_register()).unwrap();
         imports.extend(quote! {import crate::#import_str::*;});
         imports
     }

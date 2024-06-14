@@ -39,19 +39,6 @@ where
         match event {
             Ok(event) => {
                 // check event is modify or create
-                // info(format!("{:?}", event).as_str());
-                // if match event.kind {
-                //     notify::EventKind::Create(_)
-                //     | notify::EventKind::Modify(_)
-                //     | notify::EventKind::Remove(_) => true,
-                //     _ => false,
-                // } {
-                //     // compile the file , copy to src_gen and write cache
-                //     // attention: exclude some files
-                //     if !excludes.contains(&event.paths[0]) {
-                //         f(&event.paths[0], &event.kind);
-                //     }
-                // }
                 if !excludes.contains(&event.paths[0]) {
                     if let Some(kind) = match_kind(&event, &mut fs_state) {
                         f(&event.paths[0], &event.kind, kind);
