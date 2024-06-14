@@ -159,7 +159,8 @@ impl StaticProps for RadioButtonProps {
             // ----------------- other ------------------
             "label_align" => self.align(&value, NodeType::Label),
             "bind" => self.bind(&value),
-            "label" => self.label(&value),
+            // "label" => self.label(&value),
+            "text" => self.label(&value),
             "radio_type" => self.radio_type(&value),
             _ => {
                 if !prop_ignore(prop_name) {
@@ -385,6 +386,11 @@ impl Display for RadioButtonProps {
         }
         if let Some(layout) = &self.layout {
             let _ = f.write_fmt(format_args!("{},", layout));
+        }
+        if let Some(label) = &self.label {
+            let _ = f.write_fmt(format_args!("text: \"{}\",", label));
+
+            // let _ = f.write_fmt(format_args!("label: \"{}\",", label));
         }
         write!(f, "")
     }

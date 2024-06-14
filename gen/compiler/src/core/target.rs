@@ -8,6 +8,8 @@ use gen_converter::model::Source;
 use makepad_gen_plugin::{model::ModelNode, Makepad};
 use serde::{Deserialize, Serialize};
 
+use super::dep::RustDependence;
+
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Target {
     Slint,
@@ -59,6 +61,16 @@ impl CompilerTarget {
                 } else {
                     None
                 }
+            }
+        }
+    }
+    pub fn default_dependencies(&self) -> Vec<RustDependence> {
+        match self {
+            CompilerTarget::Slint => todo!("Slint Compiler is not supported yet"),
+            CompilerTarget::Dioxus => todo!("Dioxus Compiler is not supported yet"),
+            CompilerTarget::Makepad(_) => {
+                let dep = RustDependence::new("makepad-widgets");
+                vec![dep]
             }
         }
     }

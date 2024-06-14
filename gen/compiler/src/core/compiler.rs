@@ -13,7 +13,7 @@ use walkdir::WalkDir;
 
 use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path_exclude, Cache};
 
-use super::{log::error, watcher::FKind, CompilerTarget};
+use super::{dep::RustDependence, log::error, watcher::FKind, CompilerTarget};
 
 /// ## Compile Strategy: Lazy
 /// compiler will compile the file when the file is created or modified
@@ -34,6 +34,11 @@ pub struct Compiler {
     pub root: Option<PathBuf>,
     /// exclude files or folders
     pub exclude: Vec<PathBuf>,
+    /// rust dependencies in Cargo.toml
+    /// it depends on the target
+    /// - makepad: makepad-widgets
+    /// > **you can add more other dependencies which you need**
+    pub dependencies: Vec<RustDependence>,
     /// gen_cache
     pub cache: Cache,
 }
@@ -67,6 +72,10 @@ impl Compiler {
             }
         });
         exit(-1);
+    }
+    pub fn add_dep(&mut self, dep: RustDependence) -> &mut Self {
+        self.dependencies.push(dep);
+        self
     }
     pub fn entry(&mut self, entry: &str) -> &mut Self {
         self.entry = entry.to_string();
@@ -239,6 +248,7 @@ impl Compiler {
                         .exists_or_insert(&source_path)
                         .unwrap()
                         .modify_then(|| {
+                            dbg!(&source_path);
                             let model = Model::new(&source_path.to_path_buf(), &target_path, false)
                                 .unwrap();
                             match &mut compiler.target {
@@ -262,6 +272,7 @@ impl Compiler {
                         .exists_or_insert(source_path)
                         .unwrap()
                         .modify_then(|| {
+                            dbg!("static file copy");
                             let _ = copy_file(source_path, compiled_path);
                         });
                 }
@@ -362,6 +373,12 @@ impl Compiler {
             .as_table_mut()
             .expect("dependencies not found in Cargo.toml");
 
+        // add dependencies to the src_gen project from compiler dependencies
+        for dep in self.dependencies.iter() {
+            let (name, value) = dep.to_table_value();
+            origin_dependencies[name.as_str()] = value;
+        }
+
         let _ = mem::replace(compiled_dependencies, origin_dependencies);
 
         // compiled_dependencies.extend(origin_dependencies.iter());
@@ -370,11 +387,11 @@ impl Compiler {
             .expect("failed to write src_gen project's Cargo.toml");
 
         // command add Makepad widget crate : `cargo add makepad-widgets`
-        let _ = Command::new("cargo")
-            .args(["add", "makepad-widgets"])
-            .current_dir(compiled_dir.as_path())
-            .status()
-            .expect("failed to add makepad-widgets to src_gen project");
+        // let _ = Command::new("cargo")
+        //     .args(["add", "makepad-widgets"])
+        //     .current_dir(compiled_dir.as_path())
+        //     .status()
+        //     .expect("failed to add makepad-widgets to src_gen project");
 
         info("src_gen project is created successfully ...");
     }

@@ -6,6 +6,7 @@ mod watcher;
 mod cache;
 mod hash;
 mod state;
+mod dep;
 
 pub use compiler::Compiler;
 pub use log::{info, init_log};
@@ -14,3 +15,4 @@ pub use watcher::init_watcher;
 pub use cache::Cache;
 pub use hash::*;
 pub use state::FileState;
+pub use dep::*;

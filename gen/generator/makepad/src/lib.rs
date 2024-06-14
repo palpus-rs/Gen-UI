@@ -30,6 +30,7 @@ pub struct Makepad {
     pub app_main: AppMain,
     pub tree: Option<ModelTree>,
     pub main_rs: RsFile,
+    // pub cache_files: Vec<PathBuf>,
 }
 
 impl Makepad {

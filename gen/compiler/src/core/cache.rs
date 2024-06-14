@@ -220,6 +220,7 @@ impl Cache {
             None => None,
         }
     }
+    /// get all gen file path from cache values
     pub fn get_gen(&self) -> Option<Vec<&PathBuf>> {
         return if let Some(files) = &self.values {
             Some(
@@ -231,5 +232,13 @@ impl Cache {
         } else {
             None
         };
+    }
+    /// get all cache values
+    pub fn values(&self) -> Option<Vec<PathBuf>> {
+        if let Some(values) = self.values.as_ref() {
+            Some(values.keys().map(|k| k.clone()).collect())
+        } else {
+            None
+        }
     }
 }

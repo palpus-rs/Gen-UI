@@ -43,6 +43,7 @@ pub fn app(target: Target) -> Compiler {
         root: None,
         exclude,
         cache,
+        dependencies: Default::default(),
     }
 }
 
