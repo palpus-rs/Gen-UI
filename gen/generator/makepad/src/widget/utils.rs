@@ -283,6 +283,7 @@ fn local_ident(code: &Stmt) -> String {
     }
 
     if let Stmt::Local(local) = code {
+        // dbg!(get(&local.pat));
         get(&local.pat)
     } else {
         panic!("local stmt must be ident|type")

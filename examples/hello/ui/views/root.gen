@@ -1,8 +1,10 @@
 <template>
   <window id="ui">
-    <view>
+    <view flow="Down" height="All">
       <checkbox_view /> 
       <header_view /> 
+      <icon_view></icon_view>
+      <button_view></button_view>
     </view>
   </window>
 </template>
@@ -11,6 +13,8 @@
 import!{
   crate::views::checkbox::*;
   crate::views::header::header::*;
+  crate::views::icon::*;
+  crate::views::button_view::*;
 }
 </script>
 

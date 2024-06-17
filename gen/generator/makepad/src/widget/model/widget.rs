@@ -2,15 +2,15 @@ use std::{collections::HashMap, hash::Hash};
 
 use gen_converter::model::{
     prop::ConvertStyle,
-    script::{GenScriptModel, PropFn, ScriptModel, UseMod},
+    script::{CurrentInstance, GenScriptModel, PropFn, ScriptModel, UseMod},
     Source, TemplateModel,
 };
 use gen_parser::{PropsKey, Value};
 
 use gen_utils::common::{snake_to_camel, token_tree_ident};
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{parse_str, ItemEnum, ItemStruct, StmtMacro};
+use quote::{quote, ToTokens};
+use syn::{parse_str, ItemEnum, ItemStruct, Stmt, StmtMacro};
 
 use crate::{
     utils::{component_render, special_struct},
@@ -101,10 +101,8 @@ impl Widget {
             }
             None => {
                 widget.name = name.to_string();
-                if let Ok(inherits) = BuiltIn::try_from(name){
-                    widget
-                    .set_is_built_in(true)
-                    .set_inherits(inherits);
+                if let Ok(inherits) = BuiltIn::try_from(name) {
+                    widget.set_is_built_in(true).set_inherits(inherits);
                 }
             }
         }
@@ -179,14 +177,19 @@ impl Widget {
                     sub_event_binds,
                     // other,
                     imports,
+                    current_instance,
+                    instance_opt,
                     ..
                 } = sc;
-
                 self.set_uses(uses)
                     .set_imports(imports)
                     .set_prop_ptr(prop_ptr)
                     .set_event_ptr(event_ptr)
-                    .draw_walk(sub_prop_binds)
+                    .draw_walk(
+                        sub_prop_binds,
+                        current_instance.as_ref(),
+                        instance_opt.as_ref(),
+                    )
                     .handle_event(sub_event_binds);
             }
         } else {
@@ -203,14 +206,43 @@ impl Widget {
             .handle_event(builtin.handle_event(events));
         self
     }
-    pub fn draw_walk(&mut self, walk: &Option<Vec<PropFn>>) -> &mut Self {
+    pub fn draw_walk(
+        &mut self,
+        walk: &Option<Vec<PropFn>>,
+        current_instance: Option<&CurrentInstance>,
+        instance_opt: Option<&Vec<Stmt>>,
+    ) -> &mut Self {
+        // 将当前实例所涉及的代码转为TokenStream
+        // 需要将特定的头部转为self
+        let draw_walk_all = instance_opt.map(|opt| {
+            let instance_name = current_instance
+                .unwrap()
+                .name()
+                .expect("current instance must have name")
+                .to_string();
+            opt.into_iter().fold(TokenStream::new(), |mut acc, item| {
+                // 这里我本来可以一点点替换的，但发现似乎这样会错过很多情况，所以转而使用转为String后进行replace
+                let item = item.to_token_stream().to_string();
+
+                let item = item.replacen(&instance_name, "self", 1);
+
+                acc.extend(parse_str::<TokenStream>(&item));
+                acc
+            })
+        });
+
         // 由BuiltIn确定如何draw_walk
         let builtin = self.inherits.as_ref().unwrap();
-        let _ = self
-            .traits
-            .as_mut()
-            .unwrap()
-            .draw_walk(builtin.draw_walk(walk));
+        let builtin_draw_walk = builtin.draw_walk(walk);
+
+        let draw_walk_all = if let Some(mut code) = draw_walk_all {
+            code.extend(builtin_draw_walk);
+            code
+        } else {
+            builtin_draw_walk
+        };
+
+        let _ = self.traits.as_mut().unwrap().draw_walk(draw_walk_all);
         self
     }
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {
@@ -294,12 +326,11 @@ impl Widget {
                     ..
                 } = child;
 
-                let name = if *is_built_in{
+                let name = if *is_built_in {
                     snake_to_camel(name).unwrap()
-                }else{
+                } else {
                     name.to_string()
                 };
-
 
                 tk.extend(component_render(
                     id.as_ref(),
@@ -416,7 +447,7 @@ impl From<gen_converter::model::Model> for Widget {
             ..
         } = value;
 
-        let template = template.unwrap();  
+        let template = template.unwrap();
         build_widget(Some(special), &template, style.as_ref(), script.as_ref())
     }
 }

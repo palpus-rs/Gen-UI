@@ -6,9 +6,20 @@
     <radio_button id="radio1"></radio_button>
     <radio_button id="radio2"></radio_button>
     <checkbox class="checkbox1" check_type="None"></checkbox>
-    <label text="this is a test label!" margin="16.0"></label>
+    
+    <button text="click" @click="change"></button>
+    <label :text="label_text" margin="16.0"></label>
   </view>
 </template>
+
+<script>
+
+let mut label_text = String::from("this is a test label!");
+
+let change = ||{
+  label_text = String::from("I have been clicked");
+};
+</script>
 
 <style>
 #checkbox_view{

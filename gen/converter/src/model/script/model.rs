@@ -1,6 +1,7 @@
 use gen_parser::Value;
 
-use syn::{Block, Meta, Pat, StmtMacro};
+use proc_macro2::Span;
+use syn::{Block, Expr, Ident, Meta, Pat, Stmt, StmtMacro};
 
 use crate::model::PropTree;
 
@@ -48,7 +49,7 @@ pub struct GenScriptModel {
     /// 例如：
     /// ```rust
     /// #[derive(Debug, Clone, PartialEq, Prop)]
-    /// pub enum Props{
+    /// pub struct Props{
     ///     text: String,
     ///     height: f64,
     /// }
@@ -80,13 +81,54 @@ pub struct GenScriptModel {
     pub sub_prop_binds: Option<Vec<PropFn>>,
     /// 表示当前组件的内部子组件的事件绑定
     pub sub_event_binds: Option<Vec<PropFn>>,
+    /// 当前组件的实例
+    /// 该实例在组件的draw_walk中被构建
+    /// 通常使用default()方法来构建
+    /// 例如：`let instance = MyButton::default();`
+    /// 常见声明如下:
+    /// ```rust
+    /// <script>
+    /// use gen_macros::{Prop};
+    /// use makepad_widget::*;
+    ///
+    /// #[derive(Prop)]
+    /// pub struct MyButtonWidget{
+    ///     text: String,
+    ///     walk: Walk, //(你不该设置这个属性⛔, 该属性是自动添加的)
+    /// }
+    ///
+    /// let mut current_instance = MyButtonWidget::default(); // 这里的
+    /// current_instance.text = "Hello".to_string(); // 这不是
+    /// </script>
+    /// ```
+    pub current_instance: Option<CurrentInstance>,
+    /// 对当前组件实例处理的代码
+    /// 例如上面的代码中的`current_instance.text = "Hello".to_string();`
+    /// 这里应该都是Expr，但使用Stmt，因为Stmt能表示完整语句
+    pub instance_opt: Option<Vec<Stmt>>,
     /// 其他的代码，例如一些过程代码
     pub other: Option<Vec<syn::Stmt>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CurrentInstance {
+    pub is_mut: bool,
+    pub name: Option<Ident>,
+    pub ptr: Ident,
+}
+
+impl CurrentInstance {
+    pub fn name(&self) -> Option<&Ident> {
+        self.name.as_ref()
+    }
 }
 
 impl GenScriptModel {
     pub fn new(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> Self {
         build_script(block, bind_fn_tree)
+    }
+    pub fn get_current_instance(&self) -> Option<&CurrentInstance> {
+        self.current_instance.as_ref()
     }
     pub fn get_uses(&self) -> Option<&UseMod> {
         self.uses.as_ref()
@@ -198,6 +240,7 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
     let mut model = GenScriptModel::default();
     let mut lifetimes: Option<LifeTime> = None;
     let mut imports: Option<StmtMacro> = None;
+    let mut tmp: Vec<syn::Stmt> = vec![];
 
     for stmt in &stmts {
         match stmt {
@@ -221,6 +264,11 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
                                 if list.path.is_ident("derive")
                                     && list.tokens.to_string().contains("Prop")
                                 {
+                                    model.current_instance.replace(CurrentInstance {
+                                        name: None,
+                                        is_mut: false,
+                                        ptr: struct_item.ident.clone(),
+                                    });
                                     model.set_prop_ptr(struct_item.clone());
                                 } else {
                                     model.push_other(stmt.clone());
@@ -273,39 +321,111 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
                     model.push_other(stmt.clone());
                 }
             }
-            syn::Stmt::Local(local) => {
-                // 处理属性绑定 和 事件绑定
-                let ident = match &local.pat {
-                    Pat::Ident(ident) => Some(ident.ident.to_string()),
-                    Pat::Type(ty) => {
-                        if let Pat::Ident(ident) = &*ty.pat {
-                            Some(ident.ident.to_string())
-                        } else {
-                            None
-                        }
-                    }
-                    _ => None,
-                };
 
-                if let Some(ident) = ident {
-                    if model.push_sub_prop_fn(&bind_fn_tree, &ident, &stmt) {
-                        continue;
-                    } else {
-                        model.push_other(stmt.clone());
-                    }
-                } else {
-                    model.push_other(stmt.clone());
-                }
-            }
             _ => {
-                // 其他情况直接放到other中
-                model.push_other(stmt.clone());
+                // 其他情况直接放到tmp中
+                tmp.push(stmt.clone());
             }
         }
     }
     model.set_lifetimes(lifetimes);
     model.set_imports(imports);
     // dbg!(&model);
+    // handle 属性绑定|事件绑定
+    if !tmp.is_empty() {
+        for stmt in &tmp {
+            // dbg!(stmt);
+            match stmt {
+                syn::Stmt::Local(local) => {
+                    // 处理属性绑定 和 事件绑定
+                    // 查看是否有init
+                    if let Some(init) = &local.init {
+                        // 查找init中的expr是否是ptr的default方法
+                        if let Expr::Call(expr_call) = &*init.expr {
+                            if let Expr::Path(expr_path) = &*expr_call.func {
+                                if expr_path
+                                    .path
+                                    .segments
+                                    .last()
+                                    .unwrap()
+                                    .ident
+                                    .eq(&Ident::new("default", Span::call_site()))
+                                    && expr_path.path.segments[0].ident.eq(&model
+                                        .current_instance
+                                        .as_ref()
+                                        .unwrap()
+                                        .ptr)
+                                {
+                                    // 如果是default方法
+                                    // 则查看是否有ident
+                                    // 如果有则将其放到current_instance中否则继续往下走
+                                    if let Pat::Ident(ident) = &local.pat {
+                                        model
+                                            .current_instance
+                                            .as_mut()
+                                            .unwrap()
+                                            .name
+                                            .replace(ident.ident.clone());
+                                        model.current_instance.as_mut().unwrap().is_mut =
+                                            ident.mutability.is_some();
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    let ident = match &local.pat {
+                        Pat::Ident(ident) => Some(ident.ident.to_string()),
+                        Pat::Type(ty) => {
+                            if let Pat::Ident(ident) = &*ty.pat {
+                                Some(ident.ident.to_string())
+                            } else {
+                                None
+                            }
+                        }
+                        _ => None,
+                    };
+
+                    if let Some(ident) = ident {
+                        if model.push_sub_prop_fn(&bind_fn_tree, &ident, &stmt) {
+                            continue;
+                        } else {
+                            model.push_other(stmt.clone());
+                        }
+                    } else {
+                        model.push_other(stmt.clone());
+                    }
+                }
+                syn::Stmt::Expr(expr, _) => {
+                    // 对表达式进行判断，如果左侧是以instance_ptr开头的则认为是对当前实例的操作
+                    // 否则放到other中
+                    if let Expr::Assign(assign) = expr {
+                        if let Expr::Field(field) = &*assign.left {
+                            if let Expr::Path(path) = &*field.base {
+                                if path.path.segments.first().unwrap().ident.eq(model
+                                    .get_current_instance()
+                                    .unwrap()
+                                    .name()
+                                    .unwrap())
+                                {
+                                    if model.instance_opt.is_none() {
+                                        model.instance_opt.replace(vec![]);
+                                    }
+                                    model.instance_opt.as_mut().unwrap().push(stmt.clone());
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    model.push_other(stmt.clone());
+                }
+                _ => {
+                    model.push_other(stmt.clone());
+                }
+            }
+        }
+    }
     model
 }
 

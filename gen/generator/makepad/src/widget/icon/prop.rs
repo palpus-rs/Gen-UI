@@ -45,13 +45,13 @@ impl DynProps for IconProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             // ----------------- draw_icon ---------------
-            "icon_brightness" => quote_prop(vec![DRAW_ICON, BRIGHTNESS], &value),
-            "icon_curve" => quote_prop(vec![DRAW_ICON, CURVE], &value),
+            BRIGHTNESS => quote_prop(vec![DRAW_ICON, BRIGHTNESS], &value),
+            CURVE => quote_prop(vec![DRAW_ICON, CURVE], &value),
             LINEARIZE => quote_prop(vec![DRAW_ICON, LINEARIZE], &value),
             SVG_FILE => quote_prop(vec![DRAW_ICON, SVG_FILE], &value),
             SCALE => quote_prop(vec![DRAW_ICON, SCALE], &value),
-            "icon_draw_depth" => quote_prop(vec![DRAW_ICON, DRAW_DEPTH], &value),
-            "icon_color" => quote_prop(vec![DRAW_ICON, COLOR], &value),
+            DRAW_DEPTH => quote_prop(vec![DRAW_ICON, DRAW_DEPTH], &value),
+            COLOR => quote_prop(vec![DRAW_ICON, COLOR], &value),
             // ----------------- icon_walk ---------------
             "icon_height" => quote_prop(vec![ICON_WALK, HEIGHT], &value),
             "icon_width" => quote_prop(vec![ICON_WALK, WIDTH], &value),
@@ -91,13 +91,13 @@ impl StaticProps for IconProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_icon ---------------
-            "icon_brightness" => self.brightness(&value),
-            "icon_curve" => self.curve(&value),
+            BRIGHTNESS => self.brightness(&value),
+            CURVE => self.curve(&value),
             LINEARIZE => self.linearize(&value),
             SVG_FILE => self.svg_file(&value),
             SCALE => self.scale(&value),
-            "icon_draw_depth" => self.draw_depth(&value),
-            "icon_color" => self.color(&value),
+            DRAW_DEPTH => self.draw_depth(&value),
+            COLOR => self.color(&value),
             // ----------------- icon_walk ---------------
             "icon_height" => self.height(&value, NodeType::Inner),
             "icon_width" => self.width(&value, NodeType::Inner),
@@ -238,10 +238,10 @@ impl Display for IconProps {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", ICON_WALK, icon_walk));
         }
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("{},", walk));
+            let _ = f.write_fmt(format_args!("{}", walk));
         }
         if let Some(layout) = &self.layout {
-            let _ = f.write_fmt(format_args!("{},", layout));
+            let _ = f.write_fmt(format_args!("{}", layout));
         }
         write!(f, "")
     }

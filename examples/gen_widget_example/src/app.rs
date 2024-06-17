@@ -63,7 +63,9 @@ live_design! {
                             text: "test"
                         }
                     }
-                    
+                    <GButton>{
+                        text: "hello"
+                    }
                     <GButton>{
                         height: 46,
                         width: 160,

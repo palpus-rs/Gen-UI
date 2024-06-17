@@ -35,7 +35,6 @@ impl ToToken for DrawIcon {
 
 impl DrawIcon {
     pub fn brightness(&mut self, value: &Value) -> Result<(), Errors> {
-        dbg!(value);
         f32_prop(value, |b| {
             self.brightness = Some(b);
         })
@@ -99,7 +98,7 @@ impl Display for DrawIcon {
             let _ = f.write_fmt(format_args!("{}: {},", DRAW_DEPTH, draw_depth));
         }
         if let Some(color) = &self.color {
-            let _ = f.write_fmt(format_args!("{}: {{{}}},", COLOR, color));
+            let _ = f.write_fmt(format_args!("{}: {},", COLOR, color));
         }
         write!(f, "")
     }
