@@ -11,6 +11,7 @@ pub mod match_event;
 pub mod role;
 pub mod traits;
 pub mod widget;
+pub mod live_hook;
 
 pub trait ToLiveDesign {
     fn widget_tree(&self) -> Option<TokenStream>;

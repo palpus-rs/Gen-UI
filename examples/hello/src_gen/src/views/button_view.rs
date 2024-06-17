@@ -1,6 +1,6 @@
 use makepad_widgets::*;
 live_design! { import makepad_widgets :: base ::*; import makepad_widgets :: theme_desktop_dark ::*; button_view = {{ ButtonView }}{ first_lb = < Label >{ draw_text : { text_style : { font_size : 32 , brightness : 1.1 , } , wrap : Word , color : # ffffff , } , } second_lb = < Label >{ draw_text : { text_style : { brightness : 1.1 , } , wrap : Word , color : # ffffff , } , text : "label 2" , } bb = < Button >{ text : "text btn" , } } }
-#[derive(Live, LiveHook, Widget)]
+#[derive(Live, Widget)]
 pub struct ButtonView {
     #[live]
     pub label1: String,
@@ -14,12 +14,6 @@ pub enum Events {
 }
 impl Widget for ButtonView {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.label1 = String::from("Click The Button");
-        let fs: f64 = 18.0;
-        self.label(id!(second_lb)).apply_over_and_redraw(
-            cx,
-            live! { draw_text : { text_style : { font_size : (fs) , } , } , },
-        );
         self.view.draw_walk(cx, scope, walk)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
@@ -27,7 +21,9 @@ impl Widget for ButtonView {
         if let Event::Actions(actions) = event {
             if self.button(id!(bb)).clicked(actions) {
                 let mut btn_click = || {
-                    props.label1 = String::from("I have been clicked");
+                    self.label1 = String::from("I have been clicked");
+                    self.label(id!(first_lb))
+                    .apply_over_and_redraw(cx, live! { text : (self . label1) , });
                     println!("Button bb Clicked");
                     cx.widget_action(uid, &scope.path, Events::Clicked("Hello".to_string()));
                 };
@@ -35,5 +31,17 @@ impl Widget for ButtonView {
             }
         }
         self.button(id!(bb)).handle_event(cx, event, scope);
+    }
+}
+impl LiveHook for ButtonView {
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.label1 = String::from("Click The Button");
+        self.label(id!(first_lb))
+            .apply_over_and_redraw(cx, live! { text : (self . label1) , });
+        let fs: f64 = 18.0;
+        self.label(id!(second_lb)).apply_over_and_redraw(
+            cx,
+            live! { draw_text : { text_style : { font_size : (fs) , } , } , },
+        );
     }
 }

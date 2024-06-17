@@ -1,6 +1,7 @@
 use gen_utils::common::token_tree_ident;
-use proc_macro2::{TokenStream, TokenTree};
+use proc_macro2::TokenStream;
 use quote::quote;
+use syn::Ident;
 
 /// 对于Widget来说
 /// draw_walk是必须实现的
@@ -47,7 +48,7 @@ impl WidgetTrait {
             }
         });
     }
-    pub fn to_token_stream(&self, target: TokenTree) -> TokenStream {
+    pub fn to_token_stream(&self, target: Ident) -> TokenStream {
         let draw_walk = &self.draw_walk;
         let handle_event = &self.handle_event;
         let widget = &self.widget;

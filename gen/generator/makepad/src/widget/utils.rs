@@ -206,12 +206,13 @@ pub fn quote_prop(keys: Vec<&str>, value: &str) -> TokenStream {
 pub fn quote_makepad_widget_struct(value: &ItemStruct) -> ItemStruct {
     let mut new_item = value.clone();
 
-    // 遍历属性并修改,将Prop修改为Live, LiveHook, Widget
+    // 遍历属性并修改,将Prop修改为Live, Widget
+    // LiveHook这个trait则使用impl trait的方式实现
     for attr in new_item.attrs.iter_mut() {
         if let Meta::List(meta) = &mut attr.meta {
             if meta.path.is_ident("derive") && meta.tokens.to_string().contains("Prop") {
                 // 使用parse_quote! 宏来创建新的tokens
-                meta.tokens = parse_quote! { Live, LiveHook, Widget };
+                meta.tokens = parse_quote! { Live, Widget };
                 // 将修改后的Meta赋值回Attribute
                 *attr = Attribute {
                     meta: Meta::List(meta.clone()),
@@ -239,10 +240,10 @@ pub fn quote_makepad_widget_struct(value: &ItemStruct) -> ItemStruct {
 /// 根据widget的绘制函数生成对应的代码
 /// 生成对应widget的绘制函数中的代码
 /// 这部分很统一，所有的widget都是这样处理的
-pub fn quote_draw_walk(draw_walk: &Option<Vec<PropFn>>) -> Option<TokenStream> {
-    let tk = if let Some(draw_walk_tk) = draw_walk {
+pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>) -> Option<TokenStream> {
+    let tk = if let Some(draw_widget_tk) = draw_widget {
         let mut tk = TokenStream::new();
-        for item in draw_walk_tk {
+        for item in draw_widget_tk {
             let PropFn {
                 widget,
                 id,
@@ -389,22 +390,40 @@ pub fn active_macro_to_cx_widget_action(code: &mut Stmt) -> TokenStream {
 /// - 转化为: `crate::views::header::header::live_design(cx);`
 /// convert widget imports to app main live registers
 pub fn imports_to_live_registers(imports: Option<TokenStream>) -> Option<Vec<String>> {
-        // 找到最后一个::的位置将后面的字符替换为`live_design(cx);`
+    // 找到最后一个::的位置将后面的字符替换为`live_design(cx);`
     if let Some(imports) = imports.as_ref() {
         // 由于TokenStream中内容无法直接分割为Vec<_>,所以这里需要先通过`;`进行分割，变成多个Vec<String>
         let imports = imports.to_string();
-        let imports = imports.split(";").filter(|x| !x.is_empty()).collect::<Vec<_>>();
+        let imports = imports
+            .split(";")
+            .filter(|x| !x.is_empty())
+            .collect::<Vec<_>>();
         // 通过`;`分割后的Vec<String>，再将每个通过`::`进行分割，变成多个Vec<String>,最后将每个Vec<String>的最后一个元素替换为`live_design(cx);`
-        let tk = imports.iter().fold(Vec::new(), |mut acc, item|{
+        let tk = imports.iter().fold(Vec::new(), |mut acc, item| {
             let mut item = item.split("::").collect::<Vec<&str>>();
             item.last_mut().map(|last| *last = "live_design(cx);");
-            let item =  item.join("::");
+            let item = item.join("::");
             acc.push(item);
             acc
         });
         Some(tk)
     } else {
         None
+    }
+}
+
+/// combine two `Option<TokenStream>`
+pub fn combine_option(l: Option<TokenStream>, r: Option<TokenStream>) -> Option<TokenStream> {
+    match (l, r) {
+        (Some(l_tk), Some(r_tk)) => {
+            let mut tk = TokenStream::new();
+            tk.extend(l_tk);
+            tk.extend(r_tk);
+            Some(tk)
+        }
+        (Some(l_tk), None) => Some(l_tk),
+        (None, Some(r_tk)) => Some(r_tk),
+        (None, None) => None,
     }
 }
 

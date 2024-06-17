@@ -135,10 +135,10 @@ impl BuiltIn {
         value.try_into().unwrap()
     }
     /// 处理widget的draw_walk绘制函数
-    pub fn draw_walk(&self, draw_walk: &Option<Vec<PropFn>>) -> TokenStream {
+    pub fn draw_walk(&self, draw_walk: &Option<TokenStream>) -> TokenStream {
         match self {
             BuiltIn::Window => todo!(),
-            BuiltIn::View => view::draw_walk(draw_walk),
+            BuiltIn::View => view::draw_walk(),
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
             BuiltIn::Area => area::draw_walk(draw_walk),

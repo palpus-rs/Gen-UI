@@ -368,7 +368,7 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
                                             .replace(ident.ident.clone());
                                         model.current_instance.as_mut().unwrap().is_mut =
                                             ident.mutability.is_some();
-                                        continue;
+                                        // continue;
                                     }
                                 }
                             }

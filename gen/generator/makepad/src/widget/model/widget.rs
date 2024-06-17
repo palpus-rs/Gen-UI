@@ -7,17 +7,22 @@ use gen_converter::model::{
 };
 use gen_parser::{PropsKey, Value};
 
-use gen_utils::common::{snake_to_camel, token_tree_ident};
+use gen_utils::common::{ident, snake_to_camel};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_str, ItemEnum, ItemStruct, Stmt, StmtMacro};
 
 use crate::{
     utils::{component_render, special_struct},
-    widget::BuiltIn,
+    widget::{
+        utils::{combine_option, quote_draw_widget},
+        BuiltIn,
+    },
 };
 
-use super::{handler::WidgetHandler, role::Role, traits::WidgetTrait, ToLiveDesign};
+use super::{
+    handler::WidgetHandler, live_hook::LiveHookTrait, role::Role, traits::WidgetTrait, ToLiveDesign,
+};
 
 /// ## 当生成 live_design! 中的节点时
 /// `[id] [:|=] <name>{ [...props|widget...] }`
@@ -49,6 +54,7 @@ pub struct Widget {
     pub children: Option<Vec<Widget>>,
     pub inherits: Option<BuiltIn>,
     pub traits: Option<WidgetTrait>,
+    pub live_hook: Option<LiveHookTrait>,
     pub role: Role,
 }
 
@@ -107,6 +113,7 @@ impl Widget {
             }
         }
         widget.set_traits(WidgetTrait::default());
+        widget.live_hook.replace(LiveHookTrait::default());
         widget
     }
     pub fn new_builtin(name: &str) -> Self {
@@ -185,11 +192,12 @@ impl Widget {
                     .set_imports(imports)
                     .set_prop_ptr(prop_ptr)
                     .set_event_ptr(event_ptr)
-                    .draw_walk(
+                    .after_apply(
                         sub_prop_binds,
                         current_instance.as_ref(),
                         instance_opt.as_ref(),
                     )
+                    .draw_walk(None) // 暂时先写个None
                     .handle_event(sub_event_binds);
             }
         } else {
@@ -197,6 +205,7 @@ impl Widget {
         }
         self
     }
+
     pub fn handle_event(&mut self, events: &Option<Vec<PropFn>>) -> &mut Self {
         let builtin = self.inherits.as_ref().unwrap();
         let _ = self
@@ -206,15 +215,15 @@ impl Widget {
             .handle_event(builtin.handle_event(events));
         self
     }
-    pub fn draw_walk(
+    pub fn after_apply(
         &mut self,
-        walk: &Option<Vec<PropFn>>,
+        prop_binds: &Option<Vec<PropFn>>,
         current_instance: Option<&CurrentInstance>,
         instance_opt: Option<&Vec<Stmt>>,
     ) -> &mut Self {
         // 将当前实例所涉及的代码转为TokenStream
         // 需要将特定的头部转为self
-        let draw_walk_all = instance_opt.map(|opt| {
+        let apply_tk = instance_opt.map(|opt| {
             let instance_name = current_instance
                 .unwrap()
                 .name()
@@ -231,18 +240,22 @@ impl Widget {
             })
         });
 
+        let draw_widget_tk = quote_draw_widget(prop_binds);
+
+        let apply_tk = combine_option(apply_tk, draw_widget_tk);
+
+        let _ = self.live_hook.as_mut().unwrap().after_apply(apply_tk);
+
+        self
+    }
+    pub fn draw_walk(&mut self, draw_walk_tk: Option<TokenStream>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
         let builtin = self.inherits.as_ref().unwrap();
-        let builtin_draw_walk = builtin.draw_walk(walk);
-
-        let draw_walk_all = if let Some(mut code) = draw_walk_all {
-            code.extend(builtin_draw_walk);
-            code
-        } else {
-            builtin_draw_walk
-        };
-
-        let _ = self.traits.as_mut().unwrap().draw_walk(draw_walk_all);
+        let _ = self
+            .traits
+            .as_mut()
+            .unwrap()
+            .draw_walk(builtin.draw_walk(&draw_walk_tk));
         self
     }
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {
@@ -390,17 +403,24 @@ impl ToLiveDesign for Widget {
             if let Some(event_ptr_tk) = &self.event_ptr {
                 tk.extend(event_ptr_tk.clone());
             }
-            tk.extend(
-                self.traits
-                    .as_ref()
-                    .unwrap()
-                    .to_token_stream(token_tree_ident(&self.name)),
-            );
+            // tk.extend(
+            //     self.traits
+            //         .as_ref()
+            //         .unwrap()
+            //         .to_token_stream(token_tree_ident(&self.name)),
+            // );
+            if let Some(traits_tk) = &self.traits {
+                tk.extend(traits_tk.to_token_stream(ident(&self.name)))
+            }
+
             if let Some(event_set_tk) = &self.event_set {
                 tk.extend(event_set_tk.clone());
             }
             if let Some(event_ref_tk) = &self.event_ref {
                 tk.extend(event_ref_tk.clone());
+            }
+            if let Some(live_hook_tk) = &self.live_hook {
+                tk.extend(live_hook_tk.to_token_stream(ident(&self.name)));
             }
 
             if tk.is_empty() {
