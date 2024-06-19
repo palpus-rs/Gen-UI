@@ -14,7 +14,7 @@ use gen_converter::{error::Errors, model::script::PropFn};
 use gen_parser::{PropsKey, Value};
 use gen_utils::common::snake_to_camel;
 use proc_macro2::TokenStream;
-use syn::ItemStruct;
+use syn::{Ident, ItemStruct};
 
 use crate::{str_to_string_try_from, ToToken};
 
@@ -93,7 +93,7 @@ impl BuiltIn {
             BuiltIn::Icon => icon::IconProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Image => image::ImageProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::CheckBox => checkbox::CheckBoxProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Radio => radio::RadioButtonProps::prop_bind(prop, value, is_prop, ident)
+            BuiltIn::Radio => radio::RadioButtonProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -121,7 +121,6 @@ impl BuiltIn {
             BuiltIn::Image => image::ImagePropPtr::from(ptr).to_token_stream(),
             BuiltIn::CheckBox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonPropPtr::from(ptr).to_token_stream(),
-            
         }
     }
     pub fn has_event(&self) -> bool {
@@ -146,22 +145,26 @@ impl BuiltIn {
             BuiltIn::Image => todo!(),
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
-            
         }
     }
     /// 处理widget的事件处理函数
-    pub fn handle_event(&self, event: &Option<Vec<PropFn>>) -> TokenStream {
+    pub fn handle_event(
+        &self,
+        event: &Option<Vec<PropFn>>,
+        props: &Option<Vec<PropFn>>,
+        instance_name: Option<&Ident>,
+        prop_fields: Option<&Vec<Ident>>,
+    ) -> TokenStream {
         match self {
             BuiltIn::Window => todo!(),
-            BuiltIn::View => view::handle_event(event),
+            BuiltIn::View => view::handle_event(event, props, instance_name, prop_fields),
             BuiltIn::Label => todo!(),
             BuiltIn::Button => todo!(),
-            BuiltIn::Area => area::handle_event(event),
+            BuiltIn::Area => area::handle_event(event, props, instance_name, prop_fields),
             BuiltIn::Icon => todo!(),
             BuiltIn::Image => todo!(),
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
-            
         }
     }
 }
@@ -212,7 +215,6 @@ impl Display for BuiltIn {
             BuiltIn::Image => IMAGE,
             BuiltIn::CheckBox => CHECKBOX,
             BuiltIn::Radio => RADIO,
-            
         })
     }
 }

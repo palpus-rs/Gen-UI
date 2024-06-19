@@ -10,7 +10,7 @@ use gen_parser::{PropsKey, Value};
 use gen_utils::common::{ident, snake_to_camel};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_str, ItemEnum, ItemStruct, Stmt, StmtMacro};
+use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
 
 use crate::{
     utils::{component_render, special_struct},
@@ -188,6 +188,11 @@ impl Widget {
                     instance_opt,
                     ..
                 } = sc;
+                // 在这里从prop_ptr中获取结构体所有的field作为后续代码中需要转换的列表
+                // 例如在handle_event中就需要
+                let prop_fields = get_props_fields(prop_ptr.as_ref());
+                // dbg!(prop_fields);
+
                 self.set_uses(uses)
                     .set_imports(imports)
                     .set_prop_ptr(prop_ptr)
@@ -198,7 +203,12 @@ impl Widget {
                         instance_opt.as_ref(),
                     )
                     .draw_walk(None) // 暂时先写个None
-                    .handle_event(sub_event_binds);
+                    .handle_event(
+                        sub_prop_binds,
+                        sub_event_binds,
+                        current_instance.as_ref(),
+                        prop_fields.as_ref(),
+                    );
             }
         } else {
             self.is_static = true;
@@ -206,13 +216,26 @@ impl Widget {
         self
     }
 
-    pub fn handle_event(&mut self, events: &Option<Vec<PropFn>>) -> &mut Self {
+    /// - prop_binds: 模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
+    /// - events: 模板中绑定的events
+    /// - current_instance: 当前实例(属性实例)，用于获取实例名，它需要和prop_fields一起使用，来找到原Gen代码中需要被替换的部分(`current_instance.prop_field`)
+    /// - prop_fields: 用于获取prop_ptr中的所有字段，用于在handle_event中找到需要更新的属性部分然后替换
+    pub fn handle_event(
+        &mut self,
+        prop_binds: &Option<Vec<PropFn>>,
+        events: &Option<Vec<PropFn>>,
+        current_instance: Option<&CurrentInstance>,
+        prop_fields: Option<&Vec<Ident>>,
+    ) -> &mut Self {
+        // dbg!(prop_fields);
+        let instance_name = if let Some(instance) = current_instance {
+            instance.name()
+        } else {
+            None
+        };
         let builtin = self.inherits.as_ref().unwrap();
-        let _ = self
-            .traits
-            .as_mut()
-            .unwrap()
-            .handle_event(builtin.handle_event(events));
+        let handle_event_tk = builtin.handle_event(events, prop_binds, instance_name, prop_fields);
+        let _ = self.traits.as_mut().unwrap().handle_event(handle_event_tk);
         self
     }
     pub fn after_apply(
@@ -233,7 +256,8 @@ impl Widget {
                 // 这里我本来可以一点点替换的，但发现似乎这样会错过很多情况，所以转而使用转为String后进行replace
                 let item = item.to_token_stream().to_string();
 
-                let item = item.replacen(&instance_name, "self", 1);
+                // let item = item.replacen(&instance_name, "self", 1);
+                let item = item.replace(&instance_name, "self");
 
                 acc.extend(parse_str::<TokenStream>(&item));
                 acc
@@ -552,5 +576,18 @@ fn combine_styles(
         (Some(l), None) => Some(l),
         (None, Some(r)) => Some(r.into_iter().map(|(k, v)| (k.clone(), v.clone())).collect()),
         (None, None) => None,
+    }
+}
+
+fn get_props_fields(prop_ptr: Option<&ItemStruct>) -> Option<Vec<Ident>> {
+    if let Some(prop_ptr) = prop_ptr {
+        let fields = prop_ptr
+            .fields
+            .iter()
+            .map(|field| field.ident.clone().unwrap())
+            .collect();
+        Some(fields)
+    } else {
+        None
     }
 }

@@ -334,7 +334,6 @@ fn build_script(block: Block, bind_fn_tree: &(PropTree, PropTree)) -> GenScriptM
     // handle 属性绑定|事件绑定
     if !tmp.is_empty() {
         for stmt in &tmp {
-            // dbg!(stmt);
             match stmt {
                 syn::Stmt::Local(local) => {
                     // 处理属性绑定 和 事件绑定

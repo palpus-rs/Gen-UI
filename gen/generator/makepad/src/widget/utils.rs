@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use gen_converter::{error::Errors, model::script::PropFn};
 use gen_parser::Value;
 use gen_utils::common::{
@@ -6,7 +8,10 @@ use gen_utils::common::{
 };
 use proc_macro2::{TokenStream, TokenTree};
 use quote::{quote, ToTokens};
-use syn::{parse_quote, visit_mut::VisitMut, Attribute, ItemStruct, Meta, Pat, Stmt};
+use syn::{
+    parse_quote, parse_str, visit_mut::VisitMut, Attribute, Expr, Ident, ItemStruct, Meta, Pat,
+    Stmt,
+};
 
 use crate::{prop::builtin::MakepadValue, utils::apply_over_and_redraw};
 
@@ -273,6 +278,15 @@ pub fn quote_draw_widget(draw_widget: &Option<Vec<PropFn>>) -> Option<TokenStrea
     tk
 }
 
+// pub fn quote_draw_widget_define(draw_widget: &Option<Vec<PropFn>>,code: TokenStream)->Option<TokenStream>{
+//     let tk = if let Some(draw_widget_tk) = draw_widget {
+
+//     }else{
+//         None
+//     };
+//     tk
+// }
+
 /// get local ident from stmt
 fn local_ident(code: &Stmt) -> String {
     fn get(pat: &Pat) -> String {
@@ -293,7 +307,16 @@ fn local_ident(code: &Stmt) -> String {
 
 /// 根据widget的事件处理函数生成对应的代码
 /// 生成出对应widget的事件处理函数
-pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>) -> TokenStream {
+/// event: 事件处理函数
+/// props: 属性绑定（通过使用这个，能够在事件中找到需要更改为self的部分）
+/// instance_name: 实例名称
+pub fn quote_handle_event(
+    target: Option<Ident>,
+    event: &Option<Vec<PropFn>>,
+    props: &Option<Vec<PropFn>>,
+    instance_name: Option<&Ident>,
+    prop_fields: Option<&Vec<Ident>>,
+) -> TokenStream {
     let (work_tk, draw_tk) = if let Some(event_tk) = event {
         let mut work_tk = TokenStream::new();
         let mut draw_tk = TokenStream::new();
@@ -321,11 +344,24 @@ pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>
             //----------------------------------[work_tk]---------------------------------------
             let fn_ident = ident.is_fn_and_get().unwrap().to_token_easy();
 
-            // check active! macro and change to makepad cx.widget_action
             let mut code = code.clone();
+            // 根据prop找到需要替换为self的部分
+            prop_to_self(props.as_ref(), &mut code, instance_name, prop_fields);
+            // dbg!(code.to_token_stream().to_string());
+            // check active! macro and change to makepad cx.widget_action
             let _ = active_macro_to_cx_widget_action(&mut code);
             let mut code_tk = code.to_token_stream();
             code_tk.extend(token_stream_to_tree(fn_ident));
+
+            // replace prop to self
+            let code_tk = if let Some(name) = instance_name {
+                let tmp = code_tk
+                    .to_string()
+                    .replace(name.to_string().as_str(), "self");
+                parse_str::<TokenStream>(&tmp).unwrap()
+            } else {
+                code_tk
+            };
 
             let mut stmt = vec![
                 token_tree_ident("if"),
@@ -360,6 +396,59 @@ pub fn quote_handle_event(event: &Option<Vec<PropFn>>, target: Option<TokenTree>
         }
         #draw_tk
         #target_handle_tk
+    }
+}
+
+fn prop_to_self(
+    prop: Option<&Vec<PropFn>>,
+    code: &mut Stmt,
+    instance_name: Option<&Ident>,
+    prop_fields: Option<&Vec<Ident>>,
+) -> () {
+    // 任意instance_name和prop_fields都不为空时，才进行替换，否则直接返回
+    if instance_name.is_none() || prop_fields.is_none() {
+        return;
+    }
+
+    let instance_name_str = instance_name.unwrap().to_string();
+
+    // 将instance_name和prop_fields结合起来，形成一个完整的需要替换的prop
+    // let mut replaced_fields = prop_fields
+    //     .unwrap()
+    //     .into_iter()
+    //     .map(|field| format!("{}.{}", &instance_name_str, field.to_string()))
+    //     .collect::<Vec<String>>();
+
+    // replaced_fields.push(instance_name_str);
+    // dbg!(replaced_fields);
+
+    // 对prop进行遍历，找到code中需要替换为self的部分
+    if let Stmt::Local(local) = code {
+        if let Some(init) = local.init.as_mut() {
+            // 获取expr中的body
+            if let Expr::Closure(closure) = init.expr.borrow_mut() {
+                if let Expr::Block(block) = closure.body.borrow_mut() {
+                    block.block.stmts = block
+                        .block
+                        .stmts
+                        .iter()
+                        .map(|stmt| {
+                            let mut stmt_str = stmt.to_token_stream().to_string();
+                            for field in prop_fields.unwrap() {
+                                // 对每行语句进行遍历
+                                let from_str =
+                                    format!("{} . {}", &instance_name_str, field.to_string());
+                                let to_str = format!("self . {}", field.to_string());
+                                // 对每行语句转为String, 然后在prop_fields中查找
+                                // 替换field
+                                stmt_str = stmt_str.replace(&from_str, &to_str);
+                            }
+                            parse_str(&stmt_str).unwrap()
+                        })
+                        .collect();
+                }
+            }
+        }
     }
 }
 
