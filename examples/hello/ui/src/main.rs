@@ -1,5 +1,5 @@
 use gen_compiler::{app, DepType, RustDependence, Target};
-
+mod test_widget;
 fn main() {
     // set app and specify target
     let mut app = app(Target::Makepad);

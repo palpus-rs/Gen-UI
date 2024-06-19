@@ -19,10 +19,16 @@ pub struct ButtonView{
     pub label1: String,
 }
 
-
+impl Default for ButtonView{
+    fn default() -> Self {
+        Self{
+            label1: "Click The Button"
+        }
+    }
+}
 
 let mut props = ButtonView::default();
-props.label1 = String::from("Click The Button");
+props.label1 = String::from("sss");
 let fs: f64 = 18.0;
 
 let mut btn_click = ||{
