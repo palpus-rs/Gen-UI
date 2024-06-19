@@ -10,12 +10,12 @@
 #### Widgets
 - [x] Window
 - [x] View
-- [ ] Button (todo!(button other event, click event finish))
+- [x] Button (todo!(button other event, click event finish))
 - [x] Icon
 - [x] Label 
-- [ ] Image
-- [ ] Radio
-- [ ] Checkbox
+- [x] Image
+- [x] Radio
+- [x] Checkbox
 - [ ] ScrollXYView
 - [ ] ScrollXView
 - [ ] ScrollYView

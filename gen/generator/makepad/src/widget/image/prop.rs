@@ -6,8 +6,9 @@ use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
-        builtin::{ImageFit, LiveDependency, Walk},
-        ABS_POS, FIT, HEIGHT, MARGIN, MIN_HEIGHT, MIN_WIDTH, SOURCE, WIDTH, WIDTH_SCALE,
+        builtin::{draw_quad::DrawQuad, ImageFit, LiveDependency, Walk},
+        ABS_POS, COLOR, DRAW_BG, FIT, HEIGHT, MARGIN, MIN_HEIGHT, MIN_WIDTH, SOURCE, WIDTH,
+        WIDTH_SCALE,
     },
     props_to_token,
     widget::{
@@ -21,7 +22,7 @@ use crate::{
 #[derive(Debug, Clone, Default)]
 pub struct ImageProps {
     pub walk: Option<Walk>,
-    // pub draw_bg: Option<DrawQuad>,
+    pub draw_bg: Option<DrawQuad>,
     pub min_height: Option<i64>,
     pub min_width: Option<i64>,
     pub width_scale: Option<f64>,
@@ -50,6 +51,7 @@ impl DynProps for ImageProps {
             SOURCE => quote_prop(vec![SOURCE], &value),
             FIT => quote_prop(vec![FIT], &value),
             WIDTH_SCALE => quote_prop(vec![WIDTH_SCALE], &value),
+            COLOR => quote_prop(vec![DRAW_BG], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
     }
@@ -80,6 +82,7 @@ impl StaticProps for ImageProps {
             SOURCE => self.source(&value),
             FIT => self.fit(&value),
             WIDTH_SCALE => self.width_scale(&value),
+            COLOR => self.draw_bg(&value),
             _ => {
                 if !prop_ignore(prop_name) {
                     panic!("cannot match prop");
@@ -98,6 +101,12 @@ impl ImageProps {
             self.walk = Some(Walk::default());
         }
         self.walk.as_mut().unwrap()
+    }
+    fn draw_bg(&mut self, value: &Value) -> Result<(), Errors> {
+        if self.draw_bg.is_none() {
+            self.draw_bg = Some(DrawQuad::default());
+        }
+        self.draw_bg.as_mut().unwrap().pixel(value)
     }
     fn height(&mut self, value: &Value) -> Result<(), Errors> {
         self.check_walk().height(value)
@@ -140,12 +149,12 @@ impl ImageProps {
 impl Display for ImageProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         // todo!(DrawQuard pixel())
-        // if let Some(draw_bg) = &self.draw_bg {
-        //     let _ = f.write_fmt(format_args!("{}: {{{}}}", DRAW_BG, draw_bg));
-        // }
+        if let Some(draw_bg) = &self.draw_bg {
+            let _ = f.write_fmt(format_args!("{}: {{{}}}", DRAW_BG, draw_bg));
+        }
 
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("{},", walk));
+            let _ = f.write_fmt(format_args!("{}", walk));
         }
         if let Some(min_height) = self.min_height {
             let _ = f.write_fmt(format_args!("{}: {},", MIN_HEIGHT, min_height));

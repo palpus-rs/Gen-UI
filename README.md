@@ -21,6 +21,46 @@
 - [ ] GenUI VSCode Plugin
 - [ ] GenUI Makepad Unified Widget Lib
 - [x] [Makepad Book](https://palpus-rs.github.io/Gen-UI.github.io/)
+
+### Makepad
+
+#### Widgets
+- [x] Window
+- [x] View
+- [x] Button (todo!(button other event, click event finish))
+- [x] Icon
+- [x] Label 
+- [x] Image
+- [x] Radio
+- [x] Checkbox
+- [ ] ScrollXYView
+- [ ] ScrollXView
+- [ ] ScrollYView
+- [ ] TextInput
+- [ ] Html
+- [ ] Markdown
+- [ ] ScrollBar
+- [ ] DesktopButton
+- [ ] NavControl
+- [ ] WindowMenu
+- [ ] Splitter
+
+#### Props
+
+- [ ] animation
+- [ ] shader
+- [ ] Color
+  - [x] Base Hex
+  - [ ] linear
+  - [ ] radial
+- [x] widget props
+
+#### Control
+
+- [ ] for
+- [ ] if_else
+
+
 ## Architecture
 
 <img src="./README/imgs/framework.png">

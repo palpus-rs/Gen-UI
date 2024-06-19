@@ -12,8 +12,9 @@
   </view>
 </template>
 
+// 这是错误的，因为script只能在非static模板中使用
+// 非static模板: `<template><component inherits="view"></component></template>`
 <script>
-
 let mut label_text = String::from("this is a test label!");
 
 let change = ||{

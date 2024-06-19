@@ -1,7 +1,13 @@
 //! 暂不开启使用
 use std::fmt::Display;
 
+use gen_converter::error::Errors;
+use gen_parser::{common::parse_hex_color, Value};
+use proc_macro2::TokenStream;
 use quote::quote;
+use syn::parse_str;
+
+use crate::str_to_string_try_from;
 
 /// ## SDF DrawQuad
 /// "signed distance field" (SDF) 的技术来绘制图形。
@@ -62,19 +68,76 @@ use quote::quote;
 #[derive(Clone, Default, Debug)]
 pub struct DrawQuad {
     // #[live] pub geometry: GeometryQuad2D,
+    pub color: Option<String>,
     pub draw_depth: Option<f32>,
 }
 
 impl DrawQuad {
-    pub fn pixel(&self) {}
+    pub fn pixel(&mut self, value: &Value) -> Result<(), Errors> {
+        let quad = DrawQuad::try_from(value)?;
+        self.color = quad.color;
+        Ok(())
+    }
 }
+
+impl TryFrom<&Value> for DrawQuad {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            value
+                .is_string_and_get()
+                .map(|s| s.try_into())
+                .unwrap_or_else(|| {
+                    Err(Errors::PropConvertFail(format!(
+                        "{} can not convert to DrawQuad",
+                        value
+                    )))
+                })
+        }
+    }
+}
+
+impl TryFrom<&str> for DrawQuad {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match parse_hex_color(value) {
+            Ok((input, color)) => {
+                if input.is_empty() {
+                    return Ok(DrawQuad {
+                        color: Some(color),
+                        draw_depth: None,
+                    });
+                }
+                Err(Errors::PropConvertFail(format!(
+                    "{} is not a right hex color",
+                    value
+                )))
+            }
+            Err(_) => Err(Errors::PropConvertFail(format!(
+                "{} is not a right hex color",
+                value
+            ))),
+        }
+    }
+}
+
+str_to_string_try_from!(DrawQuad);
 
 impl Display for DrawQuad {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let color = match self.color.as_ref() {
+            Some(color) => Some(parse_str::<TokenStream>(format!("#{}", color).as_str()).unwrap()),
+            None => None,
+        };
+
         f.write_str(
             quote! {
                 fn pixel(self) -> vec4 {
-
+                    return #color;
                 }
             }
             .to_string()
