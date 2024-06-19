@@ -77,7 +77,7 @@ impl Widget {
         let mut widget = Widget::default();
 
         widget.set_is_root(true).set_id(Some(&"ui".to_string()));
-        widget.name = "Window".to_string();
+        widget.name = "Root".to_string();
         widget.is_static = true;
 
         widget

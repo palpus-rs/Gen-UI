@@ -1,13 +1,15 @@
 <template>
-  <window id="ui">
-    <view flow="Down" height="All">
-      <checkbox_view /> 
-      <header_view /> 
-      <image_view></image_view>
-      <icon_view></icon_view>
-      <button_view></button_view>
-    </view>
-  </window>
+  <root id="ui">
+    <window id="main_window">
+      <view flow="Down" height="All">
+        <checkbox_view /> 
+        <header_view /> 
+        <image_view></image_view>
+        <icon_view></icon_view>
+        <button_view></button_view>
+      </view>
+    </window>
+  </root>
 </template>
 
 <script>
@@ -22,10 +24,14 @@ import!{
 
 <style>
 #ui{
-  width: Fill;
-  height: Fill;
-  show_bg: true;
-  draw_bg: #1C2128;
-  flow: Down;
+  #main_window{
+    width: Fill;
+    height: Fill;
+    show_bg: true;
+    draw_bg: #1C2128;
+    flow: Down;
+    inner_size: 600.0, 800.0;
+    position: 300.0;
+  }
 }
 </style>

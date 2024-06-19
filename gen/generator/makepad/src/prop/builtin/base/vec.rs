@@ -100,6 +100,33 @@ impl TryFrom<&Value> for Vec4 {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
+pub struct Vec2(DVec2);
+
+impl TryFrom<&str> for Vec2 {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        DVec2::try_from(value).map(|d| Vec2(d))
+    }
+}
+
+str_to_string_try_from!(Vec2);
+
+impl TryFrom<&Value> for Vec2 {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        DVec2::try_from(value).map(|d| Vec2(d))
+    }
+}
+
+impl Display for Vec2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("vec2({}, {})", self.0.x, self.0.y))
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
 pub struct DVec2 {
     pub x: f64,
     pub y: f64,

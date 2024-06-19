@@ -19,6 +19,7 @@ use syn::{Ident, ItemStruct};
 use crate::{str_to_string_try_from, ToToken};
 
 pub mod area;
+pub mod root;
 pub mod button;
 pub mod checkbox;
 pub mod color_picker;
@@ -56,6 +57,8 @@ const ICON: &str = "Icon";
 const IMAGE: &str = "Image";
 const RADIO: &str = "RadioButton";
 const CHECKBOX: &str = "CheckBox";
+const TEXT_INPUT: &str = "TextInput";
+const ROOT: &str = "Root";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -73,6 +76,7 @@ pub enum BuiltIn {
     Image,
     CheckBox,
     Radio,
+    Root,
 }
 
 impl BuiltIn {
@@ -94,6 +98,7 @@ impl BuiltIn {
             BuiltIn::Image => image::ImageProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::CheckBox => checkbox::CheckBoxProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Radio => radio::RadioButtonProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Root => root::RootProps::prop_bind(prop, value, is_prop, ident)
         }
     }
     /// 对内置组件的属性进行处理
@@ -107,6 +112,7 @@ impl BuiltIn {
             BuiltIn::Image => image::ImageProps::props(props).to_token_stream(),
             BuiltIn::CheckBox => checkbox::CheckBoxProps::props(props).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonProps::props(props).to_token_stream(),
+            BuiltIn::Root => root::RootProps::props(props).to_token_stream(),
             _ => panic!("only built-in widget can be get"),
         }
     }
@@ -121,6 +127,7 @@ impl BuiltIn {
             BuiltIn::Image => image::ImagePropPtr::from(ptr).to_token_stream(),
             BuiltIn::CheckBox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Root => root::RootPropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -145,6 +152,7 @@ impl BuiltIn {
             BuiltIn::Image => todo!(),
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
+            BuiltIn::Root => root::draw_walk(),
         }
     }
     /// 处理widget的事件处理函数
@@ -165,6 +173,7 @@ impl BuiltIn {
             BuiltIn::Image => todo!(),
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
+            BuiltIn::Root => root::handle_event(event, props, instance_name, prop_fields)
         }
     }
 }
@@ -185,6 +194,7 @@ impl TryFrom<&str> for BuiltIn {
             IMAGE => Ok(BuiltIn::Image),
             CHECKBOX => Ok(BuiltIn::CheckBox),
             RADIO => Ok(BuiltIn::Radio),
+            ROOT => Ok(BuiltIn::Root),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -215,6 +225,7 @@ impl Display for BuiltIn {
             BuiltIn::Image => IMAGE,
             BuiltIn::CheckBox => CHECKBOX,
             BuiltIn::Radio => RADIO,
+            BuiltIn::Root => ROOT,
         })
     }
 }
