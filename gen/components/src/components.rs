@@ -89,7 +89,7 @@ live_design!{
     // components --------------------------------------------------
 
     // ## GLabel
-    // A label component
+    // A label component use white color
     GLabel = <GLabelBase>{
         width: Fit, 
         height: Fit,
@@ -100,7 +100,10 @@ live_design!{
         line_spacing: 1.5,
         font_size: (FONT_SIZE),
     }
-
+    // ## GButton
+    // A button component which only has a text
+    // if you wanna add some other components like icon, you can create a new component use CardBase
+    // CardBase can help you create a wonderful button quickly and easily
     GButton = <GButtonBase>{
         theme: Primary,
         text: "Button",
@@ -108,11 +111,39 @@ live_design!{
         font_size: (FONT_SIZE),
         align: <ALIGN_CENTER_WALK>{},
     }
-
+    // ## GCard
+    // A card component that you can use to wrap other components
+    // card has default styles for border, background color, ...
     GCard = <CardBase>{
         width: 300.0,
         height: 200.0,
-        // align: <ALIGN_CENTER_WALK>{},
+    }
+    // ## GHLayout
+    // A horizontal layout component use CardBase
+    // layout don't have border, background color, border-radius, ... (but you can add if you want)
+    GHLayout = <CardBase>{
+        height: Fill,
+        width: Fill,
+        flow: Right,
+        padding: 0,
+        border_radius: 0,
+        border_width: 0,
+        transparent: true,
+        spacing: 0,
+        margin: 0,
+    }
+    // ## GVLayout
+    // A vertical layout component use CardBase
+    GVLayout = <CardBase>{
+        height: Fill,
+        width: Fill,
+        flow: Down,
+        padding: 0,
+        border_radius: 0,
+        border_width: 0,
+        transparent: true,
+        spacing: 0,
+        margin: 0,
     }
 
 }

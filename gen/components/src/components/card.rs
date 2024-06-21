@@ -5,6 +5,9 @@ use event::TriggerHitEvent;
 use makepad_widgets::*;
 /// Card component
 live_design! {
+    import makepad_draw::shader::std::*;
+    GLOBAL_DURATION = 0.25
+
     CardBase = {{Card}}{
         animator: {
             hover = {
@@ -13,7 +16,6 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_card: {pressed: 0.0, hover: 0.0}
-
                     }
                 }
 
@@ -24,7 +26,6 @@ live_design! {
                     }
                     apply: {
                         draw_card: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
-
                     }
                 }
 
@@ -32,10 +33,28 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_card: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
-
                     }
                 }
             }
+            // down = {
+            //     default: off,
+            //     off = {
+            //         from: {
+            //             all: Forward {duration: (GLOBAL_DURATION)}
+            //         }
+            //         apply:{
+            //             draw_card: {pressed: 0.0, hover: 0.0}
+            //         }
+            //     }
+            //     on = {
+            //         from: {
+            //             all: Forward {duration: (GLOBAL_DURATION)}
+            //         }
+            //         apply:{
+            //             draw_card: {pressed: 0.0, hover: 1.0}
+            //         }
+            //     }
+            // }
         }
     }
 }
@@ -62,6 +81,8 @@ pub struct Card {
     pub transparent: bool,
     #[live]
     pub cursor: Option<MouseCursor>,
+    #[live(false)]
+    pub animator_key: bool,
     // control ---------------------
     #[live(true)]
     pub grab_key_focus: bool,
@@ -233,15 +254,23 @@ impl Widget for Card {
             Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerMove(e)),
             Hit::FingerHoverIn(e) => {
                 let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverIn(e))
+                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverIn(e));
+                if self.animator.live_ptr.is_some() && self.animator_key {
+                    self.animator_play(cx, id!(hover.on))
+                }
             }
             Hit::FingerHoverOver(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOver(e))
+                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOver(e));
             }
             Hit::FingerHoverOut(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOut(e))
+                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOut(e));
+                if self.animator.live_ptr.is_some() && self.animator_key {
+                    self.animator_play(cx, id!(hover.off))
+                }
             }
-            Hit::FingerUp(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerUp(e)),
+            Hit::FingerUp(e) => {
+                cx.widget_action(uid, &scope.path, CardEvent::FingerUp(e));
+            }
             _ => (),
         }
     }

@@ -30,7 +30,6 @@ live_design!{
         fn pixel(self) -> vec4 {
             let sdf = Sdf2d::viewport(self.pos * self.rect_size)
 
-
             sdf.box(
                 self.inset.x + self.border_width,
                 self.inset.y + self.border_width,
@@ -41,9 +40,7 @@ live_design!{
             if self.transparent == 0.0 {
                sdf.fill_keep(self.get_color())
             }
-           
             sdf.stroke(self.get_border_color(), self.border_width)
-
             return sdf.result;
         }
     }
