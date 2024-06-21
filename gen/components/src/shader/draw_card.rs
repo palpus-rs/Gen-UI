@@ -38,8 +38,10 @@ live_design!{
                 self.rect_size.y - (self.inset.y + self.inset.w + self.border_width * 2.0),
                 max(1.0, self.border_radius)
             )
-            sdf.fill_keep(self.get_color())
-
+            if self.transparent == 0.0 {
+               sdf.fill_keep(self.get_color())
+            }
+           
             sdf.stroke(self.get_border_color(), self.border_width)
 
             return sdf.result;
@@ -57,4 +59,5 @@ pub struct DrawCard{
     #[live(4.0)] pub border_radius: f32,
     #[live] pub hover_color: Vec4,
     #[live] pub pressed_color: Vec4,
+    #[live] pub transparent: f32,
 }

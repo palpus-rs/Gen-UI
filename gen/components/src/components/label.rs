@@ -1,6 +1,7 @@
 use font_atlas::CxFontsAtlasRc;
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
+use crate::utils::get_font_family;
 
 live_design! {
     GLabelBase = {{GLabel}}{}
@@ -26,6 +27,8 @@ pub struct GLabel {
     pub wrap: TextWrap,
     #[live]
     pub font_family: LiveDependency,
+    #[live(true)]
+    pub visible: bool,
     // deref ---------------------
     #[redraw]
     #[live]
@@ -40,25 +43,12 @@ pub struct GLabel {
     text: RcStringMut,
 }
 
-pub fn get_font_family(font_family: &LiveDependency, cx: &mut Cx2d) -> Font {
-    let font_family = font_family.clone();
-
-    let atlas = cx.get_global::<CxFontsAtlasRc>().clone();
-    let font_id = Some(
-        atlas
-            .0
-            .borrow_mut()
-            .get_font_by_path(cx, font_family.as_str()),
-    );
-    let font = Font {
-        font_id,
-        path: font_family,
-    };
-    font
-}
 
 impl Widget for GLabel {
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
+        if !self.visible {
+            return DrawStep::done();
+        }
         let font = get_font_family(&self.font_family, cx);
 
         self.draw_text.text_style.font = font;
@@ -82,6 +72,9 @@ impl Widget for GLabel {
     fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
         self.text.as_mut_empty().push_str(v);
         self.redraw(cx)
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
     }
 }
 

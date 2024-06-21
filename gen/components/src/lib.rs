@@ -4,6 +4,7 @@ pub mod components;
 pub mod themes;
 pub mod macros;
 pub mod shader;
+pub mod utils;
 
 pub fn live_design(cx: &mut Cx) {
     crate::components::label::live_design(cx);

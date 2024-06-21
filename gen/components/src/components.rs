@@ -96,7 +96,7 @@ live_design!{
         color: (COLOR_WHITE),
         font_family: (FONT_FAMILY),
         brightness: 1.0,
-        top_drop: 1.5,
+        top_drop: 1.0,
         line_spacing: 1.5,
         font_size: (FONT_SIZE),
     }
@@ -110,9 +110,8 @@ live_design!{
     }
 
     GCard = <CardBase>{
-        width: 200.0,
+        width: 300.0,
         height: 200.0,
-        // padding: <GLOBAL_PADDING>{},
         // align: <ALIGN_CENTER_WALK>{},
     }
 

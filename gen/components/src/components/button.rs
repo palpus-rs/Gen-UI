@@ -1,17 +1,15 @@
+use crate::utils::get_font_family;
 use crate::{
-    shader::draw_button::DrawGButton,
+    shader::draw_card::DrawCard,
     themes::{get_color, Themes},
 };
 use makepad_widgets::*;
-
-use super::label::get_font_family;
 
 live_design! {
     import makepad_draw::shader::std::*;
     GLOBAL_DURATION = 0.25
 
     GButtonBase = {{GButton}}{
-
         height: Fit,
         width: Fit,
         text_walk: {
@@ -119,7 +117,7 @@ pub struct GButton {
     // deref -----------------
     #[redraw]
     #[live]
-    draw_button: DrawGButton,
+    draw_button: DrawCard,
     #[walk]
     walk: Walk,
     #[layout]
@@ -200,6 +198,9 @@ impl Widget for GButton {
     fn set_text_and_redraw(&mut self, cx: &mut Cx, v: &str) {
         self.text.as_mut_empty().push_str(v);
         self.redraw(cx)
+    }
+    fn is_visible(&self) -> bool {
+        self.visible
     }
 }
 
