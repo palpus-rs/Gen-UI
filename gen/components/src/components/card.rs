@@ -83,6 +83,11 @@ pub struct Card {
     pub cursor: Option<MouseCursor>,
     #[live(false)]
     pub animator_key: bool,
+    // scroll ---------------------
+    #[live]
+    scroll_bars: Option<LivePtr>,
+    #[rust]
+    scroll_bars_obj: Option<Box<ScrollBars>>,
     // control ---------------------
     #[live(true)]
     pub grab_key_focus: bool,
@@ -148,9 +153,19 @@ impl Widget for Card {
                 return DrawStep::done();
             }
             self.defer_walks.clear();
-            // card is not view so we do not have scrollbar
+            
+            // get scroll position
+            let scroll = if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+                scroll_bars.begin_nav_area(cx);
+                scroll_bars.get_scroll_pos()
+            } else {
+                self.layout.scroll
+            };
+
             // begin draw the card
-            let _ = self.draw_card.begin(cx, walk, self.layout);
+            let _ = self
+                .draw_card
+                .begin(cx, walk, self.layout.with_scroll(scroll));
         }
 
         // loop handle the inner children
@@ -188,8 +203,19 @@ impl Widget for Card {
                 }
                 self.draw_state.set(DrawState::DeferWalk(step + 1));
             } else {
+                let area = self.area();
+
+                if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+                    scroll_bars.draw_scroll_bars(cx);
+                }
+
                 // draw background
                 self.draw_card.end(cx);
+
+                if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+                    scroll_bars.set_area(area);
+                    scroll_bars.end_nav_area(cx);
+                }
             }
             self.draw_state.end();
         }
@@ -201,6 +227,13 @@ impl Widget for Card {
         let uid = self.widget_uid();
         if self.animator_handle_event(cx, event).must_redraw() {
             self.redraw(cx);
+        }
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            let mut actions = Vec::new();
+            scroll_bars.handle_main_event(cx, event, &mut actions);
+            if actions.len().gt(&0) {
+                cx.redraw_area_and_children(self.area());
+            }
         }
 
         match &self.event_order {
@@ -242,8 +275,16 @@ impl Widget for Card {
 
         // handle event and set cursor to control
         match event.hits(cx, self.area()) {
-            Hit::KeyDown(e) => cx.widget_action(uid, &scope.path, CardEvent::KeyDown(e)),
-            Hit::KeyUp(e) => cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e)),
+            Hit::KeyDown(e) => {
+                if self.grab_key_focus {
+                    cx.widget_action(uid, &scope.path, CardEvent::KeyDown(e))
+                }
+            }
+            Hit::KeyUp(e) => {
+                if self.grab_key_focus {
+                    cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e))
+                }
+            }
             Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
             Hit::FingerDown(e) => {
                 if self.grab_key_focus {
@@ -315,6 +356,13 @@ impl LiveHook for Card {
         let border_color = get_color(self.theme, self.border_color, 800);
         // ------------------ is transparent --------------------------------------------
         let transparent = (self.transparent) as u8 as f32;
+        // ------------------ check scroll bar -------------------------------------------
+        if self.scroll_bars.is_some() {
+            if self.scroll_bars_obj.is_none() {
+                self.scroll_bars_obj =
+                    Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
+            }
+        }
         // ------------------ apply draw_card --------------------------------------------
         self.draw_card.apply_over(
             cx,
