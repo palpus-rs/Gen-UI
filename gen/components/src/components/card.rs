@@ -132,7 +132,7 @@ pub enum CardEvent {
     // TextCut(TextClipboardEvent),
     KeyDown(KeyEvent),
     KeyUp(KeyEvent),
-    FingerScroll(FingerScrollEvent),
+    // FingerScroll(FingerScrollEvent),
     FingerDown(FingerDownEvent),
     FingerMove(FingerMoveEvent),
     FingerHoverIn(FingerHoverEvent),
@@ -285,7 +285,7 @@ impl Widget for Card {
                     cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e))
                 }
             }
-            Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
+            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
             Hit::FingerDown(e) => {
                 if self.grab_key_focus {
                     cx.set_key_focus(self.area());

@@ -145,5 +145,96 @@ live_design!{
         spacing: 0,
         margin: 0,
     }
+    // ## GScrollBar
+    // A scroll bar component use ScrollBarBase, it is a single scroll bar
+    GScrollBar = <ScrollBarBase> {
+        bar_size: 10.0,
+        bar_side_margin: 3.0
+        min_handle_size: 20.0
+        draw_bar: {
+            instance pressed: 0.0
+            instance hover: 0.0
+            
+            instance color: (COLOR_DARK_500)
+            instance color_hover: (COLOR_DARK_300)
+            instance color_pressed: (COLOR_DARK_600)
+            
+            uniform bar_width: 6.0
+            uniform border_radius: 1.5
 
+            fn pixel(self) -> vec4 {
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size);
+                if self.is_vertical > 0.5 {
+                    sdf.box(
+                        1.,
+                        self.rect_size.y * self.norm_scroll,
+                        self.bar_width,
+                        self.rect_size.y * self.norm_handle,
+                        self.border_radius
+                    );
+                }
+                else {
+                    sdf.box(
+                        self.rect_size.x * self.norm_scroll,
+                        1.,
+                        self.rect_size.x * self.norm_handle,
+                        self.bar_width,
+                        self.border_radius
+                    );
+                }
+                return sdf.fill(mix(
+                    self.color, 
+                    mix(
+                        self.color_hover,
+                        self.color_pressed,
+                        self.pressed
+                    ),
+                    self.hover
+                ));
+            }
+        }
+        animator: {
+            hover = {
+                default: off
+                off = {
+                    from: {all: Forward {duration: 0.1}}
+                    apply: {
+                        draw_bar: {pressed: 0.0, hover: 0.0}
+                    }
+                }
+
+                on = {
+                    cursor: Default,
+                    from: {
+                        all: Forward {duration: 0.1}
+                        pressed: Forward {duration: 0.01}
+                    }
+                    apply: {
+                        draw_bar: {
+                            pressed: 0.0,
+                            hover: [{time: 0.0, value: 1.0}],
+                        }
+                    }
+                }
+
+                pressed = {
+                    cursor: Default,
+                    from: {all: Snap}
+                    apply: {
+                        draw_bar: {
+                            pressed: 1.0,
+                            hover: 1.0,
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    GScrollBars = <ScrollBarsBase> {
+        show_scroll_x: true,
+        show_scroll_y: true,
+        scroll_bar_x: <GScrollBar> {}
+        scroll_bar_y: <GScrollBar> {}
+    }
 }
