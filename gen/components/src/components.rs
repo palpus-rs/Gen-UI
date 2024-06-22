@@ -3,12 +3,19 @@ use makepad_widgets::*;
 pub mod label;
 pub mod button;
 pub mod card;
+pub mod link;
+pub mod icon;
+pub mod image;
+pub mod radio;
+pub mod checkbox;
+pub mod input;
 
 live_design!{
     // imports -----------------------------------------------------
     import crate::components::label::GLabelBase;
     import crate::components::button::GButtonBase;
     import crate::components::card::CardBase;
+    import crate::components::link::GLinkBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -17,6 +24,10 @@ live_design!{
     // the default color is 500
     COLOR_WHITE = #FFFFFF;
     COLOR_BLACK = #000000;
+    // -------- dark-opacity ---------------------------------------
+    DARK_OPACITY_25 = #66666640;
+    DARK_OPACITY_50 = #66666680;
+    DARK_OPACITY_75 = #666666BF;
     // -------- color-dark -----------------------------------------
     COLOR_DARK_25 = #FCFCFD;
     COLOR_DARK_50 = #F9FAFB;
@@ -100,13 +111,20 @@ live_design!{
         line_spacing: 1.5,
         font_size: (FONT_SIZE),
     }
+    GLink = <GLinkBase>{
+        height: Fit,
+        width: Fit,
+        padding: 0,
+        font_size: (FONT_SIZE),
+        align: <ALIGN_CENTER_WALK>{},
+    }
     // ## GButton
     // A button component which only has a text
     // if you wanna add some other components like icon, you can create a new component use CardBase
     // CardBase can help you create a wonderful button quickly and easily
     GButton = <GButtonBase>{
         theme: Primary,
-        text: "Button",
+        text: " ",
         padding: <GLOBAL_PADDING>{}
         font_size: (FONT_SIZE),
         align: <ALIGN_CENTER_WALK>{},
@@ -155,9 +173,9 @@ live_design!{
             instance pressed: 0.0
             instance hover: 0.0
             
-            instance color: (COLOR_DARK_500)
-            instance color_hover: (COLOR_DARK_300)
-            instance color_pressed: (COLOR_DARK_600)
+            instance color: (DARK_OPACITY_50)
+            instance color_hover: (DARK_OPACITY_25)
+            instance color_pressed: (DARK_OPACITY_75)
             
             uniform bar_width: 6.0
             uniform border_radius: 1.5
@@ -230,7 +248,9 @@ live_design!{
             }
         }
     }
-
+    // ## GScrollBars
+    // A scroll bars component use ScrollBarsBase, it has two scroll bars (x, y)
+    // It often use in a Card
     GScrollBars = <ScrollBarsBase> {
         show_scroll_x: true,
         show_scroll_y: true,

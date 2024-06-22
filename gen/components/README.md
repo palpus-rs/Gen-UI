@@ -31,3 +31,4 @@
 - [ ] Pagination
 - [ ] Metric
 - [ ] Menu
+- [x] ScrollBar(s)
