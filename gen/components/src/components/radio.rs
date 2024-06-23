@@ -18,16 +18,12 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_radio: {hover: 0.0}
-                        // draw_text: {hover: 0.0}
-                        // draw_icon: {hover: 0.0}
                     }
                 }
                 on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_radio: {hover: 1.0}
-                        // draw_text: {hover: 1.0}
-                        // draw_icon: {hover: 1.0}
                     }
                 }
             }
@@ -37,18 +33,12 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_radio: {selected: 0.0}
-                        // draw_icon: {selected: 0.0}
-                        // draw_text: {selected: 0.0}
-                        // draw_icon: {selected: 0.0}
                     }
                 }
                 on = {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_radio: {selected: 1.0}
-                        // draw_icon: {selected: 1.0}
-                        // draw_text: {selected: 1.0}
-                        // draw_icon: {selected: 1.0}
                     }
                 }
             }

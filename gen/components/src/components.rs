@@ -18,6 +18,7 @@ live_design!{
     import crate::components::link::GLinkBase;
     import crate::components::icon::GIconBase;
     import crate::components::radio::GRadioBase;
+    import crate::components::checkbox::GCheckBoxBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -260,15 +261,18 @@ live_design!{
         scroll_bar_y: <GScrollBar> {}
     }
     GRadio = <GRadioBase>{
-        width: Fit, 
-        height: 16.0,
-        align: { x: 0.0, y: 0.5 }
+        width: 19.0, 
+        height: 19.0,
+        align: { x: 0.0, y: 0.0 }
+    }
+    GCheckBox = <GCheckBoxBase>{
+        width: 19.0, 
+        height: 19.0,
+        align: { x: 0.0, y: 0.0 }
     }
     GIcon = <GIconBase>{
         width: Fit,
         height: Fit,
-        // color: (COLOR_DARK_500),
-        // font_size: 16.0,
-        // align: <ALIGN_CENTER_WALK>{},
     }
+    
 }

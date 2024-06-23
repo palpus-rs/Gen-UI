@@ -5,50 +5,46 @@ live_design! {
     import makepad_widgets::theme_desktop_dark::*; 
     import gen_components::components::*;
 
-    GRadioExample = <ScrollYView>{
+    GCheckBoxExample = <ScrollYView>{
         height: 150.0,
         width: Fill,
         spacing: 10.0,
         flow: Down,
         <GLabel>{
-            text: "GRadio"
+            text: "GCheckBox"
         }
-        <GRadio>{
-            height: 30.0,
-            width: 60.0,
+        <GCheckBox>{
+           
         }
-        <GRadio>{
+        <GCheckBox>{
             theme: Warning,
             height: 30.0,
             width: 60.0,
-            radio_type: Tick,
+            check_type: Tick,
         }
-        <GRadio>{
+        <GCheckBox>{
             theme: Success,
             height: 30.0,
             width: 60.0,
             size: 12.0,
             scale: 0.6,
             border_width: 2.0,
-            radio_type: Round,
+            check_type: Round,
             background_color: #000,
             selected_color: #42A5F5,
             hover_color: #FF7043,
             border_color: #76828F,
         }
-        <GRadio>{
+        <GCheckBox>{
             theme: Dark,
             height: 30.0,
             width: 60.0,
             size: 12.0,
-            radio_type: Tick,
+            check_type: Tick,
         }
-        <GRadio>{
+        <GCheckBox>{
             theme: Error,
-            height: 30.0,
-            width: 60.0,
-           
-            radio_type: Cross,
+            check_type: Cross,
         }
     }
 }
