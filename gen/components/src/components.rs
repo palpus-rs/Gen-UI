@@ -17,6 +17,7 @@ live_design!{
     import crate::components::card::CardBase;
     import crate::components::link::GLinkBase;
     import crate::components::icon::GIconBase;
+    import crate::components::radio::GRadioBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -257,6 +258,11 @@ live_design!{
         show_scroll_y: true,
         scroll_bar_x: <GScrollBar> {}
         scroll_bar_y: <GScrollBar> {}
+    }
+    GRadio = <GRadioBase>{
+        width: Fit, 
+        height: 16.0,
+        align: { x: 0.0, y: 0.5 }
     }
     GIcon = <GIconBase>{
         width: Fit,

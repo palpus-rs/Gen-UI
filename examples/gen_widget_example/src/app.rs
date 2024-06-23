@@ -11,6 +11,7 @@ live_design! {
     import crate::components::vlayout::*;
     import crate::components::links::*;
     import crate::components::icons::*;
+    import crate::components::radios::*;
 
     App = {{App}}{
         root: <Root>{
@@ -26,6 +27,8 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GRadioExample>{}
+                    
                     <GLabelExample>{}
                     <GButtonExample>{}
                     <GCardExample>{}
@@ -33,6 +36,8 @@ live_design! {
                     <GVLayoutExample>{}
                     <GLinkExample>{}
                     <GIconExample>{}
+                    
+                   
                 }
             }
         }
@@ -56,6 +61,7 @@ impl LiveRegister for App {
         crate::components::vlayout::live_design(cx);
         crate::components::links::live_design(cx);
         crate::components::icons::live_design(cx);
+        crate::components::radios::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }
