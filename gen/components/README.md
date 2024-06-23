@@ -1,7 +1,7 @@
 # GEN Components
 
 - [x] Label
-- [ ] Link
+- [x] Link
 - [x] Button
 - [x] Card
   - [x] VLayout

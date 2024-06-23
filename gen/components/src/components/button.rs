@@ -1,4 +1,4 @@
-use crate::utils::get_font_family;
+use crate::utils::{get_font_family, set_cursor};
 use crate::{
     shader::draw_card::DrawCard,
     themes::{get_color, Themes},
@@ -16,7 +16,7 @@ live_design! {
             height: Fit,
             width: Fit,
         }
-
+        cursor: Hand,
         draw_text: {
             instance hover: 0.0,
             instance pressed: 0.0,
@@ -98,9 +98,11 @@ pub struct GButton {
     #[live(10.0)]
     pub font_size: f64,
     #[live]
-    pub font_color: Option<Vec4>,
+    pub color: Option<Vec4>,
     #[live]
     pub font_family: LiveDependency,
+    #[live]
+    pub cursor: Option<MouseCursor>,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
@@ -148,7 +150,7 @@ impl Widget for GButton {
                 self.animator_play(cx, id!(hover.pressed));
             }
             Hit::FingerHoverIn(h) => {
-                cx.set_cursor(MouseCursor::Hand);
+                let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
                 cx.widget_action(uid, &scope.path, GButtonEvent::Hovered(h.modifiers));
             }
@@ -215,7 +217,7 @@ impl LiveHook for GButton {
         // ------------------ border color ----------------------------------------------
         let border_color = get_color(self.theme, self.border_color, 800);
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.font_color, 100);
+        let font_color = get_color(self.theme, self.color, 100);
         // ------------------ round -----------------------------------------------------
         if self.round {
             self.border_radius = match self.walk.height {

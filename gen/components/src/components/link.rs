@@ -1,6 +1,6 @@
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
-use crate::utils::get_font_family;
+use crate::utils::{get_font_family, set_cursor};
 use crate::{
     shader::draw_card::DrawCard,
     themes::{get_color, Themes},
@@ -19,7 +19,7 @@ live_design! {
             width: Fit,
         },
         border_radius: 0.0,
-
+        cursor: Hand,
         animator: {
             hover = {
                 default: off,
@@ -87,6 +87,8 @@ pub struct GLink {
     pub color: Option<Vec4>,
     #[live]
     pub font_family: LiveDependency,
+    #[live]
+    pub cursor: Option<MouseCursor>,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
@@ -135,7 +137,7 @@ impl Widget for GLink {
                 self.animator_play(cx, id!(hover.pressed));
             }
             Hit::FingerHoverIn(h) => {
-                cx.set_cursor(MouseCursor::Hand);
+                let _ = set_cursor(cx, self.cursor.as_ref());
                 self.animator_play(cx, id!(hover.on));
                 cx.widget_action(uid, &scope.path, GLinkEvent::Hovered(h.modifiers));
             }

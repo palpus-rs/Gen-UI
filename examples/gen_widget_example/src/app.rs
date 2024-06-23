@@ -19,6 +19,7 @@ live_design! {
                 width: Fill,
                 height: Fill,
                 draw_bg: {color: #1C2128},
+                window: {inner_size: vec2(600, 800)},
                 body = <ScrollYView>{
                     height: All,
                     width: All,

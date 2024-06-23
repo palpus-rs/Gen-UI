@@ -58,7 +58,7 @@ live_design! {
             text: "GButton!",
             font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
             font_size: 12.0,
-            font_color: #000,
+            color: #000,
         }
     }
 }

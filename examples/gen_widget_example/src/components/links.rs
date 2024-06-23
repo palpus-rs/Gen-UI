@@ -42,7 +42,6 @@ live_design! {
             color: #FF0000,
             underline_width: 2.0,
             font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
-
         }
         
     }
