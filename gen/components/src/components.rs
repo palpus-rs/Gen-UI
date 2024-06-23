@@ -16,6 +16,7 @@ live_design!{
     import crate::components::button::GButtonBase;
     import crate::components::card::CardBase;
     import crate::components::link::GLinkBase;
+    import crate::components::icon::GIconBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -256,5 +257,12 @@ live_design!{
         show_scroll_y: true,
         scroll_bar_x: <GScrollBar> {}
         scroll_bar_y: <GScrollBar> {}
+    }
+    GIcon = <GIconBase>{
+        width: Fit,
+        height: Fit,
+        // color: (COLOR_DARK_500),
+        // font_size: 16.0,
+        // align: <ALIGN_CENTER_WALK>{},
     }
 }

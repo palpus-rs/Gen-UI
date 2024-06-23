@@ -4,6 +4,13 @@ live_design! {
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*; 
     import gen_components::components::*;
+    import crate::components::cards::*;
+    import crate::components::label::*;
+    import crate::components::buttons::*;
+    import crate::components::hlayout::*;
+    import crate::components::vlayout::*;
+    import crate::components::links::*;
+    import crate::components::icons::*;
 
     App = {{App}}{
         root: <Root>{
@@ -12,79 +19,19 @@ live_design! {
                 width: Fill,
                 height: Fill,
                 draw_bg: {color: #1C2128},
-                body = <View>{
+                body = <ScrollYView>{
                     height: All,
                     width: All,
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GLabel>{
-                        text: "Hello, world! This is a long message",
-                        height: 48.0,
-                        width: 120.0,
-                        wrap: Word,
-                        brightness: 1.5,
-                        margin: {left: 12.0},
-                    }
-                    <GLabel>{
-                        text: "bold, test bold!!",
-                        font_size: 12.0,
-                        padding: 16.0,
-                        color: #FF0000,
-                        // font_family: dep("crate://self/resources/GoNotoKurrent-Bold.ttf"),
-                        font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
-                    }
-                    
-                    <GCard>{
-                        height: 300,
-                        width: 300,
-                        draw_card: {
-                            background_color: #FFFFFF,
-                        }
-                        <View>{
-                            show_bg: true,
-                            draw_bg: {color: #FF0000},
-                            height: 100.0,
-                            width: 100.0,
-                        }
-                        <View>{
-                            show_bg: true,
-                            draw_bg: {color: #FFFF00},
-                            height: 100.0,
-                            width: 100.0,
-                        }
-                        <GButton>{
-                            text: "hello"
-                        }
-                        <GButton>{
-                            theme: Primary,
-                            // cover theme color
-                            background_color: #FF0000,
-                            text: "test"
-                        }
-                    }
-                    <GButton>{
-                        text: "hello"
-                    }
-                    <GButton>{
-                        height: 46,
-                        width: 160,
-                        theme: Success,
-                        border_width: 1.4,
-                        border_color: #FFF,
-                        border_radius: 11.0,
-                        text: "Theme Success",
-                    }
-                    <GButton>{
-                        theme: Dark,
-                        border_width: 1.2,
-                        hover_color: #FF0000,
-                        pressed_color: #00FF00,
-                        text: "GButton!",
-                        font_family: dep("E:/Rust/try/makepad/Gen-UI/examples/gen_widget_example/resources/GoNotoKurrent-Bold.ttf"),
-                        font_size: 12.0,
-                        font_color: #000,
-                    }
+                    <GLabelExample>{}
+                    <GButtonExample>{}
+                    <GCardExample>{}
+                    <GHLayoutExample>{}
+                    <GVLayoutExample>{}
+                    <GLinkExample>{}
+                    <GIconExample>{}
                 }
             }
         }
@@ -101,6 +48,13 @@ impl LiveRegister for App {
     fn live_register(cx: &mut Cx) {
         crate::makepad_widgets::live_design(cx);
         crate::gen_components::live_design(cx);
+        crate::components::cards::live_design(cx);
+        crate::components::label::live_design(cx);
+        crate::components::buttons::live_design(cx);
+        crate::components::hlayout::live_design(cx);
+        crate::components::vlayout::live_design(cx);
+        crate::components::links::live_design(cx);
+        crate::components::icons::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

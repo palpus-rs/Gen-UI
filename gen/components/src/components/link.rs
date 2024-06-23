@@ -1,4 +1,5 @@
-use crate::shader::draw_link::DrawLink;
+use crate::shader::draw_link::DrawGLink;
+use crate::shader::draw_text::DrawGText;
 use crate::utils::get_font_family;
 use crate::{
     shader::draw_card::DrawCard,
@@ -16,28 +17,8 @@ live_design! {
         text_walk: {
             height: Fit,
             width: Fit,
-        }
-        border_width: 0.0,
+        },
         border_radius: 0.0,
-        draw_text: {
-            instance hover: 0.0,
-            instance pressed: 0.0,
-
-            fn get_color(self) -> vec4 {
-                let hover_color = self.color - vec4(0.0, 0.0, 0.0, 0.1);
-                let pressed_color = self.color - vec4(0.0, 0.0, 0.0, 0.2);
-
-                return mix(
-                    mix(
-                        self.color,
-                        hover_color,
-                        self.hover
-                    ),
-                    pressed_color,
-                    self.pressed
-                )
-            }
-        }
 
         animator: {
             hover = {
@@ -46,7 +27,6 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_link: {pressed: 0.0, hover: 0.0}
-                        // draw_icon: {pressed: 0.0, hover: 0.0}
                         draw_text: {pressed: 0.0, hover: 0.0}
                     }
                 }
@@ -58,7 +38,6 @@ live_design! {
                     }
                     apply: {
                         draw_link: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
-                        // draw_icon: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
                         draw_text: {pressed: 0.0, hover: [{time: 0.0, value: 1.0}],}
                     }
                 }
@@ -67,7 +46,6 @@ live_design! {
                     from: {all: Forward {duration: (GLOBAL_DURATION)}}
                     apply: {
                         draw_link: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
-                        // draw_icon: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
                         draw_text: {pressed: [{time: 0.0, value: 1.0}], hover: 1.0,}
                     }
                 }
@@ -88,8 +66,12 @@ pub struct GLink {
     pub pressed_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
-    #[live(0.0)]
-    pub border_width: f32,
+    #[live(true)]
+    pub underline: bool,
+    #[live]
+    pub underline_color: Option<Vec4>,
+    #[live(1.0)]
+    pub underline_width: f32,
     #[live(4.0)]
     pub border_radius: f32,
     #[live(false)]
@@ -102,7 +84,7 @@ pub struct GLink {
     #[live(10.0)]
     pub font_size: f64,
     #[live]
-    pub font_color: Option<Vec4>,
+    pub color: Option<Vec4>,
     #[live]
     pub font_family: LiveDependency,
     // visible -------------------
@@ -110,7 +92,8 @@ pub struct GLink {
     pub visible: bool,
     // define area -----------------
     #[live]
-    draw_text: DrawText,
+    draw_text: DrawGText,
+    // draw_text: DrawText,
     #[live]
     text_walk: Walk,
     #[live(true)]
@@ -121,7 +104,7 @@ pub struct GLink {
     // deref -----------------
     #[redraw]
     #[live]
-    draw_link: DrawLink,
+    draw_link: DrawGLink,
     #[walk]
     walk: Walk,
     #[layout]
@@ -218,10 +201,13 @@ impl LiveHook for GLink {
         let pressed_color = get_color(self.theme, self.pressed_color, 600);
         // ------------------ border color ----------------------------------------------
         let border_color = get_color(self.theme, self.border_color, 800);
+        let underline_color = get_color(self.theme, self.underline_color, 500);
         // ------------------ font ------------------------------------------------------
-        let font_color = get_color(self.theme, self.font_color, 100);
+        let font_color = get_color(self.theme, self.color, 500);
         // ------------------ is transparent --------------------------------------------
         let transparent = (self.transparent) as u8 as f32;
+        // ------------------ underline -------------------------------------------------
+        let underline = (self.underline) as u8 as f32;
         // ------------------ round -----------------------------------------------------
         if self.round {
             self.border_radius = match self.walk.height {
@@ -241,17 +227,21 @@ impl LiveHook for GLink {
             live! {
                 background_color: (bg_color),
                 border_color: (border_color),
-                border_width: (self.border_width),
                 border_radius: (self.border_radius),
                 pressed_color: (pressed_color),
                 hover_color: (hover_color),
                 transparent: (transparent),
+                underline: (underline),
+                underline_color: (underline_color),
+                underline_width: (self.underline_width),
             },
         );
         self.draw_text.apply_over(
             cx,
             live! {
                 color: (font_color),
+                hover_color: (hover_color),
+                pressed_color: (pressed_color),
                 text_style: {
                     font_size: (self.font_size),
                 },
