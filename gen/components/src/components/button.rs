@@ -174,7 +174,7 @@ impl Widget for GButton {
             _ => (),
         }
     }
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
@@ -207,7 +207,7 @@ impl Widget for GButton {
 }
 
 impl LiveHook for GButton {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 500);
         // ------------------ hover color -----------------------------------------------

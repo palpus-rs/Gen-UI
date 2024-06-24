@@ -1,9 +1,9 @@
 use crate::shader::draw_card::DrawCard;
 use crate::themes::{get_color, Themes};
 use crate::utils::set_cursor;
-use event::TriggerHitEvent;
+
 use makepad_widgets::*;
-/// Card component
+// Card component
 live_design! {
     import makepad_draw::shader::std::*;
     GLOBAL_DURATION = 0.25
@@ -340,12 +340,12 @@ impl WidgetNode for Card {
 }
 
 impl LiveHook for Card {
-    fn before_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn before_apply(&mut self, _cx: &mut Cx, apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         if let ApplyFrom::UpdateFromDoc { .. } = apply.from {
             self.draw_order.clear();
         }
     }
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 500);
         // ------------------ hover color -----------------------------------------------

@@ -8,7 +8,7 @@
   - [x] HLayout
 - [x] Radio
 - [x] CheckBox
-- [ ] Icon
+- [x] Icon
 - [ ] Image
 - [ ] Input
 - [ ] Popup

@@ -7,10 +7,6 @@ live_design!{
         instance hover: 0.0,
         instance pressed: 0.0,
 
-        text_style: {
-            font_size: 12.0,
-        }
-
         fn get_color(self) -> vec4 {
             return mix(
                 self.color,

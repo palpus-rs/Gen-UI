@@ -27,6 +27,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78834c15cb5d5efe3452d58b1e8ba890dd62d21907f867f383358198e56ebca5"
 
 [[package]]
+name = "byteorder"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+
+[[package]]
+name = "fxhash"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
 name = "gen_components"
 version = "0.1.0"
 dependencies = [
@@ -44,6 +59,8 @@ dependencies = [
 [[package]]
 name = "makepad-android-state"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd004cda8be459fd76954218b76a1249a079fb9360bbca4e724cb7ddb2962857"
 dependencies = [
  "makepad-jni-sys",
 ]
@@ -76,6 +93,7 @@ name = "makepad-draw"
 version = "0.6.0"
 dependencies = [
  "ab_glyph_rasterizer",
+ "fxhash",
  "makepad-html",
  "makepad-platform",
  "makepad-rustybuzz",
@@ -106,6 +124,8 @@ version = "0.4.0"
 [[package]]
 name = "makepad-jni-sys"
 version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9775cbec5fa0647500c3e5de7c850280a88335d1d2d770e5aa2332b801ba7064"
 
 [[package]]
 name = "makepad-live-compiler"
@@ -294,9 +314,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "ttf-parser"
-version = "0.19.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49d64318d8311fc2668e48b63969f4343e0a85c4a109aa8460d6672e364b8bd1"
+version = "0.19.0"
 
 [[package]]
 name = "unicode-bidi"

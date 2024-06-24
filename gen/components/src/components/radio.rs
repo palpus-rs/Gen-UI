@@ -95,7 +95,7 @@ pub enum GRadioEvent {
 }
 
 impl Widget for GRadio {
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         self.draw_radio.draw_walk(cx, walk);
         DrawStep::done()
     }
@@ -131,7 +131,7 @@ impl Widget for GRadio {
 }
 
 impl LiveHook for GRadio {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, _nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 50);
         // ------------------ hover color -----------------------------------------------

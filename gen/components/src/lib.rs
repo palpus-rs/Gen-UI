@@ -20,5 +20,6 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_text::live_design(cx);
     crate::shader::draw_radio::live_design(cx);
     crate::shader::draw_check_box::live_design(cx);
+    crate::shader::draw_icon::live_design(cx);
     crate::components::live_design(cx);
 }

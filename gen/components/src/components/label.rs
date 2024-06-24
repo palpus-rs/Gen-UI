@@ -1,4 +1,3 @@
-use font_atlas::CxFontsAtlasRc;
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
 use crate::utils::get_font_family;
