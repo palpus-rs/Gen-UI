@@ -29,7 +29,6 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     
-                    <GCheckBoxExample>{}
                     <GLabelExample>{}
                     <GButtonExample>{}
                     <GCardExample>{}
@@ -37,7 +36,7 @@ live_design! {
                     <GVLayoutExample>{}
                     <GLinkExample>{}
                     <GRadioExample>{}
-
+                    <GCheckBoxExample>{}
                     <GIconExample>{}
                     
                    

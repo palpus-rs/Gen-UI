@@ -68,6 +68,9 @@ pub struct GRadio {
     pub scale: f32,
     #[live(MouseCursor::Hand)]
     pub cursor: Option<MouseCursor>,
+    // value ------------------
+    #[live]
+    value: String,
     // ---- type
     #[live]
     radio_type: GChooseType,
@@ -86,7 +89,7 @@ pub struct GRadio {
 
 #[derive(DefaultNone, Clone, Debug)]
 pub enum GRadioEvent {
-    Clicked,
+    Clicked(String),
     Hover,
     None,
 }
@@ -113,7 +116,11 @@ impl Widget for GRadio {
             Hit::FingerDown(_fe) => {
                 if self.animator_in_state(cx, id!(selected.off)) {
                     self.animator_play(cx, id!(selected.on));
-                    cx.widget_action(uid, &scope.path, GRadioEvent::Clicked);
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GRadioEvent::Clicked(self.value.to_string()),
+                    );
                 }
             }
             Hit::FingerUp(_fe) => {}
@@ -124,7 +131,7 @@ impl Widget for GRadio {
 }
 
 impl LiveHook for GRadio {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 50);
         // ------------------ hover color -----------------------------------------------
@@ -153,5 +160,37 @@ impl LiveHook for GRadio {
         self.draw_radio.apply_radio_type(self.radio_type.clone());
 
         self.draw_radio.redraw(cx);
+    }
+}
+
+impl GRadio {
+    pub fn clicked(&self, actions: &Actions) -> Option<String> {
+        if let GRadioEvent::Clicked(value) = actions.find_widget_action_cast(self.widget_uid()) {
+            Some(value)
+        } else {
+            None
+        }
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let GRadioEvent::Hover = actions.find_widget_action_cast(self.widget_uid()) {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl GRadioRef {
+    pub fn clicked(&self, actions: &Actions) -> Option<String> {
+        if let Some(radio_ref) = self.borrow() {
+            return radio_ref.clicked(actions);
+        }
+        None
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let Some(radio_ref) = self.borrow() {
+            return radio_ref.hover(actions);
+        }
+        false
     }
 }

@@ -1,10 +1,7 @@
 use crate::shader::draw_link::DrawGLink;
 use crate::shader::draw_text::DrawGText;
+use crate::themes::{get_color, Themes};
 use crate::utils::{get_font_family, set_cursor};
-use crate::{
-    shader::draw_card::DrawCard,
-    themes::{get_color, Themes},
-};
 use makepad_widgets::*;
 
 live_design! {
@@ -89,6 +86,11 @@ pub struct GLink {
     pub font_family: LiveDependency,
     #[live]
     pub cursor: Option<MouseCursor>,
+    // href -------------------
+    #[live]
+    href: Option<String>,
+    #[live]
+    link_type: LinkType,
     // visible -------------------
     #[live(true)]
     pub visible: bool,
@@ -113,10 +115,19 @@ pub struct GLink {
     layout: Layout,
 }
 
+#[derive(Copy, Clone, Live, LiveHook, Debug)]
+#[live_ignore]
+pub enum LinkType {
+    #[pick]
+    NewTab,
+    SameTab,
+}
+
 #[derive(Clone, Debug, DefaultNone)]
 pub enum GLinkEvent {
     Hovered(KeyModifiers),
-    Clicked(KeyModifiers),
+    /// clicked(key_modifiers, href, link_type)
+    Clicked((KeyModifiers, Option<String>, LinkType)),
     Released(KeyModifiers),
     Pressed(KeyModifiers),
     None,
@@ -146,7 +157,11 @@ impl Widget for GLink {
             }
             Hit::FingerUp(f_up) => {
                 if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GLinkEvent::Clicked(f_up.modifiers));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GLinkEvent::Clicked((f_up.modifiers, self.href.clone(), self.link_type)),
+                    );
                     cx.widget_action(uid, &scope.path, GLinkEvent::Released(f_up.modifiers));
                     if f_up.device.has_hovers() {
                         self.animator_play(cx, id!(hover.on));
@@ -161,7 +176,7 @@ impl Widget for GLink {
             _ => (),
         }
     }
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
             return DrawStep::done();
         }
@@ -194,7 +209,7 @@ impl Widget for GLink {
 }
 
 impl LiveHook for GLink {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 500);
         // ------------------ hover color -----------------------------------------------
@@ -255,11 +270,11 @@ impl LiveHook for GLink {
 }
 
 impl GLink {
-    pub fn clicked(&self, actions: &Actions) -> bool {
-        if let GLinkEvent::Clicked(_) = actions.find_widget_action(self.widget_uid()).cast() {
-            true
+    pub fn clicked(&self, actions: &Actions) -> Option<(KeyModifiers, Option<String>, LinkType)> {
+        if let GLinkEvent::Clicked(e) = actions.find_widget_action(self.widget_uid()).cast() {
+            Some(e)
         } else {
-            false
+            None
         }
     }
     pub fn pressed(&self, actions: &Actions) -> bool {
@@ -286,11 +301,11 @@ impl GLink {
 }
 
 impl GLinkRef {
-    pub fn clicked(&self, actions: &Actions) -> bool {
+    pub fn clicked(&self, actions: &Actions) -> Option<(KeyModifiers, Option<String>, LinkType)> {
         if let Some(btn_ref) = self.borrow() {
             return btn_ref.clicked(actions);
         }
-        false
+        None
     }
     pub fn released(&self, actions: &Actions) -> bool {
         if let Some(btn_ref) = self.borrow() {
@@ -314,7 +329,8 @@ impl GLinkRef {
 
 impl GLinkSet {
     pub fn clicked(&self, actions: &Actions) -> bool {
-        self.iter().any(|btn_ref| btn_ref.clicked(actions))
+        self.iter()
+            .any(|btn_ref| btn_ref.clicked(actions).is_some())
     }
     pub fn pressed(&self, actions: &Actions) -> bool {
         self.iter().any(|btn_ref| btn_ref.pressed(actions))

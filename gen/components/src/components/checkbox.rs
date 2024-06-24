@@ -68,6 +68,8 @@ pub struct GCheckBox {
     pub scale: f32,
     #[live(MouseCursor::Hand)]
     pub cursor: Option<MouseCursor>,
+    #[live]
+    pub value: String,
     // ---- type
     #[live]
     check_type: GChooseType,
@@ -86,13 +88,14 @@ pub struct GCheckBox {
 
 #[derive(DefaultNone, Clone, Debug)]
 pub enum GCheckBoxEvent {
-    Change(bool),
+    /// changed(is_selected, value)
+    Changed((bool, String)),
     Hover,
     None,
 }
 
 impl Widget for GCheckBox {
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         self.draw_check.draw_walk(cx, walk);
         DrawStep::done()
     }
@@ -113,10 +116,18 @@ impl Widget for GCheckBox {
             Hit::FingerDown(_fe) => {
                 if self.animator_in_state(cx, id!(selected.on)) {
                     self.animator_play(cx, id!(selected.off));
-                    cx.widget_action(uid, &scope.path, GCheckBoxEvent::Change(false));
-                }else{
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GCheckBoxEvent::Changed((false, self.value.to_string())),
+                    );
+                } else {
                     self.animator_play(cx, id!(selected.on));
-                    cx.widget_action(uid, &scope.path, GCheckBoxEvent::Change(true));
+                    cx.widget_action(
+                        uid,
+                        &scope.path,
+                        GCheckBoxEvent::Changed((true, self.value.to_string())),
+                    );
                 }
             }
             Hit::FingerUp(_fe) => {}
@@ -124,10 +135,19 @@ impl Widget for GCheckBox {
             _ => (),
         }
     }
+    fn data_to_widget(&mut self, cx: &mut Cx, nodes: &[LiveNode], path: &[LiveId]) {
+        if let Some(value) = nodes.read_field_value(path) {
+            if let Some(v) = value.as_bool() {
+                // set the selected state
+                // if the value is true, set the selected state to on or off
+                self.animator_toggle(cx, v, Animate::Yes, id!(selected.on), id!(selected.off))
+            }
+        }
+    }
 }
 
 impl LiveHook for GCheckBox {
-    fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+    fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 50);
         // ------------------ hover color -----------------------------------------------
@@ -156,5 +176,36 @@ impl LiveHook for GCheckBox {
         self.draw_check.apply_check_type(self.check_type.clone());
 
         self.draw_check.redraw(cx);
+    }
+}
+
+impl GCheckBox {
+    pub fn changed(&self, actions: &Actions) -> Option<(bool, String)> {
+        if let GCheckBoxEvent::Changed(changed) = actions.find_widget_action_cast(self.widget_uid()) {
+            return Some(changed);
+        }
+        None
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let GCheckBoxEvent::Hover = actions.find_widget_action_cast(self.widget_uid()) {
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl GCheckBoxRef {
+    pub fn changed(&self, actions: &Actions) -> Option<(bool, String)> {
+        if let Some(check_box_ref) = self.borrow() {
+            return check_box_ref.changed(actions);
+        }
+        None
+    }
+    pub fn hover(&self, actions: &Actions) -> bool {
+        if let Some(check_box_ref) = self.borrow() {
+            return check_box_ref.hover(actions);
+        }
+        false
     }
 }

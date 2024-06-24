@@ -18,9 +18,11 @@ live_design! {
         }
         <GCheckBox>{
             theme: Warning,
-            height: 30.0,
-            width: 60.0,
             check_type: Tick,
+        }
+        <GCheckBox>{
+            theme: Error,
+            check_type: Cross,
         }
         <GCheckBox>{
             theme: Success,
@@ -42,9 +44,6 @@ live_design! {
             size: 12.0,
             check_type: Tick,
         }
-        <GCheckBox>{
-            theme: Error,
-            check_type: Cross,
-        }
+        
     }
 }
