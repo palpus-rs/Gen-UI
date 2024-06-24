@@ -19,6 +19,7 @@ live_design!{
     import crate::components::icon::GIconBase;
     import crate::components::radio::GRadioBase;
     import crate::components::checkbox::GCheckBoxBase;
+    import crate::components::image::GImageBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -274,5 +275,8 @@ live_design!{
         width: Fit,
         height: Fit,
     }
-    
+    GImage = <GImageBase>{
+        width: 32.0,
+        height: 32.0,
+    }
 }

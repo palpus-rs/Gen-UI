@@ -7,6 +7,7 @@ pub mod shader;
 pub mod utils;
 
 pub fn live_design(cx: &mut Cx) {
+    // components ---------------------------------------------
     crate::components::label::live_design(cx);
     crate::components::button::live_design(cx);
     crate::components::card::live_design(cx);
@@ -14,6 +15,8 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::icon::live_design(cx);
     crate::components::radio::live_design(cx);
     crate::components::checkbox::live_design(cx);
+    crate::components::image::live_design(cx);
+    // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
     crate::shader::draw_card::live_design(cx);
     crate::shader::draw_link::live_design(cx);
@@ -21,5 +24,6 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_radio::live_design(cx);
     crate::shader::draw_check_box::live_design(cx);
     crate::shader::draw_icon::live_design(cx);
+    // export all the components
     crate::components::live_design(cx);
 }
