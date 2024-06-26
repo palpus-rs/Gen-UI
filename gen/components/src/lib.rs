@@ -16,6 +16,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::radio::live_design(cx);
     crate::components::checkbox::live_design(cx);
     crate::components::image::live_design(cx);
+    crate::components::input::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
     crate::shader::draw_card::live_design(cx);

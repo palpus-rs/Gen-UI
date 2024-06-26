@@ -6,7 +6,7 @@ live_design! {
     import gen_components::components::*;
     import makepad_draw::shader::std::*;
     GImageExample = <ScrollYView>{
-        height: 60.0,
+        height: 100.0,
         width: Fill,
         spacing: 20.0,
         <GLabel>{

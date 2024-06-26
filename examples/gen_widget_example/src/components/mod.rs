@@ -8,3 +8,4 @@ pub mod icons;
 pub mod radios;
 pub mod checkboxs;
 pub mod images;
+pub mod inputs;

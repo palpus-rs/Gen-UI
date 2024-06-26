@@ -14,6 +14,7 @@ live_design! {
     import crate::components::radios::*;
     import crate::components::checkboxs::*;
     import crate::components::images::*;
+    import crate::components::inputs::*;
 
     App = {{App}}{
         root: <Root>{
@@ -29,7 +30,7 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GImageExample>{}
+                    <GInputExample>{}
                     <GLabelExample>{}
                     <GButtonExample>{}
                     <GCardExample>{}
@@ -39,7 +40,7 @@ live_design! {
                     <GRadioExample>{}
                     <GCheckBoxExample>{}
                     <GIconExample>{}
-                    
+                    <GImageExample>{}
                    
                 }
             }
@@ -67,6 +68,7 @@ impl LiveRegister for App {
         crate::components::radios::live_design(cx);
         crate::components::checkboxs::live_design(cx);
         crate::components::images::live_design(cx);
+        crate::components::inputs::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

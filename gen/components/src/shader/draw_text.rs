@@ -24,4 +24,6 @@ pub struct DrawGText {
     pub draw_super: DrawText,
     #[live] pub hover_color: Vec4,
     #[live] pub pressed_color: Vec4,
+    // text is empty or not
+    #[live] pub empty: f32,
 }

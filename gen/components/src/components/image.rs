@@ -9,10 +9,6 @@ live_design! {
         draw_image: {
             texture image: texture2d
 
-            // instance rotation: 0.0
-            // instance opacity: 1.0
-            // instance scale: 1.0
-
             fn rotation_vertex_expansion(rotation: float, w: float, h: float) -> vec2 {
                 let horizontal_expansion = (abs(cos(rotation)) * w + abs(sin(rotation)) * h) / w - 1.0;
                 let vertical_expansion = (abs(sin(rotation)) * w + abs(cos(rotation)) * h) / h - 1.0;

@@ -20,6 +20,7 @@ live_design!{
     import crate::components::radio::GRadioBase;
     import crate::components::checkbox::GCheckBoxBase;
     import crate::components::image::GImageBase;
+    import crate::components::input::GInputBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -278,5 +279,13 @@ live_design!{
     GImage = <GImageBase>{
         width: 32.0,
         height: 32.0,
+    }
+    GInput = <GInputBase>{
+        font_family: (FONT_FAMILY),
+        brightness: 1.0,
+        line_spacing: 1.5,
+        font_size: (FONT_SIZE),
+        // color: (COLOR_DARK_800),
+        
     }
 }

@@ -9,8 +9,8 @@
 - [x] Radio
 - [x] CheckBox
 - [x] Icon
-- [ ] Image
-- [ ] Input
+- [x] Image
+- [x] Input
 - [ ] Popup
 - [ ] Badge
 - [ ] DropDown
