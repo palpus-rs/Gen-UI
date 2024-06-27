@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
 use nom::{
     branch::alt,
@@ -8,7 +8,7 @@ use nom::{
 };
 use proc_macro2::TokenStream;
 
-use crate::{common::parse_value, target::function};
+use crate::{common::{parse_value, Special}, target::function};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
@@ -111,6 +111,9 @@ impl From<(&str, &str, bool)> for Function {
     fn from(value: (&str, &str, bool)) -> Self {
         // try split &str
         // remove `()`
+        if let Ok(_) = Special::from_str(value.0){
+            return (value.0, Some(vec![value.1]), value.2).into();
+        }
         let (_, params) = remove_holder(value.1).unwrap();
         if params.is_empty() {
             (value.0, None, value.2).into()

@@ -62,7 +62,7 @@ pub struct GRadio {
     pub selected_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
-    #[live(1.6)]
+    #[live(1.0)]
     pub border_width: f32,
     #[live(0.48)]
     pub scale: f32,

@@ -1,9 +1,8 @@
 use std::{fmt::Display, sync::mpsc, thread};
 
-use crate::{
-    error::{self, Errors},
-    target::{parse_script, parse_style, parse_template},
-};
+use gen_utils::error::{Error, Errors};
+
+use crate::target::{parse_script, parse_style, parse_template};
 
 use super::{ASTNodes, ParseCore, ParseTarget, Script, Strategy};
 
@@ -62,7 +61,7 @@ impl ParseResult {
 }
 
 impl TryFrom<ParseTarget> for ParseResult {
-    type Error = error::Error;
+    type Error = Error;
 
     fn try_from(value: ParseTarget) -> Result<Self, Self::Error> {
         ParseCore::from(value).try_into()
@@ -70,7 +69,7 @@ impl TryFrom<ParseTarget> for ParseResult {
 }
 
 impl TryFrom<ParseCore> for ParseResult {
-    type Error = error::Error;
+    type Error = Error;
 
     fn try_from(value: ParseCore) -> Result<Self, Self::Error> {
         match value.target_strategy() {
@@ -168,7 +167,7 @@ impl TryFrom<ParseCore> for ParseResult {
                     Err(e) => Err(e),
                 }
             }
-            Strategy::Error(e) => Err(error::Error::convert(Errors::ParseError(e))),
+            Strategy::Error(e) => Err(Error::convert(Errors::ParseError(e))),
             Strategy::SingleScript => {
                 let mut result = ParseResult::default();
                 match handle_script(&mut result, value.script.unwrap().as_str()) {
@@ -184,7 +183,7 @@ impl TryFrom<ParseCore> for ParseResult {
                 }
             }
             Strategy::None => Ok(ParseResult::default()),
-            _ => Err(error::Error::parse_error(
+            _ => Err(Error::parse_error(
                 "The conversion strategy is temporarily not allowed to be processed",
             )),
         }
@@ -202,7 +201,7 @@ impl Display for ParseResult {
     }
 }
 
-fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), error::Error> {
+fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     match parse_template(input) {
         Ok(ast) => {
             result.set_template(ast);
@@ -211,7 +210,7 @@ fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), error::E
         Err(e) => Err(e),
     }
 }
-fn handle_script(result: &mut ParseResult, input: &str) -> Result<(), error::Error> {
+fn handle_script(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     match parse_script(input) {
         Ok(ast) => {
             result.set_script(ast.into());
@@ -221,7 +220,7 @@ fn handle_script(result: &mut ParseResult, input: &str) -> Result<(), error::Err
     }
 }
 
-fn handle_style(result: &mut ParseResult, input: &str) -> Result<(), error::Error> {
+fn handle_style(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     match parse_style(input) {
         Ok(ast) => {
             result.set_style(ast);

@@ -23,7 +23,7 @@ use crate::{
     common::{parse_all, trim},
     target::parse_imports_to_token,
 };
-
+use gen_utils::error::Error;
 use self::nodes::asts_to_string;
 
 /// Parse Strategy
@@ -318,11 +318,11 @@ impl From<ParseCore> for ParseTarget {
 
 /// parse whole rsx file from `Vec<Targets>` to `ParseTarget`
 impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
-    type Error = crate::error::Error;
+    type Error = Error;
 
     fn try_from(value: Vec<Targets>) -> Result<Self, Self::Error> {
         return if value.is_empty() {
-            Err(crate::error::Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
+            Err(Error::new("The current file has no content. It should be removed to ensure your program has clean file tree!"))
         } else {
             let mut parse_target = ParseTarget::default();
             let mut template_count = 0_u32;
@@ -346,7 +346,7 @@ impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
                         Targets::Comment(c) => parse_target.push_comment(c),
                     }
                 } else {
-                    return Err(crate::error::Error::new("Abnormal number of nodes, there is more than one `template` | `script` | `style` node in the file!"));
+                    return Err(Error::new("Abnormal number of nodes, there is more than one `template` | `script` | `style` node in the file!"));
                 }
             }
             let _ = parse_target.handle_self();
@@ -358,7 +358,7 @@ impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
 /// parse whole gen file from `&str` to `ParseTarget`
 /// recommended to use this method to parse gen file directly
 impl TryFrom<&str> for ParseTarget {
-    type Error = crate::error::Error;
+    type Error = Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         return if value.trim().is_empty() {
@@ -374,7 +374,7 @@ impl TryFrom<&str> for ParseTarget {
                 return ParseTarget::try_from(res);
             } else {
                 dbg!(remain);
-                return Err(crate::error::Error::new("Parsing file exception. The current file contains content that is not covered by processed tags. If it is a rust script, please wrap it in a `<script>` tag"));
+                return Err(Error::new("Parsing file exception. The current file contains content that is not covered by processed tags. If it is a rust script, please wrap it in a `<script>` tag"));
             }
         };
     }

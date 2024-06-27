@@ -34,7 +34,7 @@ impl From<Block> for Script {
 }
 
 impl<'a> TryFrom<&'a str> for Script {
-    type Error = crate::error::Error;
+    type Error = gen_utils::error::Error;
 
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         match parse_script(value) {

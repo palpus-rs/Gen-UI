@@ -26,6 +26,16 @@ pub enum Errors {
     StylePropsValue,
     /// Comment
     CommentType,
+    // -------- convert-----------
+    MissMatchKeyWord,
+    StrategyNoTemplateStyles,
+    StrategyNoTemplateId,
+    StrategyNoTemplateClass,
+    StrategyNoScript,
+    StrategyNoInherits,
+    StrategyNoStyle,
+    PropConvertFail(String),
+    BuiltInConvertFail,
 }
 
 impl Display for Errors {
@@ -49,6 +59,20 @@ impl Display for Errors {
             ),
             Errors::ParseTargetEmpty => "`ParseTarget` is empty which means the current rsx file is empty, do not need to convert to AST".to_string(),
             Errors::ParseTargetError(e) => e.to_string(),
+            Errors::MissMatchKeyWord => "Gen-Converter: MissMatchKeyWord".to_string(),
+
+            Errors::StrategyNoTemplateStyles => {
+                "Gen-Converter[strategy]: Model not have styles or template".to_string()
+            }
+            Errors::StrategyNoTemplateId => "Gen-Converter[strategy]: Model not have template id".to_string(),
+            Errors::StrategyNoTemplateClass => {
+                "Gen-Converter[strategy]: Model not have template class".to_string()
+            }
+            Errors::StrategyNoScript => "Gen-Converter[strategy]: Model not have script".to_string(),
+            Errors::StrategyNoInherits => "Gen-Converter[strategy]: Model not have inherits".to_string(),
+            Errors::StrategyNoStyle => "Gen-Converter[strategy]: Model not have style".to_string(),
+            Errors::PropConvertFail(e) => e.to_string(),
+            Errors::BuiltInConvertFail => "Gen-Converter: BuiltIn convert fail".to_string(),
         };
         f.write_str(&msg)
     }

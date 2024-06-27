@@ -1,7 +1,7 @@
 <template>
   <root id="ui">
     <window id="main_window">
-      <view flow="Down" height="All">
+      <view flow="Down" height="All" id="main_view">
         <checkbox_view /> 
         <header_view /> 
         <image_view></image_view>
@@ -32,6 +32,10 @@ import!{
     flow: Down;
     inner_size: 600.0, 800.0;
     position: 300.0;
+    #main_view{
+      draw_bg: #FFF,
+      draw_bg: linear_gradient();
+    }
   }
 }
 </style>

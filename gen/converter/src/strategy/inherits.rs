@@ -1,8 +1,5 @@
-use crate::{
-    error::Errors,
-    model::{Model, TemplateModel},
-};
-
+use crate::model::{Model, TemplateModel};
+use gen_utils::error::Errors;
 /// 在GenUI中inherits是直接写在`<component>`标签上的
 /// 例如：`<component inherits="view">`
 /// 而component标签是GenUI中独有的特殊标签，用于定义一个组件

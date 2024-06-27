@@ -76,7 +76,7 @@ impl Display for KeyWords {
 }
 
 impl TryFrom<&str> for KeyWords {
-    type Error = crate::error::Errors;
+    type Error = gen_utils::error::Errors;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         match value {
@@ -88,7 +88,7 @@ impl TryFrom<&str> for KeyWords {
             IF => Ok(KeyWords::If),
             ELSE_IF => Ok(KeyWords::ElseIf),
             ELSE => Ok(KeyWords::Else),
-            _ => Err(crate::error::Errors::MissMatchKeyWord),
+            _ => Err(gen_utils::error::Errors::MissMatchKeyWord),
         }
     }
 }

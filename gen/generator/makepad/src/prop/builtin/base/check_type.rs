@@ -1,5 +1,5 @@
 use crate::str_to_string_try_from;
-use gen_converter::error::Errors;
+use gen_utils::error::Errors;
 use gen_parser::Value;
 #[allow(unused_imports)]
 use std::default;

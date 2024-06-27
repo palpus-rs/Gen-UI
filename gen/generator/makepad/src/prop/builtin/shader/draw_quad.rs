@@ -1,8 +1,11 @@
 //! 暂不开启使用
 use std::fmt::Display;
 
-use gen_converter::error::Errors;
-use gen_parser::{common::parse_hex_color, Value};
+use gen_parser::{
+    common::{parse_hex_color, MakepadShader},
+    Value,
+};
+use gen_utils::error::Errors;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
@@ -65,17 +68,21 @@ use crate::str_to_string_try_from;
 ///     }
 /// }
 /// ```
+
+/// DrawQuad是Makepad最基础的绘制模型
+/// 用于绘制矩形
+/// 绘制函数为pixel，返回vec4
+/// 但是DrawQuad只有draw_depth
 #[derive(Clone, Default, Debug)]
 pub struct DrawQuad {
-    // #[live] pub geometry: GeometryQuad2D,
-    pub color: Option<String>,
+    pub pixel: TokenStream,
     pub draw_depth: Option<f32>,
 }
 
 impl DrawQuad {
     pub fn pixel(&mut self, value: &Value) -> Result<(), Errors> {
         let quad = DrawQuad::try_from(value)?;
-        self.color = quad.color;
+        self.pixel = quad.pixel;
         Ok(())
     }
 }
@@ -86,10 +93,18 @@ impl TryFrom<&Value> for DrawQuad {
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
         if let Some(s) = value.is_unknown_and_get() {
             s.try_into()
+        } else if let Some(s) = value.is_string_and_get() {
+            s.try_into()
         } else {
             value
-                .is_string_and_get()
-                .map(|s| s.try_into())
+                .is_fn_and_get()
+                .map(|func| {
+                    let pixel = MakepadShader::try_from(func)?;
+                    Ok(DrawQuad {
+                        pixel: pixel.0,
+                        draw_depth: None,
+                    })
+                })
                 .unwrap_or_else(|| {
                     Err(Errors::PropConvertFail(format!(
                         "{} can not convert to DrawQuad",
@@ -108,7 +123,7 @@ impl TryFrom<&str> for DrawQuad {
             Ok((input, color)) => {
                 if input.is_empty() {
                     return Ok(DrawQuad {
-                        color: Some(color),
+                        pixel: hex_to_pixel(&color),
                         draw_depth: None,
                     });
                 }
@@ -129,19 +144,16 @@ str_to_string_try_from!(DrawQuad);
 
 impl Display for DrawQuad {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let color = match self.color.as_ref() {
-            Some(color) => Some(parse_str::<TokenStream>(format!("#{}", color).as_str()).unwrap()),
-            None => None,
-        };
+        f.write_str(self.pixel.to_string().as_str())
+    }
+}
 
-        f.write_str(
-            quote! {
-                fn pixel(self) -> vec4 {
-                    return #color;
-                }
-            }
-            .to_string()
-            .as_str(),
-        )
+/// convert hex to pixel
+pub fn hex_to_pixel(value: &str) -> TokenStream {
+    let color = parse_str::<TokenStream>(value).unwrap();
+    quote! {
+        fn pixel(self) -> vec4{
+            return #color;
+        }
     }
 }

@@ -329,6 +329,7 @@ dependencies = [
 name = "gen_parser"
 version = "0.1.0"
 dependencies = [
+ "gen_utils",
  "nom",
  "proc-macro2",
  "quote",

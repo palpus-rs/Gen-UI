@@ -1,0 +1,28 @@
+<template>
+  <root id="ui">
+    <window id="main_window">
+      <view class="common_views" id="view1"></view>
+    </window>
+  </root>
+</template>
+
+<style>
+#ui{
+  #main_window{
+    width: Fill;
+    height: Fill;
+    show_bg: true;
+    draw_bg: #1C2128;
+    flow: Down;
+    inner_size: 600.0, 800.0;
+    position: 300.0;
+    .common_views{
+      height: 100;
+      width: 100;
+    }
+    #view1{
+      draw_bg: #FFF;
+    }
+  }
+}
+</style>

@@ -2,7 +2,7 @@
 use std::default;
 use std::fmt::Display;
 
-use gen_converter::error::Errors;
+use gen_utils::error::Errors;
 use gen_parser::Value;
 
 use crate::prop::{ALL, FILL, FIT};

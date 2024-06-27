@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use gen_converter::error::Errors;
+use gen_utils::error::Errors;
 use gen_parser::Value;
 use proc_macro2::TokenStream;
 

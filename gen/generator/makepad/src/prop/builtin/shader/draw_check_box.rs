@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
 use crate::{prop::builtin::CheckType, widget::utils::f32_prop};
-use gen_converter::error::Errors;
 use gen_parser::Value;
+use gen_utils::error::Errors;
 
 // use super::draw_quad::DrawQuad;
 

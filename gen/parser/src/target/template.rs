@@ -10,6 +10,7 @@ use crate::{
     },
     Value, END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN, TAG_START,
 };
+use gen_utils::error::Error;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_while_m_n},
@@ -206,15 +207,15 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
 /// ## parse template Ⓜ️
 /// main template parser
 #[allow(dead_code)]
-pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, crate::error::Error> {
+pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, Error> {
     match many1(parse_tag)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
                 return Ok(asts);
             }
-            Err(crate::error::Error::template_parser_remain(remain))
+            Err(Error::template_parser_remain(remain))
         }
-        Result::Err(_) => Err(crate::error::Error::new("error parsing template")),
+        Result::Err(_) => Err(Error::new("error parsing template")),
     }
 }
 

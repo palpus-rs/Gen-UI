@@ -1,11 +1,8 @@
 use std::collections::HashMap;
 
+use crate::model::{Model, TemplateModel};
 use gen_parser::{PropsKey, Value};
-
-use crate::{
-    error::Errors,
-    model::{Model, TemplateModel},
-};
+use gen_utils::error::Errors;
 
 /// 对TemplateModel(模板部分)的id的处理的策略器
 /// - 提供整个TemplateModel的可变引用

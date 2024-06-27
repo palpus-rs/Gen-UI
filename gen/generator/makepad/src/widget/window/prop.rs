@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use gen_converter::error::Errors;
+use gen_utils::error::Errors;
 use gen_parser::{PropsKey, Value};
 use proc_macro2::TokenStream;
 

@@ -1,7 +1,5 @@
-use crate::{
-    error::Errors,
-    model::{prop::ConvertStyle, Model},
-};
+use crate::model::{prop::ConvertStyle, Model};
+use gen_utils::error::Errors;
 
 pub fn style<F>(model: &mut Model, mut f: F) -> Result<(), Errors>
 where

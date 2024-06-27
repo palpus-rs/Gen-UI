@@ -10,16 +10,15 @@ use std::fmt::Display;
 #[allow(unused_imports)]
 use std::{collections::HashMap, default, fmt::Debug};
 
-use gen_converter::{error::Errors, model::script::PropFn};
+use gen_converter::model::script::PropFn;
 use gen_parser::{PropsKey, Value};
-use gen_utils::common::snake_to_camel;
+use gen_utils::{common::snake_to_camel, error::Errors};
 use proc_macro2::TokenStream;
 use syn::{Ident, ItemStruct};
 
 use crate::{str_to_string_try_from, ToToken};
 
 pub mod area;
-pub mod root;
 pub mod button;
 pub mod checkbox;
 pub mod color_picker;
@@ -31,14 +30,14 @@ pub mod label;
 pub mod markdown;
 pub mod model;
 pub mod radio;
+pub mod root;
 pub mod scroll;
 pub mod splitter;
-pub mod text_input;
+// pub mod text_input;
 pub mod utils;
 pub mod view;
 pub mod window;
 pub mod window_menu;
-
 // pub use define::*;
 // pub use button::*;
 // pub use label::*;
@@ -59,6 +58,9 @@ const RADIO: &str = "RadioButton";
 const CHECKBOX: &str = "CheckBox";
 const TEXT_INPUT: &str = "TextInput";
 const ROOT: &str = "Root";
+const SCROLLXVIEW: &str = "ScrollXView";
+const SCROLLYVIEW: &str = "ScrollYView";
+const SCROLLXYVIEW: &str = "ScrollXYView";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -68,6 +70,10 @@ pub fn prop_ignore(prop: &str) -> bool {
 pub enum BuiltIn {
     Window,
     View,
+    ScrollXView,
+    ScrollYView,
+    ScrollXYView,
+    // TextInput,
     Label,
     Button,
     #[default]
@@ -93,12 +99,17 @@ impl BuiltIn {
             BuiltIn::View => view::ViewProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Label => label::LabelProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Button => button::ButtonProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Area => todo!(),
+            BuiltIn::Area => todo!("area do not need to bind prop"),
             BuiltIn::Icon => icon::IconProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Image => image::ImageProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::CheckBox => checkbox::CheckBoxProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Radio => radio::RadioButtonProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::Root => root::RootProps::prop_bind(prop, value, is_prop, ident)
+            BuiltIn::Root => root::RootProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::ScrollXView => view::ScrollXViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::ScrollYView => view::ScrollYViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::ScrollXYView => {
+                view::ScrollXYViewProps::prop_bind(prop, value, is_prop, ident)
+            }
         }
     }
     /// 对内置组件的属性进行处理
@@ -113,7 +124,10 @@ impl BuiltIn {
             BuiltIn::CheckBox => checkbox::CheckBoxProps::props(props).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonProps::props(props).to_token_stream(),
             BuiltIn::Root => root::RootProps::props(props).to_token_stream(),
-            _ => panic!("only built-in widget can be get"),
+            BuiltIn::ScrollXView => view::ScrollXViewProps::props(props).to_token_stream(),
+            BuiltIn::ScrollYView => view::ScrollYViewProps::props(props).to_token_stream(),
+            BuiltIn::ScrollXYView => view::ScrollXYViewProps::props(props).to_token_stream(),
+            BuiltIn::Area => todo!("area do not need to bind static prop"),
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -128,6 +142,9 @@ impl BuiltIn {
             BuiltIn::CheckBox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Root => root::RootPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
+                panic!("scroll view can not be inherited you need to inherits View")
+            }
         }
     }
     pub fn has_event(&self) -> bool {
@@ -153,6 +170,9 @@ impl BuiltIn {
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
             BuiltIn::Root => root::draw_walk(),
+            BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
+                panic!("scroll view can not be inherited, so that it can not draw_walk, you need to inherits View")
+            }
         }
     }
     /// 处理widget的事件处理函数
@@ -173,7 +193,10 @@ impl BuiltIn {
             BuiltIn::Image => todo!(),
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
-            BuiltIn::Root => root::handle_event(event, props, instance_name, prop_fields)
+            BuiltIn::Root => root::handle_event(event, props, instance_name, prop_fields),
+            BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
+                panic!("scroll view can not be inherited, so that it can not handle_event, you need to inherits View")
+            }
         }
     }
 }
@@ -195,6 +218,9 @@ impl TryFrom<&str> for BuiltIn {
             CHECKBOX => Ok(BuiltIn::CheckBox),
             RADIO => Ok(BuiltIn::Radio),
             ROOT => Ok(BuiltIn::Root),
+            SCROLLXVIEW => Ok(BuiltIn::ScrollXView),
+            SCROLLYVIEW => Ok(BuiltIn::ScrollYView),
+            SCROLLXYVIEW => Ok(BuiltIn::ScrollXYView),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -226,6 +252,9 @@ impl Display for BuiltIn {
             BuiltIn::CheckBox => CHECKBOX,
             BuiltIn::Radio => RADIO,
             BuiltIn::Root => ROOT,
+            BuiltIn::ScrollXView => SCROLLXVIEW,
+            BuiltIn::ScrollYView => SCROLLYVIEW,
+            BuiltIn::ScrollXYView => SCROLLXYVIEW,
         })
     }
 }

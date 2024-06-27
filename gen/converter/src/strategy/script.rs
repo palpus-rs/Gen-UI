@@ -1,14 +1,12 @@
 use gen_utils::common::snake_to_camel;
 use proc_macro2::TokenStream;
-use syn::{Block, ItemUse, Meta, Stmt, StmtMacro};
+use syn::{Block, Meta, Stmt, StmtMacro};
 
-use crate::{
-    error::Errors,
-    model::{
-        script::{LifeTime, ScriptBuilder, ScriptHandle},
-        Model, PropTree,
-    },
+use crate::model::{
+    script::{LifeTime, ScriptBuilder, ScriptHandle},
+    Model, PropTree,
 };
+use gen_utils::error::Errors;
 
 /// 在GenUI中Rust脚本是直接写在`<script>`标签里的
 /// 例如：`<script>println!("Hello, World!");</script>`
@@ -63,8 +61,6 @@ where
 
     // Ok(tt)
 }
-
-
 
 pub fn scirpt_builder<F>(sc_builder: ScriptBuilder, mut f: F) -> ScriptBuilder
 where

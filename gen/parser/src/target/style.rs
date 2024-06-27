@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use gen_utils::error::Error;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_until1},
@@ -21,7 +22,7 @@ use nom::{
 
 use crate::{
     ast::{ASTNodes, PropertyKeyType, PropsKey, Style},
-    common::{parse_comment as parse_common_comment, parse_value, trim},
+    common::{parse_comment as parse_common_comment, parse_value, trim, Special},
     Value, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
 
@@ -59,11 +60,15 @@ fn bind(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
 
 /// end () `(type, (name,params))`
 pub fn function(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
-    let (input, (name, params)) = pair(
-        parse_property_key,
-        recognize(delimited(tag("("), take_until(")"), tag(")"))),
-    )(input)?;
-    Ok((input, ("()", (name, params, Some(true)))))
+    fn normal_fn(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
+        let (input, (name, params)) = pair(
+            parse_property_key,
+            recognize(delimited(tag("("), take_until(")"), tag(")"))),
+        )(input)?;
+
+        Ok((input, ("()", (name, params, Some(true)))))
+    }
+    alt((Special::makepad_shader_parser, normal_fn))(input)
 }
 
 fn normal(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
@@ -164,15 +169,15 @@ fn parse_single(input: &str) -> IResult<&str, ASTNodes> {
 /// ## parse styleⓂ️
 /// main style parser
 #[allow(dead_code)]
-pub fn parse_style(input: &str) -> Result<Vec<ASTNodes>, crate::error::Error> {
+pub fn parse_style(input: &str) -> Result<Vec<ASTNodes>, Error> {
     match many1(parse_single)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
                 return Ok(asts);
             }
-            Err(crate::error::Error::template_parser_remain(remain))
+            Err(Error::template_parser_remain(remain))
         }
-        Result::Err(_) => Err(crate::error::Error::new("error parsing style")),
+        Result::Err(_) => Err(Error::new("error parsing style")),
     }
 }
 

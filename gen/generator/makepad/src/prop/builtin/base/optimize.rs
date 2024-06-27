@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use std::{default, fmt::Display};
 
-use gen_converter::error::Errors;
+use gen_utils::error::Errors;
 use gen_parser::Value;
 use syn::parse::Parse;
 

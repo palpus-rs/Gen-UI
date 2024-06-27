@@ -1,7 +1,8 @@
 use std::fmt::Display;
 
-use gen_converter::error::Errors;
+
 use gen_parser::{common::parse_hex_color, Value};
+use gen_utils::error::Errors;
 use syn::parse::Parse;
 
 use crate::str_to_string_try_from;

@@ -2,11 +2,8 @@ use std::collections::HashMap;
 
 use gen_parser::{PropsKey, Value};
 
-use crate::{
-    error::Errors,
-    model::{Model, TemplateModel},
-};
-
+use crate::model::{Model, TemplateModel};
+use gen_utils::error::Errors;
 /// 对TemplateModel(模板部分)的class的处理的策略器
 /// 目前只处理class为非绑定值的情况
 pub fn class<F>(model: &mut Model, mut f: F) -> Result<(), Errors>

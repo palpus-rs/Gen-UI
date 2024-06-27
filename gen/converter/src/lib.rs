@@ -12,4 +12,3 @@
 pub mod keyword;
 pub mod strategy;
 pub mod model;
-pub mod error;
