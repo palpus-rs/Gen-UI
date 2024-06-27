@@ -1,9 +1,11 @@
+use std::fmt::Display;
+
 use crate::Function;
 
 use super::{trans_color_rgb, trans_opacity, Rgb};
 use gen_utils::error::Errors;
 /// 语法: `rgba(r, g, b, a)`
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Rgba {
     pub r: u8,
     pub g: u8,
@@ -47,5 +49,11 @@ impl From<&Rgb> for Rgba {
             b: value.b,
             a: 1.0,
         }
+    }
+}
+
+impl Display for Rgba {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "rgba({}, {}, {}, {})", self.r, self.g, self.b, self.a)
     }
 }

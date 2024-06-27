@@ -1,11 +1,11 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use super::{trans_color_rgb, Hex, Rgba};
 use crate::Function;
 use gen_utils::error::Errors;
 
 /// 语法: `rgb(r, g, b)`
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Rgb {
     pub r: u8,
     pub g: u8,
@@ -67,5 +67,11 @@ impl FromStr for Rgb {
         // 对于str来说如果要转为rgb需要先转hex
         let hex = Hex::from_str(s)?;
         Ok(Rgb::from(&hex))
+    }
+}
+
+impl Display for Rgb {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("rgb({}, {}, {})", self.r, self.g, self.b))
     }
 }

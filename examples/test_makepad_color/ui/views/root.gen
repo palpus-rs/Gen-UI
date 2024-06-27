@@ -19,9 +19,14 @@
     .common_views{
       height: 100;
       width: 100;
+      show_bg: true;
     }
     #view1{
-      draw_bg: #FFF;
+      draw_bg: shader(|self|{
+        fn pixel(self) -> vec {
+          return #FFF
+        }
+      });
     }
   }
 }

@@ -5,7 +5,7 @@ mod radial;
 mod rgb;
 mod rgba;
 
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 pub use hex::*;
 pub use linear::*;
@@ -14,7 +14,7 @@ pub use radial::*;
 pub use rgb::*;
 pub use rgba::*;
 
-use crate::Function;
+use crate::{Function, Value};
 use gen_utils::error::Errors;
 use nom::{
     branch::alt,
@@ -25,6 +25,8 @@ use nom::{
     IResult,
 };
 
+use super::MakepadShader;
+
 /// ## GenUI 内置颜色类型
 /// 颜色写法参考: https://developer.mozilla.org/zh-CN/docs/Web/CSS/color_value
 /// - 16进制颜色: #3, #333, #333333
@@ -32,6 +34,7 @@ use nom::{
 /// - rgba(r, g, b, a)
 /// - linear_gradient(angle, color percentage, color percentage, ...)
 /// - radial_gradient(color percentage, color percentage, ...)
+#[derive(Debug, Clone)]
 pub enum BuiltinColor {
     /// 16进制颜色
     Hex(Hex),
@@ -43,6 +46,38 @@ pub enum BuiltinColor {
     LinearGradient(LinearGradient),
     /// 径向渐变
     RadialGradient(RadialGradient),
+    /// Shader for Makepad
+    #[cfg(feature="makepad")]
+    Shader(MakepadShader)
+}
+
+impl Display for BuiltinColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BuiltinColor::Hex(h) => write!(f, "{}", h),
+            BuiltinColor::Rgb(rgb) => write!(f, "{}", rgb),
+            BuiltinColor::Rgba(rgba) => write!(f, "{}", rgba),
+            BuiltinColor::LinearGradient(linear) => write!(f, "{}", linear),
+            BuiltinColor::RadialGradient(radial) => write!(f, "{}", radial),
+            BuiltinColor::Shader(shader) => write!(f, "{}", shader),
+        }
+    }
+}
+
+impl TryFrom<&Value> for BuiltinColor {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        match value {
+            Value::UnKnown(s) => BuiltinColor::from_str(s.as_str()),
+            Value::Function(f) => BuiltinColor::try_from(f),
+            Value::String(s) => BuiltinColor::from_str(s),
+            _ => Err(Errors::ParseError(format!(
+                "this value is not a color value: {:?}",
+                value
+            ))),
+        }
+    }
 }
 
 impl FromStr for BuiltinColor {

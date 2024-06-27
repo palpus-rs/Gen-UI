@@ -5,6 +5,9 @@ use std::fmt::Display;
 
 pub use color::Color;
 pub use function::Function;
+use gen_utils::error::Errors;
+
+use crate::common::BuiltinColor;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Value {
@@ -38,11 +41,11 @@ pub enum Value {
     Function(Function),
     /// function return ()  as :`fn xxx()->(){}`
     Void,
-    /// color value
-    /// - hex color: #fff00f
-    /// - rgb color: rgb(211,23,255)
-    /// - rgba color: rgba(255,255,87,0.4)
-    Color(Color),
+    // /// color value
+    // /// - hex color: #fff00f
+    // /// - rgb color: rgb(211,23,255)
+    // /// - rgba color: rgba(255,255,87,0.4)
+    // Color(BuiltinColor),
     Struct(String),
     UnKnown(String),
     Dep(String),
@@ -112,7 +115,9 @@ impl Value {
             _ => None,
         }
     }
-   
+    pub fn is_color_and_get(&self) -> Result<BuiltinColor, Errors> {
+        self.try_into()
+    }
 }
 
 impl From<(&str, Option<Vec<&str>>, bool)> for Value {
@@ -199,11 +204,11 @@ impl From<&String> for Value {
     }
 }
 
-impl From<Color> for Value {
-    fn from(value: Color) -> Self {
-        Value::Color(value)
-    }
-}
+// impl From<Color> for Value {
+//     fn from(value: Color) -> Self {
+//         Value::Color(value)
+//     }
+// }
 
 impl From<Function> for Value {
     fn from(value: Function) -> Self {
@@ -243,8 +248,8 @@ impl Display for Value {
             Value::Bind(bind) => bind.to_string(),
             Value::Function(func) => func.to_string(),
             Value::Void => String::new(),
-            Value::Color(color) => color.to_string(),
-            Value::Struct(s)=> s.to_string(),
+            // Value::Color(color) => color.to_string(),
+            Value::Struct(s) => s.to_string(),
             Value::Vec(v) => format!(
                 "{:?}",
                 v.into_iter()
@@ -253,7 +258,6 @@ impl Display for Value {
             ),
             Value::UnKnown(u) => u.to_string(),
             Value::Dep(dep) => dep.to_string(),
-            
         };
 
         f.write_str(&res)

@@ -1,10 +1,11 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use gen_utils::error::Errors;
+use quote::ToTokens;
 
 /// 百分比
 /// 语法: `percentage(%)`
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Percentage(pub f32);
 
 impl Percentage {
@@ -31,5 +32,18 @@ impl FromStr for Percentage {
                 "parse percentage error, percentage need `%` as end".to_string(),
             ))
         }
+    }
+}
+
+impl Display for Percentage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}%", self.0)
+    }
+}
+
+impl ToTokens for Percentage {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let s = self.0;
+        tokens.extend(quote::quote! {#s});
     }
 }

@@ -16,9 +16,9 @@
 - [x] Image
 - [x] Radio
 - [x] Checkbox
-- [ ] ScrollXYView
-- [ ] ScrollXView
-- [ ] ScrollYView
+- [x] ScrollXYView
+- [x] ScrollXView
+- [x] ScrollYView
 - [ ] TextInput
 - [ ] Html
 - [ ] Markdown

@@ -1,10 +1,11 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 use gen_utils::error::Errors;
+use quote::ToTokens;
 
 use super::{parse_hex_color, Rgb, Rgba};
 
 /// 16进制颜色
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Hex(pub String);
 
 impl FromStr for Hex {
@@ -41,5 +42,18 @@ impl From<&Rgba> for Hex {
             value.b,
             (value.a * 255.0) as u8
         ))
+    }
+}
+
+impl Display for Hex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl ToTokens for Hex {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let s = self.0.as_str();
+        tokens.extend(quote::quote! {#s});
     }
 }

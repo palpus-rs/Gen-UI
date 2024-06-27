@@ -1,9 +1,11 @@
+use std::fmt::Display;
+
 use super::{check_and_fix, trans_hex_percentage, Hex, Percentage};
 use crate::Function;
 use gen_utils::error::Errors;
 
 /// 语法: `radial_gradient(color percentage, color percentage, ...)`
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RadialGradient {
     pub colors: Vec<(Hex, Percentage)>,
 }
@@ -35,5 +37,15 @@ impl TryFrom<&Function> for RadialGradient {
             "parse radial_gradient error: {}",
             value.get_name()
         )));
+    }
+}
+
+impl Display for RadialGradient {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::new();
+        for (hex, percentage) in &self.colors {
+            s.push_str(&format!("{}, {} ", hex, percentage));
+        }
+        write!(f, "radial_gradient({})", s)
     }
 }

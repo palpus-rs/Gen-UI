@@ -1,10 +1,13 @@
+use std::fmt::Display;
+
 use gen_utils::error::Errors;
 use proc_macro2::TokenStream;
 
 use crate::Function;
 
 /// MakepadShader
-/// 用于提供 Makepad 的着色器
+/// 用于提供 Makepad 的着色器, 从BuiltinColor中获取并转化为着色器代码
+#[derive(Debug, Clone)]
 pub struct MakepadShader(pub TokenStream);
 
 impl TryFrom<&Function> for MakepadShader {
@@ -16,6 +19,12 @@ impl TryFrom<&Function> for MakepadShader {
             "{} can not convert to MakepadShader",
             value.get_name()
         )));
+    }
+}
+
+impl Display for MakepadShader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0.to_string())
     }
 }
 

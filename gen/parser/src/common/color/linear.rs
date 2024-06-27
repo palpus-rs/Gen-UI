@@ -1,10 +1,10 @@
 use crate::Function;
 use gen_utils::error::Errors;
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use super::{Hex, Percentage};
 /// 语法: `linear_gradient(angle, color percentage, color percentage, ...)`
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct LinearGradient {
     pub angle: f32,
     pub colors: Vec<(Hex, Percentage)>,
@@ -126,4 +126,19 @@ pub fn check_and_fix(colors: &mut Vec<(Hex, Percentage, bool)>) -> Vec<(Hex, Per
         .iter()
         .map(|(hex, percentage, _)| (hex.clone(), *percentage))
         .collect()
+}
+
+
+impl Display for LinearGradient {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "linear_gradient({}, {})",
+            self.angle,
+            self.colors
+                .iter()
+                .map(|(hex, percentage)| format!("{}, {}", hex, percentage))
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
+    }
 }
