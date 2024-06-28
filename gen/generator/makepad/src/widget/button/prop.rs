@@ -192,7 +192,7 @@ impl ToToken for ButtonProps {
 
 impl ButtonProps {
     fn draw_bg(&mut self, value: &Value) -> Result<(), Errors> {
-        self.draw_bg = Some((value, false).try_into()?);
+        self.draw_bg = Some(value.try_into()?);
         Ok(())
     }
     fn check_draw_text(&mut self) -> &mut DrawText {
@@ -400,7 +400,7 @@ mod test_button_props {
     #[test]
     fn to_tk() {
         let mut button = ButtonProps::default();
-        button.draw_bg = Some("#ddd".try_into().unwrap());
+        // button.draw_bg = Some("#ddd".try_into().unwrap());
         button.text = Some("hello".to_string());
         let mut draw_text = DrawText::default();
         draw_text.color = Some("#fff".try_into().unwrap());

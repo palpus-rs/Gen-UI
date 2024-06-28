@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use gen_utils::error::Errors;
 use proc_macro2::TokenStream;
+use syn::parse_str;
 
 use crate::Function;
 
@@ -14,7 +15,16 @@ impl TryFrom<&Function> for MakepadShader {
     type Error = Errors;
 
     fn try_from(value: &Function) -> Result<Self, Self::Error> {
-        if value.get_name() == "shader" {}
+        if value.get_name() == "shader" {
+            let tk = value
+                .get_params()
+                .clone()
+                .expect("shader function must have params");
+            let tk =
+                parse_str::<TokenStream>(tk.get(0).expect("shader function must have one param"))
+                    .unwrap();
+            return Ok(Self(tk));
+        }
         return Err(Errors::ParseError(format!(
             "{} can not convert to MakepadShader",
             value.get_name()

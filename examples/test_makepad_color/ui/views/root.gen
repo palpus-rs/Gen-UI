@@ -23,8 +23,8 @@
     }
     #view1{
       draw_bg: shader(|self|{
-        fn pixel(self) -> vec {
-          return #FFF
+        fn pixel(self) -> vec4 {
+          return #d
         }
       });
     }

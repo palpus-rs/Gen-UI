@@ -123,33 +123,9 @@ impl ViewProps {
         })
     }
     fn draw_bg(&mut self, value: &Value) -> Result<(), Errors> {
-        if let Some(s) = value.is_unknown_and_get() {
-            match DrawColor::try_from((s, false)) {
-                Ok(color) => {
-                    self.draw_bg = Some(color);
-                    Ok(())
-                }
-                Err(_) => Err(Errors::PropConvertFail(format!(
-                    "{} can not convert to draw_bg",
-                    value
-                ))),
-            }
-        } else {
-            value
-                .is_string_and_get()
-                .map(|s| {
-                    if let Ok(color) = DrawColor::try_from(s) {
-                        self.draw_bg = Some(color);
-                    }
-                    Ok(())
-                })
-                .unwrap_or_else(|| {
-                    Err(Errors::PropConvertFail(format!(
-                        "{} can not convert to draw_bg",
-                        value
-                    )))
-                })
-        }
+        let color = DrawColor::try_from(value)?;
+        self.draw_bg = Some(color);
+        Ok(())
     }
     fn check_walk(&mut self) -> &mut Walk {
         if self.walk.is_none() {
@@ -231,7 +207,7 @@ impl ViewProps {
 impl Display for ViewProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_bg) = &self.draw_bg {
-            let _ = f.write_fmt(format_args!("draw_bg: {{color: {}}}, ", draw_bg));
+            let _ = f.write_fmt(format_args!("draw_bg: {{{}}}, ", draw_bg));
         }
         if let Some(show_bg) = &self.show_bg {
             let _ = f.write_fmt(format_args!("show_bg: {}, ", show_bg));

@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-
 use gen_parser::{common::parse_hex_color, Value};
 use gen_utils::error::Errors;
 use syn::parse::Parse;
@@ -11,20 +10,33 @@ use super::draw_quad::DrawQuad;
 
 // use super::MapValue;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct DrawColor {
     pub color: Option<String>,
-    pub draw_super : DrawQuad,
+    pub draw_super: DrawQuad,
 }
 
 impl TryFrom<&Value> for DrawColor {
     type Error = Errors;
 
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
-        DrawQuad::try_from(value).map(|draw_super| DrawColor {
-            color: None,
-            draw_super,
-        })
+        let (quad, hex_color) = DrawQuad::try_from_back(value)?;
+        let mut draw_color = DrawColor::default();
+        // exist color
+        draw_color.color = hex_color.map(|hex| hex.0);
+        draw_color.draw_super = quad;
+
+        Ok(draw_color)
+    }
+}
+
+impl Display for DrawColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(color) = &self.color {
+            f.write_fmt(format_args!("color: {}", color))
+        } else {
+            self.draw_super.fmt(f)
+        }
     }
 }
 
@@ -139,16 +151,3 @@ impl TryFrom<&Value> for DrawColor {
 //         todo!("Color parse  waiting to impl syn::parse::Parse")
 //     }
 // }
-
-#[cfg(test)]
-mod test_color {
-    use super::DrawColor;
-
-    #[test]
-    fn test_hex() {
-        let colors = vec!["#0", "#f04", "#0388aa"];
-        for color in colors {
-            dbg!(DrawColor::try_from(color).unwrap().to_string());
-        }
-    }
-}

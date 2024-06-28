@@ -93,11 +93,13 @@ impl TryFrom<&Function> for BuiltinColor {
     type Error = Errors;
 
     fn try_from(value: &Function) -> Result<Self, Self::Error> {
+       
         match value.get_name() {
             "rgb" => Rgb::try_from(value).map(BuiltinColor::Rgb),
             "rgba" => Rgba::try_from(value).map(BuiltinColor::Rgba),
             "linear_gradient" => LinearGradient::try_from(value).map(BuiltinColor::LinearGradient),
             "radial_gradient" => RadialGradient::try_from(value).map(BuiltinColor::RadialGradient),
+            "shader" => MakepadShader::try_from(value).map(BuiltinColor::Shader),
             _ => Err(Errors::ParseError(format!(
                 "this function is not a color function: {}",
                 value.get_name()

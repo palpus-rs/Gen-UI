@@ -1,18 +1,16 @@
 use std::fmt::Display;
 
 use gen_utils::error::Errors;
-use gen_parser::Value;
+use gen_parser::{common::{BuiltinColor, Hex}, Value};
 use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
-        builtin::LiveDependency, BRIGHTNESS, COLOR, CURVE, DRAW_DEPTH, LINEARIZE, SCALE, SVG_FILE,
+        builtin::{utils::{draw_linear_gradient, draw_radial_gradient, get_color}, LiveDependency}, BRIGHTNESS, COLOR, CURVE, DRAW_DEPTH, LINEARIZE, SCALE, SVG_FILE,
     },
     widget::utils::{f32_prop, f64_prop},
     ToToken,
 };
-
-use super::draw_color::DrawColor;
 
 #[derive(Clone, Default, Debug)]
 pub struct DrawIcon {
@@ -24,7 +22,8 @@ pub struct DrawIcon {
     // pub translate: DVec2,
     pub scale: Option<f64>,
     pub draw_depth: Option<f32>,
-    pub color: Option<DrawColor>,
+    pub color: Option<Hex>,
+    pub get_color: TokenStream,
 }
 
 impl ToToken for DrawIcon {
@@ -69,7 +68,31 @@ impl DrawIcon {
         })
     }
     pub fn color(&mut self, value: &Value) -> Result<(), Errors> {
-        self.color = Some((value, false).try_into()?);
+        let color = BuiltinColor::try_from(value)?;
+
+        match color {
+            BuiltinColor::Hex(hex) => {
+                self.get_color = get_color(&hex);
+                self.color = Some(hex);
+            }
+            BuiltinColor::Rgb(rgb) => {
+                let hex = Hex::from(&rgb);
+                self.get_color = get_color(&hex);
+                self.color = Some(hex);
+            }
+            BuiltinColor::Rgba(rgba) => {
+                let hex = Hex::from(&rgba);
+                self.get_color = get_color(&hex);
+                self.color = Some(hex);
+            }
+            BuiltinColor::LinearGradient(linear) => {
+                self.get_color = draw_linear_gradient(&linear, "get_color");
+            }
+            BuiltinColor::RadialGradient(radial) => {
+                self.get_color = draw_radial_gradient(&radial, "get_color");
+            }
+            BuiltinColor::Shader(shader) => self.get_color = shader.0,
+        }
         Ok(())
     }
 }
@@ -121,7 +144,7 @@ mod test_draw_icon {
 
         draw_icon.scale = Some(1.5);
         draw_icon.draw_depth = Some(0.5);
-        draw_icon.color = Some(DrawColor::Color("0x000000".to_string()));
+        draw_icon.color = Some("#000000".try_into().unwrap());
         let tk = draw_icon.to_token_stream();
         let prop = "brightness : 0.5 , curve : 0.5 , linearize : 0.5 , svg_file : dep (\"crate://self/resources/icons/Icon_Search.svg\") , scale : 1.5 , draw_depth : 0.5 , color : { # 0x000000 } ,";
         assert_eq!(prop,tk.to_string().as_str());

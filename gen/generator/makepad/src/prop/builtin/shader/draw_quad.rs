@@ -2,15 +2,24 @@
 use std::{fmt::Display, str::FromStr};
 
 use gen_parser::{
-    common::{parse_hex_color, BuiltinColor, Hex, LinearGradient, MakepadShader, RadialGradient, Rgb, Rgba},
+    common::{
+        parse_hex_color, BuiltinColor, Hex, LinearGradient, MakepadShader, RadialGradient, Rgb,
+        Rgba,
+    },
     Value,
 };
-use gen_utils::error::Errors;
+use gen_utils::{
+    common::{ident, token_tree_ident},
+    error::Errors,
+};
 use proc_macro2::TokenStream;
 use quote::{quote, TokenStreamExt};
-use syn::parse_str;
+use syn::{parse_str, Ident};
 
-use crate::str_to_string_try_from;
+use crate::{
+    prop::builtin::utils::{draw_linear_gradient, draw_radial_gradient, hex_to_pixel},
+    str_to_string_try_from,
+};
 
 /// ## SDF DrawQuad
 /// "signed distance field" (SDF) 的技术来绘制图形。
@@ -85,6 +94,18 @@ impl DrawQuad {
         self.pixel = quad.pixel;
         Ok(())
     }
+    /// try from builtin color  and back color hex
+    pub fn try_from_back(value: &Value) -> Result<(Self, Option<Hex>), Errors> {
+        let color = BuiltinColor::try_from(value)?;
+        match &color {
+            BuiltinColor::Hex(hex) => Ok((hex.into(), Some(hex.clone()))),
+            BuiltinColor::Rgb(rgb) => Ok((rgb.into(), Some(rgb.into()))),
+            BuiltinColor::Rgba(rgba) => Ok((rgba.into(), Some(rgba.into()))),
+            BuiltinColor::LinearGradient(linear) => Ok((linear.into(), None)),
+            BuiltinColor::RadialGradient(radial) => Ok((radial.into(), None)),
+            BuiltinColor::Shader(shader) => Ok((shader.into(), None)),
+        }
+    }
 }
 
 impl TryFrom<&Value> for DrawQuad {
@@ -101,27 +122,6 @@ impl TryFrom<&Value> for DrawQuad {
             BuiltinColor::RadialGradient(radial) => Ok(radial.into()),
             BuiltinColor::Shader(shader) => Ok(shader.into()),
         }
-        // if let Some(s) = value.is_unknown_and_get() {
-        //     s.try_into()
-        // } else if let Some(s) = value.is_string_and_get() {
-        //     s.try_into()
-        // } else {
-        //     value
-        //         .is_fn_and_get()
-        //         .map(|func| {
-        //             let pixel = MakepadShader::try_from(func)?;
-        //             Ok(DrawQuad {
-        //                 pixel: pixel.0,
-        //                 draw_depth: None,
-        //             })
-        //         })
-        //         .unwrap_or_else(|| {
-        //             Err(Errors::PropConvertFail(format!(
-        //                 "{} can not convert to DrawQuad",
-        //                 value
-        //             )))
-        //         })
-        // }
     }
 }
 
@@ -199,44 +199,7 @@ impl From<&MakepadShader> for DrawQuad {
 /// ```
 impl From<&LinearGradient> for DrawQuad {
     fn from(value: &LinearGradient) -> Self {
-        let LinearGradient { angle, colors } = value;
-
-        let mut draw_color_tk = TokenStream::new();
-        
-        for (index, (hex, percentage)) in colors.iter().enumerate() {
-            let color_ident = format!("color{}", index);
-            let percentage_ident = format!("stop{}", index);
-            draw_color_tk.extend(quote! {
-                let #color_ident = #hex;
-                let #percentage_ident = #percentage;
-            });
-        }
-
-        let mut mix_colors = Vec::new();
-
-        for i in 0..colors.len() - 1 {
-            let ident1 = format!("color{}", i);
-            let ident2 = format!("color{}", i + 1);
-
-            let stop1 = format!("stop{}", i);
-            let stop2 = format!("stop{}", i + 1);
-
-            mix_colors.push(((ident1, ident2), (stop1, stop2)));
-        }
-
-        let mut mix_colors_tk = mix_color_to_token(mix_colors);
-
-        let pixel = quote! {
-            fn pixel(self) -> vec4{
-                let gradient_angle = #angle;
-                let direction = vec2(cos(radians(gradient_angle)), sin(radians(gradient_angle)));
-                let factor = dot(self.pos, direction);
-                
-                #draw_color_tk
-                
-                return #mix_colors_tk;
-            }
-        };
+        let pixel = draw_linear_gradient(value, "pixel");
 
         DrawQuad {
             pixel,
@@ -251,44 +214,7 @@ impl From<&LinearGradient> for DrawQuad {
 // return mix(#d, #FF00FF, factor); // 使用距离作为混合因子
 impl From<&RadialGradient> for DrawQuad {
     fn from(value: &RadialGradient) -> Self {
-        let RadialGradient { colors } = value;
-
-        let mut draw_color_tk = TokenStream::new();
-        
-        for (index, (hex, percentage)) in colors.iter().enumerate() {
-            let color_ident = format!("color{}", index);
-            let percentage_ident = format!("stop{}", index);
-            draw_color_tk.extend(quote! {
-                let #color_ident = #hex;
-                let #percentage_ident = #percentage;
-            });
-        }
-
-        let mut mix_colors = Vec::new();
-
-        for i in 0..colors.len() - 1 {
-            let ident1 = format!("color{}", i);
-            let ident2 = format!("color{}", i + 1);
-
-            let stop1 = format!("stop{}", i);
-            let stop2 = format!("stop{}", i + 1);
-
-            mix_colors.push(((ident1, ident2), (stop1, stop2)));
-        }
-
-        let mut mix_colors_tk = mix_color_to_token(mix_colors);
-
-        let pixel = quote! {
-            fn pixel(self) -> vec4{
-                let center = vec2(0.5, 0.5);
-                let distance = distance(self.pos, center);
-                let factor = clamp(distance, 0.0, 1.0);
-                
-                #draw_color_tk
-                
-                return #mix_colors_tk;
-            }
-        };
+        let pixel = draw_radial_gradient(value, "pixel");
 
         DrawQuad {
             pixel,
@@ -297,71 +223,9 @@ impl From<&RadialGradient> for DrawQuad {
     }
 }
 
-// impl TryFrom<&str> for DrawQuad {
-//     type Error = Errors;
-
-//     fn try_from(value: &str) -> Result<Self, Self::Error> {
-//         match parse_hex_color(value) {
-//             Ok((input, color)) => {
-//                 if input.is_empty() {
-//                     return Ok(DrawQuad {
-//                         pixel: hex_to_pixel(&color),
-//                         draw_depth: None,
-//                     });
-//                 }
-//                 Err(Errors::PropConvertFail(format!(
-//                     "{} is not a right hex color",
-//                     value
-//                 )))
-//             }
-//             Err(_) => Err(Errors::PropConvertFail(format!(
-//                 "{} is not a right hex color",
-//                 value
-//             ))),
-//         }
-//     }
-// }
-
-// str_to_string_try_from!(DrawQuad);
 
 impl Display for DrawQuad {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.pixel.to_string().as_str())
     }
-}
-
-/// convert hex to pixel
-pub fn hex_to_pixel(value: &str) -> TokenStream {
-    let color = parse_str::<TokenStream>(value).unwrap();
-    quote! {
-        fn pixel(self) -> vec4{
-            return #color;
-        }
-    }
-}
-
-pub fn mix_color_to_token(mix_colors: Vec<((String, String), (String, String))>) -> TokenStream {
-    fn nested_mix(codes: &Vec<((String, String), (String, String))>, index: usize) -> TokenStream {
-        if index >= codes.len() - 1 {
-            // 最后一个颜色段，不需要再嵌套
-            let ((color, next_color), (stop, next_stop)) = &codes[index];
-            return quote! {
-                mix(#color, #next_color, smoothstep(#stop, #next_stop, factor))
-            };
-        } else {
-            // 递归生成嵌套的mix调用
-            let ((color, next_color), (stop, next_stop)) = &codes[index];
-            let next_mix = nested_mix(codes, index + 1);
-            return quote! {
-                mix(
-                    #color,
-                    #next_color,
-                    smoothstep(#stop, #next_stop, factor),
-                    #next_mix
-                )
-            };
-        }
-    }
-
-    nested_mix(&mix_colors, 0)
 }

@@ -1,12 +1,20 @@
-use std::{fmt::Display, str::FromStr};
 use gen_utils::error::Errors;
 use quote::ToTokens;
+use std::{fmt::Display, str::FromStr};
 
 use super::{parse_hex_color, Rgb, Rgba};
 
 /// 16进制颜色
 #[derive(Debug, Clone, PartialEq)]
 pub struct Hex(pub String);
+
+impl TryFrom<&str> for Hex {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Hex::from_str(value)
+    }
+}
 
 impl FromStr for Hex {
     type Err = Errors;

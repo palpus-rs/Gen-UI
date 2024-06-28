@@ -1,12 +1,18 @@
 use std::fmt::Display;
 
+use gen_parser::{
+    common::{BuiltinColor, Hex},
+    Value,
+};
 use gen_utils::error::Errors;
-use gen_parser::Value;
 use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
-        builtin::{Font, TextWrap},
+        builtin::{
+            
+            utils::{draw_linear_gradient, draw_radial_gradient, get_color}, Font, TextWrap
+        },
         BRIGHTNESS, COLOR, COMBINE_SPACES, CURVE, DRAW_DEPTH, FONT, FONT_SCALE, FONT_SIZE,
         HEIGHT_FACTOR, INGORE_NEWLINES, LINE_SPACING, TEXT_STYLE, TOP_DROP, WRAP,
     },
@@ -14,7 +20,6 @@ use crate::{
     ToToken,
 };
 
-use super::draw_color::DrawColor;
 
 #[derive(Clone, Default, Debug)]
 pub struct DrawText {
@@ -25,7 +30,8 @@ pub struct DrawText {
     pub combine_spaces: Option<bool>,
     pub font_scale: Option<f64>,
     pub draw_depth: Option<f32>,
-    pub color: Option<DrawColor>,
+    pub color: Option<Hex>,
+    pub get_color: TokenStream,
 }
 
 impl DrawText {
@@ -81,7 +87,32 @@ impl DrawText {
         })
     }
     pub fn color(&mut self, value: &Value) -> Result<(), Errors> {
-        self.color = Some((value, true).try_into()?);
+
+        let color = BuiltinColor::try_from(value)?;
+
+        match color {
+            BuiltinColor::Hex(hex) => {
+                self.get_color = get_color(&hex);
+                self.color = Some(hex);
+            }
+            BuiltinColor::Rgb(rgb) => {
+                let hex = Hex::from(&rgb);
+                self.get_color = get_color(&hex);
+                self.color = Some(hex);
+            }
+            BuiltinColor::Rgba(rgba) => {
+                let hex = Hex::from(&rgba);
+                self.get_color = get_color(&hex);
+                self.color = Some(hex);
+            }
+            BuiltinColor::LinearGradient(linear) => {
+                self.get_color = draw_linear_gradient(&linear, "get_color");
+            }
+            BuiltinColor::RadialGradient(radial) => {
+                self.get_color = draw_radial_gradient(&radial, "get_color");
+            }
+            BuiltinColor::Shader(shader) => self.get_color = shader.0,
+        }
         Ok(())
     }
 }
@@ -114,7 +145,11 @@ impl Display for DrawText {
             draw_text.push_str(&format!("{}: {},", DRAW_DEPTH, draw_depth));
         }
         if let Some(color) = &self.color {
-            draw_text.push_str(&format!("{}: {},", COLOR, color.to_string()));
+            draw_text.push_str(&format!("{}: {},", COLOR, color));
+        } else {
+            if !self.get_color.is_empty() {
+                draw_text.push_str(self.get_color.to_string().as_str());
+            }
         }
         write!(f, "{}", draw_text)
     }

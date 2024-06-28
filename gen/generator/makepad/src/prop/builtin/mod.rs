@@ -5,6 +5,7 @@ mod bg;
 
 mod shader;
 mod base;
+pub mod utils;
 
 pub use bg::*;
 use quote::quote;
