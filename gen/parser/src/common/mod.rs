@@ -12,6 +12,7 @@ mod shader;
 mod string;
 mod tag;
 mod special;
+mod utils;
 
 pub use bind::*;
 pub use color::*;

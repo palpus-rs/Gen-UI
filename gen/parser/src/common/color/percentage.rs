@@ -1,7 +1,11 @@
 use std::{fmt::Display, str::FromStr};
 
 use gen_utils::error::Errors;
+use proc_macro2::TokenStream;
 use quote::ToTokens;
+use syn::parse_str;
+
+use crate::common::utils::float_to_str;
 
 /// 百分比
 /// 语法: `percentage(%)`
@@ -43,7 +47,7 @@ impl Display for Percentage {
 
 impl ToTokens for Percentage {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let s = self.0;
-        tokens.extend(quote::quote! {#s});
+        let s = float_to_str(self.0 / 100.0);
+        tokens.extend(parse_str::<TokenStream>(&s).unwrap());
     }
 }

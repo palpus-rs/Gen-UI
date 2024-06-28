@@ -19,6 +19,12 @@ pub fn mix_color_to_token(mix_colors: Vec<((String, String), (String, String))>)
         if index >= codes.len() - 1 {
             // 最后一个颜色段，不需要再嵌套
             let ((color, next_color), (stop, next_stop)) = &codes[index];
+
+            let color = parse_str::<TokenStream>(color).unwrap();
+            let next_color = parse_str::<TokenStream>(next_color).unwrap();
+            let stop = parse_str::<TokenStream>(stop).unwrap();
+            let next_stop = parse_str::<TokenStream>(next_stop).unwrap();
+
             return quote! {
                 mix(#color, #next_color, smoothstep(#stop, #next_stop, factor))
             };
@@ -51,12 +57,12 @@ pub fn get_color(color: &Hex) -> TokenStream {
 pub fn draw_radial_gradient(value: &RadialGradient, fn_name: &str) -> TokenStream {
     let fn_name = ident(fn_name);
     let RadialGradient { colors } = value;
-
+    
     let mut draw_color_tk = TokenStream::new();
 
     for (index, (hex, percentage)) in colors.iter().enumerate() {
-        let color_ident = format!("color{}", index);
-        let percentage_ident = format!("stop{}", index);
+        let color_ident = parse_str::<TokenStream>(&format!("color{}", index)).unwrap();
+        let percentage_ident = parse_str::<TokenStream>(&format!("stop{}", index)).unwrap();
         draw_color_tk.extend(quote! {
             let #color_ident = #hex;
             let #percentage_ident = #percentage;
@@ -96,12 +102,12 @@ pub fn draw_radial_gradient(value: &RadialGradient, fn_name: &str) -> TokenStrea
 pub fn draw_linear_gradient(value: &LinearGradient, fn_name: &str) -> TokenStream {
     let fn_name = ident(fn_name);
     let LinearGradient { angle, colors } = value;
-
+    let angle = parse_str::<TokenStream>(angle.to_string().as_str()).unwrap();
     let mut draw_color_tk = TokenStream::new();
 
     for (index, (hex, percentage)) in colors.iter().enumerate() {
-        let color_ident = format!("color{}", index);
-        let percentage_ident = format!("stop{}", index);
+        let color_ident = parse_str::<TokenStream>(&format!("color{}", index)).unwrap();
+        let percentage_ident = parse_str::<TokenStream>(&format!("stop{}", index)).unwrap();
         draw_color_tk.extend(quote! {
             let #color_ident = #hex;
             let #percentage_ident = #percentage;

@@ -1,6 +1,10 @@
 use gen_utils::error::Errors;
-use quote::ToTokens;
+use proc_macro2::TokenStream;
+use quote::{quote, ToTokens};
 use std::{fmt::Display, str::FromStr};
+use syn::parse_str;
+
+use crate::common::utils::float_to_str;
 
 use super::{parse_hex_color, Rgb, Rgba};
 
@@ -59,9 +63,45 @@ impl Display for Hex {
     }
 }
 
+/// 将16进制颜色转换为vec4
+pub fn hex_to_vec4(hex: &Hex) -> TokenStream {
+    fn u8_to_tk(hex: &str, start: usize, end: usize) -> TokenStream {
+        parse_str::<TokenStream>(
+            float_to_str(u8::from_str_radix(&hex[start..end], 16).unwrap() as f32 / 255.0).as_str(),
+        )
+        .unwrap()
+    }
+
+    // 去掉开头的 '#' 符号
+    let hex = hex.0.trim_start_matches('#');
+
+    // 解析 RGB 值
+    let r = u8_to_tk(hex, 0, 2);
+    let g = u8_to_tk(hex, 2, 4);
+    let b = u8_to_tk(hex, 4, 6);
+    let a = u8_to_tk(hex, 6, 8);
+
+    quote! {
+        vec4(#r, #g, #b, #a)
+    }
+}
+
 impl ToTokens for Hex {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let s = self.0.as_str();
-        tokens.extend(quote::quote! {#s});
+        // let s = self.0.as_str();
+        // tokens.extend(parse_str::<TokenStream>(s).unwrap());
+        tokens.extend(hex_to_vec4(self));
+    }
+}
+
+#[cfg(test)]
+mod test_hex {
+    use quote::ToTokens;
+
+    #[test]
+    fn tk() {
+        let hex = super::Hex("#ff0000FF".to_string());
+        let tk = hex.to_token_stream().to_string();
+        dbg!(tk);
     }
 }

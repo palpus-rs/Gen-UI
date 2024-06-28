@@ -11,7 +11,11 @@ use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
-use crate::{absolute_or_path, copy_file, info, init_watcher, is_eq_path_exclude, msg::{APP_RUNNING, SRC_GEN_INIT}, Cache};
+use crate::{
+    copy_file, info, init_watcher, is_eq_path_exclude,
+    msg::{APP_RUNNING, SRC_GEN_INIT},
+    Cache,
+};
 
 use super::{dep::RustDependence, log::error, watcher::FKind, CompilerTarget};
 

@@ -21,11 +21,7 @@
       height: 300.0;
       width: Fill;
       show_bg: true;
-      draw_bg: shader(|self|{
-        fn pixel(self) -> vec4 {
-          return #FF0000
-        }
-      });
+      draw_bg: radial_gradient( #FF0000, #00FF00);
       #view2{
         height: 100.0;
         width: 100.0;
