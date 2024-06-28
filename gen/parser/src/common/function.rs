@@ -1,8 +1,7 @@
 use super::parse_sign_key;
 use crate::FUNCTION_SIGN;
 use nom::{
-    bytes::complete::{tag, take_until1, take_while},
-    character::complete::char,
+    bytes::complete::{tag, take_until1},
     sequence::delimited,
     IResult,
 };
@@ -15,16 +14,6 @@ pub fn parse_function_key(input: &str) -> IResult<&str, (&str, &str)> {
 }
 
 pub fn parse_closure_body(input: &str) -> IResult<&str, &str> {
-    // delimited(
-    //     tag("("),
-    //     delimited(
-    //         take_until1("|{"),
-    //         take_until1("})"),
-    //         take_until1("})"),
-    //     ),
-    //     take_until1("})"),
-    // )(input)
-
     let (input, _) = take_until1("|{")(input)?;
 
     delimited(tag("|{"), take_until1("})"), tag("})"))(input)
@@ -41,7 +30,6 @@ mod test_fn {
                 }
             })"#;
         let (_, output) = super::parse_closure_body(input).unwrap();
-        // assert_eq!(output, res);
         dbg!(output);
     }
 }

@@ -2,24 +2,13 @@
 use std::{fmt::Display, str::FromStr};
 
 use gen_parser::{
-    common::{
-        parse_hex_color, BuiltinColor, Hex, LinearGradient, MakepadShader, RadialGradient, Rgb,
-        Rgba,
-    },
+    common::{BuiltinColor, Hex, LinearGradient, MakepadShader, RadialGradient, Rgb, Rgba},
     Value,
 };
-use gen_utils::{
-    common::{ident, token_tree_ident},
-    error::Errors,
-};
+use gen_utils::error::Errors;
 use proc_macro2::TokenStream;
-use quote::{quote, TokenStreamExt};
-use syn::{parse_str, Ident};
 
-use crate::{
-    prop::builtin::utils::{draw_linear_gradient, draw_radial_gradient, hex_to_pixel},
-    str_to_string_try_from,
-};
+use crate::prop::builtin::utils::{draw_linear_gradient, draw_radial_gradient, hex_to_pixel};
 
 /// ## SDF DrawQuad
 /// "signed distance field" (SDF) 的技术来绘制图形。
@@ -127,7 +116,8 @@ impl TryFrom<&Value> for DrawQuad {
 
 impl From<&str> for DrawQuad {
     fn from(value: &str) -> Self {
-        todo!()
+        let hex = Hex::from_str(value).unwrap();
+        DrawQuad::from(&hex)
     }
 }
 
@@ -222,7 +212,6 @@ impl From<&RadialGradient> for DrawQuad {
         }
     }
 }
-
 
 impl Display for DrawQuad {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

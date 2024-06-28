@@ -5,7 +5,8 @@ use std::fmt::Display;
 use gen_utils::error::Errors;
 use gen_parser::Value;
 
-use crate::prop::{ALL, FILL, FIT};
+use crate::prop::enum_ident::FIT;
+use crate::prop::{ALL, FILL};
 use crate::str_to_string_try_from;
 
 #[derive(Debug, Clone, Default)]

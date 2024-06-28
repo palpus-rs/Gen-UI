@@ -75,7 +75,7 @@ pub fn draw_radial_gradient(value: &RadialGradient, fn_name: &str) -> TokenStrea
         mix_colors.push(((ident1, ident2), (stop1, stop2)));
     }
 
-    let mut mix_colors_tk = mix_color_to_token(mix_colors);
+    let mix_colors_tk = mix_color_to_token(mix_colors);
 
     quote! {
         fn #fn_name(self) -> vec4{
@@ -120,7 +120,7 @@ pub fn draw_linear_gradient(value: &LinearGradient, fn_name: &str) -> TokenStrea
         mix_colors.push(((ident1, ident2), (stop1, stop2)));
     }
 
-    let mut mix_colors_tk = mix_color_to_token(mix_colors);
+    let mix_colors_tk = mix_color_to_token(mix_colors);
 
     quote! {
         fn #fn_name(self) -> vec4{

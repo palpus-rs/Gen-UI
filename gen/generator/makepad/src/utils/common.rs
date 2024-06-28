@@ -6,7 +6,6 @@ use syn::{
     Field, Ident, Path,
 };
 
-use crate::widget::BuiltIn;
 
 use super::{derive_macros, id_macro};
 
