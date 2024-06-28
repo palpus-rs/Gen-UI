@@ -1,12 +1,12 @@
 use std::fmt::Display;
 
-use gen_utils::error::Errors;
 use gen_parser::Value;
+use gen_utils::error::Errors;
 use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
-        builtin::{draw_color::DrawColor, draw_icon::DrawIcon, draw_text::DrawText, Layout, Walk},
+        builtin::{draw_icon::DrawIcon, draw_quad::DrawQuad, draw_text::DrawText, Layout, Walk},
         ABS_POS, ALIGN, BRIGHTNESS, CLIP_X, CLIP_Y, COLOR, COMBINE_SPACES, CURVE, DRAW_BG,
         DRAW_DEPTH, DRAW_ICON, DRAW_TEXT, FLOW, FONT, FONT_SCALE, FONT_SIZE, GRAB_KEY_FOCUS,
         HEIGHT, HEIGHT_FACTOR, ICON_WALK, INGORE_NEWLINES, LABEL_WALK, LINEARIZE, LINE_SPACING,
@@ -28,7 +28,7 @@ enum NodeType {
 
 #[derive(Debug, Clone, Default)]
 pub struct ButtonProps {
-    pub draw_bg: Option<DrawColor>,
+    pub draw_bg: Option<DrawQuad>,
     pub draw_text: Option<DrawText>,
     pub draw_icon: Option<DrawIcon>,
     pub icon_walk: Option<Walk>,
@@ -363,7 +363,7 @@ impl ButtonProps {
 impl Display for ButtonProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_bg) = &self.draw_bg {
-            let _ = f.write_fmt(format_args!("{}: {{ {}: {}}},", DRAW_BG, COLOR, draw_bg));
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", DRAW_BG, draw_bg));
         }
         if let Some(draw_text) = &self.draw_text {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", DRAW_TEXT, draw_text));

@@ -5,8 +5,6 @@ use gen_utils::error::Errors;
 
 use super::draw_quad::DrawQuad;
 
-// use super::MapValue;
-
 #[derive(Debug, Clone, Default)]
 pub struct DrawColor {
     pub color: Option<String>,

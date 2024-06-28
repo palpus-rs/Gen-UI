@@ -27,9 +27,11 @@ live_design! {
             pressed_color: #00FF00,
         }
         <GLink>{
+            width: 200.0,
             theme: Success,
             text: "No underline",
             underline: false,
+            align: {x: 0.4, y: 0.5},
         }
         <GLink>{
             theme: Warning,

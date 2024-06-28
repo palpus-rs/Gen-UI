@@ -108,10 +108,19 @@ fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
 fn to_end_tag(input: &str, tag_name: String) -> IResult<&str, &str> {
     let mut rest = input;
     let mut remain = "";
+    let mut nested_count = 0; // 用于计数嵌套标签
 
     loop {
         match take_until(END_START_SIGN)(rest) {
             Ok((new_rest, taken)) => {
+                // 尝试匹配开始标签，增加嵌套计数
+                
+                if taken
+                    .trim()
+                    .starts_with(&(String::from("<") + &tag_name))
+                {
+                    nested_count += 1;
+                }
                 // 尝试匹配结束标签，如果失败，说明 "</" 不是有效的结束标签的开始
                 match delimited(
                     trim(tag(END_START_SIGN)),
@@ -120,10 +129,20 @@ fn to_end_tag(input: &str, tag_name: String) -> IResult<&str, &str> {
                 )(new_rest)
                 {
                     Ok((final_rest, _)) => {
-                        //将taken继续放入remain中
-                        remain = &input[..(remain.len() + taken.len())];
-                        // 成功找到结束标签，返回累积的内容和剩余的输入
-                        return Ok((final_rest, remain));
+                        if nested_count == 0 {
+                            // 将 taken 继续放入 remain 中
+                            remain = &input[..(remain.len() + taken.len())];
+                            // 成功找到结束标签，返回累积的内容和剩余的输入
+                            return Ok((final_rest, remain));
+                        } else {
+                            nested_count -= 1; // 减少嵌套计数，继续处理
+                            remain = &input[..(remain.len() + taken.len() + tag_name.len() + 3)]; // 加 3 是为了包括 "</"
+                            rest = final_rest;
+                        }
+                        // //将taken继续放入remain中
+                        // remain = &input[..(remain.len() + taken.len())];
+                        // // 成功找到结束标签，返回累积的内容和剩余的输入
+                        // return Ok((final_rest, remain));
                     }
                     Err(_) => {
                         // 没有找到有效的结束标签，将 "</" 之前的内容加入累积，并继续处理
@@ -230,6 +249,17 @@ mod template_parsers {
         parse_bind_key, parse_function_key, parse_property, parse_property_key, parse_tag_end,
         parse_tag_start, parse_template,
     };
+    #[test]
+    fn test_template_nested_same() {
+        let template = r#"
+            <view id="view1">
+                <view id="view2" ></view>
+            </view>
+        "#;
+
+        let res = parse_template(template).unwrap();
+        dbg!(res);
+    }
 
     #[test]
     fn bad_template3() {
@@ -268,11 +298,11 @@ mod template_parsers {
                         <div></div>
                         <div />
                     </button>
-                    <text-input value="Click to count" class="input1" />
+                    <text_input value="Click to count" class="input1" />
                     <label :value="counter" class="label1" />
                 </view>
             </window>
-            <text-input value="Click to count" class="input1" />
+            <text_input value="Click to count" class="input1" />
         "#;
         let t = Instant::now();
         let _ = parse_template(template).unwrap();

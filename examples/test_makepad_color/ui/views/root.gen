@@ -1,7 +1,9 @@
 <template>
   <root id="ui">
     <window id="main_window">
-      <view class="common_views" id="view1"></view>
+      <view id="view1">
+        <view id="view2"></view> 
+      </view>
     </window>
   </root>
 </template>
@@ -12,21 +14,24 @@
     width: Fill;
     height: Fill;
     show_bg: true;
-    draw_bg: #1C2128;
     flow: Down;
     inner_size: 600.0, 800.0;
     position: 300.0;
-    .common_views{
-      height: 100;
-      width: 100;
-      show_bg: true;
-    }
     #view1{
+      height: 300.0;
+      width: Fill;
+      show_bg: true;
       draw_bg: shader(|self|{
         fn pixel(self) -> vec4 {
-          return #d
+          return #FF0000
         }
       });
+      #view2{
+        height: 100.0;
+        width: 100.0;
+        show_bg: true;
+        draw_bg: #FFF;
+      }
     }
   }
 }

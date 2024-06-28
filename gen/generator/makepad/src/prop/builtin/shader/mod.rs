@@ -8,3 +8,4 @@ pub mod draw_trapezoid;
 pub mod std;
 pub mod draw_check_box;
 pub mod draw_radio_button;
+pub mod draw_label;

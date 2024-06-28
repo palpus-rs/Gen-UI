@@ -95,8 +95,6 @@ impl Display for MediaType {
 #[derive(Debug, Clone, Default)]
 pub struct RadioButtonProps {
     pub draw_radio: Option<DrawRadioButton>,
-    // todo!(DrawQuad pixel())
-    // pub draw_bg: Option<DrawQuad>,
     pub draw_icon: Option<DrawIcon>,
     pub draw_text: Option<DrawText>,
     // pub value: Option<LiveValue>

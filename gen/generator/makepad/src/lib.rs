@@ -155,6 +155,8 @@ impl Makepad {
     }
     /// add item to model tree, if item exists, replace it
     pub fn add(&mut self, item: Model) -> () {
+        // dbg!(item.template.as_ref());
+        // dbg!(ModelNode::from(item.clone()).content().to_string());
         let _ = self.tree.as_mut().unwrap().add(item.into());
         // let live_register = self.tree.as_ref().unwrap().to_live_register();
         // dbg!(&live_register);

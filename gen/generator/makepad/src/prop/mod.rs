@@ -22,6 +22,7 @@ pub const CLIP_X: &str = "clip_x";
 pub const CLIP_Y: &str = "clip_y";
 pub const FLOW: &str = "flow";
 pub const SCALE: &str = "scale";
+pub const IS_EMPTY: &str = "is_empty";
 // -------------------- color --------------------
 pub const COLOR: &str = "color";
 pub const BRIGHTNESS: &str = "brightness";
@@ -51,6 +52,17 @@ pub const GRAB_KEY_FOCUS: &str = "grab_key_focus";
 pub const BLOCK_SIGNAL_EVENT: &str = "block_signal_event";
 // -------------------- position -----------------
 pub const ABS_POS: &str = "abs_pos";
+// -------------------- cursor -------------------
+pub const CURSOR_SIZE: &str = "cursor_size";
+pub const CURSOR_MARGIN_BOTTOM: &str = "cursor_margin_bottom";
+pub const CURSOR_MARGIN_TOP: &str = "cursor_margin_top";
+pub const SELECT_PAD_EDGES: &str = "select_pad_edges";
+pub const EMPTY_MESSAGE: &str = "empty_message";
+pub const NUMERIC_ONLY: &str = "numeric_only";
+pub const SECRET: &str = "secret";
+pub const ON_FOCUS_SELECT_ALL: &str = "on_focus_select_all";
+pub const READ_ONLY: &str = "read_only";
+pub const ASCII_ONLY: &str = "ascii_only";
 // -------------------- other --------------------
 pub const OPTIMIZE: &str = "optimize";
 pub const CURSOR: &str = "cursor";
@@ -63,6 +75,8 @@ pub const SVG_PATH: &str = "svg_path";
 pub const SVG_FILE: &str = "svg_file";
 pub const LINEARIZE: &str = "linearize";
 pub const DRAW_ICON: &str = "draw_icon";
+pub const DRAW_SELECT: &str = "draw_select";
+pub const DRAW_CURSOR: &str = "draw_cursor";
 pub const ICON_WALK: &str = "icon_walk";
 pub const LABEL_WALK: &str = "label_walk";
 pub const PATH: &str = "path";

@@ -23,6 +23,7 @@ impl TryFrom<&Function> for MakepadShader {
             let tk =
                 parse_str::<TokenStream>(tk.get(0).expect("shader function must have one param"))
                     .unwrap();
+
             return Ok(Self(tk));
         }
         return Err(Errors::ParseError(format!(

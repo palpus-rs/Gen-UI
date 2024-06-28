@@ -97,6 +97,7 @@ impl ModelTree {
         let (item_level, item_path) = item.level();
 
         if let Some(children) = &mut self.children {
+            let mut is_root = true;
             // 查找子节点中任意的path的节点，首先使用level匹配，level相同，可以直接push
             // level不同，若当前level比item的level小，继续遍历子节点，大则将当前children放到item的children中，再把item放回父节点进行替换
             // let (current_level, _current_path) = children[0].level();
@@ -105,9 +106,15 @@ impl ModelTree {
             if step.eq(&0_usize) {
                 // children.push(item.into())
                 let node: ModelTree = item.into();
-                let _ = children.remove(&node);
-                let _ = children.insert(node);
+                
+                if is_root{
+                    self.node = node.node;
+                }else{
+                    let _ = children.remove(&node);
+                    let _ = children.insert(node);
+                }
             } else if step.lt(&0_usize) {
+                is_root = false;
                 // 说明item节点比当前节点层级高，将item节点替换当前的节点
                 let mut node: ModelTree = item.into();
                 node.children.replace(self.children.take().unwrap());
@@ -116,6 +123,7 @@ impl ModelTree {
                 let _ =
                     std::mem::replace(&mut self.children, Some(std::iter::once(node).collect()));
             } else {
+                is_root = false;
                 // 说明item节点比当前节点层级低，继续遍历子节点
                 // 需要查找当前所有子节点的path，找到符合前缀的节点，查看子节点数量，哪个少往哪个去遍历（符合前缀指的是前缀匹配优先级最大的）
                 // 不能使用start_with去匹配，因为无法知道若前缀没有完全相同的情况下的优先级长度

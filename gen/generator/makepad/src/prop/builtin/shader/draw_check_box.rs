@@ -4,11 +4,11 @@ use crate::{prop::builtin::CheckType, widget::utils::f32_prop};
 use gen_parser::Value;
 use gen_utils::error::Errors;
 
-// use super::draw_quad::DrawQuad;
+use super::draw_quad::DrawQuad;
 
 #[derive(Debug, Clone, Default)]
 pub struct DrawCheckBox {
-    // pub draw_super: Option<DrawQuad>,
+    pub draw_super: DrawQuad,
     pub check_type: Option<CheckType>,
     pub hover: Option<f32>,
     pub focus: Option<f32>,
@@ -35,11 +35,18 @@ impl DrawCheckBox {
             self.selected.replace(f);
         })
     }
+    pub fn color(&mut self, value: &Value) -> Result<(), Errors> {
+        let quad = DrawQuad::try_from(value)?;
+        self.draw_super = quad;
+        Ok(())
+    }
 }
 
 impl Display for DrawCheckBox {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut draw_check_box = String::new();
+        draw_check_box.push_str(self.draw_super.to_string().as_str());
+
         if let Some(check_type) = &self.check_type {
             draw_check_box.push_str(&format!("check_type: {}, ", check_type));
         }
@@ -52,6 +59,7 @@ impl Display for DrawCheckBox {
         if let Some(selected) = &self.selected {
             draw_check_box.push_str(&format!("selected: {}, ", selected));
         }
+
         write!(f, "{}", draw_check_box)
     }
 }

@@ -33,7 +33,7 @@ pub mod radio;
 pub mod root;
 pub mod scroll;
 pub mod splitter;
-// pub mod text_input;
+pub mod text_input;
 pub mod utils;
 pub mod view;
 pub mod window;
@@ -73,7 +73,7 @@ pub enum BuiltIn {
     ScrollXView,
     ScrollYView,
     ScrollXYView,
-    // TextInput,
+    TextInput,
     Label,
     Button,
     #[default]
@@ -107,9 +107,8 @@ impl BuiltIn {
             BuiltIn::Root => root::RootProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::ScrollXView => view::ScrollXViewProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::ScrollYView => view::ScrollYViewProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::ScrollXYView => {
-                view::ScrollXYViewProps::prop_bind(prop, value, is_prop, ident)
-            }
+            BuiltIn::ScrollXYView => view::ScrollXYViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::TextInput => text_input::TextInputProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -128,6 +127,7 @@ impl BuiltIn {
             BuiltIn::ScrollYView => view::ScrollYViewProps::props(props).to_token_stream(),
             BuiltIn::ScrollXYView => view::ScrollXYViewProps::props(props).to_token_stream(),
             BuiltIn::Area => todo!("area do not need to bind static prop"),
+            BuiltIn::TextInput => text_input::TextInputProps::props(props).to_token_stream(),
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -144,7 +144,8 @@ impl BuiltIn {
             BuiltIn::Root => root::RootPropPtr::from(ptr).to_token_stream(),
             BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
                 panic!("scroll view can not be inherited you need to inherits View")
-            }
+            },
+            BuiltIn::TextInput => text_input::TextInputPropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -172,7 +173,8 @@ impl BuiltIn {
             BuiltIn::Root => root::draw_walk(),
             BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
                 panic!("scroll view can not be inherited, so that it can not draw_walk, you need to inherits View")
-            }
+            },
+            BuiltIn::TextInput => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -196,7 +198,8 @@ impl BuiltIn {
             BuiltIn::Root => root::handle_event(event, props, instance_name, prop_fields),
             BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
                 panic!("scroll view can not be inherited, so that it can not handle_event, you need to inherits View")
-            }
+            },
+            BuiltIn::TextInput => todo!(),
         }
     }
 }
@@ -221,6 +224,7 @@ impl TryFrom<&str> for BuiltIn {
             SCROLLXVIEW => Ok(BuiltIn::ScrollXView),
             SCROLLYVIEW => Ok(BuiltIn::ScrollYView),
             SCROLLXYVIEW => Ok(BuiltIn::ScrollXYView),
+            TEXT_INPUT => Ok(BuiltIn::TextInput),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -255,6 +259,7 @@ impl Display for BuiltIn {
             BuiltIn::ScrollXView => SCROLLXVIEW,
             BuiltIn::ScrollYView => SCROLLYVIEW,
             BuiltIn::ScrollXYView => SCROLLXYVIEW,
+            BuiltIn::TextInput => TEXT_INPUT,
         })
     }
 }

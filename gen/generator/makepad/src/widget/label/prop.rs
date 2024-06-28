@@ -203,7 +203,7 @@ impl Display for LabelProps {
             let _ = f.write_fmt(format_args!(
                 "{}: {{{}}},",
                 DRAW_TEXT,
-                draw_text.to_string()
+                draw_text
             ));
         }
         if let Some(walk) = &self.walk {

@@ -87,7 +87,7 @@ impl Compiler {
     where
         P: AsRef<Path>,
     {
-        self.exclude.push(absolute_or_path(path.as_ref()));
+        // self.exclude.push(absolute_or_path(path.as_ref()));
         let root_path = path.as_ref().to_path_buf();
         // add root into cache
         let _ = self.cache.exists_or_insert(root_path.as_path());
