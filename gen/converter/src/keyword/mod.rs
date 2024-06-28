@@ -29,7 +29,7 @@ pub enum KeyWords {
     ElseIf,
     /// else
     Else,
-    Actions_Macro,
+    ActionsMacro,
 }
 
 impl KeyWords {
@@ -66,7 +66,7 @@ impl Display for KeyWords {
             KeyWords::Id => ID,
             KeyWords::Class => CLASS,
             KeyWords::Inherits => INHERITS,
-            KeyWords::Actions_Macro => ACTIONS_MACRO,
+            KeyWords::ActionsMacro => ACTIONS_MACRO,
             KeyWords::For => FOR,
             KeyWords::If => IF,
             KeyWords::ElseIf => ELSE_IF,
@@ -83,7 +83,7 @@ impl TryFrom<&str> for KeyWords {
             ID => Ok(KeyWords::Id),
             CLASS => Ok(KeyWords::Class),
             INHERITS => Ok(KeyWords::Inherits),
-            ACTIONS_MACRO => Ok(KeyWords::Actions_Macro),
+            ACTIONS_MACRO => Ok(KeyWords::ActionsMacro),
             FOR => Ok(KeyWords::For),
             IF => Ok(KeyWords::If),
             ELSE_IF => Ok(KeyWords::ElseIf),

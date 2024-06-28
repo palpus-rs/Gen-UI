@@ -41,7 +41,7 @@ where
     let binds = model.get_binds_tree();
     let root = model.is_component_and_root();
     let is_component = model.is_component();
-    todo!()
+    todo!("废弃")
     // let script = model.script.unwrap().to_origin();
 
     // let (uses, prop, event, lifetime, other) = split_script(script);
