@@ -34,7 +34,6 @@ import!{
     position: 300.0;
     #main_view{
       draw_bg: #FFF,
-      draw_bg: linear_gradient();
     }
   }
 }

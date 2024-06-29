@@ -25,21 +25,25 @@ pub fn mix_color_to_token(mix_colors: Vec<((String, String), (String, String))>)
             let stop = parse_str::<TokenStream>(stop).unwrap();
             let next_stop = parse_str::<TokenStream>(next_stop).unwrap();
 
-            return quote! {
+            quote! {
                 mix(#color, #next_color, smoothstep(#stop, #next_stop, factor))
-            };
+            }
         } else {
             // 递归生成嵌套的mix调用
             let ((color, next_color), (stop, next_stop)) = &codes[index];
+            let color = parse_str::<TokenStream>(color).unwrap();
+            let _next_color = parse_str::<TokenStream>(next_color).unwrap();
+            let stop = parse_str::<TokenStream>(stop).unwrap();
+            let next_stop = parse_str::<TokenStream>(next_stop).unwrap();
             let next_mix = nested_mix(codes, index + 1);
-            return quote! {
+            
+            quote! {
                 mix(
                     #color,
-                    #next_color,
-                    smoothstep(#stop, #next_stop, factor),
-                    #next_mix
+                    #next_mix,
+                    smoothstep(#stop, #next_stop, factor)
                 )
-            };
+            }
         }
     }
 
@@ -57,7 +61,7 @@ pub fn get_color(color: &Hex) -> TokenStream {
 pub fn draw_radial_gradient(value: &RadialGradient, fn_name: &str) -> TokenStream {
     let fn_name = ident(fn_name);
     let RadialGradient { colors } = value;
-    
+
     let mut draw_color_tk = TokenStream::new();
 
     for (index, (hex, percentage)) in colors.iter().enumerate() {
@@ -140,3 +144,5 @@ pub fn draw_linear_gradient(value: &LinearGradient, fn_name: &str) -> TokenStrea
         }
     }
 }
+
+

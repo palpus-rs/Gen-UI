@@ -19,7 +19,7 @@
 - [x] ScrollXYView
 - [x] ScrollXView
 - [x] ScrollYView
-- [ ] TextInput
+- [x] TextInput
 - [ ] Html
 - [ ] Markdown
 - [ ] ScrollBar
@@ -31,11 +31,14 @@
 #### Props
 
 - [ ] animation
-- [ ] DrawQuard
-- [ ] Color
-  - [x] Base Hex
-  - [ ] linear
-  - [ ] radial
+- [x] Draw
+- [x] Color
+  - [x] hex
+  - [x] linear
+  - [x] radial
+  - [x] rgb
+  - [x] rgba
+  - [x] shader 
 
 #### Control
 

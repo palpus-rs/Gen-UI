@@ -1,5 +1,5 @@
 use gen_compiler::{app, DepType, RustDependence, Target};
-// mod test_widget;
+
 fn main() {
     // set app and specify target
     let mut app = app(Target::Makepad);
@@ -12,7 +12,7 @@ fn main() {
     // compile and run
     let _ = app
         .entry("app")
-        .root("E:/Rust/try/makepad/Gen-UI/examples/hello/ui/views/root.gen")
+        .root("E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/ui/views/root.gen")
         .add_dep(makepad_widget)
         .compile();
 
