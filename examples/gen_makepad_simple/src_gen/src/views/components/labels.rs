@@ -1,0 +1,1 @@
+use makepad_widgets :: * ; live_design ! { import makepad_widgets :: base ::*; import makepad_widgets :: theme_desktop_dark ::*; label_view = <View >{ flow : Down , height : 100 , < Label >{ text : "This is a Label View" , } } }

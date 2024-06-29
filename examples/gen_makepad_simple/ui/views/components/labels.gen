@@ -1,0 +1,5 @@
+<template>
+  <view id="label_view" flow="Down" height="100.0">
+    <label text="This is a Label View"></label>
+  </view>
+</template>

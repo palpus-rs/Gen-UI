@@ -1,3 +1,4 @@
 <script>
 pub mod root;
+pub mod components;
 </script>
