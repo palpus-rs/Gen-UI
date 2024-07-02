@@ -1,7 +1,10 @@
 use std::fmt::Display;
 
-use gen_utils::error::Errors;
 use gen_parser::Value;
+use gen_utils::{
+    error::Errors,
+    props_manul::{Font, Position, Size, Text},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
@@ -38,27 +41,27 @@ impl DynProps for LabelProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             // ----------------- draw_text -----------------
-            FONT => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT, PATH], &value),
-            FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
-            BRIGHTNESS => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
-            CURVE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
-            LINE_SPACING => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
-            TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
-            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
-            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
-            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
-            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
-            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
-            DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
-            COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
+            Font::FONT_FAMILY => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT, PATH], &value),
+            Font::FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
+            Font::BRIGHTNESS => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
+            Font::CURVE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
+            Font::LINE_SPACING => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
+            Font::TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
+            Font::HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
+            Text::TEXT_WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            Text::IGNORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            Text::COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            Font::FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            Text::DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            Text::COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            TEXT => quote_prop(vec![TEXT], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Text::TEXT => quote_prop(vec![TEXT], &value),
             _ => panic!("cannot match prop in BuiltIn label"),
         }
     }
@@ -79,32 +82,32 @@ impl StaticProps for LabelProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_text -----------------
-            FONT => self.font(&value),
-            FONT_SIZE => self.font_size(&value),
-            BRIGHTNESS => self.brightness(&value),
-            CURVE => self.curve(&value),
-            LINE_SPACING => self.line_spacing(&value),
-            TOP_DROP => self.top_drop(&value),
-            HEIGHT_FACTOR => self.height_factor(&value),
-            WRAP => self.wrap(&value),
-            INGORE_NEWLINES => self.ignore_newlines(&value),
-            COMBINE_SPACES => self.combine_spaces(&value),
-            FONT_SCALE => self.font_scale(&value),
-            DRAW_DEPTH => self.draw_depth(&value),
-            COLOR => self.color(&value),
+            Font::FONT_FAMILY => self.font(&value),
+            Font::FONT_SIZE => self.font_size(&value),
+            Font::BRIGHTNESS => self.brightness(&value),
+            Font::CURVE => self.curve(&value),
+            Font::LINE_SPACING => self.line_spacing(&value),
+            Font::TOP_DROP => self.top_drop(&value),
+            Font::HEIGHT_FACTOR => self.height_factor(&value),
+            Text::TEXT_WRAP => self.wrap(&value),
+            Text::IGNORE_NEWLINES => self.ignore_newlines(&value),
+            Text::COMBINE_SPACES => self.combine_spaces(&value),
+            Font::FONT_SCALE => self.font_scale(&value),
+            Text::DRAW_DEPTH => self.draw_depth(&value),
+            Text::COLOR => self.color(&value),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value),
-            WIDTH => self.width(&value),
-            ABS_POS => self.abs_pos(&value),
-            MARGIN => self.margin(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            TEXT => self.text(&value),
+            Size::HEIGHT => self.height(&value),
+            Size::WIDTH => self.width(&value),
+            Position::ABS_POS => self.abs_pos(&value),
+            Size::MARGIN => self.margin(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Text::TEXT => self.text(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };
@@ -200,11 +203,7 @@ impl LabelProps {
 impl Display for LabelProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(draw_text) = &self.draw_text {
-            let _ = f.write_fmt(format_args!(
-                "{}: {{{}}},",
-                DRAW_TEXT,
-                draw_text
-            ));
+            let _ = f.write_fmt(format_args!("{}: {{{}}},", DRAW_TEXT, draw_text));
         }
         if let Some(walk) = &self.walk {
             let _ = f.write_fmt(format_args!("{}", walk.to_string()));

@@ -24,15 +24,15 @@ import!{
   #main_window{
     width: Fill;
     height: Fill;
-    show_bg: true;
-    draw_bg: shader(|self|{
+    background_visible: true;
+    background_color: shader(|self|{
       fn pixel(self) -> vec4{
-        return #009688
+        return vec4(0.6, 0.4, 0.5, 1.0)
       }
     });
     flow: Down;
-    inner_size: 600.0, 800.0;
-    position: 300.0;
+    window_size: 600.0 600.0;
+    window_position: 300.0;
   }
 }
 </style>

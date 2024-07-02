@@ -1,7 +1,10 @@
 use std::{collections::HashMap, fmt::Display};
 
-use gen_utils::error::Errors;
 use gen_parser::{PropsKey, Value};
+use gen_utils::{
+    error::Errors,
+    props_manul::{Background, Font, Others, Position, Size},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
@@ -69,32 +72,32 @@ impl DynProps for WindowProps {
         let value = bind_prop_value(value, is_prop, ident);
 
         match prop.name() {
-            DRAW_BG => quote_prop(vec![DRAW_BG, COLOR], &value),
-            SHOW_BG => quote_prop(vec![SHOW_BG], &value),
+            Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG, COLOR], &value),
+            Background::BACKGROUND_VISIBLE => quote_prop(vec![SHOW_BG], &value),
             // ----------------- layout -----------------
-            SCROLL => quote_prop(vec![SCROLL], &value),
-            CLIP_X => quote_prop(vec![CLIP_X], &value),
-            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            FLOW => quote_prop(vec![FLOW], &value),
-            SPACING => quote_prop(vec![SPACING], &value),
-            LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
+            Others::SCROLL => quote_prop(vec![SCROLL], &value),
+            Size::CLIP_X => quote_prop(vec![CLIP_X], &value),
+            Size::CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Position::FLOW => quote_prop(vec![FLOW], &value),
+            Position::SPACING => quote_prop(vec![SPACING], &value),
+            Font::LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ----------------- other -----------------
-            OPTIMIZE => quote_prop(vec![OPTIMIZE], &value),
-            EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
-            VISIBLE => quote_prop(vec![VISIBLE], &value),
-            GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
-            BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
-            CURSOR => quote_prop(vec![CURSOR], &value),
+            Others::OPTIMIZE => quote_prop(vec![OPTIMIZE], &value),
+            Others::EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
+            Others::VISIBLE => quote_prop(vec![VISIBLE], &value),
+            Others::GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
+            Others::BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
+            Others::CURSOR => quote_prop(vec![CURSOR], &value),
             // ----------------- window -----------------
-            "position" => quote_prop(vec!["window", "position"], &value),
-            "inner_size" => quote_prop(vec!["window", "inner_size"], &value),
+            Position::WINDOW_POSITION => quote_prop(vec!["window", "position"], &value),
+            Size::WINDOW_SIZE => quote_prop(vec!["window", "inner_size"], &value),
             _ => panic!("cannot match prop"),
         }
     }
@@ -111,37 +114,37 @@ impl StaticProps for WindowProps {
 
     fn prop(&mut self, prop_name: &str, value: Value) -> () {
         let _ = match prop_name {
-            DRAW_BG => self.draw_bg(&value),
-            SHOW_BG => self.show_bg(&value),
+            Background::BACKGROUND_COLOR => self.draw_bg(&value),
+            Background::BACKGROUND_VISIBLE => self.show_bg(&value),
             // ----------------- layout -----------------
-            SCROLL => self.scroll(&value),
-            CLIP_X => self.clip_x(&value),
-            CLIP_Y => self.clip_y(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            FLOW => self.flow(&value),
-            SPACING => self.spacing(&value),
-            LINE_SPACING => self.line_spacing(&value),
+            Others::SCROLL => self.scroll(&value),
+            Size::CLIP_X => self.clip_x(&value),
+            Size::CLIP_Y => self.clip_y(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Position::FLOW => self.flow(&value),
+            Position::SPACING => self.spacing(&value),
+            Font::LINE_SPACING => self.line_spacing(&value),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value),
-            WIDTH => self.width(&value),
-            ABS_POS => self.abs_pos(&value),
-            MARGIN => self.margin(&value),
+            Size::HEIGHT => self.height(&value),
+            Size::WIDTH => self.width(&value),
+            Position::ABS_POS => self.abs_pos(&value),
+            Size::MARGIN => self.margin(&value),
             // ----------------- other -----------------
-            OPTIMIZE => self.optimize(&value),
-            EVENT_ORDER => self.event_order(&value),
-            VISIBLE => self.visible(&value),
-            GRAB_KEY_FOCUS => self.grab_key_focus(&value),
-            BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
-            CURSOR => self.mouse_cursor(&value),
+            Others::OPTIMIZE => self.optimize(&value),
+            Others::EVENT_ORDER => self.event_order(&value),
+            Others::VISIBLE => self.visible(&value),
+            Others::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
+            Others::BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
+            Others::CURSOR => self.mouse_cursor(&value),
             // ----------------- window -----------------
-            "position" => self.position(&value),
-            "inner_size" => self.inner_size(&value),
+            Position::WINDOW_POSITION => self.position(&value),
+            Size::WINDOW_SIZE => self.inner_size(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };

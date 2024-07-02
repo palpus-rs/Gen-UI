@@ -1,5 +1,22 @@
 <template>
   <view id="label_view" flow="Down" height="100.0">
-    <label text="This is a Label View"></label>
+    <label id="label1"></label>
   </view>
 </template>
+
+<style>
+#label1{
+  text: "This is Label 1";
+  font_size: 14.0;
+  brightness: 1.2;
+  curve: 1.5;
+  line_spacing: 1.5;
+  top_drop: 1.5;
+  text_wrap: Wrap;
+  combine_spaces: true;
+  height: 32.0;
+  width: 120.0;
+  margin: 10.0 16.0;
+  padding: 6.0;
+}
+</style>

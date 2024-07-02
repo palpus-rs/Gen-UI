@@ -42,7 +42,7 @@ let mut btn_click = ||{
 .t_label{
     brightness: 1.1;
     color: #fff;
-    wrap: Word;
-    font: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf");
+    text_wrap: Word;
+    font_family: dep("crate://makepad-widgets/resources/IBMPlexSans-SemiBold.ttf");
 }
 </style>
