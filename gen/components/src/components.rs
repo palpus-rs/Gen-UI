@@ -283,7 +283,7 @@ live_design!{
     GInput = <GInputBase>{
         font_family: (FONT_FAMILY),
         brightness: 1.0,
-        line_spacing: 1.5,
+        line_spacing: 1.45,
         font_size: (FONT_SIZE),
         // color: (COLOR_DARK_800),
         

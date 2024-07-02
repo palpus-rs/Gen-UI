@@ -18,15 +18,15 @@ live_design! {
         }
         <GInput>{
             theme: Dark,
-            border_width: 2.0,
+            border_width: 1.0,
             // border_radius: 4.0,
             value: "Hello",
             placeholder: "please",
             
         }
         <GInput>{
-            border_radius: 8.0,
-            border_width: 2.0,
+            border_radius: 7.0,
+            border_width: 1.0,
             input_type: Pwd,
         }
     }

@@ -9,12 +9,14 @@ use crate::{
 live_design! {
     import makepad_draw::shader::std::*;
     GInputBase = {{GInput}}{
-        height: 32.0,
+        height: Fit,
         width: 180.0,
         align: {x: 0.0, y: 0.5},
-        padding: {left: 8.0, right: 8.0, top: 0.0, bottom: 0.0},
+        padding: 8.6,
         clip_x: false,
         clip_y: false,
+        placeholder: "Please Input",
+        text_align: {x: 0.0, y: 0.0},
         animator: {
             hover = {
                 default: off
@@ -118,7 +120,7 @@ live_design! {
                     self.border_radius
                 )
                 sdf.fill(self.get_color());
-                return sdf.result
+                return sdf.result;
             }
         }
 
@@ -175,6 +177,8 @@ pub struct GInput {
     #[live(false)]
     pub disabled: bool,
     // text --------------------
+    #[live]
+    pub text_align: Align,
     #[live(9.0)]
     pub font_size: f64,
     #[live(1.0)]
@@ -190,7 +194,7 @@ pub struct GInput {
     #[live]
     pub font_family: LiveDependency,
     // cursor styles ------------------
-    #[live(2.4)]
+    #[live(2.0)]
     cursor_width: f64,
     #[live(1.0)]
     cursor_border_radius: f64,
@@ -450,7 +454,7 @@ impl Widget for GInput {
                 let mut input = String::new();
 
                 self.filter_input(&e.input, Some(&mut input));
-                if input.len().eq(&0) {
+                if input.len() == 0 {
                     return;
                 }
                 let last_undo = self.last_undo.take();
@@ -591,7 +595,7 @@ impl Widget for GInput {
             _ => {}
         }
     }
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+    fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         // 开始绘制
         self.draw_input.begin(cx, walk, self.layout);
         let font = get_font_family(&self.font_family, cx);
@@ -603,7 +607,7 @@ impl Widget for GInput {
 
         // 设置文字
         // 文字长度为0
-        if self.value.len().eq(&0) {
+        if self.value.len() == 0 {
             
             self.draw_text.empty = 1.0;
             // 设置文字的高度和宽度
@@ -611,7 +615,7 @@ impl Widget for GInput {
             self.draw_text.draw_walk(
                 cx,
                 Walk::size(self.walk.width, self.walk.height),
-                self.layout.align,
+                self.text_align,
                 &self.placeholder,
             );
         } else {
@@ -624,7 +628,7 @@ impl Widget for GInput {
                     self.draw_text.draw_walk(
                         cx,
                         Walk::size(self.walk.width, self.walk.height),
-                        self.layout.align,
+                        self.text_align,
                         &self.value,
                     );
                 }
@@ -633,7 +637,7 @@ impl Widget for GInput {
                     self.draw_text.draw_walk(
                         cx,
                         Walk::size(self.walk.width, self.walk.height),
-                        self.layout.align,
+                        self.text_align,
                         &"*".repeat(self.value.len()),
                     );
                 }
@@ -658,7 +662,7 @@ impl Widget for GInput {
                     pos: dvec2(head.x - 0.5 * self.cursor_width, head.y - top_drop),
                     size: dvec2(self.cursor_width, line_spacing),
                 },
-            )
+            );
         }
         if self.cursor_head != self.cursor_tail {
             let top_drop = self.draw_text.get_font_size() * 0.3;
@@ -715,7 +719,7 @@ impl LiveHook for GInput {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 25);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 500);
+        let hover_color = get_color(self.theme, self.hover_color, 400);
         // ------------------ pressed color ---------------------------------------------
         let pressed_color = get_color(self.theme, self.pressed_color, 600);
         // ------------------ border color ----------------------------------------------
