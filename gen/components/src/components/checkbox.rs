@@ -57,9 +57,11 @@ pub struct GCheckBox {
     #[live]
     pub hover_color: Option<Vec4>,
     #[live]
-    pub focus_color: Option<Vec4>,
-    #[live]
     pub selected_color: Option<Vec4>,
+    #[live]
+    pub stroke_color: Option<Vec4>,
+    #[live]
+    pub stroke_hover_color: Option<Vec4>,
     #[live]
     pub border_color: Option<Vec4>,
     #[live(1.0)]
@@ -152,20 +154,23 @@ impl LiveHook for GCheckBox {
         let bg_color = get_color(self.theme, self.background_color, 50);
         // ------------------ hover color -----------------------------------------------
         let hover_color = get_color(self.theme, self.hover_color, 100);
+        // ------------------ selected color ---------------------------------------------
+        let selected_color = get_color(self.theme, self.selected_color, 50);
         // ------------------ border color ----------------------------------------------
         let border_color = get_color(self.theme, self.border_color, 600);
-        // ------------------ focus color -----------------------------------------------
-        let focus_color = get_color(self.theme, self.focus_color, 600);
-        // ------------------ selected color ---------------------------------------------
-        let selected_color = get_color(self.theme, self.selected_color, 600);
+        // ------------------ stroke color ---------------------------------------------
+        let stroke_color = get_color(self.theme, self.stroke_color, 600);
+        // ------------------ stroke hover color ---------------------------------------
+        let stroke_hover_color = get_color(self.theme, self.stroke_hover_color, 600);
         // ------------------ apply to draw_check ----------------------------------------
         self.draw_check.apply_over(
             cx,
             live! {
-                color: (bg_color),
+                background_color: (bg_color),
                 hover_color: (hover_color),
-                focus_color: (focus_color),
                 selected_color: (selected_color),
+                stroke_color: (stroke_color),
+                stroke_hover_color: (stroke_hover_color),
                 border_color: (border_color),
                 border_width: (self.border_width),
                 scale: (self.scale),
