@@ -1,0 +1,33 @@
+<template>
+  <view id="header">
+    <image id="logo"></image>
+    <view id="menu_list">
+        
+    </view>
+  </view>
+</template>
+
+<style>
+#header{
+  width: Fill;
+  height: 60.0;
+  background_visible: true;
+  background_color: shader(|self|{
+    fn pixel(self) -> vec4{
+        return vec4(1.0, 1.0, 1.0, 1.0)
+    }
+  });
+  align: 0.0 0.5;
+  padding: 0.0 32.0;
+  #logo{
+    height: 30.0;
+    width: 120.0;
+    source: "crate://self/static/logo.png";
+  }
+  #menu_list{
+    .menu_item{
+        font_size: 12.0;
+    }
+  }
+}
+</style>

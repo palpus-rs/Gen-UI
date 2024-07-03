@@ -1,0 +1,40 @@
+<template>
+  <root id="ui">
+    <window id="main_window">
+      <view id="main_view">
+        <header></header>
+        <main_page></main_page>
+      </view>
+    </window>
+  </root>
+</template>
+
+<script>
+import!{
+  crate::views::components::header::*;
+  crate::views::components::main_page::*;
+}
+</script>
+
+<style>
+#ui{
+  #main_window{
+    width: Fill;
+    height: Fill;
+    background_visible: false;
+    background_color: shader(|self|{
+      fn pixel(self) -> vec4{
+        return vec4(1.0, 1.0, 1.0, 1.0)
+      }
+    });
+    flow: Down;
+    window_size: 1024.0 860.0;
+    window_position: 300.0;
+    #main_view{
+      height: All;
+      width: All;
+      flow: Down;
+    }
+  }
+}
+</style>

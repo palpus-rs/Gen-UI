@@ -1,0 +1,12 @@
+<template>
+  <scroll_y_view id="main_page">
+    <label text="main"></label>
+  </scroll_y_view>
+</template>
+
+<style>
+#main_page{
+  width: Fill;
+  height: 800.0;
+}
+</style>
