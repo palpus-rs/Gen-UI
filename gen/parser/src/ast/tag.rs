@@ -95,6 +95,15 @@ impl Tag {
             parent: None,
         }
     }
+    pub fn new_tag_props(name: &str, props: Props) -> Self {
+        Self {
+            name: name.to_string(),
+            ty: Default::default(),
+            props,
+            children: None,
+            parent: None,
+        }
+    }
     pub fn set_name(&mut self, name: &str) {
         self.name = name.to_string();
     }
@@ -137,6 +146,9 @@ impl Tag {
     }
     pub fn get_props(&self) -> Option<&HashMap<PropsKey, Value>> {
         self.props.as_ref()
+    }
+    pub fn is_self_closed(&self) -> bool {
+        self.ty.is_self_close()
     }
 }
 

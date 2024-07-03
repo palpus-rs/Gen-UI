@@ -99,6 +99,14 @@ impl ASTNodes {
             ASTNodes::Style(s) => s.set_parent(parent),
         }
     }
+    /// first bool is tag?
+    /// second bool is self closed?
+    pub fn is_tag_close(&self) -> (bool, bool) {
+        match self {
+            ASTNodes::Tag(t) => (true, t.is_self_closed()),
+            _ => (false, false),
+        }
+    }
     // pub fn parse_template(input:&str) -> Vec<ASTNodes>{
     //     parse_template(input)
     // }

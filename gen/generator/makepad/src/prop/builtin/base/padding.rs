@@ -25,7 +25,7 @@ impl Padding {
         Padding::new(space, space, space, space)
     }
     pub fn multi_2(top_bottom: f64, left_right: f64) -> Self {
-        Padding::new(left_right, top_bottom, left_right, top_bottom)
+        Padding::new(top_bottom, left_right, top_bottom, left_right)
     }
     pub fn multi_4(top: f64, right: f64, bottom: f64, left: f64) -> Self {
         Padding::new(top, right, bottom, left)
@@ -105,9 +105,9 @@ mod test_padding {
     use super::*;
     #[test]
     fn to_tk() {
-        let padding = Padding::try_from("10.0 20.0 0.0 29.0").unwrap();
+        let padding = Padding::try_from("10.0 20.0").unwrap();
         let tk = padding.to_string();
-        let prop = "{top: 10, right: 20, bottom: 0, left: 29}";
+        let prop = "{top: 10, right: 20, bottom: 10, left: 20}";
         assert_eq!(tk.as_str(), prop);
     }
 }

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use gen_utils::error::Errors;
+use gen_utils::{error::Errors, props_manul::{Background, Cursor, Event, Others, Position, Size}};
 use gen_parser::{PropsKey, Value};
 use proc_macro2::TokenStream;
 
@@ -76,34 +76,34 @@ impl StaticProps for ViewProps {
 
     fn prop(&mut self, prop_name: &str, value: Value) -> () {
         let _ = match prop_name {
-            DRAW_BG => self.draw_bg(&value),
-            SHOW_BG => self.show_bg(&value),
+            Background::BACKGROUND_COLOR => self.draw_bg(&value),
+            Background::BACKGROUND_VISIBLE => self.show_bg(&value),
             // ----------------- layout -----------------
-            SCROLL => self.scroll(&value),
-            CLIP_X => self.clip_x(&value),
-            CLIP_Y => self.clip_y(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            FLOW => self.flow(&value),
-            SPACING => self.spacing(&value),
+            Others::SCROLL => self.scroll(&value),
+            Size::CLIP_X => self.clip_x(&value),
+            Size::CLIP_Y => self.clip_y(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Position::FLOW => self.flow(&value),
+            Position::SPACING => self.spacing(&value),
             LINE_SPACING => self.line_spacing(&value),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value),
-            WIDTH => self.width(&value),
-            ABS_POS => self.abs_pos(&value),
-            MARGIN => self.margin(&value),
+            Size::HEIGHT => self.height(&value),
+            Size::WIDTH => self.width(&value),
+            Position::ABS_POS => self.abs_pos(&value),
+            Size::MARGIN => self.margin(&value),
             // ----------------- other -----------------
-            OPTIMIZE => self.optimize(&value),
-            EVENT_ORDER => self.event_order(&value),
-            VISIBLE => self.visible(&value),
-            GRAB_KEY_FOCUS => self.grab_key_focus(&value),
-            BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
-            CURSOR => self.mouse_cursor(&value),
+            Others::OPTIMIZE => self.optimize(&value),
+            Event::EVENT_ORDER => self.event_order(&value),
+            Others::VISIBLE => self.visible(&value),
+            Event::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
+            Event::BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
+            Cursor::CURSOR => self.mouse_cursor(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };
