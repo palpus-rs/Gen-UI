@@ -1,14 +1,16 @@
 use std::fmt::Display;
 
-use gen_utils::error::Errors;
 use gen_parser::Value;
+use gen_utils::{
+    error::Errors,
+    props_manul::{Background, Position, Resource, Size},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
         builtin::{draw_quad::DrawQuad, ImageFit, LiveDependency, Walk},
-        ABS_POS, COLOR, DRAW_BG, FIT, HEIGHT, MARGIN, MIN_HEIGHT, MIN_WIDTH, SOURCE, WIDTH,
-        WIDTH_SCALE,
+        ABS_POS, DRAW_BG, FIT, HEIGHT, MARGIN, MIN_HEIGHT, MIN_WIDTH, SOURCE, WIDTH, WIDTH_SCALE,
     },
     props_to_token,
     widget::{
@@ -41,17 +43,17 @@ impl DynProps for ImageProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ----------------- other -----------------
-            MIN_HEIGHT => quote_prop(vec![MIN_HEIGHT], &value),
-            MIN_WIDTH => quote_prop(vec![MIN_WIDTH], &value),
-            SOURCE => quote_prop(vec![SOURCE], &value),
-            FIT => quote_prop(vec![FIT], &value),
-            WIDTH_SCALE => quote_prop(vec![WIDTH_SCALE], &value),
-            COLOR => quote_prop(vec![DRAW_BG], &value),
+            Size::MIN_HEIGHT => quote_prop(vec![MIN_HEIGHT], &value),
+            Size::MIN_WIDTH => quote_prop(vec![MIN_WIDTH], &value),
+            Resource::SOURCE => quote_prop(vec![SOURCE], &value),
+            Resource::FIT => quote_prop(vec![FIT], &value),
+            Size::WIDTH_SCALE => quote_prop(vec![WIDTH_SCALE], &value),
+            Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
     }
@@ -72,22 +74,22 @@ impl StaticProps for ImageProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value),
-            WIDTH => self.width(&value),
-            ABS_POS => self.abs_pos(&value),
-            MARGIN => self.margin(&value),
+            Size::HEIGHT => self.height(&value),
+            Size::WIDTH => self.width(&value),
+            Position::ABS_POS => self.abs_pos(&value),
+            Size::MARGIN => self.margin(&value),
             // ----------------- other -----------------
-            MIN_HEIGHT => self.min_height(&value),
-            MIN_WIDTH => self.min_width(&value),
-            SOURCE => self.source(&value),
-            FIT => self.fit(&value),
-            WIDTH_SCALE => self.width_scale(&value),
-            COLOR => self.draw_bg(&value),
+            Size::MIN_HEIGHT => self.min_height(&value),
+            Size::MIN_WIDTH => self.min_width(&value),
+            Resource::SOURCE => self.source(&value),
+            Resource::FIT => self.fit(&value),
+            Size::WIDTH_SCALE => self.width_scale(&value),
+            Background::BACKGROUND_COLOR => self.draw_bg(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };

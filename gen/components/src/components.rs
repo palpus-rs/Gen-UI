@@ -9,6 +9,8 @@ pub mod image;
 pub mod radio;
 pub mod checkbox;
 pub mod input;
+pub mod select;
+pub mod divider;
 
 live_design!{
     // imports -----------------------------------------------------
@@ -21,6 +23,7 @@ live_design!{
     import crate::components::checkbox::GCheckBoxBase;
     import crate::components::image::GImageBase;
     import crate::components::input::GInputBase;
+    import crate::components::divider::GDividerBase;
     import makepad_widgets::base::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
@@ -285,7 +288,9 @@ live_design!{
         brightness: 1.0,
         line_spacing: 1.45,
         font_size: (FONT_SIZE),
-        // color: (COLOR_DARK_800),
+    }
+    GDivider = <GDividerBase>{
         
+       
     }
 }

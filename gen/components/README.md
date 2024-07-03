@@ -22,9 +22,9 @@
 - [ ] Tab
 - [ ] Table
 - [ ] Dialog
-- [ ] Select
+- [x] Select
 - [ ] FileUpload
-- [ ] Divide
+- [x] Divide
 - [ ] Loading
 - [ ] EmptyState
 - [ ] BreadCrumb

@@ -36,6 +36,12 @@ impl Text {
     pub const TEXT_WRAP: &'static str = "text_wrap";
     /// 文本颜色
     pub const COLOR: &'static str = "color";
+    /// 文本对齐
+    pub const TEXT_ALIGN: &'static str = "text_align";
+    /// 空白
+    pub const EMPTY: &'static str = "empty";
+    /// 空消息
+    pub const EMPTY_MESSAGE: &'static str = "empty_message";
 }
 
 pub struct Size;
@@ -61,6 +67,7 @@ impl Size {
     pub const CLIP_Y: &'static str = "clip_y";
     /// 窗口大小
     pub const WINDOW_SIZE: &'static str = "window_size";
+    pub const WIDTH_SCALE: &'static str = "width_scale";
 }
 
 pub struct Position;
@@ -80,7 +87,7 @@ impl Position {
 
 pub struct Background;
 
-impl Background{
+impl Background {
     /// 背景颜色
     pub const BACKGROUND_COLOR: &'static str = "background_color";
     /// 显示背景
@@ -101,16 +108,68 @@ impl Border {
 pub struct Others;
 
 impl Others {
+    /// 可见性
     pub const VISIBLE: &'static str = "visible";
     pub const SCROLL: &'static str = "scroll";
     /// 优化方案
     pub const OPTIMIZE: &'static str = "optimize";
+    pub const SELECT_PAD_EDGES: &'static str = "select_pad_edges";
+    pub const ON_FOCUS_SELECT_ALL: &'static str = "on_focus_select_all";
+}
+
+pub struct Resource;
+
+impl Resource {
+    /// 资源
+    pub const SOURCE: &'static str = "source";
+    /// 适应(用于图片)
+    pub const FIT: &'static str = "fit";
+    /// 媒体
+    pub const MEDIA: &'static str = "media";
+}
+
+pub struct Event;
+
+impl Event {
+    /// 点击
+    pub const CLICKED: &'static str = "clicked";
+    /// 悬停
+    pub const HOVER: &'static str = "hover";
+    /// 聚焦
+    pub const FOCUS: &'static str = "focus";
+    /// 选择
+    pub const SELECTED: &'static str = "selected";
+    /// 绑定
+    pub const BIND: &'static str = "bind";
     /// 事件顺序
     pub const EVENT_ORDER: &'static str = "event_order";
     /// 事件透传
     pub const GRAB_KEY_FOCUS: &'static str = "grab_key_focus";
     /// 阻止事件
     pub const BLOCK_SIGNAL_EVENT: &'static str = "block_signal_event";
+}
+
+pub struct Cursor;
+
+impl Cursor {
     /// 鼠标样式
     pub const CURSOR: &'static str = "cursor";
+    /// 鼠标(光标)大小
+    pub const CURSOR_SIZE: &'static str = "cursor_size";
+    /// 鼠标(光标) margin bottom
+    pub const CURSOR_MARGIN_BOTTOM: &'static str = "cursor_margin_bottom";
+    /// 鼠标(光标) margin top
+    pub const CURSOR_MARGIN_TOP: &'static str = "cursor_margin_top";
+}
+
+pub struct State;
+
+impl State {
+    /// 仅数字
+    pub const NUMERIC_ONLY: &'static str = "numeric_only";
+    /// 仅ASCII
+    pub const ASCII_ONLY: &'static str = "ascii_only";
+    /// 只读
+    pub const READ_ONLY: &'static str = "read_only";
+    pub const SECRET: &'static str = "secret";
 }

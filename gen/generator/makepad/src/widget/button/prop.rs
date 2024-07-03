@@ -1,7 +1,10 @@
 use std::fmt::Display;
 
 use gen_parser::Value;
-use gen_utils::error::Errors;
+use gen_utils::{
+    error::Errors,
+    props_manul::{Background, Event, Font, Others, Position, Size, Text},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
@@ -49,23 +52,23 @@ impl DynProps for ButtonProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             // ----------------- draw_bg -----------------
-            DRAW_BG => quote_prop(vec![DRAW_BG, COLOR], &value),
+            Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG, COLOR], &value),
             // ----------------- draw_text ---------------
             //      ----------------- text_style
-            FONT => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT], &value),
-            FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
-            "font_brightness" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
-            "font_curve" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
-            "font_line_spacing" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
-            TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
-            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
+            Font::FONT_FAMILY => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT], &value),
+            Font::FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
+            Font::BRIGHTNESS => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
+            Font::CURVE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
+            "text_line_spacing" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
+            Font::TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
+            Font::HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
             //      ----------------- other
-            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
-            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
-            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
-            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
-            "font_draw_depth" => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
-            "font_color" => quote_prop(vec![DRAW_TEXT, COLOR], &value),
+            Text::TEXT_WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            Text::IGNORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            Text::COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            Font::FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            Text::DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            Text::COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
             // ----------------- draw_icon ---------------
             "icon_brightness" => quote_prop(vec![DRAW_ICON, BRIGHTNESS], &value),
             "icon_curve" => quote_prop(vec![DRAW_ICON, CURVE], &value),
@@ -80,27 +83,27 @@ impl DynProps for ButtonProps {
             "icon_abs_pos" => quote_prop(vec![ICON_WALK, ABS_POS], &value),
             "icon_margin" => quote_prop(vec![ICON_WALK, MARGIN], &value),
             // ----------------- label_walk ---------------
-            "label_height" => quote_prop(vec![LABEL_WALK, HEIGHT], &value),
-            "label_width" => quote_prop(vec![LABEL_WALK, WIDTH], &value),
-            "label_abs_pos" => quote_prop(vec![LABEL_WALK, ABS_POS], &value),
-            "label_margin" => quote_prop(vec![LABEL_WALK, MARGIN], &value),
+            "text_height" => quote_prop(vec![LABEL_WALK, HEIGHT], &value),
+            "text_width" => quote_prop(vec![LABEL_WALK, WIDTH], &value),
+            "text_abs_pos" => quote_prop(vec![LABEL_WALK, ABS_POS], &value),
+            "text_margin" => quote_prop(vec![LABEL_WALK, MARGIN], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ------------------- layout -----------------
-            SCROLL => quote_prop(vec![SCROLL], &value),
-            CLIP_X => quote_prop(vec![CLIP_X], &value),
-            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            FLOW => quote_prop(vec![FLOW], &value),
-            SPACING => quote_prop(vec![SPACING], &value),
+            Others::SCROLL => quote_prop(vec![SCROLL], &value),
+            Size::CLIP_X => quote_prop(vec![CLIP_X], &value),
+            Size::CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Position::FLOW => quote_prop(vec![FLOW], &value),
+            Position::SPACING => quote_prop(vec![SPACING], &value),
             LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
             // ------------------- other ------------------
-            GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
-            TEXT => quote_prop(vec![TEXT], &value),
+            Event::GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
+            Text::TEXT => quote_prop(vec![TEXT], &value),
             _ => panic!("cannot match prop in BuiltIn label"),
         }
     }
@@ -121,23 +124,23 @@ impl StaticProps for ButtonProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_bg -----------------
-            DRAW_BG => self.draw_bg(&value),
+            Background::BACKGROUND_COLOR => self.draw_bg(&value),
             // ----------------- draw_text ---------------
             //      ----------------- text_style
-            FONT => self.font(&value),
-            FONT_SIZE => self.font_size(&value),
-            "font_brightness" => self.brightness(&value, NodeType::Label),
-            "font_curve" => self.curve(&value, NodeType::Label),
-            "font_line_spacing" => self.line_spacing(&value, NodeType::Label),
-            TOP_DROP => self.top_drop(&value),
-            HEIGHT_FACTOR => self.height_factor(&value),
+            Font::FONT_FAMILY => self.font(&value),
+            Font::FONT_SIZE => self.font_size(&value),
+            Font::BRIGHTNESS => self.brightness(&value, NodeType::Label),
+            Font::CURVE => self.curve(&value, NodeType::Label),
+            "text_line_spacing" => self.line_spacing(&value, NodeType::Label),
+            Font::TOP_DROP => self.top_drop(&value),
+            Font::HEIGHT_FACTOR => self.height_factor(&value),
             //      ----------------- other
-            WRAP => self.wrap(&value),
-            INGORE_NEWLINES => self.ignore_newlines(&value),
-            COMBINE_SPACES => self.combine_spaces(&value),
-            FONT_SCALE => self.font_scale(&value),
-            "font_draw_depth" => self.draw_depth(&value, NodeType::Label),
-            "font_color" => self.color(&value, NodeType::Label),
+            Text::TEXT_WRAP => self.wrap(&value),
+            Text::IGNORE_NEWLINES => self.ignore_newlines(&value),
+            Text::COMBINE_SPACES => self.combine_spaces(&value),
+            Font::FONT_SCALE => self.font_scale(&value),
+            Text::DRAW_DEPTH => self.draw_depth(&value, NodeType::Label),
+            Text::COLOR => self.color(&value, NodeType::Label),
             // ----------------- draw_icon ---------------
             "icon_brightness" => self.brightness(&value, NodeType::Icon),
             "icon_curve" => self.curve(&value, NodeType::Icon),
@@ -152,32 +155,32 @@ impl StaticProps for ButtonProps {
             "icon_abs_pos" => self.abs_pos(&value, NodeType::Icon),
             "icon_margin" => self.margin(&value, NodeType::Icon),
             // ----------------- label_walk ---------------
-            "label_height" => self.height(&value, NodeType::Label),
-            "label_width" => self.width(&value, NodeType::Label),
-            "label_abs_pos" => self.abs_pos(&value, NodeType::Label),
-            "label_margin" => self.margin(&value, NodeType::Label),
+            "text_height" => self.height(&value, NodeType::Label),
+            "text_width" => self.width(&value, NodeType::Label),
+            "text_abs_pos" => self.abs_pos(&value, NodeType::Label),
+            "text_margin" => self.margin(&value, NodeType::Label),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value, NodeType::Button),
-            WIDTH => self.width(&value, NodeType::Button),
-            ABS_POS => self.abs_pos(&value, NodeType::Button),
-            MARGIN => self.margin(&value, NodeType::Button),
+            Size::HEIGHT => self.height(&value, NodeType::Button),
+            Size::WIDTH => self.width(&value, NodeType::Button),
+            Position::ABS_POS => self.abs_pos(&value, NodeType::Button),
+            Size::MARGIN => self.margin(&value, NodeType::Button),
             // ------------------- layout -----------------
-            SCROLL => self.scroll(&value),
-            CLIP_X => self.clip_x(&value),
-            CLIP_Y => self.clip_y(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            FLOW => self.flow(&value),
-            SPACING => self.spacing(&value),
+            Others::SCROLL => self.scroll(&value),
+            Size::CLIP_X => self.clip_x(&value),
+            Size::CLIP_Y => self.clip_y(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Position::FLOW => self.flow(&value),
+            Position::SPACING => self.spacing(&value),
             LINE_SPACING => self.line_spacing(&value, NodeType::Button),
             // ------------------- other ------------------
-            GRAB_KEY_FOCUS => self.grab_key_focus(&value),
-            TEXT => self.text(&value),
+            Event::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
+            Text::TEXT => self.text(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };

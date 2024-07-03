@@ -2,7 +2,10 @@
 use std::{default, fmt::Display};
 
 use gen_parser::Value;
-use gen_utils::error::Errors;
+use gen_utils::{
+    error::Errors,
+    props_manul::{Background, Cursor, Font, Others, Position, Size, State, Text},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
@@ -58,53 +61,53 @@ impl DynProps for TextInputProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             // ----------------- draw_bg ---------------
-            DRAW_BG => quote_prop(vec![DRAW_BG, COLOR], &value),
+            Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG, COLOR], &value),
             // ----------------- draw_select ---------------
             DRAW_SELECT => quote_prop(vec![DRAW_SELECT], &value),
             // ----------------- draw_cursor ---------------
             DRAW_CURSOR => quote_prop(vec![DRAW_CURSOR], &value),
             // ----------------- draw_text -----------------
-            FONT => quote_prop(vec![DRAW_TEXT, FONT], &value),
-            FONT_SIZE => quote_prop(vec![DRAW_TEXT, FONT_SIZE], &value),
-            BRIGHTNESS => quote_prop(vec![DRAW_TEXT, BRIGHTNESS], &value),
-            CURVE => quote_prop(vec![DRAW_TEXT, CURVE], &value),
-            "label_line_spacing" => quote_prop(vec![DRAW_TEXT, LINE_SPACING], &value),
-            TOP_DROP => quote_prop(vec![DRAW_TEXT, TOP_DROP], &value),
-            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, HEIGHT_FACTOR], &value),
-            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
-            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
-            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
-            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
-            DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
-            COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
-            IS_EMPTY => quote_prop(vec![DRAW_TEXT, IS_EMPTY], &value),
+            Font::FONT_FAMILY => quote_prop(vec![DRAW_TEXT, FONT], &value),
+            Font::FONT_SIZE => quote_prop(vec![DRAW_TEXT, FONT_SIZE], &value),
+            Font::BRIGHTNESS => quote_prop(vec![DRAW_TEXT, BRIGHTNESS], &value),
+            Font::CURVE => quote_prop(vec![DRAW_TEXT, CURVE], &value),
+            "text_line_spacing" => quote_prop(vec![DRAW_TEXT, LINE_SPACING], &value),
+            Font::TOP_DROP => quote_prop(vec![DRAW_TEXT, TOP_DROP], &value),
+            Font::HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, HEIGHT_FACTOR], &value),
+            Text::TEXT_WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            Text::IGNORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            Text::COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            Font::FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            Text::DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            Text::COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
+            Text::EMPTY => quote_prop(vec![DRAW_TEXT, IS_EMPTY], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ------------------- layout -----------------
-            SCROLL => quote_prop(vec![SCROLL], &value),
-            CLIP_X => quote_prop(vec![CLIP_X], &value),
-            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            FLOW => quote_prop(vec![FLOW], &value),
-            SPACING => quote_prop(vec![SPACING], &value),
+            Others::SCROLL => quote_prop(vec![SCROLL], &value),
+            Size::CLIP_X => quote_prop(vec![CLIP_X], &value),
+            Size::CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Position::FLOW => quote_prop(vec![FLOW], &value),
+            Position::SPACING => quote_prop(vec![SPACING], &value),
             LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
             // ----------------- other ------------------
-            LABEL_ALIGN => quote_prop(vec![LABEL_ALIGN], &value),
-            CURSOR_SIZE => quote_prop(vec![CURSOR_SIZE], &value),
-            CURSOR_MARGIN_BOTTOM => quote_prop(vec![CURSOR_MARGIN_BOTTOM], &value),
-            CURSOR_MARGIN_TOP => quote_prop(vec![CURSOR_MARGIN_TOP], &value),
-            SELECT_PAD_EDGES => quote_prop(vec![SELECT_PAD_EDGES], &value),
-            EMPTY_MESSAGE => quote_prop(vec![EMPTY_MESSAGE], &value),
-            NUMERIC_ONLY => quote_prop(vec![NUMERIC_ONLY], &value),
-            SECRET => quote_prop(vec![SECRET], &value),
-            ON_FOCUS_SELECT_ALL => quote_prop(vec![ON_FOCUS_SELECT_ALL], &value),
-            READ_ONLY => quote_prop(vec![READ_ONLY], &value),
-            TEXT => quote_prop(vec![TEXT], &value),
-            ASCII_ONLY => quote_prop(vec![ASCII_ONLY], &value),
+            Text::TEXT_ALIGN => quote_prop(vec![LABEL_ALIGN], &value),
+            Cursor::CURSOR_SIZE => quote_prop(vec![CURSOR_SIZE], &value),
+            Cursor::CURSOR_MARGIN_BOTTOM => quote_prop(vec![CURSOR_MARGIN_BOTTOM], &value),
+            Cursor::CURSOR_MARGIN_TOP => quote_prop(vec![CURSOR_MARGIN_TOP], &value),
+            Others::SELECT_PAD_EDGES => quote_prop(vec![SELECT_PAD_EDGES], &value),
+            Text::EMPTY_MESSAGE => quote_prop(vec![EMPTY_MESSAGE], &value),
+            State::NUMERIC_ONLY => quote_prop(vec![NUMERIC_ONLY], &value),
+            State::SECRET => quote_prop(vec![SECRET], &value),
+            Others::ON_FOCUS_SELECT_ALL => quote_prop(vec![ON_FOCUS_SELECT_ALL], &value),
+            State::READ_ONLY => quote_prop(vec![READ_ONLY], &value),
+            Text::TEXT => quote_prop(vec![TEXT], &value),
+            State::ASCII_ONLY => quote_prop(vec![ASCII_ONLY], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
     }
@@ -125,58 +128,58 @@ impl StaticProps for TextInputProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_bg ---------------
-            DRAW_BG => self.draw_bg(&value),
+            Background::BACKGROUND_COLOR => self.draw_bg(&value),
             // ----------------- draw_select ---------------
             DRAW_SELECT => self.draw_select(&value),
             // ----------------- draw_cursor ---------------
             DRAW_CURSOR => self.draw_cursor(&value),
             // ----------------- draw_text -----------------
-            FONT => self.font(&value),
-            FONT_SIZE => self.font_size(&value),
-            BRIGHTNESS => self.brightness(&value),
-            CURVE => self.curve(&value),
-            "label_line_spacing" => self.label_line_spacing(&value),
-            TOP_DROP => self.top_drop(&value),
-            HEIGHT_FACTOR => self.height_factor(&value),
-            WRAP => self.wrap(&value),
-            INGORE_NEWLINES => self.ignore_newlines(&value),
-            COMBINE_SPACES => self.combine_spaces(&value),
-            FONT_SCALE => self.font_scale(&value),
-            DRAW_DEPTH => self.draw_depth(&value),
-            COLOR => self.color(&value),
-            IS_EMPTY => self.is_empty(&value),
+            Font::FONT_FAMILY => self.font(&value),
+            Font::FONT_SIZE => self.font_size(&value),
+            Font::BRIGHTNESS => self.brightness(&value),
+            Font::CURVE => self.curve(&value),
+            "text_line_spacing" => self.label_line_spacing(&value),
+            Font::TOP_DROP => self.top_drop(&value),
+            Font::HEIGHT_FACTOR => self.height_factor(&value),
+            Text::TEXT_WRAP => self.wrap(&value),
+            Text::IGNORE_NEWLINES => self.ignore_newlines(&value),
+            Text::COMBINE_SPACES => self.combine_spaces(&value),
+            Font::FONT_SCALE => self.font_scale(&value),
+            Text::DRAW_DEPTH => self.draw_depth(&value),
+            Text::COLOR => self.color(&value),
+            Text::EMPTY => self.is_empty(&value),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value),
-            WIDTH => self.width(&value),
-            ABS_POS => self.abs_pos(&value),
-            MARGIN => self.margin(&value),
+            Size::HEIGHT => self.height(&value),
+            Size::WIDTH => self.width(&value),
+            Position::ABS_POS => self.abs_pos(&value),
+            Size::MARGIN => self.margin(&value),
             // ------------------- layout -----------------
-            SCROLL => self.scroll(&value),
-            CLIP_X => self.clip_x(&value),
-            CLIP_Y => self.clip_y(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            FLOW => self.flow(&value),
-            SPACING => self.spacing(&value),
+            Others::SCROLL => self.scroll(&value),
+            Size::CLIP_X => self.clip_x(&value),
+            Size::CLIP_Y => self.clip_y(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Position::FLOW => self.flow(&value),
+            Position::SPACING => self.spacing(&value),
             LINE_SPACING => self.line_spacing(&value),
             // ----------------- other ------------------
-            LABEL_ALIGN => self.label_align(&value),
-            CURSOR_SIZE => self.cursor_size(&value),
-            CURSOR_MARGIN_BOTTOM => self.cursor_margin_bottom(&value),
-            CURSOR_MARGIN_TOP => self.cursor_margin_top(&value),
-            SELECT_PAD_EDGES => self.select_pad_edges(&value),
-            EMPTY_MESSAGE => self.empty_message(&value),
-            NUMERIC_ONLY => self.numeric_only(&value),
-            SECRET => self.secret(&value),
-            ON_FOCUS_SELECT_ALL => self.on_focus_select_all(&value),
-            READ_ONLY => self.read_only(&value),
-            TEXT => self.text(&value),
-            ASCII_ONLY => self.ascii_only(&value),
+            Text::TEXT_ALIGN => self.label_align(&value),
+            Cursor::CURSOR_SIZE => self.cursor_size(&value),
+            Cursor::CURSOR_MARGIN_BOTTOM => self.cursor_margin_bottom(&value),
+            Cursor::CURSOR_MARGIN_TOP => self.cursor_margin_top(&value),
+            Others::SELECT_PAD_EDGES => self.select_pad_edges(&value),
+            Text::EMPTY_MESSAGE => self.empty_message(&value),
+            State::NUMERIC_ONLY => self.numeric_only(&value),
+            State::SECRET => self.secret(&value),
+            Others::ON_FOCUS_SELECT_ALL => self.on_focus_select_all(&value),
+            State::READ_ONLY => self.read_only(&value),
+            Text::TEXT => self.text(&value),
+            State::ASCII_ONLY => self.ascii_only(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };

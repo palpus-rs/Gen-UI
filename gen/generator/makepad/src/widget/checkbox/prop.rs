@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use gen_utils::error::Errors;
+use gen_utils::{error::Errors, props_manul::{Event, Font, Others, Position, Size, Text}};
 use gen_parser::Value;
 use proc_macro2::TokenStream;
 
@@ -55,9 +55,9 @@ impl DynProps for CheckBoxProps {
         match prop.name() {
             // ----------------- draw_check ---------------
             CHECK_TYPE => quote_prop(vec![DRAW_CHECKBOX, CHECK_TYPE], &value),
-            HOVER => quote_prop(vec![DRAW_CHECKBOX, HOVER], &value),
-            FOCUS => quote_prop(vec![DRAW_CHECKBOX, FOCUS], &value),
-            SELECTED => quote_prop(vec![DRAW_CHECKBOX, SELECTED], &value),
+            Event::HOVER => quote_prop(vec![DRAW_CHECKBOX, HOVER], &value),
+            Event::FOCUS => quote_prop(vec![DRAW_CHECKBOX, FOCUS], &value),
+            Event::SELECTED => quote_prop(vec![DRAW_CHECKBOX, SELECTED], &value),
             // ----------------- draw_icon ---------------
             "icon_brightness" => quote_prop(vec![DRAW_ICON, BRIGHTNESS], &value),
             "icon_curve" => quote_prop(vec![DRAW_ICON, CURVE], &value),
@@ -68,48 +68,48 @@ impl DynProps for CheckBoxProps {
             "icon_color" => quote_prop(vec![DRAW_ICON, COLOR], &value),
             // ----------------- draw_text ---------------
             //      ----------------- text_style
-            FONT => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT], &value),
-            FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
-            "font_brightness" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
-            "font_curve" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
+            Font::FONT_FAMILY => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT], &value),
+            Font::FONT_SIZE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, FONT_SIZE], &value),
+            Font::BRIGHTNESS => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, BRIGHTNESS], &value),
+            Font::CURVE => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, CURVE], &value),
             "font_line_spacing" => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, LINE_SPACING], &value),
-            TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
-            HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
+            Font::TOP_DROP => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, TOP_DROP], &value),
+            Font::HEIGHT_FACTOR => quote_prop(vec![DRAW_TEXT, TEXT_STYLE, HEIGHT_FACTOR], &value),
             //      ----------------- other
-            WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
-            INGORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
-            COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
-            FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
-            "font_draw_depth" => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
-            "font_color" => quote_prop(vec![DRAW_TEXT, COLOR], &value),
+            Text::TEXT_WRAP => quote_prop(vec![DRAW_TEXT, WRAP], &value),
+            Text::IGNORE_NEWLINES => quote_prop(vec![DRAW_TEXT, INGORE_NEWLINES], &value),
+            Text::COMBINE_SPACES => quote_prop(vec![DRAW_TEXT, COMBINE_SPACES], &value),
+            Font::FONT_SCALE => quote_prop(vec![DRAW_TEXT, FONT_SCALE], &value),
+            Text::DRAW_DEPTH => quote_prop(vec![DRAW_TEXT, DRAW_DEPTH], &value),
+            Text::COLOR => quote_prop(vec![DRAW_TEXT, COLOR], &value),
             // ----------------- icon_walk ---------------
             "icon_height" => quote_prop(vec![ICON_WALK, HEIGHT], &value),
             "icon_width" => quote_prop(vec![ICON_WALK, WIDTH], &value),
             "icon_abs_pos" => quote_prop(vec![ICON_WALK, ABS_POS], &value),
             "icon_margin" => quote_prop(vec![ICON_WALK, MARGIN], &value),
             // ----------------- label_walk ---------------
-            "label_height" => quote_prop(vec![LABEL_WALK, HEIGHT], &value),
-            "label_width" => quote_prop(vec![LABEL_WALK, WIDTH], &value),
-            "label_abs_pos" => quote_prop(vec![LABEL_WALK, ABS_POS], &value),
-            "label_margin" => quote_prop(vec![LABEL_WALK, MARGIN], &value),
+            "text_height" => quote_prop(vec![LABEL_WALK, HEIGHT], &value),
+            "text_width" => quote_prop(vec![LABEL_WALK, WIDTH], &value),
+            "text_abs_pos" => quote_prop(vec![LABEL_WALK, ABS_POS], &value),
+            "text_margin" => quote_prop(vec![LABEL_WALK, MARGIN], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ------------------- layout -----------------
-            SCROLL => quote_prop(vec![SCROLL], &value),
-            CLIP_X => quote_prop(vec![CLIP_X], &value),
-            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            FLOW => quote_prop(vec![FLOW], &value),
-            SPACING => quote_prop(vec![SPACING], &value),
+            Others::SCROLL => quote_prop(vec![SCROLL], &value),
+            Size::CLIP_X => quote_prop(vec![CLIP_X], &value),
+            Size::CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Position::FLOW => quote_prop(vec![FLOW], &value),
+            Position::SPACING => quote_prop(vec![SPACING], &value),
             LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
             // ----------------- text and bind ---------------
-            TEXT => quote_prop(vec![TEXT], &value),
-            BIND => quote_prop(vec![BIND], &value),
-            LABEL_ALIGN => quote_prop(vec![LABEL_ALIGN], &value),
+            Text::TEXT => quote_prop(vec![TEXT], &value),
+            Event::BIND => quote_prop(vec![BIND], &value),
+            Text::TEXT_ALIGN => quote_prop(vec![LABEL_ALIGN], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
     }
@@ -131,9 +131,9 @@ impl StaticProps for CheckBoxProps {
         let _ = match prop_name {
             // ----------------- draw_check ---------------
             CHECK_TYPE => self.check_type(&value),
-            HOVER => self.hover(&value),
-            FOCUS => self.focus(&value),
-            SELECTED => self.selected(&value),
+            Event::HOVER => self.hover(&value),
+            Event::FOCUS => self.focus(&value),
+            Event::SELECTED => self.selected(&value),
             // ----------------- draw_icon ---------------
             "icon_brightness" => self.brightness(&value, NodeType::Icon),
             "icon_curve" => self.curve(&value, NodeType::Icon),
@@ -144,53 +144,53 @@ impl StaticProps for CheckBoxProps {
             "icon_color" => self.color(&value, NodeType::Icon),
             // ----------------- draw_text ---------------
             //      ----------------- text_style
-            FONT => self.font(&value),
-            FONT_SIZE => self.font_size(&value),
-            "font_brightness" => self.brightness(&value, NodeType::Label),
-            "font_curve" => self.curve(&value, NodeType::Label),
-            "font_line_spacing" => self.line_spacing(&value),
-            TOP_DROP => self.top_drop(&value),
-            HEIGHT_FACTOR => self.height_factor(&value),
+            Font::FONT_FAMILY => self.font(&value),
+            Font::FONT_SIZE => self.font_size(&value),
+            Font::BRIGHTNESS => self.brightness(&value, NodeType::Label),
+            Font::CURVE => self.curve(&value, NodeType::Label),
+            "text_line_spacing" => self.line_spacing(&value),
+            Font::TOP_DROP => self.top_drop(&value),
+            Font::HEIGHT_FACTOR => self.height_factor(&value),
             //      ----------------- other
-            WRAP => self.wrap(&value),
-            INGORE_NEWLINES => self.ignore_newlines(&value),
-            COMBINE_SPACES => self.combine_spaces(&value),
-            FONT_SCALE => self.font_scale(&value),
-            "font_draw_depth" => self.draw_depth(&value, NodeType::Label),
-            "font_color" => self.color(&value, NodeType::Label),
+            Text::TEXT_WRAP => self.wrap(&value),
+            Text::IGNORE_NEWLINES => self.ignore_newlines(&value),
+            Text::COMBINE_SPACES => self.combine_spaces(&value),
+            Font::FONT_SCALE => self.font_scale(&value),
+            Text::DRAW_DEPTH => self.draw_depth(&value, NodeType::Label),
+            Text::COLOR => self.color(&value, NodeType::Label),
             // ----------------- icon_walk ---------------
             "icon_height" => self.height(&value, NodeType::Icon),
             "icon_width" => self.width(&value, NodeType::Icon),
             "icon_abs_pos" => self.abs_pos(&value, NodeType::Icon),
             "icon_margin" => self.margin(&value, NodeType::Icon),
             // ----------------- label_walk ---------------
-            "label_height" => self.height(&value, NodeType::Label),
-            "label_width" => self.width(&value, NodeType::Label),
-            "label_abs_pos" => self.abs_pos(&value, NodeType::Label),
-            "label_margin" => self.margin(&value, NodeType::Label),
+            "text_height" => self.height(&value, NodeType::Label),
+            "text_width" => self.width(&value, NodeType::Label),
+            "text_abs_pos" => self.abs_pos(&value, NodeType::Label),
+            "text_margin" => self.margin(&value, NodeType::Label),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value, NodeType::Outer),
-            WIDTH => self.width(&value, NodeType::Outer),
-            ABS_POS => self.abs_pos(&value, NodeType::Outer),
-            MARGIN => self.margin(&value, NodeType::Outer),
+            Size::HEIGHT => self.height(&value, NodeType::Outer),
+            Size::WIDTH => self.width(&value, NodeType::Outer),
+            Position::ABS_POS => self.abs_pos(&value, NodeType::Outer),
+            Size::MARGIN => self.margin(&value, NodeType::Outer),
             // ----------------- layout ---------------
-            SCROLL => self.scroll(&value),
-            CLIP_X => self.clip_x(&value),
-            CLIP_Y => self.clip_y(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            FLOW => self.flow(&value),
-            SPACING => self.spacing(&value),
+            Others::SCROLL => self.scroll(&value),
+            Size::CLIP_X => self.clip_x(&value),
+            Size::CLIP_Y => self.clip_y(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Position::FLOW => self.flow(&value),
+            Position::SPACING => self.spacing(&value),
             LINE_SPACING => self.line_spacing(&value),
             // ----------------- text and bind ---------------
-            TEXT => self.text(&value),
-            BIND => self.bind(&value),
-            LABEL_ALIGN => self.label_align(&value),
+            Text::TEXT => self.text(&value),
+            Event::BIND => self.bind(&value),
+            Text::TEXT_ALIGN => self.label_align(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };

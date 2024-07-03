@@ -1,7 +1,10 @@
 use std::fmt::Display;
 
-use gen_utils::error::Errors;
 use gen_parser::Value;
+use gen_utils::{
+    error::Errors,
+    props_manul::{Others, Position, Size},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
@@ -58,18 +61,18 @@ impl DynProps for IconProps {
             "icon_abs_pos" => quote_prop(vec![ICON_WALK, ABS_POS], &value),
             "icon_margin" => quote_prop(vec![ICON_WALK, MARGIN], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ------------------- layout -----------------
-            SCROLL => quote_prop(vec![SCROLL], &value),
-            CLIP_X => quote_prop(vec![CLIP_X], &value),
-            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            FLOW => quote_prop(vec![FLOW], &value),
-            SPACING => quote_prop(vec![SPACING], &value),
+            Others::SCROLL => quote_prop(vec![SCROLL], &value),
+            Size::CLIP_X => quote_prop(vec![CLIP_X], &value),
+            Size::CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Position::FLOW => quote_prop(vec![FLOW], &value),
+            Position::SPACING => quote_prop(vec![SPACING], &value),
             LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
@@ -104,24 +107,24 @@ impl StaticProps for IconProps {
             "icon_abs_pos" => self.abs_pos(&value, NodeType::Inner),
             "icon_margin" => self.margin(&value, NodeType::Inner),
             // ----------------- walk -----------------
-            HEIGHT => self.height(&value, NodeType::Outer),
-            WIDTH => self.width(&value, NodeType::Outer),
-            ABS_POS => self.abs_pos(&value, NodeType::Outer),
-            MARGIN => self.margin(&value, NodeType::Outer),
+            Size::HEIGHT => self.height(&value, NodeType::Outer),
+            Size::WIDTH => self.width(&value, NodeType::Outer),
+            Position::ABS_POS => self.abs_pos(&value, NodeType::Outer),
+            Size::MARGIN => self.margin(&value, NodeType::Outer),
             // ----------------- layout ---------------
-            SCROLL => self.scroll(&value),
-            CLIP_X => self.clip_x(&value),
-            CLIP_Y => self.clip_y(&value),
-            PADDING => self.padding(&value),
-            ALIGN => self.align(&value),
-            FLOW => self.flow(&value),
-            SPACING => self.spacing(&value),
+            Others::SCROLL => self.scroll(&value),
+            Size::CLIP_X => self.clip_x(&value),
+            Size::CLIP_Y => self.clip_y(&value),
+            Size::PADDING => self.padding(&value),
+            Position::ALIGN => self.align(&value),
+            Position::FLOW => self.flow(&value),
+            Position::SPACING => self.spacing(&value),
             LINE_SPACING => self.line_spacing(&value),
             _ => {
                 if !prop_ignore(prop_name) {
-                    panic!("cannot match prop");
+                    panic!("cannot match prop: {}", prop_name);
                 } else {
-                    panic!("unslolved prop");
+                    panic!("unslolved prop: {}", prop_name);
                 }
             }
         };

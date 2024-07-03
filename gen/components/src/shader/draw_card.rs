@@ -56,7 +56,7 @@ pub struct DrawCard{
     #[live(4.0)] pub border_radius: f32,
     #[live] pub hover_color: Vec4,
     #[live] pub pressed_color: Vec4,
-    #[live] pub transparent: f32,
+    #[live(0.0)] pub transparent: f32,
     #[live(1.0)] pub scale: f32,
     #[live(1.0)] pub opacity: f32,
     #[live(0.0)] pub rotation: f32

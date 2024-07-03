@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use gen_parser::{PropsKey, Value};
 use gen_utils::{
     error::Errors,
-    props_manul::{Background, Font, Others, Position, Size},
+    props_manul::{Background, Cursor, Event, Font, Others, Position, Size},
 };
 use proc_macro2::TokenStream;
 
@@ -90,11 +90,11 @@ impl DynProps for WindowProps {
             Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ----------------- other -----------------
             Others::OPTIMIZE => quote_prop(vec![OPTIMIZE], &value),
-            Others::EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
+            Event::EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
             Others::VISIBLE => quote_prop(vec![VISIBLE], &value),
-            Others::GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
-            Others::BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
-            Others::CURSOR => quote_prop(vec![CURSOR], &value),
+            Event::GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
+            Event::BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
+            Cursor::CURSOR => quote_prop(vec![CURSOR], &value),
             // ----------------- window -----------------
             Position::WINDOW_POSITION => quote_prop(vec!["window", "position"], &value),
             Size::WINDOW_SIZE => quote_prop(vec!["window", "inner_size"], &value),
@@ -132,11 +132,11 @@ impl StaticProps for WindowProps {
             Size::MARGIN => self.margin(&value),
             // ----------------- other -----------------
             Others::OPTIMIZE => self.optimize(&value),
-            Others::EVENT_ORDER => self.event_order(&value),
+            Event::EVENT_ORDER => self.event_order(&value),
             Others::VISIBLE => self.visible(&value),
-            Others::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
-            Others::BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
-            Others::CURSOR => self.mouse_cursor(&value),
+            Event::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
+            Event::BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
+            Cursor::CURSOR => self.mouse_cursor(&value),
             // ----------------- window -----------------
             Position::WINDOW_POSITION => self.position(&value),
             Size::WINDOW_SIZE => self.inner_size(&value),
