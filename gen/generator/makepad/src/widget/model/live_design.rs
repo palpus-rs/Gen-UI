@@ -1,10 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::{
-    utils::{import_makepad_widgets_base, import_makepad_widgets_theme_desktop_dark},
-    ToToken,
-};
+use crate::ToToken;
 
 use super::ToLiveDesign;
 
@@ -27,9 +24,14 @@ impl LiveDesign {
 
 impl Default for LiveDesign {
     fn default() -> Self {
-        let mut imports = TokenStream::new();
-        imports.extend(import_makepad_widgets_base());
-        imports.extend(import_makepad_widgets_theme_desktop_dark());
+        // let mut imports = TokenStream::new();
+        // imports.extend(import_makepad_widgets_base());
+        // imports.extend(import_makepad_widgets_theme_desktop_dark());
+        let imports = quote! {
+            import makepad_widgets::base::*;
+            import makepad_widgets::theme_desktop_dark::*;
+            import makepad_draw::shader::std::*;
+        };
 
         Self {
             imports,
@@ -71,7 +73,7 @@ where
 
         live_design.tree = tree;
         live_design.logic = logic;
-        if let Some(imports) = imports{
+        if let Some(imports) = imports {
             live_design.imports.extend(imports);
         }
 

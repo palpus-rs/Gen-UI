@@ -1,15 +1,22 @@
 <template>
   <view id="header">
-    <image id="logo"></image>
+    <view id="logo_wrap">
+        <image id="logo"></image>
+    </view>
     <view id="menu_list">
-        
+        <label class="menu_item" text="About"></label>
+        <label class="menu_item" text="Founders"></label>
+        <label class="menu_item" text="Events"></label>
+    </view>
+    <view id="btn_wrap">
+        <button id="event_btn"></button>
     </view>
   </view>
 </template>
 
 <style>
 #header{
-  width: Fill;
+  width: All;
   height: 60.0;
   background_visible: true;
   background_color: shader(|self|{
@@ -17,16 +24,75 @@
         return vec4(1.0, 1.0, 1.0, 1.0)
     }
   });
-  align: 0.0 0.5;
+  spacing: 0.0;
   padding: 0.0 32.0;
-  #logo{
-    height: 30.0;
-    width: 120.0;
-    source: "crate://self/static/logo.png";
+  #logo_wrap{
+    height: Fill;
+    width: Fit;
+    align: 0.5;
+    #logo{
+        height: 30.0;
+        width: 120.0;
+        source: "crate://self/static/logo.png";
+    }
   }
   #menu_list{
+    height: Fill;
+    width: 500.0;
+    align: 0.5;
+    spacing: 20.0;
+    background_visible: true;
+    background_color: #FF0000;
     .menu_item{
         font_size: 12.0;
+        color: shader(|self|{
+            fn get_color(self) -> vec4{
+                return vec4(0.0, 0.0, 0.0, 1.0)
+            }
+        });
+        
+    }
+  }
+  #btn_wrap{
+    height: Fill;
+    width: 220.0;
+    align: 0.5;
+    #event_btn{
+        height: Fit;
+        width: 180.0;
+        text: "Upcoming Events";
+        
+        padding: 16.0;
+        font_family: "crate://self/static/GoNotoKurrent-Bold.ttf";
+        color: shader(|self|{
+            fn get_color(self)-> vec4{
+                return mix(
+                    vec4(1.0, 1.0, 1.0, 1.0),
+                    vec4(0.0, 0.0, 0.0, 1.0),
+                    self.hover
+                )
+            }
+        });
+        background_color: shader(|self|{
+            uniform border_radius: 3.0
+            fn pixel(self)-> vec4{
+                let sdf = Sdf2d::viewport(self.pos * self.rect_size)
+                let bg_color = mix(
+                    vec4(0.0, 0.427, 0.529, 1.0),
+                    vec4(0.517, 0.912, 0.972, 1.0),
+                    self.hover
+                )
+                sdf.box(
+                    1.0,
+                    1.0,
+                    self.rect_size.x - 2.0,
+                    self.rect_size.y - 2.0,
+                    self.border_radius
+                )
+                sdf.fill_keep(bg_color)
+                return sdf.result
+            }
+        });
     }
   }
 }

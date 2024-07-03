@@ -107,15 +107,15 @@ fn parse_properties(input: &str) -> IResult<&str, Vec<(PropertyKeyType, &str, Va
 }
 
 /// ## parse end tag (`</xxx>`)
-// #[allow(dead_code)]
-// fn parse_end_tag(input: &str) -> IResult<&str, (&str, &str)> {
-//     let (input, value) = trim(delimited(
-//         trim(tag(END_START_SIGN)),
-//         parse_tag_name,
-//         trim(tag(END_SIGN)),
-//     ))(input)?;
-//     Ok((input, (END_START_SIGN, value)))
-// }
+#[allow(dead_code)]
+fn parse_end_tag_common(input: &str) -> IResult<&str, (&str, &str)> {
+    let (input, value) = trim(delimited(
+        trim(tag(END_START_SIGN)),
+        parse_tag_name,
+        trim(tag(END_SIGN)),
+    ))(input)?;
+    Ok((input, (END_START_SIGN, value)))
+}
 
 /// ## parse tag end 🆗
 /// - self end : `/>`
@@ -218,12 +218,25 @@ pub fn parse_tag<'a>(
         // has children, parse children
         let (mut input, mut children) = many0(|i| parse_tag(i, nests))(input)?;
         // try clear nests
-        if !input.is_empty() {
-            nests.iter().for_each(|name| {
-                let (remain, _) = parse_end_tag(input, name.clone()).unwrap();
+        let input = if !input.is_empty() {
+            while input.starts_with(END_START_SIGN) {
+                let (remain, _) = parse_end_tag_common(input)?;
                 input = remain;
-            });
-        }
+            }
+            let input = input.trim();
+            let input = if preceded(char('<'), parse_tag_name)(input).is_ok() {
+                // means input still has tags return to previous level and then parse
+                let (input, children_remain) = many0(|i| parse_tag(i, nests))(input)?;
+                children.extend(children_remain);
+                input
+            } else {
+                input
+            };
+            input
+        } else {
+            input
+        };
+
         if children.is_empty() {
             // no children
             return Ok((input, ast_node));
@@ -276,18 +289,34 @@ mod template_parsers {
     };
     #[test]
     fn test_template_nested_same() {
+        // let template = r#"
+        // <root id="ui">
+        //     <view><image id="logo"></image></view>
+        //     <label class="menu_item" text="About"></label>
+        //     <view>
+        //         <button id="e_btn"></button>
+        //     </view>
+        // </root>
+        // "#;
+
         let template = r#"
         <view id="header">
-            <image id="logo"></image>
+            <view id="logo_wrap">
+                <image id="logo"></image>
+            </view>
             <view id="menu_list">
                 <label class="menu_item" text="About"></label>
                 <label class="menu_item" text="Founders"></label>
                 <label class="menu_item" text="Events"></label>
             </view>
+            <view id="btn_wrap">
+                <button id="event_btn"></button>
+            </view>
         </view>
         "#;
 
-        let _res = parse_template(template);
+        let res = parse_template(template);
+        dbg!(res);
     }
 
     #[test]

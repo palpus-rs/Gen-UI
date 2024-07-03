@@ -127,10 +127,10 @@ impl Display for DrawText {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut draw_text = String::new();
         if let Some(text_style) = &self.text_style {
-            draw_text.push_str(&format!("{}: {{{}}},", TEXT_STYLE, text_style.to_string()));
+            draw_text.push_str(&format!("{}: {{{}}},", TEXT_STYLE, text_style));
         }
         if let Some(wrap) = &self.wrap {
-            draw_text.push_str(&format!("{}: {},", WRAP, wrap.to_string()));
+            draw_text.push_str(&format!("{}: {},", WRAP, wrap));
         }
         if let Some(ignore_newlines) = &self.ignore_newlines {
             draw_text.push_str(&format!("{}: {},", INGORE_NEWLINES, ignore_newlines));
@@ -213,7 +213,8 @@ impl Display for TextStyle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut text_style = String::new();
         if let Some(font) = &self.font {
-            text_style.push_str(&format!("{}: {{{}}},", FONT, font.to_string()));
+            
+            text_style.push_str(&format!("{}: {{{}}},", FONT, font));
         }
         if let Some(font_size) = &self.font_size {
             text_style.push_str(&format!("{}: {},", FONT_SIZE, font_size));

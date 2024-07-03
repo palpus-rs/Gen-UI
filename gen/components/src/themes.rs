@@ -242,11 +242,13 @@ pub fn get_color(theme: Themes,color: Option<Vec4>, v: u32) -> Vec4{
 
 #[cfg(test)]
 mod test_themes{
+    use crate::themes::hex_to_vec4;
+
     use super::ThemeColorValue;
 
     #[test]
     fn v4(){
-        let v = super::ThemePrimary::default().get();
+        let v = hex_to_vec4("#84E6F8");
         dbg!(v);
     }
 }

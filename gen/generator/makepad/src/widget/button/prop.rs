@@ -381,10 +381,10 @@ impl Display for ButtonProps {
             let _ = f.write_fmt(format_args!("{}: {{{}}},", LABEL_WALK, label_walk));
         }
         if let Some(walk) = &self.walk {
-            let _ = f.write_fmt(format_args!("{},", walk));
+            let _ = f.write_fmt(format_args!("{}", walk));
         }
         if let Some(layout) = &self.layout {
-            let _ = f.write_fmt(format_args!("{},", layout));
+            let _ = f.write_fmt(format_args!("{}", layout));
         }
         if let Some(grab_key_focus) = &self.grab_key_focus {
             let _ = f.write_fmt(format_args!("{}: {},", GRAB_KEY_FOCUS, grab_key_focus));

@@ -28,7 +28,7 @@ import!{
       }
     });
     flow: Down;
-    window_size: 1024.0 860.0;
+    window_size: 1024.0 660.0;
     window_position: 300.0;
     #main_view{
       height: All;
