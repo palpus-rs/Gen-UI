@@ -1,15 +1,59 @@
 <template>
   <view id="support_page">
     <label text="Proudly supported by:" class="common_txt"></label>
-    
+    <view class="img_wrap">
+        <view class="line_wrap">
+            <rounded_view class="common_view">
+                <image class="common_img" source="crate://self/static/support_1.png"></image>
+            </rounded_view>
+            <rounded_view class="common_view">
+                <image class="common_img" source="crate://self/static/support_2.png"></image>
+            </rounded_view>
+            <rounded_view class="common_view">
+                <image class="common_img" source="crate://self/static/support_3.png"></image>
+            </rounded_view>
+            <rounded_view class="common_view">
+                <image class="common_img" source="crate://self/static/support_4.png"></image>
+            </rounded_view>
+        </view>
+        <view class="line_wrap">
+            <rounded_view class="common_view">
+                <image class="common_img" source="crate://self/static/support_5.png"></image>
+            </rounded_view>
+            <rounded_view class="common_view">
+                <image class="common_img" source="crate://self/static/support_6.png"></image>
+            </rounded_view>
+        </view>
+    </view>
+    <view id="other_wrap">
+        <rounded_view class="common_view2" padding="42.0 32.0">
+            <label text="A Global Nexus for Open Source Innovation" class="common_txt2"></label>
+            <label class="common_txt3" text="The global tech landscape is replete with innovations, and much of its foundation is built upon the ethos of open source collaboration. At the forefront of championing this collaboration stands GOSIM, a platform dedicated to nurturing the brightest grassroots open-source projects from their inception to maturity."></label>
+            <label class="common_txt3" text="GOSIM emerged from the shared vision of a global open-source community. Organized by and for the community, this entirely volunteer-based endeavor has one prime objective: to provide a stage where innovative open-source projects can shine, collaborate, and evolve. It's not just a platform; it's a movement. One that wholeheartedly embraces an open, diverse, and inclusive culture. If a project is global, innovative, grass roots ,and open-source, it has found its home at GOSIM."></label>
+            <view align="0.5" spacing="6.0" height="Fit">
+                <image height="18.0" width="18.0" source="crate://self/static/check.png"></image><label class="common_txt3" text="Organized by and created for the open-source community."></label>
+            </view>
+            <view align="0.5" spacing="6.0" height="Fit">
+                <image height="18.0" width="18.0" source="crate://self/static/check.png"></image><label class="common_txt3" text="Subscribes to an open, diverse, and inclusive culture."></label>
+            </view>
+            <view align="0.5" spacing="6.0" height="Fit">
+                <image height="18.0" width="18.0" source="crate://self/static/check.png"></image><label class="common_txt3" text="Volunteer based."></label>
+            </view>
+            <button class="event_btn" text="The Three Pillars of GOSIM"></button>
+        </rounded_view>
+        <rounded_view class="common_view2">
+            <image source="crate://self/static/bg.jpg" height="Fill" width="Fill" fit="Vertical"></image>
+        </rounded_view>
+    </view>
   </view>
 </template>
 
 <style>
 #support_page{
   width: All;
-  height: 200.0;
+  height: 940.0;
   align: 0.5 0.0;
+  flow: Down;
   .common_txt{
     width: Fit;
     font_size: 12.0;
@@ -18,6 +62,105 @@
             return vec4(0.0, 0.0, 0.0, 1.0)
         }
     });
+  }
+  .img_wrap{
+    height: 240.0;
+    width: All;
+    flow: Down;
+    .line_wrap{
+        height: 110.0;
+        spacing: 20.0;
+        align: 0.5 0.5;
+    }
+    .common_view{
+        height: 90.0;
+        width: 220.0;
+        align: 0.5;
+        background_color: shader(|self|{
+            instance radius: 4.0
+            fn get_color(self)-> vec4{
+                return vec4(0.956, 0.956, 0.956, 1.0)
+            }
+        });
+        background_visible: true;
+        .common_img{
+            height: 68.0;
+            width: 172.0;
+        }
+    }
+  }
+  #other_wrap{
+    height: 640.0;
+    width: All;
+    spacing: 20.0;
+    align: 0.5;
+    .common_view2{
+        height: 640.0;
+        width: 460.0;
+        align: 0.5 0.0;
+        flow: Down;
+        spacing: 24.0;
+        background_color: shader(|self|{
+            instance radius: 4.0
+            fn get_color(self)-> vec4{
+                return vec4(0.956, 0.956, 0.956, 1.0)
+            }
+        });
+        .common_txt2{
+            width: 396.0;
+            font_size: 18.0;
+            color: shader(|self|{
+                fn get_color(self) -> vec4{
+                    return vec4(0.0, 0.0, 0.0, 1.0)
+                }
+            });
+            font_family: "crate://self/static/GoNotoKurrent-Bold.ttf";
+        }
+        .common_txt3{
+            width: Fill;
+            font_size: 10.0;
+            color: shader(|self|{
+                fn get_color(self) -> vec4{
+                    return vec4(0.0, 0.0, 0.0, 1.0)
+                }
+            });
+        }
+        .event_btn{
+            height: Fit;
+            width: 380.0;
+            padding: 16.0;
+            font_family: "crate://self/static/GoNotoKurrent-Bold.ttf";
+            color: shader(|self|{
+                fn get_color(self)-> vec4{
+                    return mix(
+                        vec4(1.0, 1.0, 1.0, 1.0),
+                        vec4(0.0, 0.0, 0.0, 1.0),
+                        self.hover
+                    )
+                }
+            });
+            background_color: shader(|self|{
+                uniform border_radius: 3.0
+                fn pixel(self)-> vec4{
+                    let sdf = Sdf2d::viewport(self.pos * self.rect_size)
+                    let bg_color = mix(
+                        vec4(0.0, 0.427, 0.529, 1.0),
+                        vec4(0.517, 0.912, 0.972, 1.0),
+                        self.hover
+                    )
+                    sdf.box(
+                        1.0,
+                        1.0,
+                        self.rect_size.x - 2.0,
+                        self.rect_size.y - 2.0,
+                        self.border_radius
+                    )
+                    sdf.fill_keep(bg_color)
+                    return sdf.result
+                }
+            });
+        }   
+    }
   }
 }
 </style>

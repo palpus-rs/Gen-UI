@@ -24,9 +24,7 @@ impl LiveDesign {
 
 impl Default for LiveDesign {
     fn default() -> Self {
-        // let mut imports = TokenStream::new();
-        // imports.extend(import_makepad_widgets_base());
-        // imports.extend(import_makepad_widgets_theme_desktop_dark());
+
         let imports = quote! {
             import makepad_widgets::base::*;
             import makepad_widgets::theme_desktop_dark::*;

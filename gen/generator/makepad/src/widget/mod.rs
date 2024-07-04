@@ -61,6 +61,11 @@ const ROOT: &str = "Root";
 const SCROLLXVIEW: &str = "ScrollXView";
 const SCROLLYVIEW: &str = "ScrollYView";
 const SCROLLXYVIEW: &str = "ScrollXYView";
+const ROUNDEDVIEW: &str = "RoundedView";
+const ROUNDEDSHADOWVIEW: &str = "RoundedShadowView";
+const RECTVIEW: &str = "RectView";
+const RECTSHADOWVIEW: &str = "RectShadowView";
+const SOLIDVIEW: &str = "SolidView";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -73,6 +78,11 @@ pub enum BuiltIn {
     ScrollXView,
     ScrollYView,
     ScrollXYView,
+    SolidView,
+    RectView,
+    RectShadowView,
+    RoundedView,
+    RoundedShadowView,
     TextInput,
     Label,
     Button,
@@ -107,8 +117,21 @@ impl BuiltIn {
             BuiltIn::Root => root::RootProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::ScrollXView => view::ScrollXViewProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::ScrollYView => view::ScrollYViewProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::ScrollXYView => view::ScrollXYViewProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::TextInput => text_input::TextInputProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::ScrollXYView => {
+                view::ScrollXYViewProps::prop_bind(prop, value, is_prop, ident)
+            }
+            BuiltIn::TextInput => {
+                text_input::TextInputProps::prop_bind(prop, value, is_prop, ident)
+            }
+            BuiltIn::SolidView => view::SolidViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::RectView => view::RectViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::RectShadowView => {
+                view::RectShadowViewProps::prop_bind(prop, value, is_prop, ident)
+            }
+            BuiltIn::RoundedView => view::RoundedViewProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::RoundedShadowView => {
+                view::RoundedShadowViewProps::prop_bind(prop, value, is_prop, ident)
+            }
         }
     }
     /// 对内置组件的属性进行处理
@@ -128,6 +151,13 @@ impl BuiltIn {
             BuiltIn::ScrollXYView => view::ScrollXYViewProps::props(props).to_token_stream(),
             BuiltIn::Area => todo!("area do not need to bind static prop"),
             BuiltIn::TextInput => text_input::TextInputProps::props(props).to_token_stream(),
+            BuiltIn::SolidView => view::SolidViewProps::props(props).to_token_stream(),
+            BuiltIn::RectView => view::RectViewProps::props(props).to_token_stream(),
+            BuiltIn::RectShadowView => view::RectShadowViewProps::props(props).to_token_stream(),
+            BuiltIn::RoundedView => view::RoundedViewProps::props(props).to_token_stream(),
+            BuiltIn::RoundedShadowView => {
+                view::RoundedShadowViewProps::props(props).to_token_stream()
+            }
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -142,9 +172,16 @@ impl BuiltIn {
             BuiltIn::CheckBox => checkbox::CheckBoxPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Radio => radio::RadioButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Root => root::RootPropPtr::from(ptr).to_token_stream(),
-            BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
+            BuiltIn::ScrollXView
+            | BuiltIn::ScrollYView
+            | BuiltIn::ScrollXYView
+            | BuiltIn::SolidView
+            | BuiltIn::RectView
+            | BuiltIn::RectShadowView
+            | BuiltIn::RoundedView
+            | BuiltIn::RoundedShadowView => {
                 panic!("scroll view can not be inherited you need to inherits View")
-            },
+            }
             BuiltIn::TextInput => text_input::TextInputPropPtr::from(ptr).to_token_stream(),
         }
     }
@@ -171,9 +208,16 @@ impl BuiltIn {
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
             BuiltIn::Root => root::draw_walk(),
-            BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
+            BuiltIn::ScrollXView
+            | BuiltIn::ScrollYView
+            | BuiltIn::ScrollXYView
+            | BuiltIn::SolidView
+            | BuiltIn::RectView
+            | BuiltIn::RectShadowView
+            | BuiltIn::RoundedView
+            | BuiltIn::RoundedShadowView => {
                 panic!("scroll view can not be inherited, so that it can not draw_walk, you need to inherits View")
-            },
+            }
             BuiltIn::TextInput => todo!(),
         }
     }
@@ -196,9 +240,16 @@ impl BuiltIn {
             BuiltIn::CheckBox => todo!(),
             BuiltIn::Radio => todo!(),
             BuiltIn::Root => root::handle_event(event, props, instance_name, prop_fields),
-            BuiltIn::ScrollXView | BuiltIn::ScrollYView | BuiltIn::ScrollXYView => {
+            BuiltIn::ScrollXView
+            | BuiltIn::ScrollYView
+            | BuiltIn::ScrollXYView
+            | BuiltIn::SolidView
+            | BuiltIn::RectView
+            | BuiltIn::RectShadowView
+            | BuiltIn::RoundedView
+            | BuiltIn::RoundedShadowView => {
                 panic!("scroll view can not be inherited, so that it can not handle_event, you need to inherits View")
-            },
+            }
             BuiltIn::TextInput => todo!(),
         }
     }
@@ -224,6 +275,11 @@ impl TryFrom<&str> for BuiltIn {
             SCROLLXVIEW => Ok(BuiltIn::ScrollXView),
             SCROLLYVIEW => Ok(BuiltIn::ScrollYView),
             SCROLLXYVIEW => Ok(BuiltIn::ScrollXYView),
+            SOLIDVIEW => Ok(BuiltIn::SolidView),
+            RECTVIEW => Ok(BuiltIn::RectView),
+            RECTSHADOWVIEW => Ok(BuiltIn::RectShadowView),
+            ROUNDEDVIEW => Ok(BuiltIn::RoundedView),
+            ROUNDEDSHADOWVIEW => Ok(BuiltIn::RoundedShadowView),
             TEXT_INPUT => Ok(BuiltIn::TextInput),
             _ => Err(Errors::BuiltInConvertFail),
         }
@@ -260,6 +316,11 @@ impl Display for BuiltIn {
             BuiltIn::ScrollYView => SCROLLYVIEW,
             BuiltIn::ScrollXYView => SCROLLXYVIEW,
             BuiltIn::TextInput => TEXT_INPUT,
+            BuiltIn::SolidView => SOLIDVIEW,
+            BuiltIn::RectView => RECTVIEW,
+            BuiltIn::RectShadowView => RECTSHADOWVIEW,
+            BuiltIn::RoundedView => ROUNDEDVIEW,
+            BuiltIn::RoundedShadowView => ROUNDEDSHADOWVIEW,
         })
     }
 }

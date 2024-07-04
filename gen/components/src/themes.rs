@@ -248,7 +248,7 @@ mod test_themes{
 
     #[test]
     fn v4(){
-        let v = hex_to_vec4("#84E6F8");
+        let v = hex_to_vec4("#F4F4F6");
         dbg!(v);
     }
 }

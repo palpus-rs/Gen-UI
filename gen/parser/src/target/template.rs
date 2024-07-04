@@ -34,19 +34,13 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
     parse_normal(input, '_')
 }
 
+
 /// ## parse tag start (<) 🆗
-/// format : `<tag_name`
+/// format : `<tag_name>`
 /// ### return
 /// TemplateASTNode
-// #[allow(dead_code)]
-// fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
-//     let (input, tag_name) = preceded(trim(tag(TAG_START)), parse_tag_name)(input)?;
-//     Ok((input, Tag::new_tag_start(tag_name).into()))
-//     // Ok((input, TemplateASTNode::new(TemplateNodeType::Tag, tag_name)))
-// }
-
 fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
-    let (mut remain, (name, props)) =
+    let (remain, (name, props)) =
         preceded(char('<'), tuple((parse_tag_name, parse_properties)))(input)?;
     let props = if props.is_empty() {
         None
@@ -59,6 +53,7 @@ fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
         )
     };
     let mut tag = Tag::new_tag_props(name, props);
+    let mut remain = remain.trim();
     // check if remain start with `/>`, if true, is end tag
     if remain.starts_with(SELF_END_SIGN) {
         remain = remain.trim_start_matches(SELF_END_SIGN);
@@ -196,7 +191,6 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 #[allow(dead_code)]
 pub fn parse_tag<'a>(
     input: &'a str,
-    nests: usize,
 ) -> Result<(&'a str, ASTNodes), nom::Err<nom::error::Error<&'a str>>> {
     // parse tag start or comment return ASTNodes, we can use is_tag to check
     let (input, mut ast_node) = trim(alt((parse_comment, parse_tag_start)))(input)?;
@@ -212,7 +206,7 @@ pub fn parse_tag<'a>(
             Err(_) => {
                 
                 // has children, parse children
-                let (input, mut children) = many0(|i| parse_tag(i, nests + 1))(input)?;
+                let (input, mut children) = many0(parse_tag)(input)?;
 
                 let input = match parse_end_tag_common(input) {
                     Ok((remain, _)) => remain,
@@ -257,7 +251,7 @@ pub fn parse_tag<'a>(
 /// main template parser
 #[allow(dead_code)]
 pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, Error> {
-    match many1(|s| parse_tag(s, 0))(input) {
+    match many1(parse_tag)(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
                 return Ok(asts);
@@ -296,8 +290,8 @@ mod template_parsers {
         </view>
         "#;
 
-        let res = parse_template(template);
-        dbg!(res);
+        let _res = parse_template(template);
+        // dbg!(res);
     }
 
     #[test]

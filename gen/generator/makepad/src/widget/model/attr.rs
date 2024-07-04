@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use std::default;
 
 use gen_utils::common::trees_to_token_stream;
