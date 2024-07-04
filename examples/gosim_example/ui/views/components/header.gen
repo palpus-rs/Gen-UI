@@ -28,8 +28,8 @@
   padding: 0.0 32.0;
   #logo_wrap{
     height: Fill;
-    width: Fit;
-    align: 0.5;
+    width: 180.0;
+    align: 0.0 0.5;
     #logo{
         height: 30.0;
         width: 120.0;
@@ -38,11 +38,9 @@
   }
   #menu_list{
     height: Fill;
-    width: 500.0;
+    width: 580.0;
     align: 0.5;
-    spacing: 20.0;
-    background_visible: true;
-    background_color: #FF0000;
+    spacing: 22.0;
     .menu_item{
         font_size: 12.0;
         color: shader(|self|{
@@ -50,7 +48,6 @@
                 return vec4(0.0, 0.0, 0.0, 1.0)
             }
         });
-        
     }
   }
   #btn_wrap{

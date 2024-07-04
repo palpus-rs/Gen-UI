@@ -48,6 +48,7 @@ impl ASTNodes {
             _ => panic!("only ASTNodes::Tag can use `set_tag_properties()`"),
         }
     }
+    
     pub fn set_style_properties(&mut self, props: Props) {
         match self {
             ASTNodes::Style(s) => s.set_props(props),
@@ -71,6 +72,18 @@ impl ASTNodes {
         match self {
             ASTNodes::Tag(t) => t.set_children(children),
             _ => panic!("only ASTNodes::Tag can use `set_tag_children()`"),
+        }
+    }
+    pub fn push_tag_children(&mut self, child: ASTNodes) {
+        match self {
+            ASTNodes::Tag(t) => t.push_children(child),
+            _ => panic!("only ASTNodes::Tag can use `push_tag_children()`"),
+        }
+    }
+    pub fn extend_tag_children(&mut self, children: Vec<ASTNodes>) {
+        match self {
+            ASTNodes::Tag(t) => t.extend_children(children),
+            _ => panic!("only ASTNodes::Tag can use `extend_tag_children()`"),
         }
     }
     pub fn set_style_children(&mut self, children: Vec<ASTNodes>) {

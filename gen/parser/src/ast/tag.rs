@@ -121,6 +121,26 @@ impl Tag {
             None => self.children = Some(children),
         }
     }
+    pub fn push_children(&mut self, child: ASTNodes) {
+        match self.children {
+            Some(ref mut children) => {
+                children.push(child);
+            }
+            None => {
+                self.children = Some(vec![child]);
+            }
+        }
+    }
+    pub fn extend_children(&mut self, children: Vec<ASTNodes>) {
+        match self.children {
+            Some(ref mut c) => {
+                c.extend(children);
+            }
+            None => {
+                self.children = Some(children);
+            }
+        }
+    }
     pub fn set_parent(&mut self, parent: ASTNodes) {
         match self.parent {
             Some(_) => {

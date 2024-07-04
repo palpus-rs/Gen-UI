@@ -205,57 +205,46 @@ pub fn parse_tag<'a>(
         // is tag, nest parse tag
         let tag_name = ast_node.get_tag_name().to_string();
         // trim input and check is start with `</tag_name>`
-        let input = match parse_end_tag(input, tag_name.clone()) {
+        match parse_end_tag(input, tag_name.clone()) {
             Ok((input, _)) => {
                 return Ok((input, ast_node));
             }
             Err(_) => {
                 nests.push(tag_name.clone());
-                input
+                
+                // has children, parse children
+                let (mut input, mut children) = many0(|i| parse_tag(i, nests))(input)?;
+
+                while input.starts_with(END_START_SIGN) {
+                    let (remain, _) = parse_end_tag_common(input)?;
+                    input = remain;
+                }
+
+                if !children.is_empty() {
+                    children
+                        .iter_mut()
+                        .for_each(|child| child.set_parent(ast_node.clone()));
+
+                    ast_node.set_tag_children(children);
+                }
+                let input =input.trim();
+                if preceded(char('<'), parse_tag_name)(input).is_err() {
+                    // means input still has tags
+                    let (input, mut children_remain) = many0(|i| parse_tag(i, nests))(input)?;
+                    // dbg!(input, &ast_node, &children_remain);
+                    children_remain
+                        .iter_mut()
+                        .for_each(|child| child.set_parent(ast_node.clone()));
+
+                    // ast_node.extend_tag_children(children_remain);
+                    return Ok((input, ast_node));
+                }else{
+                    // dbg!(input, &ast_node);
+                    return Ok((input, ast_node));
+                }
+
             }
         };
-
-        // has children, parse children
-        let (mut input, mut children) = many0(|i| parse_tag(i, nests))(input)?;
-        // try clear nests
-        let input = if !input.is_empty() {
-            while input.starts_with(END_START_SIGN) {
-                let (remain, _) = parse_end_tag_common(input)?;
-                input = remain;
-            }
-            let input = input.trim();
-            let input = if preceded(char('<'), parse_tag_name)(input).is_ok() {
-                // means input still has tags return to previous level and then parse
-                let (input, children_remain) = many0(|i| parse_tag(i, nests))(input)?;
-                children.extend(children_remain);
-                input
-            } else {
-                input
-            };
-            input
-        } else {
-            input
-        };
-
-        if children.is_empty() {
-            // no children
-            return Ok((input, ast_node));
-        }
-        if input.is_empty() {
-            // set parent
-            children
-                .iter_mut()
-                .for_each(|child| child.set_parent(ast_node.clone()));
-
-            ast_node.set_tag_children(children);
-
-            return Ok((input, ast_node));
-        } else {
-            return Err(nom::Err::Error(nom::error::Error::new(
-                input,
-                nom::error::ErrorKind::Tag,
-            )));
-        }
     }
     // if is not tag, is comment -> do recursive parse
     Ok((input, ast_node))
@@ -300,17 +289,16 @@ mod template_parsers {
         // "#;
 
         let template = r#"
-        <view id="header">
-            <view id="logo_wrap">
-                <image id="logo"></image>
+        <view id="main_page">
+            <view id="title_wrap">
+                <view class="title_s_n">
+                    <view id="nnn">
+                        <label class="common_txt"></label>
+                    </view>
+                </view>
             </view>
-            <view id="menu_list">
-                <label class="menu_item" text="About"></label>
-                <label class="menu_item" text="Founders"></label>
-                <label class="menu_item" text="Events"></label>
-            </view>
-            <view id="btn_wrap">
-                <button id="event_btn"></button>
+            <view id="support_wrap">
+            
             </view>
         </view>
         "#;

@@ -1,12 +1,123 @@
 <template>
   <scroll_y_view id="main_page">
-    <label text="main"></label>
+    <view id="title_wrap">
+      <label text="GOSIM" class="name"></label>
+      <view class="title_s_n">
+        <view>
+          <label class="s_word" text="G"></label>
+          <label class="n_word" text="lobal"></label>
+          <label class="s_word" text="O"></label>
+          <label class="n_word" text="pen-"></label>
+        </view>
+        <view>
+          <label class="s_word" text="S"></label>
+          <label class="n_word" text="ource"></label>
+          <label class="s_word" text="I"></label>
+          <label class="n_word" text="nnovation"></label>
+        </view>
+        <view>
+          <label class="s_word" text="M"></label>
+          <label class="n_word" text="eetup"></label>
+        </view>
+      </view>
+      <label class="common_txt"></label>
+      <button id="title_event_btn"></button>
+    </view>
+    <view id="support_wrap">
+    
+    </view>
   </scroll_y_view>
 </template>
 
 <style>
 #main_page{
-  width: Fill;
+  width: All;
   height: 800.0;
+  background_color: radial_gradient(#CFF5FC, #FFFFFF, #FFFFFF);
+  background_visible: true;
+  .common_txt{
+    width: Fit;
+    text: "Created by the Open-Source Community, For the Open-Source Community.";
+    font_size: 12.0;
+    color: shader(|self|{
+        fn get_color(self) -> vec4{
+            return vec4(0.0, 0.0, 0.0, 1.0)
+        }
+    });
+  }
+  #title_wrap{
+    height: Fill;
+    width: All;
+    flow: Down;
+    spacing: 24.0;
+    align: 0.5 0.0;
+    .name{
+      width: Fit;
+      font_size: 14.0;
+      margin: 106.0 0.0 0.0 0.0;
+      color: shader(|self|{
+          fn get_color(self) -> vec4{
+              return vec4(0.0, 0.427, 0.529, 1.0)
+          }
+      });
+    }
+    .title_s_n{
+      flow: Down;
+      height: 240.0;
+      width: All;
+    }
+    .s_word{
+      font_size: 42.0;
+      color: shader(|self|{
+          fn get_color(self) -> vec4{
+              return vec4(0.0, 0.427, 0.529, 1.0)
+          }
+      });
+    }
+    .n_word{
+      font_size: 42.0;
+      color: shader(|self|{
+          fn get_color(self) -> vec4{
+              return vec4(0.0, 0.0, 0.0, 1.0)
+          }
+      });
+    }
+    #title_event_btn{
+      height: Fit;
+      width: 180.0;
+      text: "Upcoming Events";
+      padding: 16.0;
+      font_family: "crate://self/static/GoNotoKurrent-Bold.ttf";
+      color: shader(|self|{
+          fn get_color(self)-> vec4{
+              return mix(
+                  vec4(1.0, 1.0, 1.0, 1.0),
+                  vec4(0.0, 0.0, 0.0, 1.0),
+                  self.hover
+              )
+          }
+      });
+      background_color: shader(|self|{
+          uniform border_radius: 3.0
+          fn pixel(self)-> vec4{
+              let sdf = Sdf2d::viewport(self.pos * self.rect_size)
+              let bg_color = mix(
+                  vec4(0.0, 0.427, 0.529, 1.0),
+                  vec4(0.517, 0.912, 0.972, 1.0),
+                  self.hover
+              )
+              sdf.box(
+                  1.0,
+                  1.0,
+                  self.rect_size.x - 2.0,
+                  self.rect_size.y - 2.0,
+                  self.border_radius
+              )
+              sdf.fill_keep(bg_color)
+              return sdf.result
+          }
+      });
+    }
+  }
 }
 </style>
