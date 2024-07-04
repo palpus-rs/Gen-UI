@@ -48,7 +48,7 @@ impl ASTNodes {
             _ => panic!("only ASTNodes::Tag can use `set_tag_properties()`"),
         }
     }
-    
+
     pub fn set_style_properties(&mut self, props: Props) {
         match self {
             ASTNodes::Style(s) => s.set_props(props),

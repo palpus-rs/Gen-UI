@@ -3,19 +3,21 @@
     <view id="title_wrap">
       <label text="GOSIM" class="name"></label>
       <view class="title_s_n">
-        <view>
+        <view class="line_wrap">
           <label class="s_word" text="G"></label>
           <label class="n_word" text="lobal"></label>
+          <view  width="26.0"></view>
           <label class="s_word" text="O"></label>
           <label class="n_word" text="pen-"></label>
         </view>
-        <view>
+        <view class="line_wrap">
           <label class="s_word" text="S"></label>
           <label class="n_word" text="ource"></label>
+          <view  width="26.0"></view>
           <label class="s_word" text="I"></label>
           <label class="n_word" text="nnovation"></label>
         </view>
-        <view>
+        <view class="line_wrap">
           <label class="s_word" text="M"></label>
           <label class="n_word" text="eetup"></label>
         </view>
@@ -23,16 +25,13 @@
       <label class="common_txt"></label>
       <button id="title_event_btn"></button>
     </view>
-    <view id="support_wrap">
-    
-    </view>
   </scroll_y_view>
 </template>
 
 <style>
 #main_page{
   width: All;
-  height: 800.0;
+  height: 600.0;
   background_color: radial_gradient(#CFF5FC, #FFFFFF, #FFFFFF);
   background_visible: true;
   .common_txt{
@@ -46,7 +45,7 @@
     });
   }
   #title_wrap{
-    height: Fill;
+    height: 600.0;
     width: All;
     flow: Down;
     spacing: 24.0;
@@ -54,7 +53,7 @@
     .name{
       width: Fit;
       font_size: 14.0;
-      margin: 106.0 0.0 0.0 0.0;
+      margin: 92.0 0.0 0.0 0.0;
       color: shader(|self|{
           fn get_color(self) -> vec4{
               return vec4(0.0, 0.427, 0.529, 1.0)
@@ -65,9 +64,12 @@
       flow: Down;
       height: 240.0;
       width: All;
+      .line_wrap{
+        align: 0.5;
+      }
     }
     .s_word{
-      font_size: 42.0;
+      font_size: 52.0;
       color: shader(|self|{
           fn get_color(self) -> vec4{
               return vec4(0.0, 0.427, 0.529, 1.0)
@@ -75,7 +77,7 @@
       });
     }
     .n_word{
-      font_size: 42.0;
+      font_size: 52.0;
       color: shader(|self|{
           fn get_color(self) -> vec4{
               return vec4(0.0, 0.0, 0.0, 1.0)

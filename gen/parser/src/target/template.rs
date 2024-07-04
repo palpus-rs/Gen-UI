@@ -196,7 +196,7 @@ fn parse_end_tag(input: &str, name: String) -> IResult<&str, (&str, &str)> {
 #[allow(dead_code)]
 pub fn parse_tag<'a>(
     input: &'a str,
-    nests: &mut Vec<String>,
+    nests: usize,
 ) -> Result<(&'a str, ASTNodes), nom::Err<nom::error::Error<&'a str>>> {
     // parse tag start or comment return ASTNodes, we can use is_tag to check
     let (input, mut ast_node) = trim(alt((parse_comment, parse_tag_start)))(input)?;
@@ -210,15 +210,15 @@ pub fn parse_tag<'a>(
                 return Ok((input, ast_node));
             }
             Err(_) => {
-                nests.push(tag_name.clone());
                 
                 // has children, parse children
-                let (mut input, mut children) = many0(|i| parse_tag(i, nests))(input)?;
+                let (input, mut children) = many0(|i| parse_tag(i, nests + 1))(input)?;
 
-                while input.starts_with(END_START_SIGN) {
-                    let (remain, _) = parse_end_tag_common(input)?;
-                    input = remain;
-                }
+                let input = match parse_end_tag_common(input) {
+                    Ok((remain, _)) => remain,
+                    Err(_) => input,
+                };
+
 
                 if !children.is_empty() {
                     children
@@ -227,22 +227,25 @@ pub fn parse_tag<'a>(
 
                     ast_node.set_tag_children(children);
                 }
-                let input =input.trim();
-                if preceded(char('<'), parse_tag_name)(input).is_err() {
-                    // means input still has tags
-                    let (input, mut children_remain) = many0(|i| parse_tag(i, nests))(input)?;
-                    // dbg!(input, &ast_node, &children_remain);
-                    children_remain
-                        .iter_mut()
-                        .for_each(|child| child.set_parent(ast_node.clone()));
+                let input = input.trim();
+                // dbg!(input);
+                // 这里说明有和当前ast_node同级的标签，需要返回到上一级来解析
+                if preceded(char('<'), parse_tag_name)(input).is_ok()
+                    && parse_end_tag_common(input).is_err()
+                {
+                    // // means input still has tags
+                    // let (input, mut children_remain) = many0(|i| parse_tag(i, nests))(input)?;
+                    // // dbg!(input, &ast_node, &children_remain);
+                    // let mut ast_node_no_children = ast_node.clone();
+                    // ast_node_no_children.clear_tag_children();
+                    // children_remain
+                    //     .iter_mut()
+                    //     .for_each(|child| child.set_parent(ast_node_no_children.clone()));
 
                     // ast_node.extend_tag_children(children_remain);
                     return Ok((input, ast_node));
-                }else{
-                    // dbg!(input, &ast_node);
-                    return Ok((input, ast_node));
                 }
-
+                return Ok((input, ast_node));
             }
         };
     }
@@ -254,7 +257,7 @@ pub fn parse_tag<'a>(
 /// main template parser
 #[allow(dead_code)]
 pub fn parse_template(input: &str) -> Result<Vec<ASTNodes>, Error> {
-    match many1(|s| parse_tag(s, &mut vec![]))(input) {
+    match many1(|s| parse_tag(s, 0))(input) {
         Ok((remain, asts)) => {
             if remain.is_empty() {
                 return Ok(asts);
@@ -278,16 +281,6 @@ mod template_parsers {
     };
     #[test]
     fn test_template_nested_same() {
-        // let template = r#"
-        // <root id="ui">
-        //     <view><image id="logo"></image></view>
-        //     <label class="menu_item" text="About"></label>
-        //     <view>
-        //         <button id="e_btn"></button>
-        //     </view>
-        // </root>
-        // "#;
-
         let template = r#"
         <view id="main_page">
             <view id="title_wrap">
