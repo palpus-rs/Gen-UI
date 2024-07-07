@@ -83,6 +83,7 @@ impl Position {
     pub const SPACING: &'static str = "spacing";
     /// 窗口位置
     pub const WINDOW_POSITION: &'static str = "window_position";
+    pub const POPUP_MENU_POSITION: &'static str = "popup_menu_position";
 }
 
 pub struct Background;

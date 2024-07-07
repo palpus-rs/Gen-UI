@@ -23,6 +23,7 @@ pub mod button;
 pub mod checkbox;
 pub mod color_picker;
 pub mod define;
+pub mod drop_down;
 pub mod html;
 pub mod icon;
 pub mod image;
@@ -32,6 +33,7 @@ pub mod model;
 pub mod radio;
 pub mod root;
 pub mod scroll;
+pub mod shader;
 pub mod splitter;
 pub mod text_input;
 pub mod utils;
@@ -66,6 +68,8 @@ const ROUNDEDSHADOWVIEW: &str = "RoundedShadowView";
 const RECTVIEW: &str = "RectView";
 const RECTSHADOWVIEW: &str = "RectShadowView";
 const SOLIDVIEW: &str = "SolidView";
+const DROP_DOWN: &str = "DropDown";
+const SHADER: &str = "Shader";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -93,6 +97,7 @@ pub enum BuiltIn {
     CheckBox,
     Radio,
     Root,
+    DropDown,
 }
 
 impl BuiltIn {
@@ -131,7 +136,9 @@ impl BuiltIn {
             BuiltIn::RoundedView => view::RoundedViewProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::RoundedShadowView => {
                 view::RoundedShadowViewProps::prop_bind(prop, value, is_prop, ident)
-            }
+            },
+            BuiltIn::DropDown => drop_down::DropDownProps::prop_bind(prop, value, is_prop, ident)
+            
         }
     }
     /// 对内置组件的属性进行处理
@@ -157,7 +164,9 @@ impl BuiltIn {
             BuiltIn::RoundedView => view::RoundedViewProps::props(props).to_token_stream(),
             BuiltIn::RoundedShadowView => {
                 view::RoundedShadowViewProps::props(props).to_token_stream()
-            }
+            },
+            BuiltIn::DropDown => drop_down::DropDownProps::props(props).to_token_stream()
+            
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -183,6 +192,7 @@ impl BuiltIn {
                 panic!("scroll view can not be inherited you need to inherits View")
             }
             BuiltIn::TextInput => text_input::TextInputPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::DropDown => drop_down::DropDownPropPtr::from(ptr).to_token_stream()
         }
     }
     pub fn has_event(&self) -> bool {
@@ -219,6 +229,7 @@ impl BuiltIn {
                 panic!("scroll view can not be inherited, so that it can not draw_walk, you need to inherits View")
             }
             BuiltIn::TextInput => todo!(),
+            BuiltIn::DropDown => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -251,6 +262,7 @@ impl BuiltIn {
                 panic!("scroll view can not be inherited, so that it can not handle_event, you need to inherits View")
             }
             BuiltIn::TextInput => todo!(),
+            BuiltIn::DropDown => todo!(),
         }
     }
 }
@@ -281,6 +293,7 @@ impl TryFrom<&str> for BuiltIn {
             ROUNDEDVIEW => Ok(BuiltIn::RoundedView),
             ROUNDEDSHADOWVIEW => Ok(BuiltIn::RoundedShadowView),
             TEXT_INPUT => Ok(BuiltIn::TextInput),
+            DROP_DOWN => Ok(BuiltIn::DropDown),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -321,6 +334,7 @@ impl Display for BuiltIn {
             BuiltIn::RectShadowView => RECTSHADOWVIEW,
             BuiltIn::RoundedView => ROUNDEDVIEW,
             BuiltIn::RoundedShadowView => ROUNDEDSHADOWVIEW,
+            BuiltIn::DropDown => DROP_DOWN,
         })
     }
 }

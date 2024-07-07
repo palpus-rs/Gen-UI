@@ -16,6 +16,7 @@ live_design! {
     import crate::components::images::*;
     import crate::components::inputs::*;
     import crate::components::dividers::*;
+    import crate::components::shaders::*;
 
     App = {{App}}{
         root: <Root>{
@@ -31,8 +32,8 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
+                    <GShaderExample>{}
                     <GDividerExample>{}
-                    
                     <GLabelExample>{}
                     <GButtonExample>{}
                     <GCardExample>{}
@@ -72,6 +73,7 @@ impl LiveRegister for App {
         crate::components::images::live_design(cx);
         crate::components::inputs::live_design(cx);
         crate::components::dividers::live_design(cx);
+        crate::components::shaders::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

@@ -9,3 +9,4 @@ pub mod std;
 pub mod draw_check_box;
 pub mod draw_radio_button;
 pub mod draw_label;
+pub mod draw_label_text;

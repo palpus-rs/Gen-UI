@@ -30,12 +30,12 @@ let change = ||{
   .checkbox1{
     text: "CheckBox1";
     margin: 10;
-    label_margin: 0 0 0 10;
+    text_margin: 0 0 0 10;
   }
   #checkbox2{
     text: "Checkbox Toggle";
-    label_margin: 0 0 0 16.0;
-    font_brightness: 1.5;
+    text_margin: 0 0 0 16.0;
+    brightness: 1.5;
     check_type: Toggle;
   }
   #radio1{
@@ -49,8 +49,8 @@ let change = ||{
     margin: 0 16.0;
     padding: 12.0;
     height: 32.0;
-    label_align: 0.5;
-    label_margin: 0 0 0 0;
+    text_align: 0.5;
+    text_margin: 0 0 0 0;
 
   }
 }

@@ -99,6 +99,15 @@ impl TryFrom<&Value> for Vec4 {
     }
 }
 
+impl Display for Vec4 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{{x: {}, y: {}, z: {}, w: {}}}",
+            self.x, self.y, self.z, self.w
+        ))
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vec2(DVec2);
 
@@ -193,5 +202,70 @@ impl TryFrom<&Value> for DVec2 {
 impl Display for DVec2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{{x: {}, y: {}}}", self.x, self.y))
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Vec3 {
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
+}
+
+impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
+        Vec3 { x, y , z}
+    }
+    pub fn single(f: f64) -> Vec3 {
+        Vec3::new(f, f, f)
+    }
+}
+
+
+impl TryFrom<&str> for Vec3 {
+    type Error = Errors;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value
+            .split_whitespace()
+            .map(|x| x.parse::<f64>())
+            .collect::<Result<Vec<f64>, ParseFloatError>>()
+        {
+            Ok(spaces) => match spaces.len() {
+                1 => Ok(Vec3::single(spaces[0])),
+                3 => Ok(Vec3::new(spaces[0], spaces[1], spaces[2])),
+                _ => Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to Vec3",
+                    value
+                ))),
+            },
+            Err(_) => Err(Errors::PropConvertFail(format!(
+                "{} can not convert to Vec3",
+                value
+            ))),
+        }
+    }
+}
+
+str_to_string_try_from! {Vec3}
+
+impl TryFrom<&Value> for Vec3 {
+    type Error = Errors;
+
+    fn try_from(value: &Value) -> Result<Self, Self::Error> {
+        if let Some(s) = value.is_unknown_and_get() {
+            s.try_into()
+        } else {
+            Err(Errors::PropConvertFail(format!(
+                "{} can not convert to Vec3",
+                value
+            )))
+        }
+    }
+}
+
+impl Display for Vec3 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{{x: {}, y: {}, z: {}}}", self.x, self.y, self.z))
     }
 }

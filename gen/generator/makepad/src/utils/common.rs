@@ -368,3 +368,15 @@ pub fn struct_field(attrs: Vec<&str>, ident: &str, seg: &str) -> Field {
         }),
     }
 }
+
+pub fn float_to_str(num: f32) -> String {
+    float_to_str_f64(num as f64)
+}
+
+pub fn float_to_str_f64(num: f64) -> String {
+    if num.fract() == 0.0 {
+        format!("{}.0", num)
+    } else {
+        format!("{}", num)
+    }
+}

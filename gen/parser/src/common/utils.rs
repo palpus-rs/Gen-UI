@@ -5,3 +5,24 @@ pub fn float_to_str(num: f32) -> String {
         format!("{}", num)
     }
 }
+
+#[macro_export]
+macro_rules! from_u_number {
+    ($from: ident) => {
+        impl From<$from> for Value {
+            fn from(value: $from) -> Self {
+                Value::USize(value as usize)
+            }
+        }
+    };
+}
+#[macro_export]
+macro_rules! from_i_number {
+    ($from: ident) => {
+        impl From<$from> for Value {
+            fn from(value: $from) -> Self {
+                Value::ISize(value as isize)
+            }
+        }
+    };
+}

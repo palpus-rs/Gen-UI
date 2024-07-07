@@ -2,10 +2,13 @@ use std::{borrow::BorrowMut, collections::HashSet};
 
 use gen_converter::model::script::PropFn;
 use gen_parser::Value;
-use gen_utils::{common::{
-    token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
-    token_tree_punct_alone, trees_to_token_stream,
-}, error::Errors};
+use gen_utils::{
+    common::{
+        token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
+        token_tree_punct_alone, trees_to_token_stream,
+    },
+    error::Errors,
+};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{
@@ -16,6 +19,16 @@ use syn::{
 use crate::{prop::builtin::MakepadValue, utils::apply_over_and_redraw};
 
 use super::BuiltIn;
+
+pub fn vec_string_to_string(vec: &Vec<String>) -> String {
+    format!(
+        "[{}]",
+        vec.iter()
+            .map(|item| format!("\"{}\"", item))
+            .collect::<Vec<String>>()
+            .join(",")
+    )
+}
 
 pub fn bool_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
 where
@@ -42,6 +55,74 @@ where
             .unwrap_or_else(|| {
                 Err(Errors::PropConvertFail(format!(
                     "{} can not convert to show_bg",
+                    value
+                )))
+            })
+    }
+}
+
+pub fn u64_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
+where
+    F: FnMut(u64) -> (),
+{
+    if let Some(s) = value.is_unknown_and_get() {
+        match s.parse::<u64>() {
+            Ok(d) => {
+                f(d);
+                Ok(())
+            }
+            Err(_) => Err(Errors::PropConvertFail(format!(
+                "{} can not convert to u64",
+                s
+            ))),
+        }
+    } else if let Some(d) = value.is_u_int_and_get() {
+        f(d as u64);
+        Ok(())
+    } else {
+        value
+            .is_i_int_and_get()
+            .map(|int| {
+                f(int as u64);
+                Ok(())
+            })
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to u64",
+                    value
+                )))
+            })
+    }
+}
+
+pub fn usize_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
+where
+    F: FnMut(usize) -> (),
+{
+    if let Some(s) = value.is_unknown_and_get() {
+        match s.parse::<usize>() {
+            Ok(d) => {
+                f(d);
+                Ok(())
+            }
+            Err(_) => Err(Errors::PropConvertFail(format!(
+                "{} can not convert to usize",
+                s
+            ))),
+        }
+    } else if let Some(d) = value.is_u_int_and_get() {
+        f(d);
+        Ok(())
+    } else {
+        value
+            .is_i_int_and_get()
+            .map(|int| {
+                f(int as usize);
+                Ok(())
+            })
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to usize",
                     value
                 )))
             })
@@ -97,11 +178,14 @@ where
     } else if let Some(d) = value.is_double_and_get() {
         f(d);
         Ok(())
+    } else if let Some(d) = value.is_float_and_get() {
+        f(d as f64);
+        Ok(())
     } else {
         value
-            .is_float_and_get()
+            .is_bool_and_get()
             .map(|b| {
-                f(b as f64);
+                f(b as u8 as f64);
                 Ok(())
             })
             .unwrap_or_else(|| {
@@ -131,11 +215,14 @@ where
     } else if let Some(b) = value.is_float_and_get() {
         f(b);
         Ok(())
+    } else if let Some(b) = value.is_double_and_get() {
+        f(b as f32);
+        Ok(())
     } else {
         value
-            .is_double_and_get()
+            .is_bool_and_get()
             .map(|b| {
-                f(b as f32);
+                f(b as u8 as f32);
                 Ok(())
             })
             .unwrap_or_else(|| {

@@ -10,3 +10,4 @@ pub mod checkboxs;
 pub mod images;
 pub mod inputs;
 pub mod dividers;
+pub mod shaders;

@@ -8,7 +8,7 @@ use syn::Field;
 pub enum MakepadValue {
     Layout,
     Walk,
-    Live(LiveValue),
+    Live(LiveValueType),
     Rust,
 }
 
@@ -21,7 +21,7 @@ impl From<&Field> for MakepadValue {
 
 impl From<&str> for MakepadValue {
     fn from(value: &str) -> Self {
-        LiveValue::try_from(value)
+        LiveValueType::try_from(value)
             .map(MakepadValue::Live)
             .unwrap_or_else(|_| match value {
                 "Layout" => MakepadValue::Layout,

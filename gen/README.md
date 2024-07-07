@@ -19,7 +19,13 @@
 - [x] ScrollXYView
 - [x] ScrollXView
 - [x] ScrollYView
+- [x] SolidView
+- [x] RectView
+- [x] RectShadowView
+- [x] RoundedView
+- [x] RoundedShadowView
 - [x] TextInput
+- [ ] DropDown
 - [ ] Html
 - [ ] Markdown
 - [ ] ScrollBar

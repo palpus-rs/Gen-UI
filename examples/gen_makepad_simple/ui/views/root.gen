@@ -1,12 +1,13 @@
 <template>
   <root id="ui">
     <window id="main_window">
-      <view flow="Down" height="All" align="0.5 0.5">
-        <label text="Gen + Makepad Project Hello World!!!" font_size="16.0"></label>
+      <scroll_y_view flow="Down" height="All" align="0.5 0.5">
+        <label text="Gen + Makepad Project(Makepad UI Zoo)" font_size="16.0"></label>
         <label_view></label_view>
+        <drop_down_view></drop_down_view>
         <checkbox_view></checkbox_view>
         <button_view></button_view>
-      </view>
+      </scroll_y_view>
     </window>
   </root>
 </template>
@@ -16,6 +17,7 @@ import!{
   crate::views::components::labels::*;
   crate::views::components::checkbox::*;
   crate::views::components::button_view::*;
+  crate::views::components::drop_down_view::*;
 }
 </script>
 

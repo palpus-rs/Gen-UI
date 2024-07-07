@@ -1,0 +1,17 @@
+<template>
+  <view id="drop_down_view">
+    <drop_down id="drop1"></drop_down>
+  </view>
+</template>
+
+<style>
+#drop_down_view{
+    height: 300.0;
+    width: Fill;
+    align: 0.5;
+    #drop1{
+        labels: ["Shanghai", "Cake", "Cow"];
+        values: [1, 2, 3];
+    }
+}
+</style>
