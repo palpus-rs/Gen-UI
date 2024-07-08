@@ -18,11 +18,11 @@ use toml_edit::{value, Item, Table};
 /// ```
 #[derive(Debug, Clone)]
 pub struct RustDependence {
-    name: String,
-    version: Option<String>,
-    features: Option<Vec<String>>,
-    default_features: Option<bool>,
-    ty: DepType,
+    pub name: String,
+    pub version: Option<String>,
+    pub features: Option<Vec<String>>,
+    pub default_features: Option<bool>,
+    pub ty: DepType,
 }
 
 impl RustDependence {

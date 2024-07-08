@@ -8,9 +8,11 @@
 //! - [x] gen logger
 //! - [x] gen watcher
 //! - [ ] continuous construction (no panic when compiling | panic reload)
+mod builder;
 mod core;
 mod utils;
 
+use builder::compiler::CompilerBuilder;
 pub use core::*;
 pub use utils::*;
 
@@ -41,34 +43,60 @@ pub use utils::*;
 ///    let _ = app.run();
 /// }
 /// ```
-pub fn app(target: Target) -> Compiler {
+// pub fn app(target: Target) -> Compiler {
+//     // [init log service] --------------------------------------------------------------------------
+//     let _ = init_log();
+//     // [get target watcher path] -------------------------------------------------------------------
+//     let origin_path = std::env::current_dir().unwrap();
+//     // [get ignore file] ---------------------------------------------------------------------------
+//     let exclude = Ignore::new(origin_path.as_path())
+//         .expect("ignore file error")
+//         .into();
+//     // [init cache service] -----------------------------------------------------------------------
+//     let cache = Cache::new(origin_path.as_path(), target);
+//     let is_dir = origin_path.is_dir();
+//     // [set compiler target] ----------------------------------------------------------------------
+//     let target = CompilerTarget::from(target);
+//     // [return compiler instance] -----------------------------------------------------------------
+//     Compiler {
+//         origin_path,
+//         is_dir,
+//         target,
+//         entry: "app".to_string(),
+//         root: None,
+//         exclude,
+//         cache,
+//         dependencies: Default::default(),
+//         wasm: false,
+//         wasm_process: None,
+//     }
+// }
+
+pub fn app(target: Target) -> CompilerBuilder {
     // [init log service] --------------------------------------------------------------------------
     let _ = init_log();
-    // [get target watcher path] -------------------------------------------------------------------
-    let origin_path = std::env::current_dir().unwrap();
-    // [get ignore file] ---------------------------------------------------------------------------
-    let exclude = Ignore::new(origin_path.as_path()).expect("ignore file error").into();
-    // [init cache service] -----------------------------------------------------------------------
-    let cache = Cache::new(origin_path.as_path(), target);
-    let is_dir = origin_path.is_dir();
-    // [set compiler target] ----------------------------------------------------------------------
-    let target = CompilerTarget::from(target);
-    // [return compiler instance] -----------------------------------------------------------------
-    Compiler {
-        origin_path,
-        is_dir,
-        target,
-        entry: "app".to_string(),
-        root: None,
-        exclude,
-        cache,
-        dependencies: Default::default(),
-    }
+    target.into()
 }
 
 #[cfg(test)]
 mod test_compiler {
     use std::path::PathBuf;
+
+    #[test]
+    fn app_build_test() {
+        let app = super::app(super::Target::Makepad)
+            .entry("app")
+            .root("E:/Rust/try/makepad/Gen-UI/examples/gosim_example/ui/views/root.gen")
+            .add_dep("makepad-widgets")
+            .local("E:/Rust/try/makepad/makepad/rik/makepad/widgets")
+            .build()
+            .wasm()
+            .no_fresh()
+            .port(4568)
+            .build();
+
+        dbg!(app);
+    }
 
     #[test]
     fn end_gen() {

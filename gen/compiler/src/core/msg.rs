@@ -8,6 +8,8 @@ pub const CACHE_READ: &str = "✅\tCache Service: read cache file success!";
 pub const CACHE_WRITE: &str = "✅\tCache Service: write cache file success!";
 pub const CACHE_WRITE_FAIL: &str = "⛔\tCache Service: write cache file failed!";
 pub const CACHE_OPEN_CREATE_FAIL: &str = "⛔\tCache Service: cache file create or open failed!";
+
+pub const WASM_FRESH: &str = "🔧\tWasm Service: fresh wasm file success!";
 // [App]-----------------------------------------------------------
 pub const APP_RUNNING: &str = "🔧\tApp is running...";
 // [src_gen]------------------------------------------------------

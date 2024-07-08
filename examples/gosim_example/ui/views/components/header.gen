@@ -33,7 +33,7 @@
     #logo{
         height: 30.0;
         width: 120.0;
-        source: "crate://self/static/logo.png";
+        source: "crate://self/resources/logo.png";
     }
   }
   #menu_list{
@@ -60,7 +60,7 @@
         text: "Upcoming Events";
         
         padding: 16.0;
-        font_family: "crate://self/static/GoNotoKurrent-Bold.ttf";
+        font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
         color: shader(|self|{
             fn get_color(self)-> vec4{
                 return mix(

@@ -89,7 +89,7 @@
       width: 180.0;
       text: "Upcoming Events";
       padding: 16.0;
-      font_family: "crate://self/static/GoNotoKurrent-Bold.ttf";
+      font_family: "crate://self/resources/GoNotoKurrent-Bold.ttf";
       color: shader(|self|{
           fn get_color(self)-> vec4{
               return mix(

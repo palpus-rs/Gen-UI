@@ -5,11 +5,12 @@ use std::{
 // use gen::{sc_builder_to_token_stream, template};
 use gen_converter::model::{file_data, Model, Source};
 use gen_parser::ParseTarget;
-use gen_utils::common::{token_stream_to_tree, token_tree_ident};
+use gen_utils::{common::{token_stream_to_tree, token_tree_ident}, error::Errors, wasm::WasmImpl};
 use model::{ModelNode, ModelTree, RsFile};
 use proc_macro2::{TokenStream, TokenTree};
 use quote::quote;
 use utils::create_file;
+use wasm::Wasm;
 use widget::{model::{app_main::AppMain, widget::Widget, ToLiveDesign}, utils::imports_to_live_registers};
 
 pub mod error;
@@ -17,6 +18,7 @@ pub mod model;
 pub mod prop;
 pub mod utils;
 pub mod widget;
+pub mod wasm;
 
 pub trait ToToken {
     fn to_token_stream(&self) -> TokenStream;
@@ -30,6 +32,7 @@ pub struct Makepad {
     pub app_main: AppMain,
     pub tree: Option<ModelTree>,
     pub main_rs: RsFile,
+    pub wasm: Option<Wasm>,
     // pub cache_files: Vec<PathBuf>,
 }
 
@@ -49,7 +52,22 @@ impl Makepad {
             app_main,
             tree: Some(widget_tree),
             main_rs,
+            wasm: None,
         }
+    }
+    pub fn set_wasm<W>(&mut self, wasm: Box<W>) -> () where W: WasmImpl{
+        if let Some(wasm) = wasm.as_any().downcast_ref::<Wasm>() {
+            self.wasm.replace(wasm.clone());
+        };
+    }
+    /// only wasm is Some, this function can work
+    /// 
+    /// then check makepad wasm
+    /// - return `Ok(true)` if makepad wasm is installed
+    /// - return `Ok(false)` if makepad wasm not need to check
+    /// - return `Err` if makepad wasm is not installed
+    pub fn check_wasm(&self) -> Result<bool, Errors> {
+        self.wasm.as_ref().unwrap().check_wasm()
     }
     /// get node from tree
     pub fn get(&self, key: &Source) -> Option<ModelNode> {

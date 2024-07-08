@@ -1,19 +1,19 @@
 use std::{
     collections::HashSet,
-    fs::{self},
-    mem,
+    fs, mem,
     path::{Path, PathBuf},
-    process::{exit, Command},
+    process::{exit, Child, Command},
 };
 
 use gen_converter::model::{Model, Source};
+use gen_utils::wasm::WasmImpl;
 use tokio::runtime::Runtime;
 use toml_edit::DocumentMut;
 use walkdir::WalkDir;
 
 use crate::{
     copy_file, info, init_watcher, is_eq_path_exclude,
-    msg::{APP_RUNNING, SRC_GEN_INIT},
+    msg::{APP_RUNNING, SRC_GEN_INIT, WASM_FRESH},
     Cache,
 };
 
@@ -28,6 +28,7 @@ use super::{dep::RustDependence, log::error, watcher::FKind, CompilerTarget};
 pub struct Compiler {
     /// origin path is the project path
     pub origin_path: PathBuf,
+    pub compiled_path: PathBuf,
     /// origin path is a dir or a file
     pub is_dir: bool,
     /// compile target default is makepad
@@ -45,6 +46,10 @@ pub struct Compiler {
     pub dependencies: Vec<RustDependence>,
     /// gen_cache
     pub cache: Cache,
+    /// use wasm to run ?
+    pub wasm: bool,
+    /// child wasm process
+    pub wasm_process: Option<Child>,
 }
 
 impl Compiler {
@@ -67,6 +72,7 @@ impl Compiler {
                         }
                         _ => (),
                     }
+                    let _ = self.fresh_wasm();
                 })
                 .await
             {
@@ -76,6 +82,30 @@ impl Compiler {
             }
         });
         exit(-1);
+    }
+    pub fn wasm<W>(&mut self, wasm: Box<W>) -> &mut Self
+    where
+        W: WasmImpl,
+    {
+        self.target.set_wasm(wasm);
+        self
+    }
+    pub fn fresh_wasm(&mut self) -> () {
+        if self.wasm {
+            // close last wasm process if exist
+            if let Some(process) = self.wasm_process.as_mut() {
+                let _ = process.kill();
+            }
+            let mut super_workspace_path = self.origin_path.clone();
+            super_workspace_path.pop();
+            match self.target.fresh_wasm(super_workspace_path.as_path()) {
+                Ok(cmd) => {
+                    self.wasm_process.replace(cmd);
+                    info(WASM_FRESH);
+                }
+                Err(e) => error(e.to_string().as_str()),
+            }
+        }
     }
     pub fn add_dep(&mut self, dep: RustDependence) -> &mut Self {
         self.dependencies.push(dep);
@@ -346,7 +376,8 @@ impl Compiler {
         }
 
         // check the src_gen project exists or not
-        let compiled_dir = Source::project_dir_to_compiled(&self.origin_path);
+        // let compiled_dir = Source::project_dir_to_compiled(&self.origin_path);
+        let compiled_dir = self.compiled_path.clone();
         if !compiled_dir.exists() {
             // use std::process::Command to create a new rust project
             let status = Command::new("cargo")

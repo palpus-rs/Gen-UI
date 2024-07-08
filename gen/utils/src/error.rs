@@ -36,6 +36,9 @@ pub enum Errors {
     StrategyNoStyle,
     PropConvertFail(String),
     BuiltInConvertFail,
+    
+    DepError(String),
+    CommandError(String),
 }
 
 impl Display for Errors {
@@ -73,6 +76,8 @@ impl Display for Errors {
             Errors::StrategyNoStyle => "Gen-Converter[strategy]: Model not have style".to_string(),
             Errors::PropConvertFail(e) => e.to_string(),
             Errors::BuiltInConvertFail => "Gen-Converter: BuiltIn convert fail".to_string(),
+            Errors::DepError(e) => e.to_string(),
+            Errors::CommandError(e) => e.to_string(),
         };
         f.write_str(&msg)
     }
