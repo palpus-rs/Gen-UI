@@ -29,8 +29,11 @@ pub struct CompilerBuilder {
     dependencies: Vec<RustDependence>,
     /// use wasm to run ?
     pub wasm: bool,
+    /// check wasm or not
     pub wasm_check: bool,
+    /// fresh wasm , automatically recompile wasm
     pub wasm_fresh: bool,
+    /// wasm port
     pub wasm_port: Option<u16>,
 }
 
@@ -58,12 +61,36 @@ impl From<Target> for CompilerBuilder {
 }
 
 impl CompilerBuilder {
+    /// ## set entry file name
+    ///
+    /// default name is `app`, you can set your entry file name is you don't use `app`
+    ///
+    /// the entry file means the project main file
+    /// ### Makepad
+    /// ```txt
+    /// |---- src
+    /// |---------- app.rs // entry file
+    /// |---------- lib.rs
+    /// |---------- main.rs
+    /// ```
+    /// ### Example
+    /// ```rust
+    /// let app = app(Target::Makepad).entry("app").build();
+    /// ```
     pub fn entry(mut self, entry: &str) -> Self {
         self.entry = entry.to_string();
         self
     }
-    /// set root path of the project
-    /// do not use absolute path use relative path
+    /// ## set root path of the project
+    ///
+    /// ### param
+    /// - path: do not use absolute path use relative path
+    /// ### Example
+    /// ```rust
+    /// let app = app(Target::Makepad)
+    /// .root("E:/Rust/try/makepad/Gen-UI/examples/gosim_example/ui/views/root.gen")
+    /// .build();
+    /// ```
     pub fn root<P>(mut self, path: P) -> Self
     where
         P: AsRef<Path>,
@@ -77,18 +104,40 @@ impl CompilerBuilder {
         self.root.replace(path.as_ref().to_path_buf());
         self
     }
+    /// ## set compiler result target
+    /// now GenUI just support `Makepad`
     pub fn target(mut self, target: Target) -> Self {
         self.target = target;
         self
     }
-    pub fn is_dir(mut self, is_dir: bool) -> Self {
-        self.is_dir = is_dir;
-        self
-    }
+    /// ## set compiler exclude files or folders
+    /// In fact, you should rarely call this method.
+    /// The best way is to copy the following default ignore content and write it into the `.gen_ignore` file
+    /// ### attention
+    ///  **if you use this method, you should use relative path**
+    /// ### Default Ignores
+    /// ```txt
+    /// Cargo.toml
+    /// src/main.rs
+    /// .gitignore
+    /// Cargo.lock
+    /// target
+    /// .gen_cache
+    /// .gen_ignore
+    /// target
+    /// ```
+    /// ### .gen_ignore
+    /// In `.gen_ignore`, there are files or directories that GenUI projects need to ignore for monitoring
+    /// - Using relative paths relative to the current GenUI project directory
+    /// - Accurate to a certain file, please do not ignore it in a way similar to `**/*.xxx`
+    /// - Use line breaks for segmentation
+    /// - When you don't add, the following content will be ignored by default
     pub fn exclude(mut self, excludes: Vec<PathBuf>) -> Self {
         self.exclude = excludes;
         self
     }
+    /// ## add exclude file or folder
+    /// add exclude file or folder to the exclude list
     pub fn add_exclude<P>(mut self, exclude: P) -> Self
     where
         P: AsRef<Path>,
@@ -96,12 +145,22 @@ impl CompilerBuilder {
         self.exclude.push(exclude.as_ref().to_path_buf());
         self
     }
+    /// ## add a rust dependence
+    /// add rust dependence to the compile result project
+    /// 
+    /// see [Rust Dependence](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html)
     pub fn add_dep(self, name: &str) -> RustDependenceBuilder {
         RustDependenceBuilder::from((self, name))
     }
+    /// ## 👎push dependence
+    /// recommand use `add_dep` method
     pub fn push_dep(&mut self, dep: RustDependence) -> () {
         self.dependencies.push(dep);
     }
+    /// ## set wasm
+    /// - set wasm check
+    /// - set wasm fresh
+    /// - set wasm port
     pub fn wasm(self) -> WasmBuilder {
         self.into()
     }

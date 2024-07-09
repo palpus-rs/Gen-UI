@@ -17,61 +17,27 @@ pub use core::*;
 pub use utils::*;
 
 /// ## compiler app
-/// - path: compile target path (all folders are compiled, files are compiled as single files)
-/// ### attention
-/// if path is relative path, you should write from project root not the current file
+/// create an app compiler and specify the target
+/// ### Attention
+/// you should write from project root path as relative path
 /// ### Example
 /// ```rust
-/// use gen_compiler::{app, DepType, RustDependence, Target};
+/// use gen_compiler::{app, Target};
 ///
 /// fn main() {
 ///     // set app and specify target
-///     let mut app = app(Target::Makepad);
-///    // add makepad widget dependence
-///    let mut makepad_widget = RustDependence::new("makepad-widgets");
-///    makepad_widget.set_ty(DepType::local(
-///        "E:/Rust/try/makepad/makepad/rik/makepad/widgets",
-///    ));
-///    
-///    // compile and run
-///    let _ = app
-///        .entry("app")
-///        .root("E:/Rust/try/makepad/Gen-UI/examples/hello/ui/views/root.gen")
-///        .add_dep(makepad_widget)
-///        .compile();
+///     let mut app = app(Target::Makepad)
+///         .entry("app")
+///         .root("E:/Rust/try/makepad/Gen-UI/examples/gosim_example/ui/views/root.gen")
+///         .add_dep("makepad-widgets") // add makepad-widgets dependency
+///         .local("E:/Rust/try/makepad/makepad/rik/makepad/widgets")
+///         .build()
+///         .build();
 ///
-///    let _ = app.run();
+///     let _ = app.run(); // run app
 /// }
+///
 /// ```
-// pub fn app(target: Target) -> Compiler {
-//     // [init log service] --------------------------------------------------------------------------
-//     let _ = init_log();
-//     // [get target watcher path] -------------------------------------------------------------------
-//     let origin_path = std::env::current_dir().unwrap();
-//     // [get ignore file] ---------------------------------------------------------------------------
-//     let exclude = Ignore::new(origin_path.as_path())
-//         .expect("ignore file error")
-//         .into();
-//     // [init cache service] -----------------------------------------------------------------------
-//     let cache = Cache::new(origin_path.as_path(), target);
-//     let is_dir = origin_path.is_dir();
-//     // [set compiler target] ----------------------------------------------------------------------
-//     let target = CompilerTarget::from(target);
-//     // [return compiler instance] -----------------------------------------------------------------
-//     Compiler {
-//         origin_path,
-//         is_dir,
-//         target,
-//         entry: "app".to_string(),
-//         root: None,
-//         exclude,
-//         cache,
-//         dependencies: Default::default(),
-//         wasm: false,
-//         wasm_process: None,
-//     }
-// }
-
 pub fn app(target: Target) -> CompilerBuilder {
     // [init log service] --------------------------------------------------------------------------
     let _ = init_log();

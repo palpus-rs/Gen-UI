@@ -53,6 +53,10 @@ pub struct Compiler {
 }
 
 impl Compiler {
+    /// ## run the compiler
+    /// - run the compiler and watch the file change
+    /// - compile the file when the file is created or modified
+    /// - remove the compiled file|dir when the file|dir is removed
     pub fn run(&mut self) -> () {
         info(APP_RUNNING);
         let rt = Runtime::new().unwrap();
@@ -83,6 +87,7 @@ impl Compiler {
         });
         exit(-1);
     }
+    /// set wasm
     pub fn wasm<W>(&mut self, wasm: Box<W>) -> &mut Self
     where
         W: WasmImpl,
@@ -90,6 +95,7 @@ impl Compiler {
         self.target.set_wasm(wasm);
         self
     }
+    /// fresh wasm when the wasm file is modified
     pub fn fresh_wasm(&mut self) -> () {
         if self.wasm {
             // close last wasm process if exist
