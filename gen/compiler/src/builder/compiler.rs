@@ -161,6 +161,11 @@ impl CompilerBuilder {
     /// - set wasm check
     /// - set wasm fresh
     /// - set wasm port
+    /// ### Makepad
+    /// if you use target: `Makepad`, wasm is supported
+    /// - wasm check is false
+    /// - wasm fresh is true
+    /// - wasm port is 8010
     pub fn wasm(self) -> WasmBuilder {
         self.into()
     }
