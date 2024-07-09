@@ -3,7 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 use gen_parser::{PropsKey, Value};
 use gen_utils::{
     error::Errors,
-    props_manul::{Background, Cursor, Event, Font, Others, Position, Size},
+    props_manul::{Background, Cursor, Event, Font, Others, Position, Size, Text},
 };
 use proc_macro2::TokenStream;
 
@@ -18,7 +18,7 @@ use crate::{
     },
     widget::{
         prop_ignore,
-        utils::{bind_prop_value, bool_prop, quote_prop},
+        utils::{bind_prop_value, bool_prop, quote_prop, string_prop},
         DynProps, StaticProps,
     },
     ToToken,
@@ -66,6 +66,7 @@ pub struct WindowProps {
     pub grab_key_focus: Option<bool>,
     pub block_signal_event: Option<bool>,
     pub cursor: Option<MouseCursor>,
+    pub title: Option<String>,
 }
 impl DynProps for WindowProps {
     fn prop_bind(prop: &PropsKey, value: &Value, is_prop: bool, ident: &str) -> TokenStream {
@@ -140,6 +141,7 @@ impl StaticProps for WindowProps {
             // ----------------- window -----------------
             Position::WINDOW_POSITION => self.position(&value),
             Size::WINDOW_SIZE => self.inner_size(&value),
+            Text::WINDOW_TITLE => self.title(&value),
             _ => {
                 if !prop_ignore(prop_name) {
                     panic!("cannot match prop: {}", prop_name);
@@ -158,6 +160,11 @@ impl ToToken for WindowProps {
 }
 
 impl WindowProps {
+    fn title(&mut self, value: &Value) -> Result<(), Errors> {
+        string_prop(value, |title| {
+            self.title = Some(title.to_string());
+        })
+    }
     fn check_window(&mut self) -> &mut CXWindow {
         if self.window.is_none() {
             self.window = Some(CXWindow::default());
@@ -261,35 +268,41 @@ impl Display for WindowProps {
         if let Some(window) = self.window.as_ref() {
             let _ = f.write_fmt(format_args!("window: {{{}}}", window));
         }
-        if let Some(draw_bg) = &self.draw_bg {
+        if let Some(draw_bg) = self.draw_bg.as_ref() {
             let _ = f.write_fmt(format_args!("draw_bg: {{{}}}, ", draw_bg));
         }
-        if let Some(show_bg) = &self.show_bg {
+        if let Some(show_bg) = self.show_bg.as_ref() {
             let _ = f.write_fmt(format_args!("show_bg: {}, ", show_bg));
         }
-        if let Some(layout) = &self.layout {
+        if let Some(layout) = self.layout.as_ref() {
             let _ = f.write_fmt(format_args!("{}", layout));
         }
-        if let Some(walk) = &self.walk {
+        if let Some(walk) = self.walk.as_ref() {
             let _ = f.write_fmt(format_args!("{}", walk));
         }
-        if let Some(optimize) = &self.optimize {
+        if let Some(optimize) = self.optimize.as_ref() {
             let _ = f.write_fmt(format_args!("optimize: {}, ", optimize));
         }
-        if let Some(event_order) = &self.event_order {
+        if let Some(event_order) = self.event_order.as_ref() {
             let _ = f.write_fmt(format_args!("event_order: {}, ", event_order));
         }
-        if let Some(visible) = &self.visible {
+        if let Some(visible) = self.visible.as_ref() {
             let _ = f.write_fmt(format_args!("visible: {}, ", visible));
         }
-        if let Some(grab_key_focus) = &self.grab_key_focus {
+        if let Some(grab_key_focus) = self.grab_key_focus.as_ref() {
             let _ = f.write_fmt(format_args!("grab_key_focus: {}, ", grab_key_focus));
         }
-        if let Some(block_signal_event) = &self.block_signal_event {
+        if let Some(block_signal_event) = self.block_signal_event.as_ref() {
             let _ = f.write_fmt(format_args!("block_signal_event: {}, ", block_signal_event));
         }
-        if let Some(cursor) = &self.cursor {
+        if let Some(cursor) = self.cursor.as_ref() {
             let _ = f.write_fmt(format_args!("cursor: {}, ", cursor));
+        }
+        if let Some(title) = self.title.as_ref() {
+            let _ = f.write_fmt(format_args!(
+                "caption_bar = {{caption_label = {{label = {{text: \"{}\"}}}}}}, ",
+                title
+            ));
         }
         f.write_str("")
     }

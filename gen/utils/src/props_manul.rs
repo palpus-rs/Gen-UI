@@ -42,6 +42,7 @@ impl Text {
     pub const EMPTY: &'static str = "empty";
     /// 空消息
     pub const EMPTY_MESSAGE: &'static str = "empty_message";
+    pub const WINDOW_TITLE: &'static str = "window_title";
 }
 
 pub struct Size;

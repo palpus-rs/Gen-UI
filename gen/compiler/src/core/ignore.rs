@@ -52,7 +52,6 @@ impl Ignore {
                     "target",
                     ".gen_cache",
                     ".gen_ignore",
-                    "target",
                 ]
                 .iter()
                 .map(|item| path.as_ref().join(item))

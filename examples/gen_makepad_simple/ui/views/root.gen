@@ -24,6 +24,7 @@ import!{
 <style>
 #ui{
   #main_window{
+    window_title: "GenUI + Makepad Simple Example";
     width: Fill;
     height: Fill;
     background_visible: true;

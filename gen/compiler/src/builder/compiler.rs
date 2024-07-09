@@ -124,7 +124,6 @@ impl CompilerBuilder {
     /// target
     /// .gen_cache
     /// .gen_ignore
-    /// target
     /// ```
     /// ### .gen_ignore
     /// In `.gen_ignore`, there are files or directories that GenUI projects need to ignore for monitoring
