@@ -38,6 +38,9 @@ pub struct Widget {
     pub is_static: bool,
     /// widget id, if widget is prop, id is prop
     pub id: Option<String>,
+    /// is widget as a prop? if prop is true , widget need id
+    /// `<view id="a" as_prop></view>` => as_prop = true
+    pub as_prop: bool, 
     pub name: String,
     pub source: Option<Source>,
     pub imports: Option<TokenStream>,
@@ -128,7 +131,10 @@ impl Widget {
         }
         self
     }
-
+    pub fn set_as_prop(&mut self, as_prop: bool) -> &mut Self{
+        self.as_prop = as_prop;
+        self
+    }
     pub fn set_is_root(&mut self, is_root: bool) -> &mut Self {
         self.is_root = is_root;
         self
@@ -358,6 +364,7 @@ impl Widget {
                     is_prop,
                     is_built_in,
                     id,
+                    as_prop,
                     name,
                     props,
                     ..
@@ -373,6 +380,7 @@ impl Widget {
                     id.as_ref(),
                     *is_root,
                     *is_prop,
+                    *as_prop,
                     &name,
                     props.clone(),
                     child.widget_children_tree(),
@@ -509,6 +517,7 @@ fn build_widget(
     widget
         .set_is_root(template.is_root())
         .set_id(template.get_id())
+        .set_as_prop(template.as_prop)
         .set_props(widget_styles)
         .set_script(script)
         .set_is_static(template.is_static());

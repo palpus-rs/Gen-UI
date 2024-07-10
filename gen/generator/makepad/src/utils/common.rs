@@ -6,7 +6,6 @@ use syn::{
     Field, Ident, Path,
 };
 
-
 use super::{derive_macros, id_macro};
 
 /// generate `live!{ //.. }`
@@ -202,6 +201,7 @@ pub fn component_render(
     id: Option<&String>,
     is_root: bool,
     is_component: bool,
+    as_prop: bool,
     tag: &str,
     props: Option<TokenStream>,
     children: Option<TokenStream>,
@@ -210,10 +210,14 @@ pub fn component_render(
     if id.is_some() {
         tk.push(token_tree_ident(id.unwrap()));
 
-        match (is_component, is_root) {
-            (false, true) => tk.push(token_tree_punct_alone(':')),
-            _ => tk.push(token_tree_punct_alone('=')),
-        };
+        if as_prop {
+            tk.push(token_tree_punct_alone(':'));
+        } else {
+            match (is_component, is_root) {
+                (false, true) => tk.push(token_tree_punct_alone(':')),
+                _ => tk.push(token_tree_punct_alone('=')),
+            };
+        }
     }
 
     tk.extend(vec![

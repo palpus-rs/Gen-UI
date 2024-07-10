@@ -3,16 +3,14 @@ use std::fmt::Display;
 use gen_parser::Value;
 use gen_utils::{
     error::Errors,
-    props_manul::{Others, Position, Size},
+    props_manul::{Position, Size},
 };
 use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
-        builtin::{draw_splitter::DrawSplitter, Layout, SplitterAlign, SplitterAxis, Walk},
-        ABS_POS, ALIGN, BRIGHTNESS, CLIP_X, CLIP_Y, COLOR, CURVE, DRAW_DEPTH, DRAW_ICON, FLOW,
-        HEIGHT, ICON_WALK, LINEARIZE, LINE_SPACING, MARGIN, PADDING, SCALE, SCROLL, SPACING,
-        SVG_FILE, WIDTH,
+        builtin::{draw_splitter::DrawSplitter, SplitterAlign, SplitterAxis, Walk},
+        ABS_POS, HEIGHT, MARGIN, WIDTH,
     },
     props_to_token,
     widget::{
@@ -22,11 +20,6 @@ use crate::{
     },
     ToToken,
 };
-
-enum NodeType {
-    Inner,
-    Outer,
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct SplitterProps {
@@ -52,8 +45,13 @@ impl DynProps for SplitterProps {
     ) -> proc_macro2::TokenStream {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
-            "axis" => quote_prop(vec!["axis"], &value),
-
+          
+            Position::FLOW => quote_prop(vec!["axis"], &value),
+            Position::ALIGN => quote_prop(vec!["align"], &value),
+            // Size::MIN_PROPORTION => self.min_v_h(&value),
+            // Size::MAX_PROPORTION => self.max_v_h(&value),
+            "draw_splitter" => quote_prop(vec!["draw_splitter"], &value),
+            "splitter_width" => quote_prop(vec!["split_bar_size"], &value),
             // ----------------- walk -----------------
             Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
             Size::WIDTH => quote_prop(vec![WIDTH], &value),

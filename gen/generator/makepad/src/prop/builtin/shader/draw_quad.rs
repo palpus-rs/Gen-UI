@@ -123,7 +123,7 @@ impl From<&str> for DrawQuad {
 
 impl From<&Hex> for DrawQuad {
     fn from(value: &Hex) -> Self {
-        let pixel = hex_to_pixel(value.0.as_str());
+        let pixel = hex_to_pixel(value);
         DrawQuad {
             pixel,
             draw_depth: None,

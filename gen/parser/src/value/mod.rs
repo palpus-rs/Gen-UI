@@ -5,7 +5,7 @@ use std::{fmt::Display, str::FromStr};
 pub use function::Function;
 use gen_utils::error::Errors;
 
-use crate::{common::BuiltinColor, from_i_number, from_u_number};
+use crate::{common::BuiltinColor, from_i_number, from_u_number, target::function};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Value {
@@ -176,6 +176,27 @@ impl Value {
                 "value type unsupport to use to_vec_string()".to_string(),
             )),
         }
+    }
+    pub fn unknown_to_function(&self) -> Result<Value, Errors> {
+        if let Value::UnKnown(u) = self {
+            if let Ok((remain, (sign, (name, params, is_style)))) = function(&u) {
+                if remain.is_empty() {
+                    match sign {
+                        "()" => {
+                            return Ok(Value::Function((name, params, is_style.unwrap()).into()))
+                        }
+                        _ => return Err(Errors::PropConvertFail(format!(
+                            "[sign error!!] can not convert Value::Unknown{} to Value::Function",
+                            self
+                        ))),
+                    }
+                }
+            }
+        }
+        Err(Errors::PropConvertFail(format!(
+            "can not convert Value::Unknown{} to Value::Function",
+            self
+        )))
     }
 }
 

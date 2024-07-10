@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use gen_parser::Value;
+use gen_parser::{common::hex_to_vec4, Value};
 use gen_utils::error::Errors;
 
 use super::draw_quad::DrawQuad;
@@ -18,7 +18,7 @@ impl TryFrom<&Value> for DrawColor {
         let (quad, hex_color) = DrawQuad::try_from_back(value)?;
         let mut draw_color = DrawColor::default();
         // exist color
-        draw_color.color = hex_color.map(|hex| hex.0);
+        draw_color.color = hex_color.map(|hex| hex_to_vec4(&hex).to_string());
         draw_color.draw_super = quad;
 
         Ok(draw_color)

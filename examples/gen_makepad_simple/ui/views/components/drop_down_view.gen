@@ -2,6 +2,10 @@
   <view id="drop_down_view">
     <drop_down id="drop1"></drop_down>
     <desktop_button type="WindowsMin"></desktop_button>
+    <splitter align="from_a(50.0)">
+      <view background_color="#FF0000" as_prop="true" id="a" background_visible="true" width="100.0"></view>
+      <view background_color="#FF00FF" as_prop="true" id="b" background_visible="true" width="100.0"></view>
+    </splitter>
   </view>
 </template>
 

@@ -1,12 +1,14 @@
-use gen_parser::common::{Hex, LinearGradient, RadialGradient};
+use gen_parser::common::{hex_to_vec4, Hex, LinearGradient, RadialGradient};
 use gen_utils::common::ident;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
 
 /// convert hex to pixel
-pub fn hex_to_pixel(value: &str) -> TokenStream {
-    let color = parse_str::<TokenStream>(value).unwrap();
+pub fn hex_to_pixel(value: &Hex) -> TokenStream {
+    // convert hex str to vec4
+    let color = hex_to_vec4(value);
+    // let color = parse_str::<TokenStream>(value).unwrap();
     quote! {
         fn pixel(self) -> vec4{
             return #color;

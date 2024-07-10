@@ -12,7 +12,7 @@ pub type PropTree = Vec<((String, String), Props)>;
 /// 它用于完整的表示一个.gen文件，因为.gen文件就是一个完整的组件，所以这个模型也是一个完整的组件
 /// 组件严格意义上并没有区分
 /// 在GenUI中甚至没有内置组件的概念（因为GenUI是可插拔的，如果你想要转化为Makepad，那么内置组件就是Makepad的内置组件）
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TemplateModel {
     /// 组件的唯一标识符
     /// 它可以与文件模型的唯一标识符组合
@@ -25,6 +25,10 @@ pub struct TemplateModel {
     /// id是一个字符串，一个组件模型只能有一个id
     /// 这个id不能是动态绑定的，只能是静态的
     pub id: Option<String>,
+    /// 将组件作为一个普通组件还是属性
+    /// 如果为true则说明当前组件被作为一个"属性"
+    /// 例如：`<view id="hello" as_prop />`
+    pub as_prop: bool,
     /// 组件的名字，这个名字标识了组件应该如何在.gen文件中书写
     /// 例如，如果组件名字是`button`，那么在.gen文件中书写`<button></button>`就是正确的
     name: String,
@@ -143,6 +147,21 @@ impl TemplateModel {
                 match props.remove(&remove_item) {
                     Some(value) => {
                         let _ = self.set_id(value.to_string().as_str());
+                        true
+                    }
+                    None => false,
+                }
+            }
+            None => false,
+        }
+    }
+    fn set_as_prop_from_props(&mut self) -> bool {
+        match self.props.as_mut() {
+            Some(props) => {
+                let remove_item = PropsKey::new("as_prop", false, PropertyKeyType::Normal);
+                match props.remove(&remove_item) {
+                    Some(_) => {
+                        self.as_prop = true;
                         true
                     }
                     None => false,
@@ -411,6 +430,8 @@ fn convert_template(tag: &Tag, model: &mut TemplateModel, is_root: bool) -> () {
     }
     // [完成属性设置后提取id]--------------------------------------------------------------
     model.set_id_from_props();
+    // [完成属性设置后提取as_prop]--------------------------------------------------------
+    model.set_as_prop_from_props();
     // [完成属性设置后提取class列表]--------------------------------------------------------
     model.set_class_from_prop();
     // [完成属性设置后提取inherits]--------------------------------------------------------
@@ -448,23 +469,24 @@ impl Default for TemplateModel {
             root: Default::default(),
             children: Default::default(),
             parent: Default::default(),
+            as_prop: false
         }
     }
 }
 
-impl Clone for TemplateModel {
-    fn clone(&self) -> Self {
-        Self {
-            special: self.special.clone(),
-            class: self.class.clone(),
-            id: self.id.clone(),
-            name: self.name.clone(),
-            props: self.props.clone(),
-            callbacks: self.callbacks.clone(),
-            inherits: self.inherits.clone(),
-            root: self.root.clone(),
-            children: self.children.clone(),
-            parent: self.parent.clone(),
-        }
-    }
-}
+// impl Clone for TemplateModel {
+//     fn clone(&self) -> Self {
+//         Self {
+//             special: self.special.clone(),
+//             class: self.class.clone(),
+//             id: self.id.clone(),
+//             name: self.name.clone(),
+//             props: self.props.clone(),
+//             callbacks: self.callbacks.clone(),
+//             inherits: self.inherits.clone(),
+//             root: self.root.clone(),
+//             children: self.children.clone(),
+//             parent: self.parent.clone(),
+//         }
+//     }
+// }
