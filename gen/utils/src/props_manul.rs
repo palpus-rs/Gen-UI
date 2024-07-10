@@ -153,6 +153,8 @@ impl Event {
     pub const FOCUS: &'static str = "focus";
     /// 选择
     pub const SELECTED: &'static str = "selected";
+    /// 开启
+    pub const OPENED: &'static str = "opened";
     /// 绑定
     pub const BIND: &'static str = "bind";
     /// 事件顺序

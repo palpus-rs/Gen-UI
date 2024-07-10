@@ -7,6 +7,15 @@
       <view background_color="#FF00FF" as_prop="true" id="b" background_visible="true" width="100.0"></view>
     </splitter>
     <fold_button margin="16.0"></fold_button>
+    <fold_header>
+      <view background_color="#FF0000" as_prop="true" id="header" background_visible="true" width="Fill" height="Fit">
+        <fold_button></fold_button>
+        <label text="click here!!"></label>
+      </view>
+      <view background_color="#FF00FF" as_prop="true" id="body" background_visible="true" width="Fill" height="Fit">
+        <label text="this is body!!!"></label>
+      </view>
+    </fold_header>
     <rotated_image src="crate://self/resources/robius.png" height="60" width="60" rotation="90.0" opacity="0.6"></rotated_image>
   </view>
 </template>

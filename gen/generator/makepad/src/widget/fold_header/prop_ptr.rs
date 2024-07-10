@@ -4,8 +4,8 @@ use syn::{Fields, ItemStruct};
 
 use crate::{from_struct_to_ptr, ptr_to_token, utils::struct_field, widget::utils::quote_makepad_widget_struct, ToToken};
 
-pub struct RotatedImagePropPtr(pub ItemStruct);
+pub struct FoldHeaderPropPtr(pub ItemStruct);
 
-from_struct_to_ptr!{RotatedImagePropPtr, "rotated_image", "RotatedImage"}
+from_struct_to_ptr!{FoldHeaderPropPtr, "fold_header", "FoldHeader"}
 
-ptr_to_token!(RotatedImagePropPtr);
+ptr_to_token!(FoldHeaderPropPtr);

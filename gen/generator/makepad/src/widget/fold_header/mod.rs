@@ -1,5 +1,5 @@
 mod prop;
 mod prop_ptr;
 
-pub use prop::RotatedImageProps;
-pub use prop_ptr::RotatedImagePropPtr;
+pub use prop::FoldHeaderProps;
+pub use prop_ptr::FoldHeaderPropPtr;

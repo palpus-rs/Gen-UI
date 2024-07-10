@@ -112,6 +112,7 @@ pub enum BuiltIn {
     Splitter,
     RotatedImage,
     FoldButton,
+    FoldHeader
 }
 
 impl BuiltIn {
@@ -157,6 +158,7 @@ impl BuiltIn {
             BuiltIn::Splitter => splitter::SplitterProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::RotatedImage => rotated_image::RotatedImageProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::FoldButton => fold_button::FoldButtonProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::FoldHeader => fold_header::FoldHeaderProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -189,6 +191,7 @@ impl BuiltIn {
             BuiltIn::Splitter => splitter::SplitterProps::props(props).to_token_stream(),
             BuiltIn::RotatedImage => rotated_image::RotatedImageProps::props(props).to_token_stream(),
             BuiltIn::FoldButton => fold_button::FoldButtonProps::props(props).to_token_stream(),
+            BuiltIn::FoldHeader => fold_header::FoldHeaderProps::props(props).to_token_stream(),
 
         }
     }
@@ -221,6 +224,7 @@ impl BuiltIn {
             BuiltIn::Splitter => splitter::SplitterPropPtr::from(ptr).to_token_stream(),
             BuiltIn::RotatedImage => rotated_image::RotatedImagePropPtr::from(ptr).to_token_stream(),
             BuiltIn::FoldButton => fold_button::FoldButtonPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::FoldHeader => fold_header::FoldHeaderPropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -263,6 +267,7 @@ impl BuiltIn {
             BuiltIn::Splitter => todo!(),
             BuiltIn::RotatedImage => todo!(),
             BuiltIn::FoldButton => todo!(),
+            BuiltIn::FoldHeader => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -301,6 +306,7 @@ impl BuiltIn {
             BuiltIn::Splitter => todo!(),
             BuiltIn::RotatedImage => todo!(),
             BuiltIn::FoldButton => todo!(),
+            BuiltIn::FoldHeader => todo!(),
         }
     }
 }
@@ -337,6 +343,7 @@ impl TryFrom<&str> for BuiltIn {
             SPLITTER => Ok(BuiltIn::Splitter),
             ROTATED_IMAGE => Ok(BuiltIn::RotatedImage),
             FOLD_BUTTON => Ok(BuiltIn::FoldButton),
+            FOLD_HEADER => Ok(BuiltIn::FoldHeader),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -383,6 +390,7 @@ impl Display for BuiltIn {
             BuiltIn::Splitter => SPLITTER,
             BuiltIn::RotatedImage => ROTATED_IMAGE,
             BuiltIn::FoldButton => FOLD_BUTTON,
+            BuiltIn::FoldHeader => FOLD_HEADER,
         })
     }
 }
