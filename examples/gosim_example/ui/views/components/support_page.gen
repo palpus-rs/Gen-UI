@@ -4,24 +4,24 @@
     <view class="img_wrap">
         <view class="line_wrap">
             <rounded_view class="common_view">
-                <image class="common_img" source="crate://self/resources/support_1.png"></image>
+                <image class="common_img" src="crate://self/resources/support_1.png"></image>
             </rounded_view>
             <rounded_view class="common_view">
-                <image class="common_img" source="crate://self/resources/support_2.png"></image>
+                <image class="common_img" src="crate://self/resources/support_2.png"></image>
             </rounded_view>
             <rounded_view class="common_view">
-                <image class="common_img" source="crate://self/resources/support_3.png"></image>
+                <image class="common_img" src="crate://self/resources/support_3.png"></image>
             </rounded_view>
             <rounded_view class="common_view">
-                <image class="common_img" source="crate://self/resources/support_4.png"></image>
+                <image class="common_img" src="crate://self/resources/support_4.png"></image>
             </rounded_view>
         </view>
         <view class="line_wrap">
             <rounded_view class="common_view">
-                <image class="common_img" source="crate://self/resources/support_5.png"></image>
+                <image class="common_img" src="crate://self/resources/support_5.png"></image>
             </rounded_view>
             <rounded_view class="common_view">
-                <image class="common_img" source="crate://self/resources/support_6.png"></image>
+                <image class="common_img" src="crate://self/resources/support_6.png"></image>
             </rounded_view>
         </view>
     </view>
@@ -31,18 +31,18 @@
             <label class="common_txt3" text="The global tech landscape is replete with innovations, and much of its foundation is built upon the ethos of open source collaboration. At the forefront of championing this collaboration stands GOSIM, a platform dedicated to nurturing the brightest grassroots open-source projects from their inception to maturity."></label>
             <label class="common_txt3" text="GOSIM emerged from the shared vision of a global open-source community. Organized by and for the community, this entirely volunteer-based endeavor has one prime objective: to provide a stage where innovative open-source projects can shine, collaborate, and evolve. It's not just a platform; it's a movement. One that wholeheartedly embraces an open, diverse, and inclusive culture. If a project is global, innovative, grass roots ,and open-source, it has found its home at GOSIM."></label>
             <view align="0.5" spacing="6.0" height="Fit">
-                <image height="18.0" width="18.0" source="crate://self/resources/check.png"></image><label class="common_txt3" text="Organized by and created for the open-source community."></label>
+                <image height="18.0" width="18.0" src="crate://self/resources/check.png"></image><label class="common_txt3" text="Organized by and created for the open-source community."></label>
             </view>
             <view align="0.5" spacing="6.0" height="Fit">
-                <image height="18.0" width="18.0" source="crate://self/resources/check.png"></image><label class="common_txt3" text="Subscribes to an open, diverse, and inclusive culture."></label>
+                <image height="18.0" width="18.0" src="crate://self/resources/check.png"></image><label class="common_txt3" text="Subscribes to an open, diverse, and inclusive culture."></label>
             </view>
             <view align="0.5" spacing="6.0" height="Fit">
-                <image height="18.0" width="18.0" source="crate://self/resources/check.png"></image><label class="common_txt3" text="Volunteer based."></label>
+                <image height="18.0" width="18.0" src="crate://self/resources/check.png"></image><label class="common_txt3" text="Volunteer based."></label>
             </view>
             <button class="event_btn" text="The Three Pillars of GOSIM"></button>
         </rounded_view>
         <rounded_view class="common_view2">
-            <image source="crate://self/resources/bg.jpg" height="Fill" width="Fill" fit="Vertical"></image>
+            <image src="crate://self/resources/bg.jpg" height="Fill" width="Fill" fit="Vertical"></image>
         </rounded_view>
     </view>
   </view>

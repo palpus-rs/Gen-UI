@@ -25,14 +25,15 @@
 - [x] RoundedView
 - [x] RoundedShadowView
 - [x] TextInput
-- [ ] DropDown
+- [x] DropDown
+- [x] LinkLabel
 - [ ] Html
 - [ ] Markdown
 - [ ] ScrollBar
 - [ ] DesktopButton
 - [ ] NavControl
 - [ ] WindowMenu
-- [ ] Splitter
+- [x] Splitter
 
 #### Props
 

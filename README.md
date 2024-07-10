@@ -33,28 +33,36 @@
 - [x] Image
 - [x] Radio
 - [x] Checkbox
-- [ ] ScrollXYView
-- [ ] ScrollXView
-- [ ] ScrollYView
-- [ ] TextInput
+- [x] ScrollXYView
+- [x] ScrollXView
+- [x] ScrollYView
+- [x] SolidView
+- [x] RectView
+- [x] RectShadowView
+- [x] RoundedView
+- [x] RoundedShadowView
+- [x] TextInput
+- [x] DropDown
+- [x] LinkLabel
 - [ ] Html
 - [ ] Markdown
 - [ ] ScrollBar
 - [ ] DesktopButton
 - [ ] NavControl
 - [ ] WindowMenu
-- [ ] Splitter
+- [x] Splitter
 
 #### Props
 
 - [ ] animation
-- [ ] shader
-- [ ] Color
-  - [x] Base Hex
-  - [ ] linear
-  - [ ] radial
-- [x] widget props
-
+- [x] Draw
+- [x] Color
+  - [x] hex
+  - [x] linear
+  - [x] radial
+  - [x] rgb
+  - [x] rgba
+  - [x] shader
 #### Control
 
 - [ ] for

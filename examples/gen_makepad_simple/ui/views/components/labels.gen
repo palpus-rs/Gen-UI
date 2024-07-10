@@ -1,6 +1,7 @@
 <template>
-  <view id="label_view" flow="Down" height="100.0">
+  <view id="label_view" flow="Down" height="140.0">
     <label id="label1"></label>
+    <link_label id="link1" href="https://gen.ipter.org/" target="true"></link_label>
   </view>
 </template>
 
@@ -18,5 +19,9 @@
   width: 120.0;
   margin: 10.0 16.0;
   padding: 6.0;
+}
+#link1{
+  text: "Gosim Example";
+  font_size: 10.0;
 }
 </style>

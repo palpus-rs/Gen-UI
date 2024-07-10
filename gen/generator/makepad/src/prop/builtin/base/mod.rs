@@ -16,6 +16,7 @@ mod value;
 mod image;
 mod check_type;
 mod popup_menu_position;
+mod splitter;
 // mod window;
 
 
@@ -37,4 +38,5 @@ pub use vec::*;
 pub use walk::*;
 pub use image::*;
 pub use popup_menu_position::*;
+pub use splitter::*;
 // pub use window::*;

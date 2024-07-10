@@ -68,7 +68,12 @@ impl Size {
     pub const CLIP_Y: &'static str = "clip_y";
     /// 窗口大小
     pub const WINDOW_SIZE: &'static str = "window_size";
+    /// 宽度缩放
     pub const WIDTH_SCALE: &'static str = "width_scale";
+    /// 占比
+    pub const PROPORTION: &'static str = "proportion";
+    pub const MIN_PROPORTION: &'static str = "min_proportion";
+    pub const MAX_PROPORTION: &'static str = "max_proportion";
 }
 
 pub struct Position;
@@ -123,11 +128,16 @@ pub struct Resource;
 
 impl Resource {
     /// 资源
-    pub const SOURCE: &'static str = "source";
+    pub const SOURCE: &'static str = "src";
     /// 适应(用于图片)
     pub const FIT: &'static str = "fit";
     /// 媒体
     pub const MEDIA: &'static str = "media";
+    /// url href
+    pub const HREF: &'static str = "href";
+    /// target
+    pub const TARGET: &'static str = "target";
+
 }
 
 pub struct Event;

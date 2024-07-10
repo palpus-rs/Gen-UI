@@ -12,7 +12,7 @@
     .common_img{
         width: 60.0;
         height: 60.0;
-        source: "crate://self/static/robius.png";
+        src: "crate://self/static/robius.png";
     }
 }
 </style>

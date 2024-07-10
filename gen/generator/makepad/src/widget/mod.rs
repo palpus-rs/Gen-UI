@@ -40,6 +40,7 @@ pub mod utils;
 pub mod view;
 pub mod window;
 pub mod window_menu;
+pub mod link_label;
 // pub use define::*;
 // pub use button::*;
 // pub use label::*;
@@ -70,6 +71,7 @@ const RECTSHADOWVIEW: &str = "RectShadowView";
 const SOLIDVIEW: &str = "SolidView";
 const DROP_DOWN: &str = "DropDown";
 const SHADER: &str = "Shader";
+const LINK_LABEL: &str = "LinkLabel";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -98,6 +100,7 @@ pub enum BuiltIn {
     Radio,
     Root,
     DropDown,
+    LinkLabel,
 }
 
 impl BuiltIn {
@@ -137,7 +140,8 @@ impl BuiltIn {
             BuiltIn::RoundedShadowView => {
                 view::RoundedShadowViewProps::prop_bind(prop, value, is_prop, ident)
             },
-            BuiltIn::DropDown => drop_down::DropDownProps::prop_bind(prop, value, is_prop, ident)
+            BuiltIn::DropDown => drop_down::DropDownProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::LinkLabel => link_label::LinkLabelProps::prop_bind(prop, value, is_prop, ident)
             
         }
     }
@@ -165,7 +169,8 @@ impl BuiltIn {
             BuiltIn::RoundedShadowView => {
                 view::RoundedShadowViewProps::props(props).to_token_stream()
             },
-            BuiltIn::DropDown => drop_down::DropDownProps::props(props).to_token_stream()
+            BuiltIn::DropDown => drop_down::DropDownProps::props(props).to_token_stream(),
+            BuiltIn::LinkLabel => link_label::LinkLabelProps::props(props).to_token_stream()
             
         }
     }
@@ -192,7 +197,8 @@ impl BuiltIn {
                 panic!("scroll view can not be inherited you need to inherits View")
             }
             BuiltIn::TextInput => text_input::TextInputPropPtr::from(ptr).to_token_stream(),
-            BuiltIn::DropDown => drop_down::DropDownPropPtr::from(ptr).to_token_stream()
+            BuiltIn::DropDown => drop_down::DropDownPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::LinkLabel => link_label::LinkLabelPropPtr::from(ptr).to_token_stream()
         }
     }
     pub fn has_event(&self) -> bool {
@@ -230,6 +236,7 @@ impl BuiltIn {
             }
             BuiltIn::TextInput => todo!(),
             BuiltIn::DropDown => todo!(),
+            BuiltIn::LinkLabel => todo!()
         }
     }
     /// 处理widget的事件处理函数
@@ -263,6 +270,7 @@ impl BuiltIn {
             }
             BuiltIn::TextInput => todo!(),
             BuiltIn::DropDown => todo!(),
+            BuiltIn::LinkLabel => todo!()
         }
     }
 }
@@ -294,6 +302,7 @@ impl TryFrom<&str> for BuiltIn {
             ROUNDEDSHADOWVIEW => Ok(BuiltIn::RoundedShadowView),
             TEXT_INPUT => Ok(BuiltIn::TextInput),
             DROP_DOWN => Ok(BuiltIn::DropDown),
+            LINK_LABEL => Ok(BuiltIn::LinkLabel),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -335,6 +344,7 @@ impl Display for BuiltIn {
             BuiltIn::RoundedView => ROUNDEDVIEW,
             BuiltIn::RoundedShadowView => ROUNDEDSHADOWVIEW,
             BuiltIn::DropDown => DROP_DOWN,
+            BuiltIn::LinkLabel => LINK_LABEL
         })
     }
 }

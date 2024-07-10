@@ -6,7 +6,7 @@
 
 <style>
 #drop_down_view{
-    height: 300.0;
+    height: 100.0;
     width: Fill;
     align: 0.5;
     #drop1{

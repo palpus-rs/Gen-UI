@@ -33,7 +33,7 @@
     #logo{
         height: 30.0;
         width: 120.0;
-        source: "crate://self/resources/logo.png";
+        src: "crate://self/resources/logo.png";
     }
   }
   #menu_list{
