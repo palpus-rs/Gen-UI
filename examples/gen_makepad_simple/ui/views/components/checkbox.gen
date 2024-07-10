@@ -1,11 +1,11 @@
 <template>
   <view id="checkbox_view">
-    <checkbox class="checkbox1" check_type="Radio"></checkbox>
+    <checkbox class="checkbox1" type="Radio"></checkbox>
     <checkbox class="checkbox1"></checkbox>
     <checkbox id="checkbox2"></checkbox>
     <radio_button id="radio1"></radio_button>
     <radio_button id="radio2"></radio_button>
-    <checkbox class="checkbox1" check_type="None"></checkbox>
+    <checkbox class="checkbox1" type="None"></checkbox>
     
     <button text="click" @click="change"></button>
     <label :text="label_text" margin="16.0"></label>
@@ -36,7 +36,7 @@ let change = ||{
     text: "Checkbox Toggle";
     text_margin: 0 0 0 16.0;
     brightness: 1.5;
-    check_type: Toggle;
+    type: Toggle;
   }
   #radio1{
     text: "Radio1";
@@ -44,7 +44,7 @@ let change = ||{
     font_size: 16.0;
   }
   #radio2{
-    radio_type: Tab;
+    type: Tab;
     text: "Radio Tab";
     margin: 0 16.0;
     padding: 12.0;

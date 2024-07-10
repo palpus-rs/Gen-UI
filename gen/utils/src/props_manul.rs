@@ -122,6 +122,7 @@ impl Others {
     pub const OPTIMIZE: &'static str = "optimize";
     pub const SELECT_PAD_EDGES: &'static str = "select_pad_edges";
     pub const ON_FOCUS_SELECT_ALL: &'static str = "on_focus_select_all";
+    pub const TYPE: &'static str = "type";
 }
 
 pub struct Resource;

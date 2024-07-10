@@ -36,7 +36,7 @@ let change = ||{
     text: "Checkbox Toggle";
     label_margin: 0 0 0 16.0;
     font_brightness: 1.5;
-    check_type: Toggle;
+    type: Toggle;
   }
   #radio1{
     text: "Radio1";

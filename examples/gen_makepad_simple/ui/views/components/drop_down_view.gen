@@ -1,6 +1,7 @@
 <template>
   <view id="drop_down_view">
     <drop_down id="drop1"></drop_down>
+    <desktop_button type="WindowsMin"></desktop_button>
   </view>
 </template>
 

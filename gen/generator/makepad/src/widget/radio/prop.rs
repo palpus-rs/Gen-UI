@@ -173,7 +173,7 @@ impl DynProps for RadioButtonProps {
             Event::BIND => quote_prop(vec!["bind"], &value),
             // "label" => self.label(&value),
             Text::TEXT => quote_prop(vec!["text"], &value),
-            "radio_type" => quote_prop(vec!["radio_type"], &value),
+            Others::TYPE => quote_prop(vec!["radio_type"], &value),
             Resource::MEDIA => quote_prop(vec!["media"], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
@@ -245,7 +245,7 @@ impl StaticProps for RadioButtonProps {
             Event::BIND => self.bind(&value),
             // "label" => self.label(&value),
             Text::TEXT => self.label(&value),
-            "radio_type" => self.radio_type(&value),
+            Others::TYPE => self.radio_type(&value),
             Resource::MEDIA => self.media(&value),
             _ => {
                 if !prop_ignore(prop_name) {

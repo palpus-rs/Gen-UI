@@ -3,7 +3,7 @@ use std::fmt::Display;
 use gen_parser::Value;
 use gen_utils::{
     error::Errors,
-    props_manul::{Background, Position, Size},
+    props_manul::{Background, Others, Position, Size},
 };
 use proc_macro2::TokenStream;
 
@@ -36,7 +36,7 @@ impl DynProps for DesktopButtonProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG], &value),
-            "button_type" => quote_prop(vec![DRAW_BG, "button_type"], &value),
+            Others::TYPE => quote_prop(vec![DRAW_BG, "button_type"], &value),
             // ----------------- walk -----------------
             Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
             Size::WIDTH => quote_prop(vec![WIDTH], &value),
@@ -62,7 +62,7 @@ impl StaticProps for DesktopButtonProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             Background::BACKGROUND_COLOR => self.draw_bg(&value),
-            "button_type" => self.button_type(&value),
+            Others::TYPE => self.button_type(&value),
             // ----------------- walk -----------------
             Size::HEIGHT => self.height(&value),
             Size::WIDTH => self.width(&value),
@@ -124,7 +124,7 @@ impl Display for DesktopButtonProps {
             let _ = f.write_fmt(format_args!("{}", walk.to_string()));
         }
         if let Some(draw_bg) = &self.draw_bg {
-            let _ = f.write_fmt(format_args!("{}: {}", DRAW_BG, draw_bg.to_string()));
+            let _ = f.write_fmt(format_args!("{}: {{{}}}", DRAW_BG, draw_bg.to_string()));
         }
         write!(f, "")
     }

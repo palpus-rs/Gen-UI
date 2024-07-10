@@ -54,7 +54,7 @@ impl DynProps for CheckBoxProps {
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
             // ----------------- draw_check ---------------
-            CHECK_TYPE => quote_prop(vec![DRAW_CHECKBOX, CHECK_TYPE], &value),
+            Others::TYPE => quote_prop(vec![DRAW_CHECKBOX, CHECK_TYPE], &value),
             Event::HOVER => quote_prop(vec![DRAW_CHECKBOX, HOVER], &value),
             Event::FOCUS => quote_prop(vec![DRAW_CHECKBOX, FOCUS], &value),
             Event::SELECTED => quote_prop(vec![DRAW_CHECKBOX, SELECTED], &value),
@@ -130,7 +130,7 @@ impl StaticProps for CheckBoxProps {
     fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_check ---------------
-            CHECK_TYPE => self.check_type(&value),
+            Others::TYPE => self.check_type(&value),
             Event::HOVER => self.hover(&value),
             Event::FOCUS => self.focus(&value),
             Event::SELECTED => self.selected(&value),
