@@ -42,6 +42,10 @@ pub mod window;
 pub mod window_menu;
 pub mod link_label;
 pub mod desktop_button;
+pub mod fold_button;
+pub mod fold_header;
+pub mod slider;
+pub mod rotated_image;
 
 const WINDOW: &str = "Window";
 const VIEW: &str = "View";
@@ -66,10 +70,15 @@ const RECTVIEW: &str = "RectView";
 const RECTSHADOWVIEW: &str = "RectShadowView";
 const SOLIDVIEW: &str = "SolidView";
 const DROP_DOWN: &str = "DropDown";
-const SHADER: &str = "Shader";
+// const SHADER: &str = "Shader";
 const LINK_LABEL: &str = "LinkLabel";
 const DESKTOP_BUTTON: &str = "DesktopButton";
 const SPLITTER: &str = "Splitter";
+const ROTATED_IMAGE: &str = "RotatedImage";
+const FOLD_BUTTON: &str = "FoldButton";
+const FOLD_HEADER: &str = "FoldHeader";
+const SLIDER: &str = "Slider";
+
 /// 判断是否是内置属性， 内置属性需要忽略
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class", "as_prop"].contains(&prop)
@@ -101,6 +110,7 @@ pub enum BuiltIn {
     LinkLabel,
     DesktopButton,
     Splitter,
+    RotatedImage,
 }
 
 impl BuiltIn {
@@ -144,6 +154,7 @@ impl BuiltIn {
             BuiltIn::LinkLabel => link_label::LinkLabelProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::DesktopButton => desktop_button::DesktopButtonProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Splitter => splitter::SplitterProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::RotatedImage => rotated_image::RotatedImageProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -174,6 +185,7 @@ impl BuiltIn {
             BuiltIn::LinkLabel => link_label::LinkLabelProps::props(props).to_token_stream(),
             BuiltIn::DesktopButton => desktop_button::DesktopButtonProps::props(props).to_token_stream(),
             BuiltIn::Splitter => splitter::SplitterProps::props(props).to_token_stream(),
+            BuiltIn::RotatedImage => rotated_image::RotatedImageProps::props(props).to_token_stream(),
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -203,6 +215,7 @@ impl BuiltIn {
             BuiltIn::LinkLabel => link_label::LinkLabelPropPtr::from(ptr).to_token_stream(),
             BuiltIn::DesktopButton => desktop_button::DesktopButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Splitter => splitter::SplitterPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::RotatedImage => rotated_image::RotatedImagePropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -242,7 +255,8 @@ impl BuiltIn {
             BuiltIn::DropDown => todo!(),
             BuiltIn::LinkLabel => todo!(),
             BuiltIn::DesktopButton => todo!(),
-            BuiltIn::Splitter => todo!()
+            BuiltIn::Splitter => todo!(),
+            BuiltIn::RotatedImage => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -278,7 +292,8 @@ impl BuiltIn {
             BuiltIn::DropDown => todo!(),
             BuiltIn::LinkLabel => todo!(),
             BuiltIn::DesktopButton => todo!(),
-            BuiltIn::Splitter => todo!()
+            BuiltIn::Splitter => todo!(),
+            BuiltIn::RotatedImage => todo!(),
         }
     }
 }
@@ -313,6 +328,7 @@ impl TryFrom<&str> for BuiltIn {
             LINK_LABEL => Ok(BuiltIn::LinkLabel),
             DESKTOP_BUTTON => Ok(BuiltIn::DesktopButton),
             SPLITTER => Ok(BuiltIn::Splitter),
+            ROTATED_IMAGE => Ok(BuiltIn::RotatedImage),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -357,6 +373,7 @@ impl Display for BuiltIn {
             BuiltIn::LinkLabel => LINK_LABEL,
             BuiltIn::DesktopButton => DESKTOP_BUTTON,
             BuiltIn::Splitter => SPLITTER,
+            BuiltIn::RotatedImage => ROTATED_IMAGE,
         })
     }
 }

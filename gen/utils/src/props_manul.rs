@@ -69,7 +69,7 @@ impl Size {
     /// 窗口大小
     pub const WINDOW_SIZE: &'static str = "window_size";
     /// 宽度缩放
-    pub const WIDTH_SCALE: &'static str = "width_scale";
+    pub const SCALE: &'static str = "scale";
     /// 占比
     pub const PROPORTION: &'static str = "proportion";
     pub const MIN_PROPORTION: &'static str = "min_proportion";
@@ -99,6 +99,8 @@ impl Background {
     pub const BACKGROUND_COLOR: &'static str = "background_color";
     /// 显示背景
     pub const BACKGROUND_VISIBLE: &'static str = "background_visible";
+    /// 透明度
+    pub const OPACITY: &'static str = "opacity";
 }
 
 pub struct Border;
@@ -138,7 +140,6 @@ impl Resource {
     pub const HREF: &'static str = "href";
     /// target
     pub const TARGET: &'static str = "target";
-
 }
 
 pub struct Event;
@@ -160,6 +161,8 @@ impl Event {
     pub const GRAB_KEY_FOCUS: &'static str = "grab_key_focus";
     /// 阻止事件
     pub const BLOCK_SIGNAL_EVENT: &'static str = "block_signal_event";
+    /// 旋转
+    pub const ROTATION: &'static str = "rotation";
 }
 
 pub struct Cursor;

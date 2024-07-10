@@ -27,7 +27,7 @@ impl TryFrom<&Value> for DrawColor {
 
 impl Display for DrawColor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(color) = &self.color {
+        if let Some(color) = self.color.as_ref() {
             f.write_fmt(format_args!("color: {}", color))
         } else {
             self.draw_super.fmt(f)

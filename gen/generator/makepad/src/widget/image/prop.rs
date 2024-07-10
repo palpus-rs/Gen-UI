@@ -52,7 +52,7 @@ impl DynProps for ImageProps {
             Size::MIN_WIDTH => quote_prop(vec![MIN_WIDTH], &value),
             Resource::SOURCE => quote_prop(vec![SOURCE], &value),
             Resource::FIT => quote_prop(vec![FIT], &value),
-            Size::WIDTH_SCALE => quote_prop(vec![WIDTH_SCALE], &value),
+            Size::SCALE => quote_prop(vec![WIDTH_SCALE], &value),
             Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG], &value),
             _ => panic!("cannot match prop in BuiltIn Icon"),
         }
@@ -83,7 +83,7 @@ impl StaticProps for ImageProps {
             Size::MIN_WIDTH => self.min_width(&value),
             Resource::SOURCE => self.source(&value),
             Resource::FIT => self.fit(&value),
-            Size::WIDTH_SCALE => self.width_scale(&value),
+            Size::SCALE => self.width_scale(&value),
             Background::BACKGROUND_COLOR => self.draw_bg(&value),
             _ => {
                 if !prop_ignore(prop_name) {

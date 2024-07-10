@@ -1,5 +1,5 @@
 //! 暂不开启使用
-use std::{fmt::Display, str::FromStr};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use gen_parser::{
     common::{BuiltinColor, Hex, LinearGradient, MakepadShader, RadialGradient, Rgb, Rgba},
@@ -8,7 +8,10 @@ use gen_parser::{
 use gen_utils::error::Errors;
 use proc_macro2::TokenStream;
 
-use crate::prop::builtin::utils::{draw_linear_gradient, draw_radial_gradient, hex_to_pixel};
+use crate::{
+    prop::builtin::utils::{draw_linear_gradient, draw_radial_gradient, hex_to_pixel},
+    widget::utils::f32_prop,
+};
 
 /// ## SDF DrawQuad
 /// "signed distance field" (SDF) 的技术来绘制图形。
@@ -75,9 +78,18 @@ use crate::prop::builtin::utils::{draw_linear_gradient, draw_radial_gradient, he
 pub struct DrawQuad {
     pub pixel: TokenStream,
     pub draw_depth: Option<f32>,
+    pub instances: HashMap<String, String>,
 }
 
 impl DrawQuad {
+    pub fn add_instance(&mut self, key: &str, value: &str) -> () {
+        self.instances.insert(key.to_string(), value.to_string());
+    }
+    pub fn draw_depth(&mut self, value: &Value) -> Result<(), Errors> {
+        f32_prop(value, |f| {
+            self.draw_depth.replace(f);
+        })
+    }
     pub fn pixel(&mut self, value: &Value) -> Result<(), Errors> {
         let quad = DrawQuad::try_from(value)?;
         self.pixel = quad.pixel;
@@ -127,6 +139,7 @@ impl From<&Hex> for DrawQuad {
         DrawQuad {
             pixel,
             draw_depth: None,
+            instances: Default::default(),
         }
     }
 }
@@ -150,6 +163,7 @@ impl From<&MakepadShader> for DrawQuad {
         DrawQuad {
             pixel: value.0.clone(),
             draw_depth: None,
+            instances: Default::default(),
         }
     }
 }
@@ -194,6 +208,7 @@ impl From<&LinearGradient> for DrawQuad {
         DrawQuad {
             pixel,
             draw_depth: None,
+            instances: Default::default(),
         }
     }
 }
@@ -209,12 +224,22 @@ impl From<&RadialGradient> for DrawQuad {
         DrawQuad {
             pixel,
             draw_depth: None,
+            instances: Default::default(),
         }
     }
 }
 
 impl Display for DrawQuad {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let instance_str = self.instances.iter().fold(String::new(), |acc, (k, v)| {
+            format!("{}{}: {}, ", acc, k, v)
+        });
+        let _ = f.write_str(&instance_str);
+
+        if let Some(draw_depth) = self.draw_depth.as_ref() {
+            let _ = f.write_fmt(format_args!("draw_depth: {}, ", draw_depth));
+        }
+
         f.write_str(self.pixel.to_string().as_str())
     }
 }

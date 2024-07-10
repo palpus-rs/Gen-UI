@@ -14,6 +14,7 @@
 - [x] Icon
 - [x] Label 
 - [x] Image
+- [ ] RotatedImage
 - [x] Radio
 - [x] Checkbox
 - [x] ScrollXYView
@@ -27,10 +28,14 @@
 - [x] TextInput
 - [x] DropDown
 - [x] LinkLabel
+- [ ] FoldButton
+- [ ] Slider
+- [ ] Slide
+- [ ] FoldHeader
 - [ ] Html
 - [ ] Markdown
 - [ ] ScrollBar
-- [ ] DesktopButton
+- [x] DesktopButton
 - [ ] NavControl
 - [ ] WindowMenu
 - [x] Splitter
@@ -38,6 +43,7 @@
 #### Props
 
 - [ ] animation
+- [x] as_prop (WidgetRef)
 - [x] Draw
 - [x] Color
   - [x] hex
