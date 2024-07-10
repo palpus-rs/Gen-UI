@@ -6,6 +6,7 @@
       <view background_color="#FF0000" as_prop="true" id="a" background_visible="true" width="100.0"></view>
       <view background_color="#FF00FF" as_prop="true" id="b" background_visible="true" width="100.0"></view>
     </splitter>
+    <fold_button margin="16.0"></fold_button>
     <rotated_image src="crate://self/resources/robius.png" height="60" width="60" rotation="90.0" opacity="0.6"></rotated_image>
   </view>
 </template>
