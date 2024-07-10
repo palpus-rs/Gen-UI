@@ -41,11 +41,7 @@ pub mod view;
 pub mod window;
 pub mod window_menu;
 pub mod link_label;
-// pub use define::*;
-// pub use button::*;
-// pub use label::*;
-// pub use view::*;
-// pub use window::*;
+pub mod desktop_button;
 
 const WINDOW: &str = "Window";
 const VIEW: &str = "View";
@@ -72,6 +68,7 @@ const SOLIDVIEW: &str = "SolidView";
 const DROP_DOWN: &str = "DropDown";
 const SHADER: &str = "Shader";
 const LINK_LABEL: &str = "LinkLabel";
+const DESKTOP_BUTTON: &str = "DesktopButton";
 
 pub fn prop_ignore(prop: &str) -> bool {
     ["id", "class"].contains(&prop)
@@ -101,6 +98,7 @@ pub enum BuiltIn {
     Root,
     DropDown,
     LinkLabel,
+    DesktopButton
 }
 
 impl BuiltIn {
@@ -141,8 +139,8 @@ impl BuiltIn {
                 view::RoundedShadowViewProps::prop_bind(prop, value, is_prop, ident)
             },
             BuiltIn::DropDown => drop_down::DropDownProps::prop_bind(prop, value, is_prop, ident),
-            BuiltIn::LinkLabel => link_label::LinkLabelProps::prop_bind(prop, value, is_prop, ident)
-            
+            BuiltIn::LinkLabel => link_label::LinkLabelProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::DesktopButton => desktop_button::DesktopButtonProps::prop_bind(prop, value, is_prop, ident)
         }
     }
     /// 对内置组件的属性进行处理
@@ -170,8 +168,8 @@ impl BuiltIn {
                 view::RoundedShadowViewProps::props(props).to_token_stream()
             },
             BuiltIn::DropDown => drop_down::DropDownProps::props(props).to_token_stream(),
-            BuiltIn::LinkLabel => link_label::LinkLabelProps::props(props).to_token_stream()
-            
+            BuiltIn::LinkLabel => link_label::LinkLabelProps::props(props).to_token_stream(),
+            BuiltIn::DesktopButton => desktop_button::DesktopButtonProps::props(props).to_token_stream()
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -198,7 +196,8 @@ impl BuiltIn {
             }
             BuiltIn::TextInput => text_input::TextInputPropPtr::from(ptr).to_token_stream(),
             BuiltIn::DropDown => drop_down::DropDownPropPtr::from(ptr).to_token_stream(),
-            BuiltIn::LinkLabel => link_label::LinkLabelPropPtr::from(ptr).to_token_stream()
+            BuiltIn::LinkLabel => link_label::LinkLabelPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::DesktopButton => desktop_button::DesktopButtonPropPtr::from(ptr).to_token_stream()
         }
     }
     pub fn has_event(&self) -> bool {
@@ -236,7 +235,8 @@ impl BuiltIn {
             }
             BuiltIn::TextInput => todo!(),
             BuiltIn::DropDown => todo!(),
-            BuiltIn::LinkLabel => todo!()
+            BuiltIn::LinkLabel => todo!(),
+            BuiltIn::DesktopButton => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -270,7 +270,8 @@ impl BuiltIn {
             }
             BuiltIn::TextInput => todo!(),
             BuiltIn::DropDown => todo!(),
-            BuiltIn::LinkLabel => todo!()
+            BuiltIn::LinkLabel => todo!(),
+            BuiltIn::DesktopButton => todo!(),
         }
     }
 }
@@ -303,6 +304,7 @@ impl TryFrom<&str> for BuiltIn {
             TEXT_INPUT => Ok(BuiltIn::TextInput),
             DROP_DOWN => Ok(BuiltIn::DropDown),
             LINK_LABEL => Ok(BuiltIn::LinkLabel),
+            DESKTOP_BUTTON => Ok(BuiltIn::DesktopButton),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -344,7 +346,8 @@ impl Display for BuiltIn {
             BuiltIn::RoundedView => ROUNDEDVIEW,
             BuiltIn::RoundedShadowView => ROUNDEDSHADOWVIEW,
             BuiltIn::DropDown => DROP_DOWN,
-            BuiltIn::LinkLabel => LINK_LABEL
+            BuiltIn::LinkLabel => LINK_LABEL,
+            BuiltIn::DesktopButton => DESKTOP_BUTTON
         })
     }
 }
