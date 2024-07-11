@@ -1,7 +1,10 @@
 use std::{collections::HashMap, fmt::Display};
 
-use gen_utils::{error::Errors, props_manul::{Background, Cursor, Event, Others, Position, Size}};
 use gen_parser::{PropsKey, Value};
+use gen_utils::{
+    error::Errors,
+    props_manul::{Background, Cursor, Event, Others, Position, Size},
+};
 use proc_macro2::TokenStream;
 
 use crate::{
@@ -37,29 +40,29 @@ impl DynProps for ViewProps {
         let value = bind_prop_value(value, is_prop, ident);
 
         match prop.name() {
-            DRAW_BG => quote_prop(vec![DRAW_BG, COLOR], &value),
-            SHOW_BG => quote_prop(vec![SHOW_BG], &value),
+            Background::BACKGROUND_COLOR => quote_prop(vec![DRAW_BG, COLOR], &value),
+            Background::BACKGROUND_VISIBLE => quote_prop(vec![SHOW_BG], &value),
             // ----------------- layout -----------------
-            SCROLL => quote_prop(vec![SCROLL], &value),
-            CLIP_X => quote_prop(vec![CLIP_X], &value),
-            CLIP_Y => quote_prop(vec![CLIP_Y], &value),
-            PADDING => quote_prop(vec![PADDING], &value),
-            ALIGN => quote_prop(vec![ALIGN], &value),
-            FLOW => quote_prop(vec![FLOW], &value),
-            SPACING => quote_prop(vec![SPACING], &value),
+            Others::SCROLL => quote_prop(vec![SCROLL], &value),
+            Size::CLIP_X => quote_prop(vec![CLIP_X], &value),
+            Size::CLIP_Y => quote_prop(vec![CLIP_Y], &value),
+            Size::PADDING => quote_prop(vec![PADDING], &value),
+            Position::ALIGN => quote_prop(vec![ALIGN], &value),
+            Position::FLOW => quote_prop(vec![FLOW], &value),
+            Position::SPACING => quote_prop(vec![SPACING], &value),
             LINE_SPACING => quote_prop(vec![LINE_SPACING], &value),
             // ----------------- walk -----------------
-            HEIGHT => quote_prop(vec![HEIGHT], &value),
-            WIDTH => quote_prop(vec![WIDTH], &value),
-            ABS_POS => quote_prop(vec![ABS_POS], &value),
-            MARGIN => quote_prop(vec![MARGIN], &value),
+            Size::HEIGHT => quote_prop(vec![HEIGHT], &value),
+            Size::WIDTH => quote_prop(vec![WIDTH], &value),
+            Position::ABS_POS => quote_prop(vec![ABS_POS], &value),
+            Size::MARGIN => quote_prop(vec![MARGIN], &value),
             // ----------------- other -----------------
-            OPTIMIZE => quote_prop(vec![OPTIMIZE], &value),
-            EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
-            VISIBLE => quote_prop(vec![VISIBLE], &value),
-            GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
-            BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
-            CURSOR => quote_prop(vec![CURSOR], &value),
+            Others::OPTIMIZE => quote_prop(vec![OPTIMIZE], &value),
+            Event::EVENT_ORDER => quote_prop(vec![EVENT_ORDER], &value),
+            Others::VISIBLE => quote_prop(vec![VISIBLE], &value),
+            Event::GRAB_KEY_FOCUS => quote_prop(vec![GRAB_KEY_FOCUS], &value),
+            Event::BLOCK_SIGNAL_EVENT => quote_prop(vec![BLOCK_SIGNAL_EVENT], &value),
+            Cursor::CURSOR => quote_prop(vec![CURSOR], &value),
             _ => panic!("cannot match prop"),
         }
     }
