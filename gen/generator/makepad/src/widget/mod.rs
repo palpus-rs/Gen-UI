@@ -84,6 +84,8 @@ const SLIDE: &str = "Slide";
 const SLIDES_VIEW: &str = "SlidesView";
 const SLIDE_BODY: &str = "SlideBody";
 const SLIDE_CHAPTER: &str = "SlideChapter";
+const SCROLL_BAR: &str = "ScrollBar";
+const SCROLL_BARS: &str = "ScrollBars";
 
 /// 判断是否是内置属性， 内置属性需要忽略
 pub fn prop_ignore(prop: &str) -> bool {
@@ -125,6 +127,8 @@ pub enum BuiltIn {
     Slide,
     SlideBody,
     SlideChapter,
+    ScrollBar,
+    ScrollBars,
 }
 
 impl BuiltIn {
@@ -189,6 +193,8 @@ impl BuiltIn {
             BuiltIn::SlideChapter => {
                 slide::SlideChapterProps::prop_bind(prop, value, is_prop, ident)
             }
+            BuiltIn::ScrollBar => scroll::ScrollBarProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::ScrollBars => scroll::ScrollBarsProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -232,6 +238,8 @@ impl BuiltIn {
             BuiltIn::Slide => slide::SlideProps::props(props).to_token_stream(),
             BuiltIn::SlideBody => slide::SlideBodyProps::props(props).to_token_stream(),
             BuiltIn::SlideChapter => slide::SlideChapterProps::props(props).to_token_stream(),
+            BuiltIn::ScrollBar => scroll::ScrollBarProps::props(props).to_token_stream(),
+            BuiltIn::ScrollBars => scroll::ScrollBarsProps::props(props).to_token_stream(),
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -277,7 +285,9 @@ impl BuiltIn {
             BuiltIn::SlidesView => slide::SlidesViewPropPtr::from(ptr).to_token_stream(),
             BuiltIn::SlideBody => {
                 panic!("SlideBody can not be inherited you need to inherits Label")
-            }
+            },
+            BuiltIn::ScrollBar => scroll::ScrollBarPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::ScrollBars => scroll::ScrollBarsPropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -326,7 +336,9 @@ impl BuiltIn {
             BuiltIn::Slider => todo!(),
             BuiltIn::SliderBig => panic!("SliderBig can not be inherited, so that it can not draw_walk, you need to inherits Slider"),
             BuiltIn::SlidesView => todo!(),
-            BuiltIn::SlideBody => panic!("SlideBody can not be inherited, so that it can not draw_walk, you need to inherits Label")
+            BuiltIn::SlideBody => panic!("SlideBody can not be inherited, so that it can not draw_walk, you need to inherits Label"),
+            BuiltIn::ScrollBar => todo!(),
+            BuiltIn::ScrollBars => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -371,7 +383,9 @@ impl BuiltIn {
             BuiltIn::Slider => todo!(),
             BuiltIn::SliderBig => panic!("SliderBig can not be inherited, so that it can not handle_event, you need to inherits Slider"),
             BuiltIn::SlidesView => todo!(),
-            BuiltIn::SlideBody => panic!("SlideBody can not be inherited, so that it can not handle_event, you need to inherits Label")
+            BuiltIn::SlideBody => panic!("SlideBody can not be inherited, so that it can not handle_event, you need to inherits Label"),
+            BuiltIn::ScrollBar => todo!(),
+            BuiltIn::ScrollBars => todo!(),
         }
     }
 }
@@ -415,6 +429,8 @@ impl TryFrom<&str> for BuiltIn {
             SLIDE => Ok(BuiltIn::Slide),
             SLIDE_BODY => Ok(BuiltIn::SlideBody),
             SLIDE_CHAPTER => Ok(BuiltIn::SlideChapter),
+            SCROLL_BAR => Ok(BuiltIn::ScrollBar),
+            SCROLL_BARS => Ok(BuiltIn::ScrollBars),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -468,6 +484,8 @@ impl Display for BuiltIn {
             BuiltIn::SlidesView => SLIDES_VIEW,
             BuiltIn::SlideBody => SLIDE_BODY,
             BuiltIn::SlideChapter => SLIDE_CHAPTER,
+            BuiltIn::ScrollBar => SCROLL_BAR,
+            BuiltIn::ScrollBars => SCROLL_BARS,
         })
     }
 }

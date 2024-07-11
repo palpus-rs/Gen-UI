@@ -31,9 +31,10 @@
 - [x] FoldButton
 - [x] Slider
 - [x] SliderBig
-- [ ] Slide
-  - [ ] SlidesView
-  - [ ] SlideBody
+- [x] Slide
+  - [x] SlidesView
+  - [x] SlideBody
+  - [x] SlideChapter
 - [x] FoldHeader
 - [ ] Html
 - [ ] Markdown

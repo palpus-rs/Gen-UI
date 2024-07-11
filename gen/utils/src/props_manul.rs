@@ -74,6 +74,7 @@ impl Size {
     pub const PROPORTION: &'static str = "proportion";
     pub const MIN_PROPORTION: &'static str = "min_proportion";
     pub const MAX_PROPORTION: &'static str = "max_proportion";
+    pub const BAR_SIZE: &'static str = "bar_size";
 }
 
 pub struct Position;

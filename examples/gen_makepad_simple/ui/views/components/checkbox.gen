@@ -6,6 +6,7 @@
       <slide text="Title 1"><slide_body text="this is body 1"></slide_body></slide>
       <slide text="Title 2"><slide_body text="this is body 2"></slide_body></slide>
     </slides_view>
+    
     <checkbox class="checkbox1" type="Radio"></checkbox>
     <checkbox class="checkbox1"></checkbox>
     <checkbox id="checkbox2"></checkbox>
