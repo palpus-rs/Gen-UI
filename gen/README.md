@@ -36,9 +36,10 @@
   - [x] SlideBody
   - [x] SlideChapter
 - [x] FoldHeader
-- [ ] Html
-- [ ] Markdown
-- [ ] ScrollBar
+- [x] Html
+- [x] Markdown
+- [x] ScrollBar
+- [x] ScrollBars
 - [x] DesktopButton
 - [ ] NavControl
 - [ ] WindowMenu
