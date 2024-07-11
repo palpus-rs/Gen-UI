@@ -175,7 +175,7 @@ impl Display for MarkdownProps {
             let _ = f.write_fmt(format_args!("{}", layout));
         }
         if let Some(body) = self.body.as_ref() {
-            let _ = f.write_fmt(format_args!("body: {},", body));
+            let _ = f.write_fmt(format_args!("body: \"{}\",", body));
         }
         if let Some(paragraph_spacing) = self.paragraph_spacing.as_ref() {
             let _ = f.write_fmt(format_args!("paragraph_spacing: {},", paragraph_spacing));
