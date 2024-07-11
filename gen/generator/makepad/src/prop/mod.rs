@@ -82,3 +82,7 @@ pub const LABEL_WALK: &str = "label_walk";
 pub const PATH: &str = "path";
 pub const SOURCE: &str = "source";
 pub const BIND: &str = "bind";
+pub const STEP: &str = "step";
+pub const MIN: &str = "min";
+pub const MAX: &str = "max";
+pub const DEFAULT: &str = "default";

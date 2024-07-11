@@ -74,12 +74,12 @@ impl StaticProps for LabelProps {
     {
         let mut label = LabelProps::default();
         for (k, v) in props {
-            label.prop(k.name(), v.clone())
+            label.prop(k.name(), v)
         }
         label
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_text -----------------
             Font::FONT_FAMILY => self.font(&value),

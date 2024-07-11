@@ -49,3 +49,5 @@ pub const VERTICAL: &str = "Vertical";
 pub const SMALLEST: &str = "Smallest";
 pub const BIGGEST: &str = "Biggest";
 pub const SIZE: &str = "Size";
+//-------------[for Makepad::SliderType]----------------------------------
+pub const ROTARY: &str = "Rotary";

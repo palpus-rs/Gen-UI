@@ -1,5 +1,6 @@
 <template>
   <view id="checkbox_view">
+    <slider text="default slider" max="10.0" min="1.0" step="0.5"></slider>
     <checkbox class="checkbox1" type="Radio"></checkbox>
     <checkbox class="checkbox1"></checkbox>
     <checkbox id="checkbox2"></checkbox>

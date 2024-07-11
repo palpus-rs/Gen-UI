@@ -187,12 +187,12 @@ impl StaticProps for RadioButtonProps {
     {
         let mut radio = RadioButtonProps::default();
         for (k, v) in props {
-            radio.prop(k.name(), v.clone())
+            radio.prop(k.name(), v)
         }
         radio
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_icon ---------------
             "icon_brightness" => self.brightness(&value, NodeType::Icon),

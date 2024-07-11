@@ -71,12 +71,12 @@ impl StaticProps for RotatedImageProps {
     {
         let mut icon = RotatedImageProps::default();
         for (k, v) in props {
-            icon.prop(k.name(), v.clone())
+            icon.prop(k.name(), v)
         }
         icon
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- walk -----------------
             Size::HEIGHT => self.height(&value),

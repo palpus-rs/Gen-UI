@@ -36,7 +36,7 @@ impl StaticProps for ScrollXViewProps {
         Self(ViewProps::props(props))
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         self.0.prop(prop_name, value)
     }
 }
@@ -71,7 +71,7 @@ impl StaticProps for ScrollYViewProps {
         Self(ViewProps::props(props))
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         self.0.prop(prop_name, value)
     }
 }
@@ -106,7 +106,7 @@ impl StaticProps for ScrollXYViewProps {
         Self(ViewProps::props(props))
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         self.0.prop(prop_name, value)
     }
 }

@@ -124,7 +124,19 @@ impl Others {
     pub const OPTIMIZE: &'static str = "optimize";
     pub const SELECT_PAD_EDGES: &'static str = "select_pad_edges";
     pub const ON_FOCUS_SELECT_ALL: &'static str = "on_focus_select_all";
+    /// 类型
     pub const TYPE: &'static str = "type";
+    /// 精度
+    pub const PRECISION: &'static str = "precision";
+    /// 最小值
+    pub const MIN: &'static str = "min";
+    /// 最大值
+    pub const MAX: &'static str = "max";
+    /// 步长
+    pub const STEP: &'static str = "step";
+    /// 值
+    pub const VALUE: &'static str = "value";
+
 }
 
 pub struct Resource;

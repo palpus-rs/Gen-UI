@@ -74,7 +74,7 @@ pub fn function(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))
 fn normal(input: &str) -> IResult<&str, (&str, (&str, &str, Option<bool>))> {
     // TODO:
     // 增加解析对象类型 `{}`
-    // 增加解析数组类型 `[]`
+    // 增加解析数组类型 `[]` (solve 使用` `分割)
     // let (input, value) = (input)?;
     Ok(("", ("", (input, "", None))))
 }

@@ -86,12 +86,12 @@ impl StaticProps for IconProps {
     {
         let mut icon = IconProps::default();
         for (k, v) in props {
-            icon.prop(k.name(), v.clone())
+            icon.prop(k.name(), v)
         }
         icon
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_icon ---------------
             BRIGHTNESS => self.brightness(&value),

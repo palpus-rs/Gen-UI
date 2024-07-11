@@ -108,12 +108,12 @@ impl StaticProps for WindowProps {
     fn props(props: &HashMap<PropsKey, Value>) -> Self {
         let mut view = WindowProps::default();
         for (k, v) in props {
-            view.prop(k.name(), v.clone())
+            view.prop(k.name(), v)
         }
         view
     }
 
-    fn prop(&mut self, prop_name: &str, value: Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &Value) -> () {
         let _ = match prop_name {
             Background::BACKGROUND_COLOR => self.draw_bg(&value),
             Background::BACKGROUND_VISIBLE => self.show_bg(&value),

@@ -70,12 +70,12 @@ impl StaticProps for SplitterProps {
     {
         let mut icon = SplitterProps::default();
         for (k, v) in props {
-            icon.prop(k.name(), v.clone())
+            icon.prop(k.name(), v)
         }
         icon
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             Position::FLOW => self.axis(&value),
             Position::ALIGN => self.align(&value),

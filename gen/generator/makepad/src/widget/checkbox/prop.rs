@@ -122,12 +122,12 @@ impl StaticProps for CheckBoxProps {
     {
         let mut icon = CheckBoxProps::default();
         for (k, v) in props {
-            icon.prop(k.name(), v.clone())
+            icon.prop(k.name(), v)
         }
         icon
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_check ---------------
             Others::TYPE => self.check_type(&value),

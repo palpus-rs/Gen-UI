@@ -120,12 +120,12 @@ impl StaticProps for TextInputProps {
     {
         let mut radio = TextInputProps::default();
         for (k, v) in props {
-            radio.prop(k.name(), v.clone())
+            radio.prop(k.name(), v)
         }
         radio
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_bg ---------------
             Background::BACKGROUND_COLOR => self.draw_bg(&value),

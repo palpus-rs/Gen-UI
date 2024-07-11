@@ -116,12 +116,12 @@ impl StaticProps for ButtonProps {
     {
         let mut btn = ButtonProps::default();
         for (k, v) in props {
-            btn.prop(k.name(), v.clone())
+            btn.prop(k.name(), v)
         }
         btn
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_bg -----------------
             Background::BACKGROUND_COLOR => self.draw_bg(&value),

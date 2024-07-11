@@ -18,6 +18,7 @@ mod check_type;
 mod popup_menu_position;
 mod splitter;
 mod desktop_button_type;
+mod slider_type;
 // mod window;
 
 
@@ -41,4 +42,5 @@ pub use image::*;
 pub use popup_menu_position::*;
 pub use splitter::*;
 pub use desktop_button_type::*;
+pub use slider_type::*;
 // pub use window::*;

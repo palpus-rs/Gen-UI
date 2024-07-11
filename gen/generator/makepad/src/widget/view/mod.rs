@@ -44,7 +44,7 @@ macro_rules! inherits_view {
                 Self(ViewProps::props(props))
             }
 
-            fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+            fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
                 self.0.prop(prop_name, value)
             }
         }

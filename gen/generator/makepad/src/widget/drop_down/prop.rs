@@ -97,12 +97,12 @@ impl StaticProps for DropDownProps {
     {
         let mut icon = DropDownProps::default();
         for (k, v) in props {
-            icon.prop(k.name(), v.clone())
+            icon.prop(k.name(), v)
         }
         icon
     }
 
-    fn prop(&mut self, prop_name: &str, value: gen_parser::Value) -> () {
+    fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
         let _ = match prop_name {
             // ----------------- draw_bg -----------------
             Background::BACKGROUND_COLOR => self.draw_bg(&value),

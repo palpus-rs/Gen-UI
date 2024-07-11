@@ -112,7 +112,8 @@ pub enum BuiltIn {
     Splitter,
     RotatedImage,
     FoldButton,
-    FoldHeader
+    FoldHeader,
+    Slider,
 }
 
 impl BuiltIn {
@@ -159,6 +160,7 @@ impl BuiltIn {
             BuiltIn::RotatedImage => rotated_image::RotatedImageProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::FoldButton => fold_button::FoldButtonProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::FoldHeader => fold_header::FoldHeaderProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::Slider => slider::SliderProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -192,6 +194,7 @@ impl BuiltIn {
             BuiltIn::RotatedImage => rotated_image::RotatedImageProps::props(props).to_token_stream(),
             BuiltIn::FoldButton => fold_button::FoldButtonProps::props(props).to_token_stream(),
             BuiltIn::FoldHeader => fold_header::FoldHeaderProps::props(props).to_token_stream(),
+            BuiltIn::Slider => slider::SliderProps::props(props).to_token_stream(),
 
         }
     }
@@ -225,6 +228,7 @@ impl BuiltIn {
             BuiltIn::RotatedImage => rotated_image::RotatedImagePropPtr::from(ptr).to_token_stream(),
             BuiltIn::FoldButton => fold_button::FoldButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::FoldHeader => fold_header::FoldHeaderPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::Slider => slider::SliderPropPtr::from(ptr).to_token_stream(),
         }
     }
     pub fn has_event(&self) -> bool {
@@ -268,6 +272,7 @@ impl BuiltIn {
             BuiltIn::RotatedImage => todo!(),
             BuiltIn::FoldButton => todo!(),
             BuiltIn::FoldHeader => todo!(),
+            BuiltIn::Slider => todo!(),
         }
     }
     /// 处理widget的事件处理函数
@@ -307,6 +312,8 @@ impl BuiltIn {
             BuiltIn::RotatedImage => todo!(),
             BuiltIn::FoldButton => todo!(),
             BuiltIn::FoldHeader => todo!(),
+            BuiltIn::Slider => todo!(),
+
         }
     }
 }
@@ -344,6 +351,7 @@ impl TryFrom<&str> for BuiltIn {
             ROTATED_IMAGE => Ok(BuiltIn::RotatedImage),
             FOLD_BUTTON => Ok(BuiltIn::FoldButton),
             FOLD_HEADER => Ok(BuiltIn::FoldHeader),
+            SLIDER => Ok(BuiltIn::Slider),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -391,6 +399,7 @@ impl Display for BuiltIn {
             BuiltIn::RotatedImage => ROTATED_IMAGE,
             BuiltIn::FoldButton => FOLD_BUTTON,
             BuiltIn::FoldHeader => FOLD_HEADER,
+            BuiltIn::Slider => SLIDER,
         })
     }
 }
@@ -399,7 +408,7 @@ pub trait StaticProps: Debug + ToToken {
     fn props(props: &HashMap<PropsKey, Value>) -> Self
     where
         Self: Sized;
-    fn prop(&mut self, prop_name: &str, value: Value) -> ();
+    fn prop(&mut self, prop_name: &str, value: &Value) -> ();
 }
 
 pub trait DynProps {

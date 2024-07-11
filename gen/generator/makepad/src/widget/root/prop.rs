@@ -30,7 +30,7 @@ impl StaticProps for RootProps {
         RootProps
     }
 
-    fn prop(&mut self, _prop_name: &str, _value: gen_parser::Value) -> () {
+    fn prop(&mut self, _prop_name: &str, _value: &gen_parser::Value) -> () {
         ()
     }
 }
