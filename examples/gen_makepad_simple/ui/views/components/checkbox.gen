@@ -2,6 +2,10 @@
   <view id="checkbox_view">
     <slider text="default slider" max="10.0" min="1.0" step="0.5"></slider>
     <slider_big></slider_big>
+    <slides_view height="260" width="Fill">
+      <slide text="Title 1"><slide_body text="this is body 1"></slide_body></slide>
+      <slide text="Title 2"><slide_body text="this is body 2"></slide_body></slide>
+    </slides_view>
     <checkbox class="checkbox1" type="Radio"></checkbox>
     <checkbox class="checkbox1"></checkbox>
     <checkbox id="checkbox2"></checkbox>
@@ -27,7 +31,7 @@ let change = ||{
 <style>
 #checkbox_view{
   width: 300;
-  height: 380;
+  height: 500;
   flow: Down;
   .checkbox1{
     text: "CheckBox1";

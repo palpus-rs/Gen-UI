@@ -136,7 +136,6 @@ impl Others {
     pub const STEP: &'static str = "step";
     /// 值
     pub const VALUE: &'static str = "value";
-
 }
 
 pub struct Resource;
@@ -202,4 +201,12 @@ impl State {
     /// 只读
     pub const READ_ONLY: &'static str = "read_only";
     pub const SECRET: &'static str = "secret";
+}
+
+pub struct Animation;
+
+impl Animation {
+    pub const DURATION: &'static str = "duration";
+    pub const EASING: &'static str = "easing";
+    pub const DELAY: &'static str = "delay";
 }

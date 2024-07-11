@@ -14,7 +14,7 @@
 - [x] Icon
 - [x] Label 
 - [x] Image
-- [ ] RotatedImage
+- [x] RotatedImage
 - [x] Radio
 - [x] Checkbox
 - [x] ScrollXYView
@@ -28,10 +28,13 @@
 - [x] TextInput
 - [x] DropDown
 - [x] LinkLabel
-- [ ] FoldButton
-- [ ] Slider
+- [x] FoldButton
+- [x] Slider
+- [x] SliderBig
 - [ ] Slide
-- [ ] FoldHeader
+  - [ ] SlidesView
+  - [ ] SlideBody
+- [x] FoldHeader
 - [ ] Html
 - [ ] Markdown
 - [ ] ScrollBar

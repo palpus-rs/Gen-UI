@@ -21,6 +21,9 @@ use crate::{
     ToToken,
 };
 
+/// if true, the splitter is horizontal, otherwise it is vertical
+static mut SPLITTER_V_H: bool = true;
+
 #[derive(Debug, Clone, Default)]
 pub struct SplitterProps {
     pub axis: Option<SplitterAxis>,
@@ -43,13 +46,42 @@ impl DynProps for SplitterProps {
         is_prop: bool,
         ident: &str,
     ) -> proc_macro2::TokenStream {
+        fn quote_min_proportion(value: &str) -> TokenStream {
+            if unsafe { SPLITTER_V_H } {
+                quote_prop(vec!["min_horizontal"], value)
+            } else {
+                quote_prop(vec!["min_vertical"], value)
+            }
+        }
+
+        fn quote_max_proportion(value: &str) -> TokenStream {
+            if unsafe { SPLITTER_V_H } {
+                quote_prop(vec!["max_horizontal"], value)
+            } else {
+                quote_prop(vec!["max_vertical"], value)
+            }
+        }
+
         let value = bind_prop_value(value, is_prop, ident);
         match prop.name() {
-          
-            Position::FLOW => quote_prop(vec!["axis"], &value),
+            Position::FLOW => {
+                if value == "Vertical" {
+                    unsafe {
+                        SPLITTER_V_H = false;
+                    }
+                }
+
+                if value == "Horizontal" {
+                    unsafe {
+                        SPLITTER_V_H = true;
+                    }
+                }
+
+                quote_prop(vec!["axis"], &value)
+            }
             Position::ALIGN => quote_prop(vec!["align"], &value),
-            // Size::MIN_PROPORTION => self.min_v_h(&value),
-            // Size::MAX_PROPORTION => self.max_v_h(&value),
+            Size::MIN_PROPORTION => quote_min_proportion(&value),
+            Size::MAX_PROPORTION => quote_max_proportion(&value),
             "draw_splitter" => quote_prop(vec!["draw_splitter"], &value),
             "splitter_width" => quote_prop(vec!["split_bar_size"], &value),
             // ----------------- walk -----------------
@@ -160,31 +192,31 @@ impl SplitterProps {
 
 impl Display for SplitterProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(walk) = &self.walk {
+        if let Some(walk) = self.walk.as_ref() {
             let _ = f.write_fmt(format_args!("{}", walk));
         }
-        if let Some(axis) = &self.axis {
+        if let Some(axis) = self.axis.as_ref() {
             let _ = f.write_fmt(format_args!("axis: {},", axis));
         }
-        if let Some(align) = &self.align {
+        if let Some(align) = self.align.as_ref() {
             let _ = f.write_fmt(format_args!("align: {},", align));
         }
-        if let Some(min_vertical) = &self.min_vertical {
+        if let Some(min_vertical) = self.min_vertical.as_ref() {
             let _ = f.write_fmt(format_args!("min_vertical: {},", min_vertical));
         }
-        if let Some(max_vertical) = &self.max_vertical {
+        if let Some(max_vertical) = self.max_vertical.as_ref() {
             let _ = f.write_fmt(format_args!("max_vertical: {},", max_vertical));
         }
-        if let Some(min_horizontal) = &self.min_horizontal {
+        if let Some(min_horizontal) = self.min_horizontal.as_ref() {
             let _ = f.write_fmt(format_args!("min_horizontal: {},", min_horizontal));
         }
-        if let Some(max_horizontal) = &self.max_horizontal {
+        if let Some(max_horizontal) = self.max_horizontal.as_ref() {
             let _ = f.write_fmt(format_args!("max_horizontal: {},", max_horizontal));
         }
-        if let Some(draw_splitter) = &self.draw_splitter {
+        if let Some(draw_splitter) = self.draw_splitter.as_ref() {
             let _ = f.write_fmt(format_args!("draw_splitter: {},", draw_splitter));
         }
-        if let Some(split_bar_size) = &self.split_bar_size {
+        if let Some(split_bar_size) = self.split_bar_size.as_ref() {
             let _ = f.write_fmt(format_args!("split_bar_size: {},", split_bar_size));
         }
 
