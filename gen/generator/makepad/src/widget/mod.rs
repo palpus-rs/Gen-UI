@@ -78,6 +78,7 @@ const ROTATED_IMAGE: &str = "RotatedImage";
 const FOLD_BUTTON: &str = "FoldButton";
 const FOLD_HEADER: &str = "FoldHeader";
 const SLIDER: &str = "Slider";
+const SLIDER_BIG: &str = "SliderBig";
 
 /// 判断是否是内置属性， 内置属性需要忽略
 pub fn prop_ignore(prop: &str) -> bool {
@@ -114,6 +115,7 @@ pub enum BuiltIn {
     FoldButton,
     FoldHeader,
     Slider,
+    SliderBig,
 }
 
 impl BuiltIn {
@@ -161,6 +163,7 @@ impl BuiltIn {
             BuiltIn::FoldButton => fold_button::FoldButtonProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::FoldHeader => fold_header::FoldHeaderProps::prop_bind(prop, value, is_prop, ident),
             BuiltIn::Slider => slider::SliderProps::prop_bind(prop, value, is_prop, ident),
+            BuiltIn::SliderBig => slider::SliderBigProps::prop_bind(prop, value, is_prop, ident),
         }
     }
     /// 对内置组件的属性进行处理
@@ -195,7 +198,7 @@ impl BuiltIn {
             BuiltIn::FoldButton => fold_button::FoldButtonProps::props(props).to_token_stream(),
             BuiltIn::FoldHeader => fold_header::FoldHeaderProps::props(props).to_token_stream(),
             BuiltIn::Slider => slider::SliderProps::props(props).to_token_stream(),
-
+            BuiltIn::SliderBig => slider::SliderBigProps::props(props).to_token_stream(),
         }
     }
     pub fn to_token_stream(&self, ptr: &ItemStruct) -> TokenStream {
@@ -218,7 +221,7 @@ impl BuiltIn {
             | BuiltIn::RectShadowView
             | BuiltIn::RoundedView
             | BuiltIn::RoundedShadowView => {
-                panic!("scroll view can not be inherited you need to inherits View")
+                panic!("child view can not be inherited you need to inherits View")
             }
             BuiltIn::TextInput => text_input::TextInputPropPtr::from(ptr).to_token_stream(),
             BuiltIn::DropDown => drop_down::DropDownPropPtr::from(ptr).to_token_stream(),
@@ -229,6 +232,7 @@ impl BuiltIn {
             BuiltIn::FoldButton => fold_button::FoldButtonPropPtr::from(ptr).to_token_stream(),
             BuiltIn::FoldHeader => fold_header::FoldHeaderPropPtr::from(ptr).to_token_stream(),
             BuiltIn::Slider => slider::SliderPropPtr::from(ptr).to_token_stream(),
+            BuiltIn::SliderBig => panic!("SliderBig can not be inherited you need to inherits Slider")
         }
     }
     pub fn has_event(&self) -> bool {
@@ -262,7 +266,7 @@ impl BuiltIn {
             | BuiltIn::RectShadowView
             | BuiltIn::RoundedView
             | BuiltIn::RoundedShadowView => {
-                panic!("scroll view can not be inherited, so that it can not draw_walk, you need to inherits View")
+                panic!("child view can not be inherited, so that it can not draw_walk, you need to inherits View")
             }
             BuiltIn::TextInput => todo!(),
             BuiltIn::DropDown => todo!(),
@@ -273,6 +277,7 @@ impl BuiltIn {
             BuiltIn::FoldButton => todo!(),
             BuiltIn::FoldHeader => todo!(),
             BuiltIn::Slider => todo!(),
+            BuiltIn::SliderBig => panic!("SliderBig can not be inherited, so that it can not draw_walk, you need to inherits Slider")
         }
     }
     /// 处理widget的事件处理函数
@@ -302,7 +307,7 @@ impl BuiltIn {
             | BuiltIn::RectShadowView
             | BuiltIn::RoundedView
             | BuiltIn::RoundedShadowView => {
-                panic!("scroll view can not be inherited, so that it can not handle_event, you need to inherits View")
+                panic!("child view can not be inherited, so that it can not handle_event, you need to inherits View")
             }
             BuiltIn::TextInput => todo!(),
             BuiltIn::DropDown => todo!(),
@@ -313,7 +318,7 @@ impl BuiltIn {
             BuiltIn::FoldButton => todo!(),
             BuiltIn::FoldHeader => todo!(),
             BuiltIn::Slider => todo!(),
-
+            BuiltIn::SliderBig => panic!("SliderBig can not be inherited, so that it can not handle_event, you need to inherits Slider")
         }
     }
 }
@@ -352,6 +357,7 @@ impl TryFrom<&str> for BuiltIn {
             FOLD_BUTTON => Ok(BuiltIn::FoldButton),
             FOLD_HEADER => Ok(BuiltIn::FoldHeader),
             SLIDER => Ok(BuiltIn::Slider),
+            SLIDER_BIG => Ok(BuiltIn::SliderBig),
             _ => Err(Errors::BuiltInConvertFail),
         }
     }
@@ -400,6 +406,7 @@ impl Display for BuiltIn {
             BuiltIn::FoldButton => FOLD_BUTTON,
             BuiltIn::FoldHeader => FOLD_HEADER,
             BuiltIn::Slider => SLIDER,
+            BuiltIn::SliderBig => SLIDER_BIG,
         })
     }
 }

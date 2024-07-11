@@ -58,3 +58,43 @@ macro_rules! inherits_view {
         props_to_token!($t);
     };
 }
+
+#[macro_export]
+macro_rules! inherits_widget {
+    ($t: ident, $i: ident) => {
+        #[derive(Debug, Clone, Default)]
+        pub struct $t(pub $i);
+
+        impl DynProps for $t {
+            fn prop_bind(
+                prop: &gen_parser::PropsKey,
+                value: &gen_parser::Value,
+                is_prop: bool,
+                ident: &str,
+            ) -> proc_macro2::TokenStream {
+                $i::prop_bind(prop, value, is_prop, ident)
+            }
+        }
+
+        impl StaticProps for $t {
+            fn props(props: &std::collections::HashMap<gen_parser::PropsKey, gen_parser::Value>) -> Self
+            where
+                Self: Sized,
+            {
+                Self($i::props(props))
+            }
+
+            fn prop(&mut self, prop_name: &str, value: &gen_parser::Value) -> () {
+                self.0.prop(prop_name, value)
+            }
+        }
+
+        impl Display for $t {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                self.0.fmt(f)
+            }
+        }
+
+        props_to_token!($t);
+    };
+}
