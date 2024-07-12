@@ -31,6 +31,7 @@
 - [x] Icon
 - [x] Label 
 - [x] Image
+- [x] RotatedImage
 - [x] Radio
 - [x] Checkbox
 - [x] ScrollXYView
@@ -44,17 +45,27 @@
 - [x] TextInput
 - [x] DropDown
 - [x] LinkLabel
-- [ ] Html
-- [ ] Markdown
-- [ ] ScrollBar
-- [ ] DesktopButton
-- [ ] NavControl
-- [ ] WindowMenu
+- [x] FoldButton
+- [x] Slider
+- [x] SliderBig
+- [x] Slide
+  - [x] SlidesView
+  - [x] SlideBody
+  - [x] SlideChapter
+- [x] FoldHeader
+- [x] Html
+- [x] Markdown
+- [x] ScrollBar
+- [x] ScrollBars
+- [x] DesktopButton
 - [x] Splitter
+- [ ] Dock
+- [ ] Nav
 
 #### Props
 
 - [ ] animation
+- [x] as_prop (WidgetRef)
 - [x] Draw
 - [x] Color
   - [x] hex
@@ -62,7 +73,7 @@
   - [x] radial
   - [x] rgb
   - [x] rgba
-  - [x] shader
+  - [x] shader 
 #### Control
 
 - [ ] for

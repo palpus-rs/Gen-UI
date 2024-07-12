@@ -120,6 +120,13 @@ impl ASTNodes {
             _ => (false, false),
         }
     }
+    pub fn get_name(&self) -> &str{
+        match self {
+            ASTNodes::Tag(t) => t.get_name(),
+            ASTNodes::Comment(_) => panic!("Comment has no name"),
+            ASTNodes::Style(s) => s.get_name(),
+        }
+    }
     // pub fn parse_template(input:&str) -> Vec<ASTNodes>{
     //     parse_template(input)
     // }

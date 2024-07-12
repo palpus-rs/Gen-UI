@@ -41,9 +41,9 @@
 - [x] ScrollBar
 - [x] ScrollBars
 - [x] DesktopButton
-- [ ] NavControl
-- [ ] WindowMenu
 - [x] Splitter
+- [ ] Dock
+- [ ] Nav
 
 #### Props
 

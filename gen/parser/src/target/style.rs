@@ -187,7 +187,23 @@ mod test_style {
     use crate::ast::{ASTNodes, Style};
 
     use super::{function, parse_style, parse_style_tag};
-
+    #[test]
+    fn easy_style2() {
+        let style = r#"
+        .app{
+            &::hover{
+                start: 0.5;
+                duration: 1.0;
+                default: off;
+                target: all;
+                redraw: true;
+                ease: In;
+            }
+        }
+        "#;
+        let res = parse_style(style).unwrap();
+        dbg!(res);
+    }
     #[test]
     fn test_style_all() {
         let style = r#"

@@ -1,7 +1,7 @@
 use std::{borrow::BorrowMut, collections::HashSet};
 
 use gen_converter::model::script::PropFn;
-use gen_parser::Value;
+use gen_parser::{Function, Value};
 use gen_utils::{
     common::{
         token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
@@ -28,6 +28,29 @@ pub fn vec_string_to_string(vec: &Vec<String>) -> String {
             .collect::<Vec<String>>()
             .join(",")
     )
+}
+
+pub fn fn_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>
+where
+    F: FnMut(&str, Option<&Vec<String>>) -> (),
+{
+    if let Some(s) = value.is_unknown_and_get() {
+        f(s, None);
+        Ok(())
+    } else {
+        value
+            .is_fn_and_get()
+            .map(|s| {
+                f(s.get_name(), s.get_params().as_ref());
+                Ok(())
+            })
+            .unwrap_or_else(|| {
+                Err(Errors::PropConvertFail(format!(
+                    "{} can not convert to fn",
+                    value
+                )))
+            })
+    }
 }
 
 pub fn bool_prop<F>(value: &Value, mut f: F) -> Result<(), Errors>

@@ -207,7 +207,26 @@ impl State {
 pub struct Animation;
 
 impl Animation {
+    pub const ANIMATION: &'static str = "animation";
     pub const DURATION: &'static str = "duration";
-    pub const EASING: &'static str = "easing";
+    pub const EASE: &'static str = "ease";
     pub const DELAY: &'static str = "delay";
+    pub const DEFAULT: &'static str = "default";
+    pub const TARGET: &'static str = "target";
+    pub const REDRAW: &'static str = "redraw";
+    pub const PLAY: &'static str = "play";
+    pub const FROM: &'static str = "from";
+    // pub const START: &'static str = "start";
+    pub fn props() -> Vec<&'static str> {
+        vec![
+            // Self::DURATION,
+            Self::FROM,
+            Self::EASE,
+            Self::DELAY,
+            Self::DEFAULT,
+            Self::TARGET,
+            Self::REDRAW,
+            Self::PLAY
+        ]
+    }
 }

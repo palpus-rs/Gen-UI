@@ -3,6 +3,7 @@
     <window id="main_window">
       <scroll_y_view flow="Down" height="All" align="0.5 0.5">
         <label text="Gen + Makepad Project(Makepad UI Zoo)" font_size="16.0"></label>
+        <view id="an_view"></view>
         <label_view></label_view>
         <markdown class="mk1"></markdown>
         <drop_down_view></drop_down_view>
@@ -39,6 +40,22 @@ import!{
     window_position: 300.0;
     .mk1{
       text: "# MD H1\n ## H2 **Bold** *italic*\n ```fn main(){}```";
+    }
+    #an_view{
+      height: 60.0;
+      width: 60.0;
+      background_visible: true;
+      background_color: shader(|self|{
+        instance hover: 0.0
+        fn pixel(self) -> vec4{
+          return mix(#FF00FF, #FF0000, self.hover)
+        }
+      });
+      &::hover{
+          ease: in_out;
+          from: all;
+          redraw: false;
+      }
     }
   }
 }

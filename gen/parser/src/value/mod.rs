@@ -1,11 +1,11 @@
 mod function;
 
-use std::{fmt::Display, str::FromStr};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 pub use function::Function;
 use gen_utils::error::Errors;
 
-use crate::{common::BuiltinColor, from_i_number, from_u_number, target::function};
+use crate::{common::BuiltinColor, from_i_number, from_u_number, target::function, PropsKey};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Value {
@@ -47,6 +47,7 @@ pub enum Value {
     Struct(String),
     UnKnown(String),
     Dep(String),
+    Animation(HashMap<PropsKey, Value>)
 }
 
 impl Value {
@@ -127,6 +128,12 @@ impl Value {
     }
     pub fn is_color_and_get(&self) -> Result<BuiltinColor, Errors> {
         self.try_into()
+    }
+    pub fn is_animation_and_get(&self) -> Option<&HashMap<PropsKey, Value>> {
+        match self {
+            Value::Animation(a) => Some(a),
+            _ => None,
+        }
     }
     pub fn to_vec(&self) -> Result<Vec<Value>, Errors> {
         match self {
@@ -349,6 +356,12 @@ impl Display for Value {
             ),
             Value::UnKnown(u) => u.to_string(),
             Value::Dep(dep) => dep.to_string(),
+            Value::Animation(anim) => format!(
+                "{:?}",
+                anim.into_iter()
+                    .map(|(k, v)| format!("{}:{}", k, v))
+                    .collect::<Vec<String>>()
+            ),
         };
 
         f.write_str(&res)

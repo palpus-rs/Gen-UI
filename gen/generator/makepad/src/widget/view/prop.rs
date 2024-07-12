@@ -3,13 +3,15 @@ use std::{collections::HashMap, fmt::Display};
 use gen_parser::{PropsKey, Value};
 use gen_utils::{
     error::Errors,
-    props_manul::{Background, Cursor, Event, Others, Position, Size},
+    props_manul::{self, Background, Cursor, Event, Others, Position, Size},
 };
 use proc_macro2::TokenStream;
 
 use crate::{
     prop::{
-        builtin::{draw_color::DrawColor, EventOrder, Layout, MouseCursor, ViewOptimize, Walk},
+        builtin::{
+            draw_color::DrawColor, Animation, EventOrder, Layout, MouseCursor, ViewOptimize, Walk,
+        },
         ABS_POS, ALIGN, BLOCK_SIGNAL_EVENT, CLIP_X, CLIP_Y, COLOR, CURSOR, DRAW_BG, EVENT_ORDER,
         FLOW, GRAB_KEY_FOCUS, HEIGHT, LINE_SPACING, MARGIN, OPTIMIZE, PADDING, SCROLL, SHOW_BG,
         SPACING, VISIBLE, WIDTH,
@@ -34,6 +36,7 @@ pub struct ViewProps {
     pub grab_key_focus: Option<bool>,
     pub block_signal_event: Option<bool>,
     pub cursor: Option<MouseCursor>,
+    pub animation: Option<Animation>,
 }
 impl DynProps for ViewProps {
     fn prop_bind(prop: &PropsKey, value: &Value, is_prop: bool, ident: &str) -> TokenStream {
@@ -78,38 +81,42 @@ impl StaticProps for ViewProps {
     }
 
     fn prop(&mut self, prop_name: &str, value: &Value) -> () {
-        let _ = match prop_name {
-            Background::BACKGROUND_COLOR => self.draw_bg(&value),
-            Background::BACKGROUND_VISIBLE => self.show_bg(&value),
-            // ----------------- layout -----------------
-            Others::SCROLL => self.scroll(&value),
-            Size::CLIP_X => self.clip_x(&value),
-            Size::CLIP_Y => self.clip_y(&value),
-            Size::PADDING => self.padding(&value),
-            Position::ALIGN => self.align(&value),
-            Position::FLOW => self.flow(&value),
-            Position::SPACING => self.spacing(&value),
-            LINE_SPACING => self.line_spacing(&value),
-            // ----------------- walk -----------------
-            Size::HEIGHT => self.height(&value),
-            Size::WIDTH => self.width(&value),
-            Position::ABS_POS => self.abs_pos(&value),
-            Size::MARGIN => self.margin(&value),
-            // ----------------- other -----------------
-            Others::OPTIMIZE => self.optimize(&value),
-            Event::EVENT_ORDER => self.event_order(&value),
-            Others::VISIBLE => self.visible(&value),
-            Event::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
-            Event::BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
-            Cursor::CURSOR => self.mouse_cursor(&value),
-            _ => {
-                if !prop_ignore(prop_name) {
-                    panic!("cannot match prop: {}", prop_name);
-                } else {
-                    panic!("unslolved prop: {}", prop_name);
+        if prop_name.contains(props_manul::Animation::ANIMATION) {
+            let _ = self.animation(prop_name, &value);
+        } else {
+            let _ = match prop_name {
+                Background::BACKGROUND_COLOR => self.draw_bg(&value),
+                Background::BACKGROUND_VISIBLE => self.show_bg(&value),
+                // ----------------- layout -----------------
+                Others::SCROLL => self.scroll(&value),
+                Size::CLIP_X => self.clip_x(&value),
+                Size::CLIP_Y => self.clip_y(&value),
+                Size::PADDING => self.padding(&value),
+                Position::ALIGN => self.align(&value),
+                Position::FLOW => self.flow(&value),
+                Position::SPACING => self.spacing(&value),
+                LINE_SPACING => self.line_spacing(&value),
+                // ----------------- walk -----------------
+                Size::HEIGHT => self.height(&value),
+                Size::WIDTH => self.width(&value),
+                Position::ABS_POS => self.abs_pos(&value),
+                Size::MARGIN => self.margin(&value),
+                // ----------------- other -----------------
+                Others::OPTIMIZE => self.optimize(&value),
+                Event::EVENT_ORDER => self.event_order(&value),
+                Others::VISIBLE => self.visible(&value),
+                Event::GRAB_KEY_FOCUS => self.grab_key_focus(&value),
+                Event::BLOCK_SIGNAL_EVENT => self.block_signal_event(&value),
+                Cursor::CURSOR => self.mouse_cursor(&value),
+                _ => {
+                    if !prop_ignore(prop_name) {
+                        panic!("cannot match prop: {}", prop_name);
+                    } else {
+                        panic!("unslolved prop: {}", prop_name);
+                    }
                 }
-            }
-        };
+            };
+        }
     }
 }
 
@@ -120,6 +127,19 @@ impl ToToken for ViewProps {
 }
 
 impl ViewProps {
+    fn animation(&mut self, prop_name: &str, value: &Value) -> Result<(), Errors> {
+        let apply_event = prop_name.split("::").collect::<Vec<&str>>()[1];
+        let applys = Self::animation_applys();
+        if let Some(an) = self.animation.as_mut() {
+            an.push((apply_event, value, applys).try_into()?)
+        } else {
+            self.animation = Some((apply_event, value, applys).try_into()?);
+        };
+        Ok(())
+    }
+    fn animation_applys() -> Vec<&'static str> {
+        vec!["draw_bg"]
+    }
     fn show_bg(&mut self, value: &Value) -> Result<(), Errors> {
         bool_prop(value, |b| {
             self.show_bg = Some(b);
@@ -209,35 +229,38 @@ impl ViewProps {
 
 impl Display for ViewProps {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(draw_bg) = &self.draw_bg {
+        if let Some(draw_bg) = self.draw_bg.as_ref() {
             let _ = f.write_fmt(format_args!("draw_bg: {{{}}}, ", draw_bg));
         }
-        if let Some(show_bg) = &self.show_bg {
+        if let Some(show_bg) = self.show_bg.as_ref() {
             let _ = f.write_fmt(format_args!("show_bg: {}, ", show_bg));
         }
-        if let Some(layout) = &self.layout {
+        if let Some(layout) = self.layout.as_ref() {
             let _ = f.write_fmt(format_args!("{}", layout));
         }
-        if let Some(walk) = &self.walk {
+        if let Some(walk) = self.walk.as_ref() {
             let _ = f.write_fmt(format_args!("{}", walk));
         }
-        if let Some(optimize) = &self.optimize {
+        if let Some(optimize) = self.optimize.as_ref() {
             let _ = f.write_fmt(format_args!("optimize: {}, ", optimize));
         }
-        if let Some(event_order) = &self.event_order {
+        if let Some(event_order) = self.event_order.as_ref() {
             let _ = f.write_fmt(format_args!("event_order: {}, ", event_order));
         }
-        if let Some(visible) = &self.visible {
+        if let Some(visible) = self.visible.as_ref() {
             let _ = f.write_fmt(format_args!("visible: {}, ", visible));
         }
-        if let Some(grab_key_focus) = &self.grab_key_focus {
+        if let Some(grab_key_focus) = self.grab_key_focus.as_ref() {
             let _ = f.write_fmt(format_args!("grab_key_focus: {}, ", grab_key_focus));
         }
-        if let Some(block_signal_event) = &self.block_signal_event {
+        if let Some(block_signal_event) = self.block_signal_event.as_ref() {
             let _ = f.write_fmt(format_args!("block_signal_event: {}, ", block_signal_event));
         }
-        if let Some(cursor) = &self.cursor {
+        if let Some(cursor) = self.cursor.as_ref() {
             let _ = f.write_fmt(format_args!("cursor: {}, ", cursor));
+        }
+        if let Some(animation) = self.animation.as_ref() {
+            let _ = f.write_fmt(format_args!("animator: {{{}}}, ", animation));
         }
         f.write_str("")
     }

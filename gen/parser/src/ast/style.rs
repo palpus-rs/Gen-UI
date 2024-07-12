@@ -134,6 +134,9 @@ impl Style {
     pub fn get_props(&self) -> Option<&HashMap<crate::PropsKey, crate::Value>> {
         self.props.as_ref()
     }
+    pub fn get_parent(&self) -> Option<&ASTNodes>{
+        self.parent.as_ref()
+    }
 }
 
 impl Display for Style {
