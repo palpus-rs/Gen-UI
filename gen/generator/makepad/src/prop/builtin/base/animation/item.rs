@@ -3,7 +3,7 @@ use std::fmt::Display;
 use gen_parser::Value;
 use gen_utils::{error::Errors, props_manul};
 
-use crate::widget::utils::{bool_prop, string_prop};
+use crate::widget::{utils::{bool_prop, string_prop}, BuiltIn};
 
 use super::{play::Play, Ease};
 
@@ -16,7 +16,6 @@ pub struct AnimationItem {
 
 impl Display for AnimationItem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // let mut fmt_str =
         let default_str = if self.default {
             "default: on"
         } else {
@@ -32,14 +31,15 @@ impl Display for AnimationItem {
     }
 }
 
-impl TryFrom<(&str, &Value, Vec<&str>)> for AnimationItem {
+// todo!(改为&str, &Value, Builtin) 目的是为了让用户自定义targets的时候使用Gen提供的名称而不是使用makepad的
+impl TryFrom<(&str, &Value, BuiltIn)> for AnimationItem {
     type Error = Errors;
 
-    fn try_from(value: (&str, &Value, Vec<&str>)) -> Result<Self, Self::Error> {
+    fn try_from(value: (&str, &Value, BuiltIn)) -> Result<Self, Self::Error> {
         let mut anim = AnimationItem::default();
         anim.name = value.0.to_string();
         anim.option.apply = value.0.to_string();
-        anim.option.targets = value.2.iter().map(|s| s.to_string()).collect();
+        anim.option.targets = value.2.animation_applys().iter().map(|s| s.to_string()).collect();
         if let Some(an) = value.1.is_animation_and_get() {
             for (key, value) in an {
                 match key.name() {

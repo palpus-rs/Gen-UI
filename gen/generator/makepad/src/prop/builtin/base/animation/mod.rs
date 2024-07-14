@@ -9,6 +9,8 @@ use gen_parser::Value;
 use gen_utils::error::Errors;
 pub use item::*;
 
+use crate::widget::BuiltIn;
+
 #[derive(Debug, Clone)]
 pub struct Animation(pub Vec<AnimationItem>);
 
@@ -28,10 +30,10 @@ impl Display for Animation {
     }
 }
 
-impl TryFrom<(&str, &Value, Vec<&str>)> for Animation {
+impl TryFrom<(&str, &Value, BuiltIn)> for Animation {
     type Error = Errors;
-    
-    fn try_from(value: (&str, &Value, Vec<&str>)) -> Result<Self, Self::Error> {
+
+    fn try_from(value: (&str, &Value, BuiltIn)) -> Result<Self, Self::Error> {
         match AnimationItem::try_from(value) {
             Ok(item) => Ok(Animation(vec![item])),
             Err(e) => Err(e),

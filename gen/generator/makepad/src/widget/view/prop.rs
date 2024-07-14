@@ -17,9 +17,7 @@ use crate::{
         SPACING, VISIBLE, WIDTH,
     },
     widget::{
-        prop_ignore,
-        utils::{bind_prop_value, bool_prop, quote_prop},
-        DynProps, StaticProps,
+        prop_ignore, utils::{bind_prop_value, bool_prop, quote_prop}, AnimationApplys, BuiltIn, DynProps, StaticProps
     },
     ToToken,
 };
@@ -126,20 +124,23 @@ impl ToToken for ViewProps {
     }
 }
 
-impl ViewProps {
-    fn animation(&mut self, prop_name: &str, value: &Value) -> Result<(), Errors> {
-        let apply_event = prop_name.split("::").collect::<Vec<&str>>()[1];
-        let applys = Self::animation_applys();
-        if let Some(an) = self.animation.as_mut() {
-            an.push((apply_event, value, applys).try_into()?)
-        } else {
-            self.animation = Some((apply_event, value, applys).try_into()?);
-        };
-        Ok(())
-    }
+impl AnimationApplys for ViewProps {
     fn animation_applys() -> Vec<&'static str> {
         vec!["draw_bg"]
     }
+}
+
+impl ViewProps {
+    fn animation(&mut self, prop_name: &str, value: &Value) -> Result<(), Errors> {
+        let apply_event = prop_name.split("::").collect::<Vec<&str>>()[1];
+        if let Some(an) = self.animation.as_mut() {
+            an.push((apply_event, value, BuiltIn::View).try_into()?)
+        } else {
+            self.animation = Some((apply_event, value, BuiltIn::View).try_into()?);
+        };
+        Ok(())
+    }
+   
     fn show_bg(&mut self, value: &Value) -> Result<(), Errors> {
         bool_prop(value, |b| {
             self.show_bg = Some(b);

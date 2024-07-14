@@ -47,7 +47,7 @@
 
 #### Props
 
-- [ ] animation
+- [x] animation
 - [x] as_prop (WidgetRef)
 - [x] Draw
 - [x] Color

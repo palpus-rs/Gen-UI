@@ -402,6 +402,46 @@ impl BuiltIn {
             BuiltIn::Html => todo!(),
         }
     }
+    pub fn animation_applys(&self) -> Vec<&str>{
+        match self {
+            BuiltIn::Window => todo!(),
+            BuiltIn::View => view::ViewProps::animation_applys(),
+            BuiltIn::ScrollXView => todo!(),
+            BuiltIn::ScrollYView => todo!(),
+            BuiltIn::ScrollXYView => todo!(),
+            BuiltIn::SolidView => todo!(),
+            BuiltIn::RectView => todo!(),
+            BuiltIn::RectShadowView => todo!(),
+            BuiltIn::RoundedView => todo!(),
+            BuiltIn::RoundedShadowView => todo!(),
+            BuiltIn::TextInput => todo!(),
+            BuiltIn::Label => todo!(),
+            BuiltIn::Button => todo!(),
+            BuiltIn::Area => todo!(),
+            BuiltIn::Icon => todo!(),
+            BuiltIn::Image => todo!(),
+            BuiltIn::CheckBox => todo!(),
+            BuiltIn::Radio => todo!(),
+            BuiltIn::Root => todo!(),
+            BuiltIn::DropDown => todo!(),
+            BuiltIn::LinkLabel => todo!(),
+            BuiltIn::DesktopButton => todo!(),
+            BuiltIn::Splitter => todo!(),
+            BuiltIn::RotatedImage => todo!(),
+            BuiltIn::FoldButton => todo!(),
+            BuiltIn::FoldHeader => todo!(),
+            BuiltIn::Slider => todo!(),
+            BuiltIn::SliderBig => todo!(),
+            BuiltIn::SlidesView => todo!(),
+            BuiltIn::Slide => todo!(),
+            BuiltIn::SlideBody => todo!(),
+            BuiltIn::SlideChapter => todo!(),
+            BuiltIn::ScrollBar => todo!(),
+            BuiltIn::ScrollBars => todo!(),
+            BuiltIn::Markdown => todo!(),
+            BuiltIn::Html => todo!(),
+        }
+    }
 }
 
 impl TryFrom<&str> for BuiltIn {
@@ -512,9 +552,17 @@ pub trait StaticProps: Debug + ToToken {
     fn props(props: &HashMap<PropsKey, Value>) -> Self
     where
         Self: Sized;
+    /// handle single GenUI prop to makepad prop and bind to struct 
     fn prop(&mut self, prop_name: &str, value: &Value) -> ();
+    // /// convert GenUI prop (from prop manuel) to makepad prop
+    // /// this fn can be used in animation
+    // fn prop_convert(&self, prop_name: &str) -> Result<&str, Errors>;
 }
 
 pub trait DynProps {
     fn prop_bind(prop: &PropsKey, value: &Value, is_prop: bool, ident: &str) -> TokenStream;
+}
+
+pub trait AnimationApplys {
+   fn animation_applys() -> Vec<&'static str>; 
 }
