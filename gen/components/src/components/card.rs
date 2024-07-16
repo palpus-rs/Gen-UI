@@ -86,9 +86,9 @@ pub struct Card {
     pub animator_key: bool,
     // scroll ---------------------
     #[live]
-    scroll_bars: Option<LivePtr>,
+    pub scroll_bars: Option<LivePtr>,
     #[rust]
-    scroll_bars_obj: Option<Box<ScrollBars>>,
+    pub scroll_bars_obj: Option<Box<ScrollBars>>,
     // control ---------------------
     #[live(true)]
     pub grab_key_focus: bool,
@@ -102,7 +102,7 @@ pub struct Card {
     #[layout]
     pub layout: Layout,
     #[rust]
-    draw_state: DrawStateWrap<DrawState>,
+    pub draw_state: DrawStateWrap<DrawState>,
     #[rust]
     pub children: ComponentMap<LiveId, WidgetRef>,
     #[rust]
@@ -110,7 +110,7 @@ pub struct Card {
     #[live]
     event_order: EventOrder,
     #[rust]
-    defer_walks: Vec<(LiveId, DeferWalk)>,
+    pub defer_walks: Vec<(LiveId, DeferWalk)>,
     #[animator]
     animator: Animator,
     #[rust]
@@ -118,7 +118,7 @@ pub struct Card {
 }
 
 #[derive(Clone)]
-enum DrawState {
+pub enum DrawState {
     Drawing(usize, bool),
     DeferWalk(usize),
 }

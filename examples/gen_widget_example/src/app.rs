@@ -40,8 +40,15 @@ live_design! {
                         
                         height: Fit,
                         width: Fit,
-                       trigger = <GButton>{text:"open"},
-                       
+                        trigger = <GButton>{text:"open"},
+                        popup: <GPopup>{
+                            height: 100.0,
+                            width: 200.0,
+                            theme: Dark,
+                            <GButton>{
+                                text: "Hello"
+                            }
+                        }
                     }
                     
                       

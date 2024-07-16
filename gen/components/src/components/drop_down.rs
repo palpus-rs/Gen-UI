@@ -105,8 +105,8 @@ impl Widget for GDropDown {
                         x: 0.0,
                         y: area.size.y,
                     };
-
-                    popup_menu.end(cx, self.draw_card.area(), shift);
+                    popup_menu.draw_items(cx, scope);
+                    popup_menu.end(cx, scope,self.draw_card.area(), shift);
                 }
             }
         }
