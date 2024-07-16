@@ -44,11 +44,19 @@ live_design! {
                         popup: <GPopup>{
                             height: 100.0,
                             width: 200.0,
+                            
                             theme: Dark,
                             <GButton>{
                                 text: "Hello"
                             }
                         }
+                    }
+                    <DropDown>{
+                        
+                        width: 200
+                        labels: ["ValueOne", "ValueTwo","Thrice","FourthValue","OptionE","Hexagons"],
+                        values: [ ValueOne,ValueTwo,Thrice,FourthValue,OptionE,Hexagons],
+                        
                     }
                     
                       

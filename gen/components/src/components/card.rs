@@ -156,7 +156,7 @@ impl Widget for Card {
                 return DrawStep::done();
             }
             self.defer_walks.clear();
-            
+
             // get scroll position
             let scroll = if let Some(scroll_bars) = &mut self.scroll_bars_obj {
                 scroll_bars.begin_nav_area(cx);
@@ -395,7 +395,13 @@ impl WidgetNode for Card {
 }
 
 impl LiveHook for Card {
-    fn before_apply(&mut self, _cx: &mut Cx, apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn before_apply(
+        &mut self,
+        _cx: &mut Cx,
+        apply: &mut Apply,
+        _index: usize,
+        _nodes: &[LiveNode],
+    ) {
         if let ApplyFrom::UpdateFromDoc { .. } = apply.from {
             self.draw_order.clear();
         }
@@ -470,8 +476,86 @@ impl Card {
     pub fn area(&self) -> Area {
         self.draw_card.area()
     }
+    pub fn begin(&mut self, cx: &mut Cx2d, walk: Walk){
+         // begin the draw state
+         if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
+            if !self.visible {
+                // visible is false, so we are done
+                self.draw_state.end();
+                return;
+            }
+            self.defer_walks.clear();
+
+            // get scroll position
+            let scroll = if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+                scroll_bars.begin_nav_area(cx);
+                scroll_bars.get_scroll_pos()
+            } else {
+                self.layout.scroll
+            };
+
+            // begin draw the card
+            let _ = self
+                .draw_card
+                .begin(cx, walk, self.layout.with_scroll(scroll));
+        }
+    }
+    pub fn end(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
+         // loop handle the defer walk
+         while let Some(DrawState::DeferWalk(step)) = self.draw_state.get() {
+            if step < self.defer_walks.len() {
+                let (id, d_walk) = &mut self.defer_walks[step];
+                if let Some(child) = self.children.get_mut(&id) {
+                    let walk = d_walk.resolve(cx);
+                    scope.with_id(*id, |scope| child.draw_walk(cx, scope, walk)).unwrap();
+                }
+                self.draw_state.set(DrawState::DeferWalk(step + 1));
+            } else {
+                let area = self.area();
+
+                if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+                    scroll_bars.draw_scroll_bars(cx);
+                }
+
+                // draw background
+                self.draw_card.end(cx);
+
+                if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+                    scroll_bars.set_area(area);
+                    scroll_bars.end_nav_area(cx);
+                }
+            }
+            self.draw_state.end();
+        }
+
+    }
+    pub fn draw_items(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
+        // loop handle the inner children
+        while let Some(DrawState::Drawing(step, resumed)) = self.draw_state.get() {
+            if step < self.draw_order.len() {
+                // get id from draw_order list
+                let id = self.draw_order[step];
+                // get the child widget by id
+                if let Some(child) = self.children.get_mut(&id) {
+                    // is the child visible?
+                    // true -> draw the child walk
+                    if child.is_visible() {
+                        let walk = child.walk(cx);
+                        // if resumed
+                        if !resumed {
+                            self.draw_state.set(DrawState::Drawing(step, true));
+                        }
+                        scope.with_id(id, |scope| child.draw_walk(cx, scope, walk)).unwrap();
+                    }
+                }
+                // set the next step
+                self.draw_state.set(DrawState::Drawing(step + 1, false));
+            } else {
+                self.draw_state.set(DrawState::DeferWalk(0));
+            }
+        }
+    }
     pub fn handle_card_event_order(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-       
         if self.animator_handle_event(cx, event).must_redraw() {
             self.redraw(cx);
         }

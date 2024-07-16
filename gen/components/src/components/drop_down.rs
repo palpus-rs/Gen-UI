@@ -46,6 +46,7 @@ struct PopupMenuGlobal {
 
 impl LiveHook for GDropDown {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.card.after_apply(cx, apply, index, nodes);
         if self.popup.is_none() || !apply.from.is_from_doc() {
             return;
         }
@@ -82,11 +83,10 @@ impl GDropDown {
 
 impl Widget for GDropDown {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        // let layout = self.layout;
         // self.draw_card.begin(cx, walk, layout);
         // self.draw_card.end(cx);
         let _ = self.card.draw_walk(cx, scope, walk);
-
+        
         cx.add_nav_stop(self.draw_card.area(), NavRole::DropDown, Margin::default());
 
         if self.opened && self.popup.is_some() {
@@ -110,7 +110,7 @@ impl Widget for GDropDown {
                 }
             }
         }
-
+        
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
