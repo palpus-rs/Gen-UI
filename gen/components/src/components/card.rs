@@ -2,6 +2,7 @@ use crate::shader::draw_card::DrawCard;
 use crate::themes::{get_color, Themes};
 use crate::utils::set_cursor;
 
+use icon_atlas::HashMap;
 use makepad_widgets::*;
 // Card component
 live_design! {
@@ -95,23 +96,25 @@ pub struct Card {
     pub block_signal_event: bool,
     // deref ---------------------
     #[live]
-    draw_card: DrawCard,
+    pub draw_card: DrawCard,
     #[walk]
-    walk: Walk,
+    pub walk: Walk,
     #[layout]
-    layout: Layout,
+    pub layout: Layout,
     #[rust]
     draw_state: DrawStateWrap<DrawState>,
     #[rust]
-    children: ComponentMap<LiveId, WidgetRef>,
+    pub children: ComponentMap<LiveId, WidgetRef>,
     #[rust]
-    draw_order: Vec<LiveId>,
+    pub draw_order: Vec<LiveId>,
     #[live]
     event_order: EventOrder,
     #[rust]
     defer_walks: Vec<(LiveId, DeferWalk)>,
     #[animator]
     animator: Animator,
+    #[rust]
+    find_cache: HashMap<u64, WidgetSet>,
 }
 
 #[derive(Clone)]
@@ -228,6 +231,13 @@ impl Widget for Card {
         if self.animator_handle_event(cx, event).must_redraw() {
             self.redraw(cx);
         }
+
+        if self.block_signal_event {
+            if let Event::Signal = event {
+                return;
+            }
+        }
+
         if let Some(scroll_bars) = &mut self.scroll_bars_obj {
             let mut actions = Vec::new();
             scroll_bars.handle_main_event(cx, event, &mut actions);
@@ -314,6 +324,9 @@ impl Widget for Card {
             }
             _ => (),
         }
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            scroll_bars.handle_scroll_event(cx, event, &mut Vec::new());
+        }
     }
     fn is_visible(&self) -> bool {
         self.visible
@@ -322,8 +335,50 @@ impl Widget for Card {
 
 impl WidgetNode for Card {
     fn find_widgets(&mut self, path: &[LiveId], cached: WidgetCache, results: &mut WidgetSet) {
-        for child in self.children.values_mut() {
-            child.find_widgets(path, cached, results);
+        // for child in self.children.values_mut() {
+        //     child.find_widgets(path, cached, results);
+        // }
+        match cached {
+            WidgetCache::Yes | WidgetCache::Clear => {
+                if let WidgetCache::Clear = cached {
+                    self.find_cache.clear();
+                }
+                let mut hash = 0u64;
+                for i in 0..path.len() {
+                    hash ^= path[i].0
+                }
+                if let Some(widget_set) = self.find_cache.get(&hash) {
+                    results.extend_from_set(widget_set);
+                    return;
+                }
+                let mut local_results = WidgetSet::empty();
+                if let Some(child) = self.children.get_mut(&path[0]) {
+                    if path.len() > 1 {
+                        child.find_widgets(&path[1..], WidgetCache::No, &mut local_results);
+                    } else {
+                        local_results.push(child.clone());
+                    }
+                }
+                for child in self.children.values_mut() {
+                    child.find_widgets(path, WidgetCache::No, &mut local_results);
+                }
+                if !local_results.is_empty() {
+                    results.extend_from_set(&local_results);
+                }
+                self.find_cache.insert(hash, local_results);
+            }
+            WidgetCache::No => {
+                if let Some(child) = self.children.get_mut(&path[0]) {
+                    if path.len() > 1 {
+                        child.find_widgets(&path[1..], WidgetCache::No, results);
+                    } else {
+                        results.push(child.clone());
+                    }
+                }
+                for child in self.children.values_mut() {
+                    child.find_widgets(path, WidgetCache::No, results);
+                }
+            }
         }
     }
 
@@ -415,6 +470,63 @@ impl Card {
     pub fn area(&self) -> Area {
         self.draw_card.area()
     }
+    pub fn handle_card_event_order(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+       
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.redraw(cx);
+        }
+
+        if self.block_signal_event {
+            if let Event::Signal = event {
+                return;
+            }
+        }
+
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            let mut actions = Vec::new();
+            scroll_bars.handle_main_event(cx, event, &mut actions);
+            if actions.len().gt(&0) {
+                cx.redraw_area_and_children(self.area());
+            }
+        }
+
+        match &self.event_order {
+            EventOrder::Down => {
+                for id in self.draw_order.iter() {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            })
+                        }
+                    }
+                }
+            }
+            EventOrder::Up => {
+                // the default event order is Up
+                for id in self.draw_order.iter().rev() {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            });
+                        }
+                    }
+                }
+            }
+            EventOrder::List(list) => {
+                for id in list {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            })
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl CardRef {
@@ -444,6 +556,11 @@ impl CardRef {
             inner.draw_card.area()
         } else {
             Area::Empty
+        }
+    }
+    pub fn set_abs_pos(&self, cx: &mut Cx, abs_pos: DVec2) {
+        if let Some(mut inner) = self.borrow_mut() {
+            inner.walk.abs_pos.replace(abs_pos);
         }
     }
 }

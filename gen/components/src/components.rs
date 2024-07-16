@@ -12,6 +12,8 @@ pub mod input;
 pub mod select;
 pub mod divider;
 pub mod shader;
+pub mod popup;
+pub mod drop_down;
 
 live_design!{
     // imports -----------------------------------------------------
@@ -26,7 +28,10 @@ live_design!{
     import crate::components::input::GInputBase;
     import crate::components::divider::GDividerBase;
     import crate::components::shader::GShaderBase;
+    import crate::components::popup::GPopupBase;
+    import crate::components::drop_down::GDropDownBase;
     import makepad_widgets::base::*;
+    import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
     // globals -----------------------------------------------------
     // -------- colors ---------------------------------------------
@@ -296,7 +301,32 @@ live_design!{
         height: Fill,
     }
     GDivider = <GDividerBase>{
+        height: Fill,
+        width: Fill,
+        flow: Right,
+        padding: 0,
+        spacing: 0,
+        margin: 0,
+        align: <ALIGN_CENTER_WALK>{},
+    }
+    GPopup = <GPopupBase>{
+        height: Fill,
+        width: Fill,
         
-       
+    }
+    GDropDown = <GDropDownBase>{
+        height: Fit,
+        width: Fit,
+        padding: 0,
+        border_radius: 0,
+        border_width: 0,
+        transparent: true,
+        spacing: 0,
+        margin: 0,
+        popup: <GPopup> {
+            height: 160.0,
+            width: 200.0,
+        },
+        // popup: <PopupMenu>{}
     }
 }

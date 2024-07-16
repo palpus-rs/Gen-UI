@@ -5,3 +5,4 @@ pub mod draw_text;
 pub mod draw_radio;
 pub mod draw_check_box;
 pub mod draw_icon;
+pub mod draw_divider;

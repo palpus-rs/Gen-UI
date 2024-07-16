@@ -1,8 +1,9 @@
+use gen_components::components::button::GButtonWidgetRefExt;
 use makepad_widgets::*;
 
 live_design! {
     import makepad_widgets::base::*;
-    import makepad_widgets::theme_desktop_dark::*; 
+    import makepad_widgets::theme_desktop_dark::*;
     import gen_components::components::*;
     import crate::components::cards::*;
     import crate::components::label::*;
@@ -17,6 +18,8 @@ live_design! {
     import crate::components::inputs::*;
     import crate::components::dividers::*;
     import crate::components::shaders::*;
+    import crate::components::select::*;
+    import crate::components::popups::*;
 
     App = {{App}}{
         root: <Root>{
@@ -32,9 +35,42 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GShaderExample>{}
-                    <GDividerExample>{}
+                    
+                    <GDropDown>{
+                        
+                        height: Fit,
+                        width: Fit,
+                       trigger = <GButton>{text:"open"},
+                       
+                    }
+                    
+                      
+                    
+                    // <Pop>{
+                    //     theme: Dark,
+                    //     height: Fit,
+                    //     width: Fill,
+                    //     trigger = <GButton>{text:"open"},
+
+                    //     popup = <GCard>{
+                    //         height: 100.0,
+                    //         width: 200.0,
+                    //         visible: false,
+                    //     }
+                    // }
+                    
+                    
+                    
+                    // <GCard>{
+                    //     height: 100.0,
+                    //     width: 200.0,
+                    //     abs_pos: vec2(100.0, 100.0),
+                    // }
+                    // <GShaderExample>{}
+                    // <GPopupExample>{}
+                    // <GSelectExample>{}
                     <GLabelExample>{}
+                    
                     <GButtonExample>{}
                     <GCardExample>{}
                     <GHLayoutExample>{}
@@ -44,7 +80,9 @@ live_design! {
                     <GCheckBoxExample>{}
                     <GIconExample>{}
                     <GImageExample>{}
+                    <GDividerExample>{}
                     <GInputExample>{}
+                    
                 }
             }
         }
@@ -74,14 +112,20 @@ impl LiveRegister for App {
         crate::components::inputs::live_design(cx);
         crate::components::dividers::live_design(cx);
         crate::components::shaders::live_design(cx);
+        crate::components::select::live_design(cx);
+        crate::components::popups::live_design(cx);
+
         // crate::gen_components::live_design!(cx);
     }
 }
 
-impl MatchEvent for App {}
+impl MatchEvent for App {
+    
+}
 
 impl AppMain for App {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
+        
         self.match_event(cx, event);
         self.root.handle_event(cx, event, &mut Scope::empty());
     }

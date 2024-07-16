@@ -18,7 +18,7 @@ live_design! {
         }
         <GButton>{
             theme: Dark,
-            text: "Theme Dark"
+            text: "Theme Dark",
         }
         <GButton>{
             theme: Success,

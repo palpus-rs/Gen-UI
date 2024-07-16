@@ -327,6 +327,12 @@ impl GButtonRef {
         }
         false
     }
+    pub fn area(&self) -> Area{
+        if let Some(btn_ref) = self.borrow() {
+            return btn_ref.draw_button.area();
+        }
+        Area::Empty
+    }
 }
 
 impl GButtonSet {
