@@ -99,7 +99,10 @@ dependencies = [
  "gen_utils",
  "proc-macro2",
  "quote",
+ "serde",
+ "serde_json",
  "syn",
+ "toml_edit",
  "which",
 ]
 

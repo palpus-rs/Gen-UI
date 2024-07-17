@@ -1,5 +1,7 @@
 mod compiler;
-pub use compiler::*;
+mod fs;
+pub use compiler::CompilerError;
+pub use fs::FsError;
 use core::str;
 use std::{error, fmt::Display};
 
@@ -43,6 +45,8 @@ pub enum Errors {
     CommandError(String),
     // -------- compiler -----------
     CompilerError(CompilerError),
+    // -------- fs -----------
+    FsError(FsError),
 }
 
 impl Display for Errors {
@@ -83,6 +87,8 @@ impl Display for Errors {
             Errors::DepError(e) => e.to_string(),
             Errors::CommandError(e) => e.to_string(),
             Errors::CompilerError(e) => e.to_string(),
+            Errors::FsError(e) =>e.to_string(),
+            
         };
         f.write_str(&msg)
     }

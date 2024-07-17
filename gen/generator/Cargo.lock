@@ -3,6 +3,21 @@
 version = 3
 
 [[package]]
+name = "ark"
+version = "0.1.0"
+dependencies = [
+ "gen_converter",
+ "gen_parser",
+ "gen_utils",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn",
+ "which",
+]
+
+[[package]]
 name = "bitflags"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

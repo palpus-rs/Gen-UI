@@ -1,4 +1,5 @@
-use std::{process::Command, str::FromStr};
+#[allow(unused_imports)]
+use std::{default, process::Command, str::FromStr};
 
 use gen_utils::{
     compiler::Version,
@@ -14,6 +15,7 @@ You can download here: https://developer.huawei.com/consumer/cn/download/command
 Version: Command Line Tools for HarmonyOS NEXT Developer Beta1(5.0.3+)
 SHA-256: a81aa868064ac1f143a8de9d4782ef60ae1d5d39fd614abaa4a729dcf97bd943"#;
 /// # ArkTs API Version
+/// ApiVersion provide the ability to check CommandLineTool through version
 /// See [HarmonyOS Dev](https://developer.huawei.com/consumer/cn/doc/harmonyos-releases-V5/releasenotes-baseline-V5?catalogVersion=V5)
 /// - **V12: HarmonyOS ArkTS API 12**
 ///     - Nodejs: version >= 14.19.1
@@ -21,7 +23,9 @@ SHA-256: a81aa868064ac1f143a8de9d4782ef60ae1d5d39fd614abaa4a729dcf97bd943"#;
 ///     - hstack: version >= 5.0.0
 ///     - ohpm: version >= 5.0.0 (recommend 5.0.2)
 ///     - hvigorw: exist (5.0.0)
+#[derive(Debug, Clone, Copy, Default)]
 pub enum ApiVersion {
+    #[default]
     V12,
 }
 
@@ -35,7 +39,7 @@ impl ApiVersion {
                 if !(Version::from_str("14.19.1")? <= nodejs_version) {
                     return Err(Errors::CompilerError(CompilerError::env_check(
                         "Node.js",
-                        "Node.js version should be 14.19.1<= version <= 17.0.0",
+                        "Node.js version should be 14.19.1<= version",
                         Some(format!("Current version: {}", nodejs_version).as_str()),
                     )));
                 }
@@ -85,6 +89,7 @@ impl ApiVersion {
         }
         Ok(())
     }
+    /// get tool version used by tool chain or other tools(jdk, nodejs)
     fn tool_version<F>(
         name: &str,
         recommand: Option<&str>,
