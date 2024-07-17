@@ -91,6 +91,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "ark"
+version = "0.1.0"
+dependencies = [
+ "gen_converter",
+ "gen_parser",
+ "gen_utils",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "which",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

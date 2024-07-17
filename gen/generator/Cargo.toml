@@ -1,1 +1,1 @@
-workspace = { members = ["makepad"] }
+workspace = { members = [ "ark","makepad"] }
