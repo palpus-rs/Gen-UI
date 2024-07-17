@@ -1,3 +1,5 @@
+mod compiler;
+pub use compiler::*;
 use core::str;
 use std::{error, fmt::Display};
 
@@ -36,9 +38,11 @@ pub enum Errors {
     StrategyNoStyle,
     PropConvertFail(String),
     BuiltInConvertFail,
-    
+    /// 依赖错误
     DepError(String),
     CommandError(String),
+    // -------- compiler -----------
+    CompilerError(CompilerError),
 }
 
 impl Display for Errors {
@@ -78,6 +82,7 @@ impl Display for Errors {
             Errors::BuiltInConvertFail => "Gen-Converter: BuiltIn convert fail".to_string(),
             Errors::DepError(e) => e.to_string(),
             Errors::CommandError(e) => e.to_string(),
+            Errors::CompilerError(e) => e.to_string(),
         };
         f.write_str(&msg)
     }

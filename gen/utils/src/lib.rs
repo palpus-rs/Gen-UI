@@ -6,3 +6,4 @@ pub mod error;
 pub mod props_manul;
 #[cfg(feature = "wasm")]
 pub mod wasm;
+pub mod compiler;
