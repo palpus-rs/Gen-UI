@@ -13,7 +13,8 @@ full = ["ark", "makepad"]
 [dependencies]
 gen_converter = { path = "../converter" }
 gen_utils = { path = "../utils", features = ["wasm"] }
-makepad-gen-plugin = { path = "../generator/makepad" }
+makepad_gen_plugin = { path = "../generator/makepad" }
+ark_gen_plugin = { path = "../generator/ark" }
 toml_edit = "0.22.12"
 walkdir = "2.5.0"
 ansi_term = "0.12.1"

@@ -1,5 +1,5 @@
 [package]
-name = "makepad-gen-plugin"
+name = "makepad_gen_plugin"
 version = "0.1.0"
 edition = "2021"
 

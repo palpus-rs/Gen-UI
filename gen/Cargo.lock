@@ -91,7 +91,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ark"
+name = "ark_gen_plugin"
 version = "0.1.0"
 dependencies = [
  "gen_converter",
@@ -372,11 +372,12 @@ name = "gen_compiler"
 version = "0.1.0"
 dependencies = [
  "ansi_term",
+ "ark_gen_plugin",
  "env_logger",
  "gen_converter",
  "gen_utils",
  "log",
- "makepad-gen-plugin",
+ "makepad_gen_plugin",
  "notify",
  "rmp-serde",
  "serde",
@@ -668,19 +669,6 @@ name = "makepad-futures-legacy"
 version = "0.7.0"
 
 [[package]]
-name = "makepad-gen-plugin"
-version = "0.1.0"
-dependencies = [
- "gen_converter",
- "gen_parser",
- "gen_utils",
- "proc-macro2",
- "quote",
- "syn",
- "which",
-]
-
-[[package]]
 name = "makepad-html"
 version = "0.4.0"
 dependencies = [
@@ -863,6 +851,19 @@ version = "0.2.1"
 dependencies = [
  "makepad-zune-core",
  "makepad-zune-inflate",
+]
+
+[[package]]
+name = "makepad_gen_plugin"
+version = "0.1.0"
+dependencies = [
+ "gen_converter",
+ "gen_parser",
+ "gen_utils",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "which",
 ]
 
 [[package]]

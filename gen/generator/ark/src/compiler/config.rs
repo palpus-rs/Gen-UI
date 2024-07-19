@@ -41,6 +41,24 @@ pub struct Config {
     pub dependencies: HashMap<String, String>,
 }
 
+impl Config {
+    /// ## check the config file is exists or not 
+    /// - if exists, read the file and parse to Config struct (deserialize) then return Config
+    /// - if not exists, create a new default Config struct and write to the file (serialize)
+    pub fn check<P>(path: P) -> Result<Self, Errors> where P: AsRef<std::path::Path>
+    {
+        todo!()
+    //    fs::try_exists(path.as_ref()).and_then(|exists| {
+    //        if exists {
+    //            Ok(())
+    //        } else {
+    //            let config = Config::from_path(path)?;
+    //            config.write()
+    //        }
+    //    })
+    }
+}
+
 impl Configer for Config {
     fn exists(&self) -> bool {
         fs::exists(self.path.as_path())
