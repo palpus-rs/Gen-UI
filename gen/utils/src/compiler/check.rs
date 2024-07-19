@@ -10,6 +10,7 @@ pub trait Checker {
     }
     /// check the environment
     fn check_env(&self) -> Result<(), Errors>;
+    /// check other
     fn check_other() -> Result<(), Errors> {
         Ok(())
     }

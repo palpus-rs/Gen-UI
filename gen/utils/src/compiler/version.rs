@@ -2,10 +2,23 @@ use std::{fmt::Display, str::FromStr};
 
 use crate::error::Errors;
 
+/// # Standard Version
+/// ## format
+/// `major.minor.patch` such as `1.2.3`
+/// ## parse (from_str)
+/// - if the version is `1.2.3` it will parse to `Version { major: 1, minor: 2, patch: 3 }`
+/// - if the version is `1.2` it will parse to `Version { major: 1, minor: 2, patch: 0 }`
+/// - if the version is `1` it will parse to `Version { major: 1, minor: 0, patch: 0 }`
+/// - if the version is `0.1` it will parse to `Version { major: 0, minor: 1, patch: 0 }`
+/// 
+/// **that means you can also use this struct to handle the version string which is not standard.**
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Version {
+    /// major version, if major version is 0, it means the version is not stable
     pub major: u32,
+    /// minor version
     pub minor: u32,
+    /// patch version
     pub patch: u32,
 }
 

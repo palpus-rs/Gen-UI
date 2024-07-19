@@ -34,24 +34,6 @@ impl Script {
             Script::Other { code, .. } => code.is_empty(),
         }
     }
-    // pub fn brace_token(&self) -> &Brace {
-    //     &self.0.brace_token
-    // }
-    // pub fn ast(&self) -> &Vec<Stmt> {
-    //     &self.0.stmts
-    // }
-    // pub fn to_origin(self) -> Block {
-    //     match self {
-    //         Script::Rs(rs) => todo!(),
-    //         Script::ETs(ets) => todo!(),
-    //     }
-    // }
-    // pub fn as_origin(&self) -> &Block {
-    //     &self.0
-    // }
-    // pub fn as_origin_mut(&mut self) -> &mut Block {
-    //     &mut self.0
-    // }
 }
 
 impl From<Block> for Script {

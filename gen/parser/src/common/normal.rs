@@ -32,6 +32,7 @@ pub fn parse_sign_key<'a>(input: &'a str, sign: &'a str) -> IResult<&'a str, (&'
 }
 
 /// ## trim any parser left and right multispace(if exist)
+#[allow(unused_mut)]
 pub fn trim<'a, P, O>(mut parser: P) -> impl FnMut(&'a str) -> IResult<&'a str, O>
 where
     P: FnMut(&'a str) -> IResult<&'a str, O>,

@@ -169,6 +169,6 @@ mod test_fs{
     #[test]
     fn test_try_exists(){
         let res = try_exists(PathBuf::new());
-        dbg!(res);
+        assert!(res.is_err());
     }
 }
