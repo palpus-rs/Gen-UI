@@ -6,9 +6,11 @@
         <view id="an_view"></view>
         <label_view></label_view>
         <markdown class="mk1"></markdown>
+        <view height="100.0">
+           <button_view></button_view>
+        </view>
         <drop_down_view></drop_down_view>
         <checkbox_view></checkbox_view>
-        <button_view></button_view>
       </scroll_y_view>
     </window>
   </root>

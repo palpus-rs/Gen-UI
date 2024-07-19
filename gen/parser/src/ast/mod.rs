@@ -275,7 +275,6 @@ impl ParseTarget {
     /// if has script then get imports! macro
     pub fn has_script_then_imports(&self) -> Option<TokenStream> {
         if self.has_script().0 {
-            dbg!(parse_imports_to_token(self.script().unwrap().to_string().as_str()).unwrap().to_string());
             return parse_imports_to_token(self.script().unwrap().to_string().as_str());
         }
         None
