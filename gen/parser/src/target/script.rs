@@ -12,7 +12,7 @@ pub fn parse_script(input: &str) -> Result<Block, Error> {
         Ok(t) => t,
         Err(_) => {
             return Err(Error::parse_error(
-                "cannot parse rsx script to rust TokenStream!",
+                "cannot parse gen-ui script to rust TokenStream!",
             ));
         }
     };
@@ -29,6 +29,29 @@ pub fn parse_script(input: &str) -> Result<Block, Error> {
 mod test_script_parse {
     use proc_macro2::TokenStream;
     use syn::{parse2, parse_str, Block, Expr, Stmt};
+
+    use super::parse_script;
+
+    #[test]
+    fn test_ets_sc(){
+        let ets = r#"
+        import { hilog } from '@kit.PerformanceAnalysisKit';
+        import { BackupExtensionAbility, BundleVersion } from '@kit.CoreFileKit';
+
+        export default class EntryBackupAbility extends BackupExtensionAbility {
+            async onBackup() {
+                hilog.info(0x0000, 'testTag', 'onBackup ok');
+            }
+
+            async onRestore(bundleVersion: BundleVersion) {
+                hilog.info(0x0000, 'testTag', 'onRestore ok %{public}s', JSON.stringify(bundleVersion));
+            }
+        }
+        "#;
+
+        let res = parse_script(ets);
+        assert!(res.is_err());
+    }
 
     #[test]
     fn test_syn_parse_var() {

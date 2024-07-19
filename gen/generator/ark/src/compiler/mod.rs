@@ -1,5 +1,6 @@
 pub mod api_version;
 pub mod config;
+pub mod tree;
 
 use std::path::PathBuf;
 
@@ -21,13 +22,19 @@ pub struct ArkCompiler{
     /// which is the entry of the HarmonyOS project
     pub compiled_path: PathBuf,
     /// the config of the project, which will be used to generate the `oh-package.json5` file
-    pub config: Config
+    pub config: Config,
+    
+
 
 }
 
 impl Checker for ArkCompiler {
     fn check_env(&self) -> Result<(), gen_utils::error::Errors> {
         self.api_version.check()
+    }
+    fn check_other() -> Result<(), gen_utils::error::Errors> {
+        // check oh-package.json5 file is exists or not -------------------------------
+        todo!()
     }
 }
 

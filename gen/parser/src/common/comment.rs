@@ -68,7 +68,7 @@ pub fn parse_offline_comment(input: &str) -> IResult<&str, Targets> {
     } else {
         match targets.unwrap() {
             Targets::Template(_) => OfflinePosition::AboveTemplate,
-            Targets::Script(_) => OfflinePosition::AboveScript,
+            Targets::Script { .. } => OfflinePosition::AboveScript,
             Targets::Style(_) => OfflinePosition::AboveStyle,
             Targets::Comment(_) => {
                 panic!("not exist this condition: offline comment above offline comment")

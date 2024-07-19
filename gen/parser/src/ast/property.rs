@@ -78,6 +78,11 @@ impl PropsKey {
             ty,
         }
     }
+    /// ## new props key
+    /// new a props key in template or script tag which is type normal
+    pub fn new_tag_normal(name: &str) -> Self{
+        Self { name: name.to_string(), is_style: false, ty: PropertyKeyType::Normal }
+    }
     pub fn name(&self) -> &str {
         &self.name
     }

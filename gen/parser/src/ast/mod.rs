@@ -18,13 +18,13 @@ use std::{default, fmt::Display};
 pub use style::{Style, StyleType};
 pub use tag::{CloseType, Tag};
 
+use self::nodes::asts_to_string;
 use crate::{
     ast::comment::position::OfflinePosition,
     common::{parse_all, trim},
     target::parse_imports_to_token,
 };
 use gen_utils::error::Error;
-use self::nodes::asts_to_string;
 
 /// Parse Strategy
 /// Convert ParseTarget To AST
@@ -62,7 +62,7 @@ pub enum Strategy {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Targets<'a> {
     Template(&'a str),
-    Script(&'a str),
+    Script { content: &'a str, ast_node: Tag },
     Style(&'a str),
     Comment(OfflineComment),
 }
@@ -79,7 +79,7 @@ pub struct ParseCore {
     /// content of template tag
     template: Option<String>,
     /// content of script tag
-    script: Option<String>,
+    script: Option<Script>,
     /// content of style tag
     style: Option<String>,
 }
@@ -95,7 +95,7 @@ impl ParseCore {
     pub fn template(&self) -> Option<&String> {
         self.template.as_ref()
     }
-    pub fn script(&self) -> Option<&String> {
+    pub fn script(&self) -> Option<&Script> {
         self.script.as_ref()
     }
     pub fn style(&self) -> Option<&String> {
@@ -105,7 +105,10 @@ impl ParseCore {
         has_target(self.template())
     }
     pub fn has_script(&self) -> (bool, bool) {
-        has_target(self.script())
+        match self.script.as_ref() {
+            Some(sc) => (!sc.is_empty(), false),
+            None => (false, true),
+        }
     }
     pub fn has_style(&self) -> (bool, bool) {
         has_target(self.style())
@@ -113,8 +116,8 @@ impl ParseCore {
     pub fn set_template_directly(&mut self, template: String) {
         let _ = self.template.replace(template);
     }
-    pub fn set_script_directly(&mut self, script: String) {
-        let _ = self.script.replace(script);
+    pub fn set_script_directly(&mut self, script: &Script) {
+        let _ = self.script.replace(script.clone());
     }
     pub fn set_style_directly(&mut self, style: String) {
         let _ = self.style.replace(style);
@@ -122,8 +125,9 @@ impl ParseCore {
     pub fn set_template(&mut self, template: &str) {
         let _ = self.template.replace(template.to_owned());
     }
-    pub fn set_script(&mut self, script: &str) {
-        let _ = self.script.replace(script.to_owned());
+    pub fn set_script(&mut self, content: &str, lang: Option<String>) {
+        // if is not script tag then panic!
+        let _ = self.script.replace((content, lang).try_into().unwrap());
     }
     pub fn set_style(&mut self, style: &str) {
         let _ = self.style.replace(style.to_owned());
@@ -158,7 +162,7 @@ impl From<ParseResult> for ParseCore {
             let _ = result.set_template_directly(asts_to_string(t));
         }
         if let Some(sc) = value.script() {
-            let _ = result.set_script_directly(sc.to_string());
+            let _ = result.set_script_directly(sc);
         }
         if let Some(s) = value.style() {
             let _ = result.set_style_directly(asts_to_string(s));
@@ -191,8 +195,8 @@ impl ParseTarget {
     pub fn set_template(&mut self, template: &str) {
         let _ = self.core.template.replace(template.to_owned());
     }
-    pub fn set_script(&mut self, script: &str) {
-        let _ = self.core.script.replace(script.to_owned());
+    pub fn set_script(&mut self, content: &str, lang: Option<String>) {
+        let _ = self.core.set_script(content, lang);
     }
     pub fn set_style(&mut self, style: &str) {
         let _ = self.core.style.replace(style.to_owned());
@@ -211,8 +215,8 @@ impl ParseTarget {
     pub fn template(&self) -> Option<&String> {
         self.core.template.as_ref()
     }
-    pub fn script(&self) -> Option<&String> {
-        self.core.script.as_ref()
+    pub fn script(&self) -> Option<&Script> {
+        self.core.script()
     }
     pub fn style(&self) -> Option<&String> {
         self.core.style.as_ref()
@@ -224,7 +228,7 @@ impl ParseTarget {
         has_target(self.template())
     }
     pub fn has_script(&self) -> (bool, bool) {
-        has_target(self.script())
+        self.core.has_script()
     }
     pub fn has_style(&self) -> (bool, bool) {
         has_target(self.style())
@@ -271,7 +275,8 @@ impl ParseTarget {
     /// if has script then get imports! macro
     pub fn has_script_then_imports(&self) -> Option<TokenStream> {
         if self.has_script().0 {
-            return parse_imports_to_token(self.script().unwrap());
+            dbg!(parse_imports_to_token(self.script().unwrap().to_string().as_str()).unwrap().to_string());
+            return parse_imports_to_token(self.script().unwrap().to_string().as_str());
         }
         None
     }
@@ -335,9 +340,10 @@ impl<'a> TryFrom<Vec<Targets<'a>>> for ParseTarget {
                             template_count += 1;
                             parse_target.set_template(t);
                         }
-                        Targets::Script(sc) => {
+                        Targets::Script { content, ast_node } => {
                             script_count += 1;
-                            parse_target.set_script(sc);
+                            let script_lang = ast_node.get_script_lang();
+                            parse_target.set_script(content, script_lang);
                         }
                         Targets::Style(s) => {
                             style_count += 1;
@@ -540,7 +546,7 @@ mod ast_test {
         let target = ParseTarget::try_from(input).unwrap();
         let mut parse = ParseTarget::default();
         parse.set_template("<window class=\"ui\">\n            </window>\n        ");
-        parse.set_script("let mut counter:usize = 0\n\n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        ");
+        parse.set_script("let mut counter:usize = 0\n\n        let handle_actions:FnOnce()->() = || {\n            counter += 1;\n        }\n        ", Some("rust".to_string()));
         parse.set_style(".ui{\n            height : fill;\n            width : fill;\n            show_bg : true;\n        }\n        ");
         parse.set_comment(vec![OfflineComment::from((
             vec![Comments::File("This is a comment1".to_string())],

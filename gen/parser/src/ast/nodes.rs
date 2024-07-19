@@ -127,6 +127,12 @@ impl ASTNodes {
             ASTNodes::Style(s) => s.get_name(),
         }
     }
+    pub fn is_tag_and_get(&self) -> Option<&Tag> {
+        match self {
+            ASTNodes::Tag(t) => Some(t),
+            _ => None,
+        }
+    }
     // pub fn parse_template(input:&str) -> Vec<ASTNodes>{
     //     parse_template(input)
     // }

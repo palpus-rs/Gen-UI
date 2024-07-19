@@ -55,12 +55,22 @@ impl From<&str> for CloseType {
     }
 }
 
+/// # Tag
+/// This struct is used to represent a tag in the AST
+/// ## Tag Type
+/// - self close tag: `<tag_name key="value" />`
+/// - normal tag: `<tag_name key="value">..[nested tags]</tag_name>`
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tag {
+    /// tag name
     name: String,
+    /// tag close type: self close or normal
     ty: CloseType,
+    /// tag props and value
     props: Props,
+    /// children tags
     children: Option<Vec<ASTNodes>>,
+    /// parent tag
     parent: Option<Box<ASTNodes>>,
 }
 
@@ -86,6 +96,8 @@ impl Tag {
             parent,
         }
     }
+    /// ## new tag start
+    /// new a tag start without props, children and parent
     pub fn new_tag_start(name: &str) -> Self {
         Self {
             name: name.to_string(),
@@ -95,6 +107,8 @@ impl Tag {
             parent: None,
         }
     }
+    /// ## new tag props
+    /// new a tag with props, without children and parent
     pub fn new_tag_props(name: &str, props: Props) -> Self {
         Self {
             name: name.to_string(),
@@ -121,6 +135,7 @@ impl Tag {
             None => self.children = Some(children),
         }
     }
+    /// push a child to children
     pub fn push_children(&mut self, child: ASTNodes) {
         match self.children {
             Some(ref mut children) => {
@@ -131,6 +146,7 @@ impl Tag {
             }
         }
     }
+    /// extend children to children
     pub fn extend_children(&mut self, children: Vec<ASTNodes>) {
         match self.children {
             Some(ref mut c) => {
@@ -167,8 +183,29 @@ impl Tag {
     pub fn get_props(&self) -> Option<&HashMap<PropsKey, Value>> {
         self.props.as_ref()
     }
+    /// is current tag is self closed or not
     pub fn is_self_closed(&self) -> bool {
         self.ty.is_self_close()
+    }
+    /// ## get script lang from Tag
+    /// if tag is script tag(`<script lang="xxx">`), return script lang
+    ///
+    /// if tag is not script return None or return default lang rust
+    /// ### Attention
+    /// - if tag is `<script>`, return lang is rust
+    /// - lang is in props field
+    pub fn get_script_lang(&self) -> Option<String> {
+        if self.get_name() == "script" {
+            match self.props.as_ref() {
+                Some(props) => {
+                    let _ = props
+                        .get(&PropsKey::new_tag_normal("lang"))
+                        .map_or(Some("rust".to_string()), |lang| Some(lang.to_string()));
+                }
+                None => return Some("rust".to_string()),
+            }
+        }
+        None
     }
 }
 

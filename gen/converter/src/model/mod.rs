@@ -171,13 +171,14 @@ impl Model {
                 );
             }
             Strategy::SingleScript => {
-                let script = ast.script().unwrap().clone().to_origin();
+                // let script = ast.script().unwrap().clone().to_origin();
                 // 处理script部分
                 // if let Some(tree) = model.get_binds_tree() {
                 //     model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
                 // }
-                model.script.replace(script.into());
-            },
+                // model.script.replace(script.into());
+                model.script.replace(ScriptModel::from(ast.script.unwrap()));
+            }
             Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other rsx have use to inject the style or not
             Strategy::TemplateScript => todo!(),
             Strategy::TemplateStyle => {
@@ -216,7 +217,7 @@ impl Model {
                 let style_sender = sender.clone();
                 let template = ast.template().unwrap()[0].clone();
                 let styles = ast.style().unwrap().clone();
-                let script = ast.script().unwrap().clone().to_origin();
+                // let script = ast.script().unwrap().clone().to_origin();
                 // model.set_script(script);
                 let _ = thread::spawn(move || {
                     let convert_res = TemplateModel::convert(&template, true);
@@ -256,8 +257,11 @@ impl Model {
                     }
                 }
                 // 处理script部分
-                if let Some(tree) = model.get_binds_tree() {
-                    model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
+                if let Some(tree) = model.get_binds_tree().as_ref() {
+                    // model.script = Some(ScriptModel::Gen(GenScriptModel::new(script, &tree)));
+                    model
+                        .script
+                        .replace(ScriptModel::from_gen(ast.script.unwrap(), tree));
                 }
             }
             // Strategy::Error(_) => Err(Errors::UnAcceptConvertRange),

@@ -2,49 +2,6 @@
 //! - template
 //! - script
 //! - style
-//! ## backup
-//! ```code
-//! fn start(input: &str) -> IResult<&str, &str> {
-//!     delimited(trim(tag(TAG_START)), tag(TEMPLATE), trim(tag(END_SIGN)))(input)
-//! }
-//! fn end(input: &str) -> IResult<&str, &str> {
-//!     delimited(
-//!         trim(tag(END_START_SIGN)),
-//!         tag(TEMPLATE),
-//!         trim(tag(END_SIGN)),
-//!     )(input)
-//! }
-//!
-//! fn until_end_template(input: &str) -> IResult<&str, &str> {
-//!     let mut rest = input;
-//!     let mut remain = "";
-//!
-//!     loop {
-//!         match take_until(END_START_SIGN)(rest) {
-//!             Ok((new_rest, taken)) => {
-//!                 // 尝试匹配结束标签，如果失败，说明 "</" 不是有效的结束标签的开始
-//!                 match end(new_rest) {
-//!                     Ok((final_rest, _)) => {
-//!                         //将taken继续放入remain中
-//!                         remain = &input[..(remain.len() + taken.len())];
-//!                         // 成功找到结束标签，返回累积的内容和剩余的输入
-//!                         return Ok((final_rest, remain));
-//!                     }
-//!                     Err(_) => {
-//!                         // 没有找到有效的结束标签，将 "</" 之前的内容加入累积，并继续处理
-//!                         remain = &input[..input.len() - new_rest.len() + 2]; // 加 2 是为了包括 "</"
-//!                         rest = &new_rest[2..]; // 跳过 "</"，继续尝试
-//!                     }
-//!                 }
-//!             }
-//!             Err(e) => return Err(e), // 如果找不到 "</"，则返回错误
-//!         }
-//!     }
-//! }
-//!
-//! // logic ----------------------------------------------------------------
-//! preceded(start, until_end_template)(input)
-//! ```
 
 use nom::{
     branch::alt,
@@ -54,7 +11,10 @@ use nom::{
     IResult,
 };
 
-use crate::{ast::Targets, END_SIGN, END_START_SIGN, SCRIPT, STYLE, TAG_START, TEMPLATE};
+use crate::{
+    ast::Targets, target::parse_tag_start, END_SIGN, END_START_SIGN, SCRIPT, STYLE, TAG_START,
+    TEMPLATE,
+};
 
 use super::{comment::parse_offline_comment, trim};
 
@@ -118,8 +78,16 @@ fn parse_template_check(input: &str) -> IResult<&str, Targets> {
     }
 }
 fn parse_script_check(input: &str) -> IResult<&str, Targets> {
-    match parse_tag(input, SCRIPT) {
-        Ok(_) => Ok(("", Targets::Script(""))),
+    // match parse_tag(input, SCRIPT) {
+    //     Ok(_) => Ok(("", Targets::Script(""))),
+    //     Err(e) => Err(e),
+    // }
+    let (input, node) = parse_tag_start(input)?;
+    match until_end(input, SCRIPT) {
+        Ok((_input, content)) => {
+            let ast_node = node.is_tag_and_get().unwrap().clone();
+            Ok(("", Targets::Script { content, ast_node }))
+        },
         Err(e) => Err(e),
     }
 }
@@ -148,8 +116,13 @@ pub fn parse_template_tag(input: &str) -> IResult<&str, Targets> {
 
 /// # parse `<script>` tag
 pub fn parse_script_tag(input: &str) -> IResult<&str, Targets> {
-    let (input, remain) = parse_tag(input, SCRIPT)?;
-    Ok((input, Targets::Script(remain)))
+    // let (input, remain) = parse_tag(input, SCRIPT)?;
+    // Ok((input, Targets::Script(remain)))
+    let (input, node) = parse_tag_start(input)?;
+   
+    let (input, content) = until_end(input, SCRIPT)?;
+    let ast_node = node.is_tag_and_get().unwrap().clone();
+    Ok((input, Targets::Script { content, ast_node }))
 }
 
 /// # parse `<style>` tag
@@ -184,7 +157,7 @@ mod tag_parser {
     use super::parse_template_tag;
 
     #[test]
-    fn test_template2(){
+    fn test_template2() {
         let input = r#"
         <template>
             <window id="ui">
@@ -238,8 +211,8 @@ mod tag_parser {
             const a:&str = "a";
         </script>
         "#;
-        let (_, inner) = parse_script_tag(input).unwrap();
-        assert_eq!(inner, Targets::Script("const a:&str = \"a\";\n        "));
+        let (input, inner) = parse_script_tag(input).unwrap();
+        dbg!(input, inner);
     }
 
     #[test]

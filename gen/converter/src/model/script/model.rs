@@ -1,4 +1,4 @@
-use gen_parser::Value;
+use gen_parser::{Script, Value};
 
 use proc_macro2::Span;
 use syn::{Block, Expr, Ident, Meta, Pat, Stmt, StmtMacro};
@@ -7,10 +7,36 @@ use crate::model::PropTree;
 
 use super::{r#use::UseMod, LifeTime, PropFn};
 
+/// # GenUI Script Model
+/// Model here is used to represent the script of the component or logic code
+///
+/// This ScriptModel is from `gen_parser::ast::script::Script`
 #[derive(Debug, Clone)]
 pub enum ScriptModel {
+    /// General Script Model for GenUI component Model
     Gen(GenScriptModel),
+    /// Rust code
     Rs(Block),
+    /// Ets code
+    ETs(String),
+    /// Other language code, in some framework, it may support other language code
+    Other { lang: String, code: String },
+}
+
+impl ScriptModel {
+    pub fn from(script: Script) -> Self {
+        match script {
+            Script::Rs(rs) => ScriptModel::Rs(rs),
+            Script::ETs(ets) => ScriptModel::ETs(ets),
+            Script::Other { lang, code } => ScriptModel::Other { lang, code },
+        }
+    }
+    pub fn from_gen(script: Script, bind_fn_tree: &(PropTree, PropTree)) -> Self {
+        if let Script::Rs(rs) = script {
+            return ScriptModel::Gen(GenScriptModel::new(rs, bind_fn_tree));
+        }
+        panic!("Only Rs can be converted to GenScriptModel")
+    }
 }
 
 impl Default for ScriptModel {

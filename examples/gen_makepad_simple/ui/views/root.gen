@@ -55,8 +55,6 @@ import!{
           ease: in_out;
           from: all;
           redraw: false;
-          target: background_color;
-          background_color: #FFF000;
       }
     }
   }

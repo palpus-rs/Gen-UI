@@ -8,9 +8,9 @@ use super::{ASTNodes, ParseCore, ParseTarget, Script, Strategy};
 
 #[derive(Debug, Clone, Default)]
 pub struct ParseResult {
-    template: Option<Vec<ASTNodes>>,
-    style: Option<Vec<ASTNodes>>,
-    script: Option<Script>,
+    pub template: Option<Vec<ASTNodes>>,
+    pub style: Option<Vec<ASTNodes>>,
+    pub script: Option<Script>,
 }
 
 impl ParseResult {
@@ -79,11 +79,11 @@ impl TryFrom<ParseCore> for ParseResult {
                 let (sender, receiver) = mpsc::channel();
                 let t_input = value.template().unwrap().clone();
                 let s_input = value.style().unwrap().clone();
-                let sc_input = value.script().unwrap();
-
-                if let Err(e) = handle_script(&mut result, sc_input) {
-                    return Err(e);
-                }
+                // let sc_input = value.script().unwrap();
+                result.script = value.script;
+                // if let Err(e) = handle_script(&mut result, sc_input) {
+                //     return Err(e);
+                // }
                 let sender_t = sender.clone();
                 // new thread to handle template
                 thread::spawn(move || {
@@ -112,11 +112,12 @@ impl TryFrom<ParseCore> for ParseResult {
                 // channel
                 let (sender, receiver) = mpsc::channel();
                 let t_input = value.template().unwrap().clone();
-                let sc_input = value.script().unwrap();
+                // let sc_input = value.script().unwrap();
 
-                if let Err(e) = handle_script(&mut result, sc_input) {
-                    return Err(e);
-                }
+                // if let Err(e) = handle_script(&mut result, sc_input) {
+                //     return Err(e);
+                // }
+                result.script = value.script;
 
                 // new thread to handle template
                 thread::spawn(move || {
@@ -170,10 +171,12 @@ impl TryFrom<ParseCore> for ParseResult {
             Strategy::Error(e) => Err(Error::convert(Errors::ParseError(e))),
             Strategy::SingleScript => {
                 let mut result = ParseResult::default();
-                match handle_script(&mut result, value.script.unwrap().as_str()) {
-                    Ok(_) => Ok(result),
-                    Err(e) => Err(e),
-                }
+                // match handle_script(&mut result, value.script.unwrap().as_str()) {
+                //     Ok(_) => Ok(result),
+                //     Err(e) => Err(e),
+                // }
+                result.script = value.script;
+                Ok(result)
             }
             Strategy::SingleStyle => {
                 let mut result = ParseResult::default();
@@ -200,7 +203,10 @@ impl Display for ParseResult {
         )
     }
 }
-
+/// ## handle template
+/// use parse_template to parse template(string in <template> tag) to AST
+/// - if success, set template to result and return Ok(())
+/// - if failed, return Err(Error)
 fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     match parse_template(input) {
         Ok(ast) => {
@@ -210,6 +216,9 @@ fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), Error> {
         Err(e) => Err(e),
     }
 }
+/// ## handle script
+#[deprecated]
+#[allow(dead_code)]
 fn handle_script(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     match parse_script(input) {
         Ok(ast) => {
@@ -220,6 +229,8 @@ fn handle_script(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     }
 }
 
+/// ## handle style
+/// use parse_style to parse style(string in <style> tag) to AST
 fn handle_style(result: &mut ParseResult, input: &str) -> Result<(), Error> {
     match parse_style(input) {
         Ok(ast) => {

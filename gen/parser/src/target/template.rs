@@ -35,13 +35,19 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
 }
 
 
-/// ## parse tag start (<) 🆗
-/// format : `<tag_name>`
+/// ## parse tag start (<tag_name key="value">) 🆗
+/// format : `<tag_name key="value">`
 /// ### return
-/// TemplateASTNode
-fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
+/// `IResult<&str, ASTNodes>`
+/// ### Example
+/// ```rust
+/// let input = r#"<button value="Hello world" class="button1" @clicked="handle_actions"/>"#;
+/// let res = parse_tag_start(input).unwrap();
+/// ```
+pub fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
+    
     let (remain, (name, props)) =
-        preceded(char('<'), tuple((parse_tag_name, parse_properties)))(input)?;
+        trim(preceded(char('<'), tuple((parse_tag_name, parse_properties))))(input)?;
     let props = if props.is_empty() {
         None
     } else {
@@ -128,6 +134,7 @@ fn parse_comment(input: &str) -> IResult<&str, ASTNodes> {
     }
 }
 
+#[deprecated = "use parse_end_tag_common instead"]
 #[allow(dead_code)]
 fn to_end_tag(input: &str, tag_name: String) -> IResult<&str, &str> {
     let mut rest = input;
@@ -273,6 +280,22 @@ mod template_parsers {
         parse_bind_key, parse_function_key, parse_property, parse_property_key, parse_tag_end,
         parse_tag_start, parse_template,
     };
+
+    #[test]
+    fn test_tag_start(){
+        let input = r#"<button value="Hello world" class="button1" @clicked="handle_actions"/>"#;
+        let res = parse_tag_start(input).unwrap();
+        dbg!(res);
+    }
+
+    #[test]
+    fn test_script_tag(){
+        let input = r#"<script lang="ets">"#;
+        let res = parse_tag_start(input).unwrap();
+        dbg!(res);
+    }
+
+
     #[test]
     fn test_template_nested_same() {
         let template = r#"
