@@ -8,9 +8,14 @@ pub enum CompilerError {
         recommend: String,
         other: Option<String>,
     },
+    /// Compiler Runtime Error
+    Runtime {
+        target: String,
+        msg: String,
+    },
 }
 
-impl CompilerError{
+impl CompilerError {
     pub fn env_check(env: &str, recommend: &str, other: Option<&str>) -> Self {
         CompilerError::EnvCheck {
             env: env.to_string(),
@@ -18,7 +23,6 @@ impl CompilerError{
             other: other.map(|s| s.to_string()),
         }
     }
-    
 }
 
 impl Display for CompilerError {
@@ -37,6 +41,9 @@ impl Display for CompilerError {
                     let _ = f.write_fmt(format_args!("\nOther Message:\n{}", other));
                 }
                 Ok(())
+            }
+            CompilerError::Runtime { target, msg } => {
+                f.write_fmt(format_args!("Runtime Error: {target}\nMessage:\n{}", msg))
             }
         }
     }

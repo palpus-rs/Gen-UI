@@ -2,7 +2,7 @@
 members = [
     "converter",
     "generator/makepad",
-    "generator/ark",
+    # "generator/ark",
     "parser",
     "utils",
     "macros",

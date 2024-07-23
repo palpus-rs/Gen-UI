@@ -1,7 +1,7 @@
 use std::{collections::HashSet, hash::Hash, path::PathBuf};
 
-use gen_converter::model::Source;
-use gen_utils::common::token_tree_ident;
+use gen_utils::common::{token_tree_ident, Source};
+use gen_utils::compiler::ModelNodeImpl;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;
@@ -75,13 +75,13 @@ impl ModelTree {
         }
         None
     }
-    /// add node to widget tree
+    /// insert node to widget tree
     /// compare path, src is the same root
     /// eg:
     /// - item_path:  src/a1/b/c
     /// - current_path: src/a2
     /// means: item should in 4 level
-    pub fn add(&mut self, item: ModelNode) -> () {
+    pub fn insert(&mut self, item: ModelNode) -> () {
         fn similarity(path1: &PathBuf, path2: &PathBuf) -> usize {
             let components1: Vec<_> = path1.components().collect();
             let components2: Vec<_> = path2.components().collect();
@@ -94,7 +94,7 @@ impl ModelTree {
         }
         let is_root = self.node.eq(&item);
         // get level and compare
-        let (item_level, item_path) = item.level();    
+        let (item_level, item_path) = item.level();
         if let Some(children) = &mut self.children {
             // let mut is_root = true;
             // 查找子节点中任意的path的节点，首先使用level匹配，level相同，可以直接push
@@ -102,10 +102,10 @@ impl ModelTree {
             // let (current_level, _current_path) = children[0].level();
             let (current_level, _current_path) = children.iter().next().unwrap().level();
             let step = item_level as isize - current_level as isize;
-            
+
             if step == 0 {
                 let node: ModelTree = item.into();
-                if  is_root{
+                if is_root {
                     self.node = node.node;
                 } else {
                     let _ = children.remove(&node);
@@ -117,10 +117,8 @@ impl ModelTree {
                 node.children.replace(self.children.take().unwrap());
                 // add into parent node
                 // let _ = std::mem::replace(&mut self.children, Some(vec![node]));
-                let _ = std::mem::replace(
-                    &mut self.children,
-                    Some(std::iter::once(node).collect()),
-                );
+                let _ =
+                    std::mem::replace(&mut self.children, Some(std::iter::once(node).collect()));
             } else {
                 // 说明item节点比当前节点层级低，继续遍历子节点
                 // 需要查找当前所有子节点的path，找到符合前缀的节点，查看子节点数量，哪个少往哪个去遍历（符合前缀指的是前缀匹配优先级最大的）
@@ -149,7 +147,7 @@ impl ModelTree {
                 // 查看target_node是否存在，存在说明找到了优先级最大的节点，递归调用这个add方法，不存在则直接push
                 let target_node = if let Some(mut target_node) = target_node {
                     children.remove(&target_node);
-                    target_node.add(item);
+                    target_node.insert(item);
                     target_node
                 } else {
                     // children.push(item.into());

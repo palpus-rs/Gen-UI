@@ -10,7 +10,12 @@
 //! - create_new
 //! - delete
 //! - parse_to`<T> T: FromStr`
-use std::{io::Write, path::Path, str::FromStr};
+use std::{
+    fs::{create_dir_all, File},
+    io::Write,
+    path::Path,
+    str::FromStr,
+};
 
 use crate::error::{Errors, FsError};
 
@@ -156,18 +161,63 @@ where
     })
 }
 
+/// ## Create the file
+/// use create_dir_all to create the parent directory if not exists then create the file
+/// ### Errors
+/// Errors
+/// This function will return an error in the following situations, but is not
+/// limited to just these cases:
+///
+/// * If any directory in the path specified by `path`
+/// does not already exist and it could not be created otherwise. The specific
+/// error conditions for when a directory is being created (after it is
+/// determined to not exist) are outlined by [`fs::create_dir`].
+///
+/// Notable exception is made for situations where any of the directories
+/// specified in the `path` could not be created as it was being created concurrently.
+/// Such cases are considered to be successful. That is, calling `create_dir_all`
+/// concurrently from multiple threads or processes is guaranteed not to fail
+/// due to a race condition with itself.
+pub fn create_file(path: &Path) -> Result<File, Errors> {
+    if let Some(parent_dir) = path.parent() {
+        if try_exists(path)? {
+            match create_dir_all(parent_dir) {
+                Ok(_) => {}
+                Err(e) => {
+                    return Err(Errors::FsError(FsError::Create {
+                        path: parent_dir.to_path_buf(),
+                        reason: e.to_string(),
+                    }))
+                }
+            };
+        }
+    } else {
+        return Err(Errors::FsError(FsError::UnExpected(
+            "Path has no parent directory".to_string(),
+        )));
+    }
+
+    File::create(path).map_err(|e| {
+        Errors::FsError(FsError::Create {
+            path: path.to_path_buf(),
+            reason: e.to_string(),
+        })
+    })
+}
+
+
 #[cfg(test)]
-mod test_fs{
+mod test_fs {
     use std::path::PathBuf;
 
     use super::*;
     #[test]
-    fn test_exists(){
+    fn test_exists() {
         let res = exists(PathBuf::new());
         assert!(!res);
     }
     #[test]
-    fn test_try_exists(){
+    fn test_try_exists() {
         let res = try_exists(PathBuf::new());
         assert!(res.is_err());
     }

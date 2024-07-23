@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use gen_converter::model::{
     script::{GenScriptModel, LifeTime, PropFn, ScriptModel, UseMod},
-    Source,
+   
 };
-use gen_utils::common::token_tree_ident;
+use gen_utils::common::{token_tree_ident, Source};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::parse_str;

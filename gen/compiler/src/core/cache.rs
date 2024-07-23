@@ -1,4 +1,8 @@
-use crate::{calc_hash, info, is_eq_path, msg::{CACHE_NOT_EXIST, CACHE_OPEN_CREATE_FAIL, CACHE_WRITE, CACHE_WRITE_FAIL}, FileState, Target};
+use super::TargetCompiler;
+use crate::{calc_hash, info, is_eq_path, FileState};
+use gen_utils::common::msg::{
+    CACHE_NOT_EXIST, CACHE_OPEN_CREATE_FAIL, CACHE_WRITE, CACHE_WRITE_FAIL,
+};
 use rmp_serde::{Deserializer, Serializer};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -18,13 +22,13 @@ pub struct Cache {
     /// current os
     os: String,
     /// compile target, default => makepad
-    target: Target,
+    target: TargetCompiler,
     /// cache values, key is file path, value is file hash value
     values: Option<HashMap<PathBuf, String>>,
 }
 
 impl Cache {
-    pub fn new<P>(origin_path: P, target: Target) -> Self
+    pub fn new<P>(origin_path: P, target: TargetCompiler) -> Self
     where
         P: AsRef<Path>,
     {
@@ -241,5 +245,4 @@ impl Cache {
             None
         }
     }
-    
 }

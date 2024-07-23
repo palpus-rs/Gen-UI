@@ -1,11 +1,8 @@
 pub mod event;
 pub mod prop;
 pub mod script;
-mod source;
 mod style;
 mod template;
-
-pub use source::Source;
 
 use std::{
     error::Error,
@@ -18,6 +15,7 @@ use std::{
 
 use gen_parser::{ParseResult, ParseTarget, Strategy};
 
+use gen_utils::common::Source;
 pub use template::{PropTree, TemplateModel};
 
 use self::{

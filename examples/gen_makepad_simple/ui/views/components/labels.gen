@@ -1,5 +1,5 @@
 <template>
-  <view id="label_view" flow="Down" height="140.0">
+  <view id="label_view" flow="Down" height="140.0" width="300.0">
     <label id="label1"></label>
     <link_label id="link1" href="https://gen.ipter.org/" target="true"></link_label>
   </view>
@@ -7,7 +7,7 @@
 
 <style>
 #label1{
-  text: "This is Label 1";
+  text: "This is Label 1, test!!!";
   font_size: 14.0;
   brightness: 1.2;
   curve: 1.5;
@@ -16,7 +16,7 @@
   text_wrap: Wrap;
   combine_spaces: true;
   height: 32.0;
-  width: 120.0;
+  width: Fill;
   margin: 10.0 16.0;
   padding: 6.0;
 }

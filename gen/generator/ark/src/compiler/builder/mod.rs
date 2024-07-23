@@ -25,21 +25,21 @@ impl CompilerBuilder {
 }
 
 
-impl Builder for CompilerBuilder {
-    type Target = ArkCompiler;
+// impl Builder for CompilerBuilder {
+//     type Target = ArkCompiler;
 
-    fn build(self) -> Self::Target {
-        todo!();
-        // let origin_path = std::env::current_dir().unwrap();
-        // let config = 
+//     fn build(self) -> Self::Target {
+//         todo!();
+//         // let origin_path = std::env::current_dir().unwrap();
+//         // let config = 
 
 
-        // ArkCompiler{
-        //     api_version: self.api_version,
-        //     check: self.check,
-        //     origin_path: self.origin_path,
-        //     compiled_path: self.compiled_path,
-        //     config,
-        // }
-    }
-}
+//         // ArkCompiler{
+//         //     api_version: self.api_version,
+//         //     check: self.check,
+//         //     origin_path: self.origin_path,
+//         //     compiled_path: self.compiled_path,
+//         //     config,
+//         // }
+//     }
+// }

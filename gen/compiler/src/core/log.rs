@@ -1,9 +1,8 @@
 use ansi_term::Color;
 use env_logger::{Builder, Env};
+use gen_utils::common::msg::{LOGO, LOG_INIT};
 use log::{error, info, warn};
 use std::io::Write;
-
-use crate::msg::{LOGO, LOG_INIT};
 
 pub fn init_log() -> () {
     // init log env

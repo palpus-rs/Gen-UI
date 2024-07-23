@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::{DepType, RemoteDep, RustDependence};
+use gen_utils::common::{DepType, RemoteDep, RustDependence};
 
 use super::compiler::CompilerBuilder;
 

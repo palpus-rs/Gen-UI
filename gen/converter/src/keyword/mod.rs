@@ -1,7 +1,5 @@
 use std::fmt::Display;
 
-use gen_parser::Value;
-
 const PROPS: &str = "props";
 const ID: &str = "id";
 const CLASS: &str = "class";
@@ -93,15 +91,3 @@ impl TryFrom<&str> for KeyWords {
     }
 }
 
-fn string_unknown<F>(value: &Value, f: F) -> ()
-where
-    F: FnOnce(&str) -> (),
-{
-    if let Some(id) = value.is_unknown_and_get() {
-        let _ = f(id);
-    } else {
-        value.is_string_and_get().map(|id| {
-            let _ = f(id);
-        });
-    }
-}

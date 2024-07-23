@@ -13,5 +13,5 @@ proc-macro2 = "1.0.78"
 quote = "1.0.35"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }
 which = "6.0.1"
-
+toml_edit = "0.22.12"
 #   /Users/user/Downloads/makepad-rik/widgets

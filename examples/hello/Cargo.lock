@@ -91,22 +91,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ark_gen_plugin"
-version = "0.1.0"
-dependencies = [
- "gen_converter",
- "gen_parser",
- "gen_utils",
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn",
- "toml_edit",
- "which",
-]
-
-[[package]]
 name = "arrayref"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -372,10 +356,10 @@ name = "gen_compiler"
 version = "0.1.0"
 dependencies = [
  "ansi_term",
- "ark_gen_plugin",
  "env_logger",
  "gen_converter",
  "gen_utils",
+ "lazy_static",
  "log",
  "makepad_gen_plugin",
  "notify",
@@ -433,6 +417,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+ "toml_edit",
 ]
 
 [[package]]
@@ -577,6 +562,12 @@ dependencies = [
  "arrayvec",
  "smallvec",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "libc"
@@ -856,6 +847,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+ "toml_edit",
  "which",
 ]
 

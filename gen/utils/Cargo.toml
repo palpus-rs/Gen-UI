@@ -9,10 +9,12 @@ default = ["full"]
 wasm = []
 parser = []
 generator = []
-full = ["parser", "wasm", "generator"]
+msg = []
+full = ["parser", "wasm", "generator", "msg"]
 
 
 [dependencies]
 proc-macro2 = "1.0.78"
 quote = "1.0.35"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }
+toml_edit = "0.22.12"

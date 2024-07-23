@@ -7,6 +7,8 @@ pub enum FsError {
     FileNotFound(PathBuf),
     /// Dir Not Found
     DirNotFound(PathBuf),
+    /// Create Error (dir or file)
+    Create{path: PathBuf, reason: String},
     /// Read Error
     Read { path: PathBuf, reason: String },
     /// Write Error
@@ -29,6 +31,10 @@ impl Display for FsError {
                 path, reason
             )),
             FsError::UnExpected(reason) => f.write_fmt(format_args!("UnExpected Error: {}", reason)),
+            FsError::Create { path, reason } => f.write_fmt(format_args!(
+                "Create: {:?} Error\n Reason: {}",
+                path, reason
+            )),
         }
     }
 }

@@ -1,11 +1,12 @@
 use std::{hash::Hash, io::Write};
 
-use gen_converter::model::{script::ScriptModel, Model, Source};
+use gen_converter::model::{script::ScriptModel, Model};
+use gen_utils::{common::Source, compiler::fs::create_file};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse2;
 
-use crate::utils::create_file;
+
 
 #[derive(Debug, Clone)]
 pub struct RsFile {
@@ -38,7 +39,7 @@ impl RsFile {
         }
     }
     pub fn compile(&self) -> () {
-        let mut file = create_file(self.source.compiled_file.as_path());
+        let mut file = create_file(self.source.compiled_file.as_path()).unwrap();
         file.write_all(self.content.to_string().as_bytes()).unwrap();
     }
     pub fn content(&self) -> TokenStream {

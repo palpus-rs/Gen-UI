@@ -3,11 +3,11 @@ use std::{collections::HashMap, hash::Hash};
 use gen_converter::model::{
     prop::ConvertStyle,
     script::{CurrentInstance, GenScriptModel, PropFn, ScriptModel, UseMod},
-    Source, TemplateModel,
+    TemplateModel,
 };
 use gen_parser::{PropsKey, Value};
 
-use gen_utils::common::{ident, snake_to_camel};
+use gen_utils::common::{ident, snake_to_camel, Source};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
@@ -40,7 +40,7 @@ pub struct Widget {
     pub id: Option<String>,
     /// is widget as a prop? if prop is true , widget need id
     /// `<view id="a" as_prop></view>` => as_prop = true
-    pub as_prop: bool, 
+    pub as_prop: bool,
     pub name: String,
     pub source: Option<Source>,
     pub imports: Option<TokenStream>,
@@ -131,7 +131,7 @@ impl Widget {
         }
         self
     }
-    pub fn set_as_prop(&mut self, as_prop: bool) -> &mut Self{
+    pub fn set_as_prop(&mut self, as_prop: bool) -> &mut Self {
         self.as_prop = as_prop;
         self
     }

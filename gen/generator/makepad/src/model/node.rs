@@ -1,10 +1,10 @@
 use std::{hash::Hash, io::Write, path::PathBuf};
 
-use gen_converter::model::{Model, Source};
+use gen_converter::model::Model;
+use gen_utils::compiler::{fs::create_file, ModelNodeImpl};
 use proc_macro2::TokenStream;
 
 use crate::{
-    utils::create_file,
     widget::model::{widget::Widget, ToLiveDesign},
     ToToken,
 };
@@ -27,27 +27,11 @@ impl Eq for ModelNode {}
 
 impl Hash for ModelNode {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-            self.source().unwrap().hash(state);
+        self.source().unwrap().hash(state);
     }
 }
 
 impl ModelNode {
-    pub fn source(&self) -> Option<&Source> {
-        match self {
-            ModelNode::Widget(widget) => widget.source.as_ref(),
-            ModelNode::RsFile(rs) => Some(&rs.source),
-        }
-    }
-    pub fn content(&self) -> TokenStream {
-        match self {
-            ModelNode::Widget(widget) => widget.to_live_design().to_token_stream(),
-            ModelNode::RsFile(rs) => rs.content(),
-        }
-    }
-    pub fn level(&self) -> (usize, PathBuf) {
-        let path = self.source().unwrap().level_gen();
-        (path.components().count(), path)
-    }
     pub fn super_ui_root(&self) -> (String, String) {
         match self {
             ModelNode::Widget(widget) => {
@@ -61,9 +45,31 @@ impl ModelNode {
             ModelNode::RsFile(_) => panic!("super ui root not exist in rs file"),
         }
     }
-    pub fn compile(&self) -> () {
+}
+
+impl ModelNodeImpl for ModelNode {
+    fn source(&self) -> Option<&gen_utils::common::Source> {
+        match self {
+            ModelNode::Widget(widget) => widget.source.as_ref(),
+            ModelNode::RsFile(rs) => Some(&rs.source),
+        }
+    }
+
+    fn content(&self) -> TokenStream {
+        match self {
+            ModelNode::Widget(widget) => widget.to_live_design().to_token_stream(),
+            ModelNode::RsFile(rs) => rs.content(),
+        }
+    }
+
+    fn level(&self) -> (usize, PathBuf) {
+        let path = self.source().unwrap().level_gen();
+        (path.components().count(), path)
+    }
+
+    fn compile(&self) -> () {
         let content = self.content().to_string();
-        let mut file = create_file(self.source().unwrap().compiled_file.as_path());
+        let mut file = create_file(self.source().unwrap().compiled_file.as_path()).unwrap();
         file.write_all(content.as_bytes()).unwrap();
     }
 }
@@ -95,6 +101,8 @@ impl From<RsFile> for ModelNode {
 
 #[cfg(test)]
 mod test_node {
+    use gen_utils::common::Source;
+
     use crate::model::ModelTree;
 
     use super::*;
@@ -128,7 +136,7 @@ mod test_node {
         let default_node = ModelNode::Widget(Widget::default_ui_root());
         let mut tree = ModelTree::new(default_node);
         tree.children = Some(std::iter::once(ModelTree::from(node1)).collect());
-        tree.add(node2);
+        tree.insert(node2);
 
         dbg!(tree);
     }

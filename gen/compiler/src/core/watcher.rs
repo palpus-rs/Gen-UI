@@ -6,9 +6,10 @@ use std::{
     time::Duration,
 };
 
+use gen_utils::common::msg::WATCHER_INIT;
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
 
-use crate::msg::WATCHER_INIT;
+
 
 use super::log::{info, warn};
 

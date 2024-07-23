@@ -22,7 +22,6 @@ pub mod area;
 pub mod button;
 pub mod checkbox;
 pub mod color_picker;
-pub mod define;
 pub mod desktop_button;
 pub mod drop_down;
 pub mod fold_button;

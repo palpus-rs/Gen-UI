@@ -2,7 +2,7 @@
 //! Gen Compiler is a tool to compile gen-ui project to target project.
 //! ## Features
 //! - [x] support Makepad
-//! - [ ] support ArkTS
+//! - [ ] support ArkUI
 //! - [x] gen cache
 //! - [x] gen ignore
 //! - [x] gen logger
@@ -12,9 +12,19 @@ mod builder;
 mod core;
 mod utils;
 
-use builder::compiler::CompilerBuilder;
+use builder::CompilerBuilder as UnifiedBuilder;
+use lazy_static::lazy_static;
 pub use core::*;
+use std::sync::Mutex;
 pub use utils::*;
+
+pub type MakepadBuilder = makepad_gen_plugin::compiler::builder::CompilerBuilder;
+pub use gen_utils::compiler::Builder;
+use gen_utils::compiler::CompilerImpl;
+
+lazy_static!{
+    static ref TARGET: Mutex<TargetCompiler> = Mutex::new(TargetCompiler::Makepad);
+}
 
 /// ## compiler app
 /// create an app compiler and specify the target
@@ -22,35 +32,41 @@ pub use utils::*;
 /// you should write from project root path as relative path
 /// ### Example
 /// ```rust
-/// use gen_compiler::{app, Target};
+/// use gen_compiler::{app, Target, Builder};
 ///
 /// fn main() {
-///     // set app and specify target
-///     let mut app = app(Target::Makepad)
+///     let compiler = Target::makepad()
 ///         .entry("app")
-///         .root("E:/Rust/try/makepad/Gen-UI/examples/gosim_example/ui/views/root.gen")
-///         .add_dep("makepad-widgets") // add makepad-widgets dependency
+///         .root("E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/ui/views/root.gen")
+///         .add_dep("makepad-widgets")
 ///         .local("E:/Rust/try/makepad/makepad/rik/makepad/widgets")
+///         .build()
+///         .wasm() // do not use if you don't need wasm
 ///         .build()
 ///         .build();
 ///
-///     let _ = app.run(); // run app
+///     // set app and specify target
+///     let mut app = app(Box::new(compiler)).build();
+///
+///     let _ = app.run();
 /// }
 ///
 /// ```
-pub fn app(target: Target) -> CompilerBuilder {
+pub fn app(compiler: Box<dyn CompilerImpl>) -> UnifiedBuilder {
     // [init log service] --------------------------------------------------------------------------
     let _ = init_log();
-    target.into()
+
+    UnifiedBuilder::new(compiler)
 }
 
 #[cfg(test)]
 mod test_compiler {
+    use gen_utils::compiler::Builder;
     use std::path::PathBuf;
 
     #[test]
     fn app_build_test() {
-        let app = super::app(super::Target::Makepad)
+        let compiler = super::Target::makepad()
             .entry("app")
             .root("E:/Rust/try/makepad/Gen-UI/examples/gosim_example/ui/views/root.gen")
             .add_dep("makepad-widgets")
@@ -59,9 +75,10 @@ mod test_compiler {
             .wasm()
             .no_fresh()
             .port(4568)
+            .build()
             .build();
 
-        dbg!(app);
+        let _app = super::app(Box::new(compiler));
     }
 
     #[test]

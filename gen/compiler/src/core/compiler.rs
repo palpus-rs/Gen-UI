@@ -1,23 +1,26 @@
 use std::{
     collections::HashSet,
-    fs, mem,
+    fs,
     path::{Path, PathBuf},
-    process::{exit, Child, Command},
+    process::exit,
 };
 
-use gen_converter::model::{Model, Source};
-use gen_utils::wasm::WasmImpl;
+use gen_converter::model::Model;
+use gen_utils::{
+    common::{
+        msg::{APP_RUNNING, SRC_GEN_INIT},
+        Source,
+    },
+    compiler::{CompilerImpl, Executor},
+};
+
 use tokio::runtime::Runtime;
-use toml_edit::DocumentMut;
+
 use walkdir::WalkDir;
 
-use crate::{
-    copy_file, info, init_watcher, is_eq_path_exclude,
-    msg::{APP_RUNNING, SRC_GEN_INIT, WASM_FRESH},
-    Cache,
-};
+use crate::{copy_file, info, init_watcher, is_eq_path_exclude, Cache};
 
-use super::{dep::RustDependence, log::error, watcher::FKind, CompilerTarget};
+use super::{log::error, watcher::FKind};
 
 /// ## Compile Strategy: Lazy
 /// compiler will compile the file when the file is created or modified
@@ -28,28 +31,14 @@ use super::{dep::RustDependence, log::error, watcher::FKind, CompilerTarget};
 pub struct Compiler {
     /// origin path is the project path
     pub origin_path: PathBuf,
+    /// the path of the compiled project (default is src_gen)
     pub compiled_path: PathBuf,
-    /// origin path is a dir or a file
-    pub is_dir: bool,
     /// compile target default is makepad
-    pub target: CompilerTarget,
-    /// entry file name, default is app
-    pub entry: String,
-    /// root path of the project
-    pub root: Option<PathBuf>,
+    pub target: Box<dyn CompilerImpl>,
     /// exclude files or folders
     pub exclude: Vec<PathBuf>,
-    /// rust dependencies in Cargo.toml
-    /// it depends on the target
-    /// - makepad: makepad-widgets
-    /// > **you can add more other dependencies which you need**
-    pub dependencies: Vec<RustDependence>,
     /// gen_cache
     pub cache: Cache,
-    /// use wasm to run ?
-    pub wasm: bool,
-    /// child wasm process
-    pub wasm_process: Option<Child>,
 }
 
 impl Compiler {
@@ -76,7 +65,16 @@ impl Compiler {
                         }
                         _ => (),
                     }
-                    let _ = self.fresh_wasm();
+                    // do other auxiliary work
+                    let _ = self.execute_auxiliaries(Executor {
+                        success: Box::new(|msg| {
+                            info(msg);
+                        }),
+                        fail: Box::new(|e| error(e.to_string().as_str())),
+                        ignore: Box::new(|| {
+                            ();
+                        }),
+                    });
                 })
                 .await
             {
@@ -87,58 +85,58 @@ impl Compiler {
         });
         exit(-1);
     }
-    /// set wasm
-    pub fn wasm<W>(&mut self, wasm: Box<W>) -> &mut Self
-    where
-        W: WasmImpl,
-    {
-        self.target.set_wasm(wasm);
-        self
-    }
-    /// fresh wasm when the wasm file is modified
-    pub fn fresh_wasm(&mut self) -> () {
-        if self.wasm {
-            // close last wasm process if exist
-            if let Some(process) = self.wasm_process.as_mut() {
-                let _ = process.kill();
-            }
-            let mut super_workspace_path = self.origin_path.clone();
-            super_workspace_path.pop();
-            match self.target.fresh_wasm(super_workspace_path.as_path()) {
-                Ok(cmd) => {
-                    self.wasm_process.replace(cmd);
-                    info(WASM_FRESH);
-                }
-                Err(e) => error(e.to_string().as_str()),
-            }
-        }
-    }
-    pub fn add_dep(&mut self, dep: RustDependence) -> &mut Self {
-        self.dependencies.push(dep);
-        self
-    }
-    /// set app entry name
-    pub fn entry(&mut self, entry: &str) -> &mut Self {
-        self.entry = entry.to_string();
-        self
-    }
-    /// set the root path of the project(which need to be excluded from the compile target)
-    pub fn root<P>(&mut self, path: P) -> &mut Self
-    where
-        P: AsRef<Path>,
-    {
-        // self.exclude.push(absolute_or_path(path.as_ref()));
-        let root_path = path.as_ref().to_path_buf();
-        // add root into cache
-        let _ = self.cache.exists_or_insert(root_path.as_path());
-        self.root.replace(root_path);
-        self
-    }
-    pub fn init_compile_target(&mut self) -> () {
-        let _ = self
-            .target
-            .init(&self.entry, self.origin_path.as_path(), self.root.as_ref());
-    }
+    // /// set wasm
+    // pub fn wasm<W>(&mut self, wasm: Box<W>) -> &mut Self
+    // where
+    //     W: WasmImpl,
+    // {
+    //     self.target.set_wasm(wasm);
+    //     self
+    // }
+    // /// fresh wasm when the wasm file is modified
+    // pub fn fresh_wasm(&mut self) -> () {
+    //     if self.wasm {
+    //         // close last wasm process if exist
+    //         if let Some(process) = self.wasm_process.as_mut() {
+    //             let _ = process.kill();
+    //         }
+    //         let mut super_workspace_path = self.origin_path.clone();
+    //         super_workspace_path.pop();
+    //         match self.target.fresh_wasm(super_workspace_path.as_path()) {
+    //             Ok(cmd) => {
+    //                 self.wasm_process.replace(cmd);
+    //                 info(WASM_FRESH);
+    //             }
+    //             Err(e) => error(e.to_string().as_str()),
+    //         }
+    //     }
+    // }
+    // pub fn add_dep(&mut self, dep: RustDependence) -> &mut Self {
+    //     self.dependencies.push(dep);
+    //     self
+    // }
+    // /// set app entry name
+    // pub fn entry(&mut self, entry: &str) -> &mut Self {
+    //     self.entry = entry.to_string();
+    //     self
+    // }
+    // /// set the root path of the project(which need to be excluded from the compile target)
+    // pub fn root<P>(&mut self, path: P) -> &mut Self
+    // where
+    //     P: AsRef<Path>,
+    // {
+    //     // self.exclude.push(absolute_or_path(path.as_ref()));
+    //     let root_path = path.as_ref().to_path_buf();
+    //     // add root into cache
+    //     let _ = self.cache.exists_or_insert(root_path.as_path());
+    //     self.root.replace(root_path);
+    //     self
+    // }
+    // pub fn init_compile_target(&mut self) -> () {
+    //     let _ = self
+    //         .target
+    //         .init(&self.entry, self.origin_path.as_path(), self.root.as_ref());
+    // }
     /// ## compile the project
     /// ### example
     /// ```rust
@@ -153,7 +151,8 @@ impl Compiler {
     /// - easy compile: 👌
     pub fn compile(&mut self) -> () {
         let _ = self.exist_or_create();
-        let _ = self.init_compile_target();
+        info(SRC_GEN_INIT);
+        // let _ = self.init_compile_target();
         let mut visited = HashSet::new();
         // after src_gen project created, get compile target and then use plugin logic to rewrite
         Compiler::loop_compile(self, &mut visited);
@@ -161,6 +160,16 @@ impl Compiler {
         let _ = self.target.compile(self.cache.get_gen().as_ref());
         // write cache
         let _ = self.cache.write();
+
+        let _ = self.execute_auxiliaries(Executor {
+            success: Box::new(|msg| {
+                info(msg);
+            }),
+            fail: Box::new(|e| error(e.to_string().as_str())),
+            ignore: Box::new(|| {
+                ();
+            }),
+        });
     }
     /// compile single gen / other type file
     fn compile_one<P>(&mut self, path: P) -> ()
@@ -184,22 +193,24 @@ impl Compiler {
                         let model =
                             Model::new(&path.as_ref().to_path_buf(), &target_path, false).unwrap();
                         let source = model.get_special().clone();
-                        match &mut self.target {
-                            CompilerTarget::Makepad(makepad) => {
-                                makepad.as_mut().unwrap().add(model);
-                            }
-                            CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                            CompilerTarget::Dioxus => {
-                                todo!("dioxus plugin not implemented yet")
-                            }
-                        }
+                        // match &mut self.target {
+                        //     CompilerTarget::Makepad(makepad) => {
+                        //         makepad.as_mut().unwrap().add(model);
+                        //     }
+                        //     CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                        //     CompilerTarget::Dioxus => {
+                        //         todo!("dioxus plugin not implemented yet")
+                        //     }
+                        // }
+                        let _ = self.insert(Box::new(model));
                         // get the compiled result from target and then copy to the compiled project
                         // this step may faild (2024-05-27)
-                        let _ = self
-                            .target
-                            .get(&source)
-                            .expect("node can not be found(system error)")
-                            .compile();
+                        // let _ = self
+                        //     .target
+                        //     .get(&source)
+                        //     .expect("node can not be found(system error)")
+                        //     .compile();
+                        let _ = self.get(&source).unwrap().compile();
                     });
                 let _ = self.cache.write();
             }
@@ -304,15 +315,16 @@ impl Compiler {
                     //     });
                     let model =
                         Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
-                    match &mut compiler.target {
-                        CompilerTarget::Makepad(makepad) => {
-                            makepad.as_mut().unwrap().add(model);
-                        }
-                        CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                        CompilerTarget::Dioxus => {
-                            todo!("dioxus plugin not implemented yet")
-                        }
-                    }
+                    // match &mut compiler.target {
+                    //     CompilerTarget::Makepad(makepad) => {
+                    //         makepad.as_mut().unwrap().add(model);
+                    //     }
+                    //     CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
+                    //     CompilerTarget::Dioxus => {
+                    //         todo!("dioxus plugin not implemented yet")
+                    //     }
+                    // }
+                    let _ = compiler.insert(Box::new(model));
                 }
                 (true, false) => {
                     // is file but not gen file, directly copy to the compiled project
@@ -330,123 +342,6 @@ impl Compiler {
             }
         }
     }
-    /// ## check if the generate rust project exists, if not create one
-    ///
-    /// ### details
-    /// - check if the project exists which named "src_gen"
-    ///     - true: return true
-    ///     - false: create a new rust project named "src_gen"
-    /// - and need to check whether the super project is a rust workspace project
-    ///     - if not, panic and tell the user to create a workspace project
-    ///     - if true, check and add the "src_gen" project to the workspace member list
-    /// ### test
-    /// - no src_gen: 👌
-    /// - no src_gen and no workspace: 👌
-    fn exist_or_create(&self) -> () {
-        // check the super project is a workspace project or not
-        let mut super_path = self.origin_path.clone();
-        super_path.pop();
-
-        let mut super_toml_path = super_path.clone();
-        super_toml_path.push("Cargo.toml");
-        if !super_toml_path.exists() {
-            panic!("Cargo.toml not found in the super project, you should create a workspace project first");
-        } else {
-            // read the super project's Cargo.toml file and check the workspace member list
-            let mut super_toml = fs::read_to_string(super_toml_path.as_path())
-                .expect("failed to read super project's Cargo.toml")
-                .parse::<DocumentMut>()
-                .expect("Failed to parse Cargo.toml");
-
-            let member_list = super_toml
-                .get_mut("workspace")
-                .expect("workspace not found in Cargo.toml")
-                .get_mut("members")
-                .expect("members not found in Cargo.toml")
-                .as_array_mut()
-                .expect("members is not an array");
-
-            // check member list contains the src_gen project or not
-            if member_list
-                .iter()
-                .find(|item| item.as_str().unwrap() == "src_gen")
-                .is_none()
-            {
-                // add the src_gen project to the workspace member list
-                // member_list.push(toml::Value::String("src_gen".to_string()));
-                member_list.push("src_gen");
-            }
-            // write back
-            fs::write(super_toml_path.as_path(), super_toml.to_string())
-                .expect("failed to write super project's Cargo.toml");
-        }
-
-        // check the src_gen project exists or not
-        // let compiled_dir = Source::project_dir_to_compiled(&self.origin_path);
-        let compiled_dir = self.compiled_path.clone();
-        if !compiled_dir.exists() {
-            // use std::process::Command to create a new rust project
-            let status = Command::new("cargo")
-                .args(["new", "src_gen"])
-                .current_dir(super_path.as_path())
-                .status()
-                .expect("failed to create src_gen project");
-
-            if !status.success() {
-                panic!("failed to create src_gen project");
-            }
-        }
-
-        // read the origin project's Cargo.toml file and move the [dependencies] to the src_gen project except gen's dependencies
-        let origin_toml_path = &self.origin_path.join("Cargo.toml");
-        if !origin_toml_path.exists() {
-            panic!("Cargo.toml not found in the origin project");
-        }
-        let origin_toml_content = fs::read_to_string(origin_toml_path.as_path())
-            .expect("failed to read origin project's Cargo.toml");
-        let origin_toml = origin_toml_content
-            .parse::<DocumentMut>()
-            .expect("Failed to parse Cargo.toml");
-        // get the dependencies table and remove the gen's dependencies
-        let mut origin_dependencies = origin_toml["dependencies"]
-            .as_table()
-            .expect("dependencies not found in Cargo.toml")
-            .clone();
-        origin_dependencies.retain(|k, _| !k.starts_with("gen"));
-        // write the dependencies to the src_gen project's Cargo.toml file
-        let compiled_toml_path = &compiled_dir.join("Cargo.toml");
-        // find the src_gen project's Cargo.toml file's [dependencies] table and replace the origin project's dependencies
-        let compiled_toml_content = fs::read_to_string(compiled_toml_path.as_path())
-            .expect("failed to read src_gen project's Cargo.toml");
-        let mut compiled_toml = compiled_toml_content
-            .parse::<DocumentMut>()
-            .expect("Failed to parse Cargo.toml");
-        let compiled_dependencies = compiled_toml["dependencies"]
-            .as_table_mut()
-            .expect("dependencies not found in Cargo.toml");
-
-        // add dependencies to the src_gen project from compiler dependencies
-        for dep in self.dependencies.iter() {
-            let (name, value) = dep.to_table_value();
-            origin_dependencies[name.as_str()] = value;
-        }
-
-        let _ = mem::replace(compiled_dependencies, origin_dependencies);
-
-        // compiled_dependencies.extend(origin_dependencies.iter());
-        // write back
-        fs::write(compiled_toml_path.as_path(), compiled_toml.to_string())
-            .expect("failed to write src_gen project's Cargo.toml");
-
-        // command add Makepad widget crate : `cargo add makepad-widgets`
-        // let _ = Command::new("cargo")
-        //     .args(["add", "makepad-widgets"])
-        //     .current_dir(compiled_dir.as_path())
-        //     .status()
-        //     .expect("failed to add makepad-widgets to src_gen project");
-
-        info(SRC_GEN_INIT);
-    }
     /// ## add exclude file or folder
     /// path root is the project root path
     pub fn push_exclude<P>(&mut self, path: P) -> &mut Self
@@ -456,5 +351,30 @@ impl Compiler {
         let path = self.origin_path.join(path.as_ref());
         self.exclude.push(path);
         self
+    }
+}
+
+impl CompilerImpl for Compiler {
+    fn execute_auxiliaries(&mut self, executor: Executor) -> () {
+        let _ = self.target.execute_auxiliaries(executor);
+    }
+
+    fn exist_or_create(&self) -> () {
+        let _ = self.target.exist_or_create();
+    }
+
+    fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> () {
+        let _ = self.target.compile(gen_files);
+    }
+
+    fn insert(&mut self, node: Box<dyn std::any::Any>) -> () {
+        let _ = self.target.insert(node);
+    }
+
+    fn get(
+        &self,
+        key: &gen_utils::common::Source,
+    ) -> Option<Box<dyn gen_utils::compiler::ModelNodeImpl>> {
+        self.target.get(key)
     }
 }

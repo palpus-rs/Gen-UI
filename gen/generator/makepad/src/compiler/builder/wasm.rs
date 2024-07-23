@@ -1,5 +1,6 @@
 use super::compiler::CompilerBuilder;
 
+/// # Wasm Builder
 #[derive(Debug, Clone)]
 pub struct WasmBuilder {
     parent: CompilerBuilder,

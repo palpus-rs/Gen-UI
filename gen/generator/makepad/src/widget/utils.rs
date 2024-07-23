@@ -1,7 +1,7 @@
 use std::{borrow::BorrowMut, collections::HashSet};
 
 use gen_converter::model::script::PropFn;
-use gen_parser::{Function, Value};
+use gen_parser::Value;
 use gen_utils::{
     common::{
         token_stream_to_tree, token_tree_group, token_tree_group_paren, token_tree_ident,
