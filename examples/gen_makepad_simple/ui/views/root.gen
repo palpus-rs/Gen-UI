@@ -2,7 +2,7 @@
   <root id="ui">
     <window id="main_window">
       <scroll_y_view flow="Down" height="All" align="0.5 0.5">
-        <label text="Gen + Makepad Project(Makepad UI Zoo)" font_size="16.0"></label>
+        <label text="Gen + Makepad Project" font_size="16.0"></label>
         <view id="an_view"></view>
         <label_view></label_view>
         <markdown class="mk1"></markdown>

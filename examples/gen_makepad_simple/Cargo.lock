@@ -367,7 +367,6 @@ dependencies = [
  "serde",
  "sha2",
  "tokio",
- "toml_edit",
  "walkdir",
 ]
 

@@ -1,6 +1,5 @@
 mod cache;
 mod compiler;
-mod dep;
 mod hash;
 mod ignore;
 mod log;
@@ -10,7 +9,6 @@ mod watcher;
 
 pub use cache::Cache;
 pub use compiler::Compiler;
-pub use dep::*;
 pub use hash::*;
 pub use ignore::*;
 pub use log::{info, init_log};

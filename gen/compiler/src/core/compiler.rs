@@ -85,58 +85,6 @@ impl Compiler {
         });
         exit(-1);
     }
-    // /// set wasm
-    // pub fn wasm<W>(&mut self, wasm: Box<W>) -> &mut Self
-    // where
-    //     W: WasmImpl,
-    // {
-    //     self.target.set_wasm(wasm);
-    //     self
-    // }
-    // /// fresh wasm when the wasm file is modified
-    // pub fn fresh_wasm(&mut self) -> () {
-    //     if self.wasm {
-    //         // close last wasm process if exist
-    //         if let Some(process) = self.wasm_process.as_mut() {
-    //             let _ = process.kill();
-    //         }
-    //         let mut super_workspace_path = self.origin_path.clone();
-    //         super_workspace_path.pop();
-    //         match self.target.fresh_wasm(super_workspace_path.as_path()) {
-    //             Ok(cmd) => {
-    //                 self.wasm_process.replace(cmd);
-    //                 info(WASM_FRESH);
-    //             }
-    //             Err(e) => error(e.to_string().as_str()),
-    //         }
-    //     }
-    // }
-    // pub fn add_dep(&mut self, dep: RustDependence) -> &mut Self {
-    //     self.dependencies.push(dep);
-    //     self
-    // }
-    // /// set app entry name
-    // pub fn entry(&mut self, entry: &str) -> &mut Self {
-    //     self.entry = entry.to_string();
-    //     self
-    // }
-    // /// set the root path of the project(which need to be excluded from the compile target)
-    // pub fn root<P>(&mut self, path: P) -> &mut Self
-    // where
-    //     P: AsRef<Path>,
-    // {
-    //     // self.exclude.push(absolute_or_path(path.as_ref()));
-    //     let root_path = path.as_ref().to_path_buf();
-    //     // add root into cache
-    //     let _ = self.cache.exists_or_insert(root_path.as_path());
-    //     self.root.replace(root_path);
-    //     self
-    // }
-    // pub fn init_compile_target(&mut self) -> () {
-    //     let _ = self
-    //         .target
-    //         .init(&self.entry, self.origin_path.as_path(), self.root.as_ref());
-    // }
     /// ## compile the project
     /// ### example
     /// ```rust
@@ -193,23 +141,7 @@ impl Compiler {
                         let model =
                             Model::new(&path.as_ref().to_path_buf(), &target_path, false).unwrap();
                         let source = model.get_special().clone();
-                        // match &mut self.target {
-                        //     CompilerTarget::Makepad(makepad) => {
-                        //         makepad.as_mut().unwrap().add(model);
-                        //     }
-                        //     CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                        //     CompilerTarget::Dioxus => {
-                        //         todo!("dioxus plugin not implemented yet")
-                        //     }
-                        // }
                         let _ = self.insert(Box::new(model));
-                        // get the compiled result from target and then copy to the compiled project
-                        // this step may faild (2024-05-27)
-                        // let _ = self
-                        //     .target
-                        //     .get(&source)
-                        //     .expect("node can not be found(system error)")
-                        //     .compile();
                         let _ = self.get(&source).unwrap().compile();
                     });
                 let _ = self.cache.write();
@@ -294,36 +226,8 @@ impl Compiler {
                     Compiler::loop_compile(compiler, visited);
                 }
                 (true, true) => {
-                    // is gen file, use target compiler to compile then copy to the compiled project
-                    // compiler
-                    //     .cache
-                    //     .exists_or_insert(&source_path)
-                    //     .unwrap()
-                    //     .modify_then(|| {
-                    //         dbg!(&source_path);
-                    //         let model = Model::new(&source_path.to_path_buf(), &target_path, false)
-                    //             .unwrap();
-                    //         match &mut compiler.target {
-                    //             CompilerTarget::Makepad(makepad) => {
-                    //                 makepad.as_mut().unwrap().add(model);
-                    //             }
-                    //             CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                    //             CompilerTarget::Dioxus => {
-                    //                 todo!("dioxus plugin not implemented yet")
-                    //             }
-                    //         }
-                    //     });
                     let model =
                         Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
-                    // match &mut compiler.target {
-                    //     CompilerTarget::Makepad(makepad) => {
-                    //         makepad.as_mut().unwrap().add(model);
-                    //     }
-                    //     CompilerTarget::Slint => todo!("slint plugin not implemented yet"),
-                    //     CompilerTarget::Dioxus => {
-                    //         todo!("dioxus plugin not implemented yet")
-                    //     }
-                    // }
                     let _ = compiler.insert(Box::new(model));
                 }
                 (true, false) => {
