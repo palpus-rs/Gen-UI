@@ -1,4 +1,4 @@
-# Parse RSX File to AST
+# Parse Gen File to AST
 
 ## Parse Plan
 

@@ -38,6 +38,6 @@ pub trait CompilerImpl {
     fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> ();
     /// ## insert node into compiler tree
     fn insert(&mut self, node: Box<dyn Any>) -> ();
-
+    /// ## get node from compiler tree
     fn get(&self, key: &Source) -> Option<Box<dyn ModelNodeImpl>>;
 }

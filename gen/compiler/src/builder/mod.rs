@@ -9,7 +9,6 @@ use crate::core::TargetCompiler;
 
 /// # Compiler Builder
 /// Compiler Builder is a struct to build a compiler
-
 pub struct CompilerBuilder {
     /// origin path is the project path
     origin_path: PathBuf,

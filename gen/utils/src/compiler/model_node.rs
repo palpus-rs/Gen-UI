@@ -1,4 +1,4 @@
-use std::{hash::Hash, path::PathBuf};
+use std::path::PathBuf;
 
 use proc_macro2::TokenStream;
 
@@ -21,4 +21,4 @@ pub trait ModelNodeImpl {
     /// ## compile the model node and write to file
     fn compile(&self) -> ();
 }
-// : Clone + Hash + PartialEq + Eq 
+// : Clone + Hash + PartialEq + Eq
