@@ -12,11 +12,11 @@ use crate::{common::{parse_value, Special}, target::function};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
-    name: String,
-    params: Option<Vec<String>>,
+    pub name: String,
+    pub params: Option<Vec<String>>,
     /// use to recognize the function is used on the `template` or `style`
     /// if is `style`: `()` should be exist in the function when the function is called (although no args)
-    is_style: bool,
+    pub is_style: bool,
 }
 
 impl Function {

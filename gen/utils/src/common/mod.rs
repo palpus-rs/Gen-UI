@@ -5,6 +5,8 @@ mod dep;
 pub mod msg;
 mod os;
 mod source;
+pub mod string;
+pub mod traits;
 
 pub use alphabetic::*;
 pub use ast::*;

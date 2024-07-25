@@ -2,7 +2,7 @@ use std::{fmt::Display, sync::mpsc, thread};
 
 use gen_utils::error::{Error, Errors};
 
-use crate::target::{parse_script, parse_style, parse_template};
+use crate::target::{parse_script, parse_style, template::html::parse_template};
 
 use super::{ASTNodes, ParseCore, ParseTarget, Script, Strategy};
 

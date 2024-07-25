@@ -12,8 +12,8 @@ use nom::{
 };
 
 use crate::{
-    ast::Targets, target::parse_tag_start, END_SIGN, END_START_SIGN, SCRIPT, STYLE, TAG_START,
-    TEMPLATE,
+    ast::Targets, target::template::html::parse_tag_start, END_SIGN, END_START_SIGN, SCRIPT, STYLE,
+    TAG_START, TEMPLATE,
 };
 
 use super::{comment::parse_offline_comment, trim};
@@ -87,7 +87,7 @@ fn parse_script_check(input: &str) -> IResult<&str, Targets> {
         Ok((_input, content)) => {
             let ast_node = node.is_tag_and_get().unwrap().clone();
             Ok(("", Targets::Script { content, ast_node }))
-        },
+        }
         Err(e) => Err(e),
     }
 }
@@ -119,7 +119,7 @@ pub fn parse_script_tag(input: &str) -> IResult<&str, Targets> {
     // let (input, remain) = parse_tag(input, SCRIPT)?;
     // Ok((input, Targets::Script(remain)))
     let (input, node) = parse_tag_start(input)?;
-   
+
     let (input, content) = until_end(input, SCRIPT)?;
     let ast_node = node.is_tag_and_get().unwrap().clone();
     Ok((input, Targets::Script { content, ast_node }))

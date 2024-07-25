@@ -1,9 +1,13 @@
 mod function;
+mod r#struct;
+mod r#enum;
 
 use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 pub use function::Function;
 use gen_utils::error::Errors;
+pub use r#struct::Struct;
+pub use r#enum::Enum;
 
 use crate::{common::BuiltinColor, from_i_number, from_u_number, target::function, PropsKey};
 
@@ -37,17 +41,23 @@ pub enum Value {
     /// function inject
     /// <xxx @click="doClick" />
     Function(Function),
-    /// function return ()  as :`fn xxx()->(){}`
+    /// ⚠️ deprecated!!! function return ()  as :`fn xxx()->(){}` 
     Void,
     // /// color value
     // /// - hex color: #fff00f
     // /// - rgb color: rgb(211,23,255)
     // /// - rgba color: rgba(255,255,87,0.4)
     // Color(BuiltinColor),
-    Struct(String),
+    Struct(Struct),
+    /// Enum value
+    Enum(Enum),
+    /// unknown value type, need to judge the type by yourself
+    /// means you need to convert it to the correct type in the needed place
     UnKnown(String),
+    /// Dep means the value is the static dependency
     Dep(String),
-    Animation(HashMap<PropsKey, Value>)
+    /// animation value
+    Animation(HashMap<PropsKey, Value>),
 }
 
 impl Value {
@@ -192,10 +202,12 @@ impl Value {
                         "()" => {
                             return Ok(Value::Function((name, params, is_style.unwrap()).into()))
                         }
-                        _ => return Err(Errors::PropConvertFail(format!(
+                        _ => {
+                            return Err(Errors::PropConvertFail(format!(
                             "[sign error!!] can not convert Value::Unknown{} to Value::Function",
                             self
-                        ))),
+                        )))
+                        }
                     }
                 }
             }
@@ -276,6 +288,19 @@ impl From<f64> for Value {
     }
 }
 
+impl From<Struct> for Value {
+    fn from(value: Struct) -> Self {
+        Value::Struct(value)
+    }
+}
+
+impl From<Enum> for Value {
+    fn from(value: Enum) -> Self {
+        Value::Enum(value)
+    }
+    
+}
+
 impl TryFrom<serde_json::Value> for Value {
     type Error = Errors;
 
@@ -308,9 +333,7 @@ impl TryFrom<serde_json::Value> for Value {
                         .collect::<Vec<Value>>(),
                 ))
             }
-            serde_json::Value::Object(_) => Err(Errors::PropConvertFail(
-                "object value now is not supported".to_string(),
-            )),
+            serde_json::Value::Object(_) => Ok(Value::Struct(value.try_into()?)),
         }
     }
 }
@@ -348,6 +371,7 @@ impl Display for Value {
             Value::Void => String::new(),
             // Value::Color(color) => color.to_string(),
             Value::Struct(s) => s.to_string(),
+            Value::Enum(e) => e.to_string(),
             Value::Vec(v) => format!(
                 "{:?}",
                 v.into_iter()
