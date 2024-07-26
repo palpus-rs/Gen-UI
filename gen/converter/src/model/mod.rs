@@ -178,7 +178,32 @@ impl Model {
                 model.script.replace(ScriptModel::from(ast.script.unwrap()));
             }
             Strategy::SingleStyle => todo!("wait to handle single style strategy"), // Ok(expand_style(s)) , try to find other rsx have use to inject the style or not
-            Strategy::TemplateScript => todo!(),
+            Strategy::TemplateScript => {
+                let (sender, receiver) = mpsc::channel();
+                let template = ast.template().unwrap()[0].clone();
+
+                let _ = thread::spawn(move || {
+                    let convert_res = TemplateModel::convert(&template, true);
+                    sender.send(convert_res).expect("send template error");
+                });
+
+                match receiver
+                    .recv()
+                    .expect("gen_converter: receive failed when convert!")
+                {
+                    Some(t) => {
+                        model.set_template(t);
+                    }
+                    None => panic!("template cannot be none in Strategy::TemplateScript"),
+                }
+
+                // 处理script部分
+                if let Some(tree) = model.get_binds_tree().as_ref() {
+                    model
+                        .script
+                        .replace(ScriptModel::from_gen(ast.script.unwrap(), tree));
+                }
+            }
             Strategy::TemplateStyle => {
                 let (sender, receiver) = mpsc::channel();
                 let template = ast.template().unwrap()[0].clone();

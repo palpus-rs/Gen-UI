@@ -7,13 +7,13 @@ use crate::{
     common::{parse_normal, trim},
     ASTNodes, Enum, Function, PropertyKeyType, PropsKey, Struct, Tag, Value,
 };
-use gen_utils::common::string::FixedString;
+use gen_utils::{common::string::FixedString, error::Error};
 use nom::{
     branch::alt,
     bytes::{complete::tag, streaming::take_till},
     character::complete::{alphanumeric1, char},
     combinator::peek,
-    multi::many0,
+    multi::{many0, many1},
     sequence::{delimited, pair, preceded, separated_pair, terminated},
     Err, IResult, Parser,
 };
@@ -328,7 +328,7 @@ fn arg_to_value(input: &str) -> IResult<&str, Vec<(PropsKey, Value)>> {
 
 /// ## Parse ArkUI Tag
 #[allow(dead_code)]
-fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
+pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
     let (input, tag_name) = name(input)?;
     let (input, arg) = arg(input)?;
 
@@ -393,12 +393,45 @@ fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
         }
     }
 
+   
+
     if input.starts_with('}') {
+        input = input.trim_start_matches("}").trim();
+        // try chain_fn
+        if input.starts_with('.') {
+            // not nested tag , do parse chain_fn if exist chain
+            // parse property key value ----------------------------------------------
+            let (remain, kvs) = many0(chain_fn)(input)?;
+    
+            // convert key value to Gen Value ----------------------------------------
+            let props = kvs
+                .into_iter()
+                .map(|kv| to_value(kv).unwrap().1)
+                .collect::<HashMap<PropsKey, Value>>();
+    
+            tag.extend_props(props);
+    
+            input = remain;
+        }
         input = input.trim_start_matches("}").trim();
     }
 
     Ok((input, tag.into()))
 }
+
+#[allow(dead_code)]
+pub fn parse_ark_template(input: &str) -> Result<Vec<ASTNodes>, Error> {
+    match many1(parse_tag)(input) {
+        Ok((remain, asts)) => {
+            if remain.is_empty() {
+                return Ok(asts);
+            }
+            Err(Error::template_parser_remain(remain))
+        }
+        Result::Err(e) => Err(Error::new(e.to_string().as_str())),
+    }
+}
+
 
 #[cfg(test)]
 mod test_ark {
@@ -410,6 +443,33 @@ mod test_ark {
     use super::{brace_content, enum_content};
 
     #[test]
+    fn test6(){
+        let input = r#"
+            Row(){
+                Text("Hello world")
+                Column() {
+                    Text("Hello world1")
+                    Text("Hello world2")
+                }.width("80%").height(50)
+            }
+        "#;
+        let result = super::parse_ark_template(input);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test5(){
+        let input = r#"
+                Column() {
+                    Text("Hello world1")
+                    Text("Hello world2")
+                }.width("80%").height(50)
+        "#;
+        let result = super::parse_ark_template(input);
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn test4() {
         let input = r#"
             Row(){
@@ -418,7 +478,7 @@ mod test_ark {
             }
         "#;
 
-        let result = super::parse_tag(input);
+        let result = super::parse_ark_template(input);
         assert!(result.is_ok());
     }
 
@@ -431,7 +491,7 @@ mod test_ark {
             }
         "#;
 
-        let result = super::parse_tag(input);
+        let result = super::parse_ark_template(input);
         assert!(result.is_ok());
     }
 
@@ -444,7 +504,7 @@ mod test_ark {
                 .textAlign(TextAlign.Center)
         "#;
 
-        let result = super::parse_tag(input);
+        let result = super::parse_ark_template(input);
         assert!(result.is_ok());
     }
 
@@ -459,7 +519,7 @@ mod test_ark {
         }
         "#;
 
-        let result = super::parse_tag(input);
+        let result = super::parse_ark_template(input);
         assert!(result.is_ok());
     }
 
@@ -469,7 +529,7 @@ mod test_ark {
         Row()
         "#;
 
-        let result = super::parse_tag(input);
+        let result = super::parse_ark_template(input);
         assert!(result.is_ok());
     }
 

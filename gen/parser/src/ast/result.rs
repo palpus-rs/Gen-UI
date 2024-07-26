@@ -1,8 +1,12 @@
 use std::{fmt::Display, sync::mpsc, thread};
 
 use gen_utils::error::{Error, Errors};
+use nom::branch::alt;
 
-use crate::target::{parse_script, parse_style, template::html::parse_template};
+use crate::target::{
+    parse_script, parse_style,
+    template::{ark::parse_ark_template, html::parse_template},
+};
 
 use super::{ASTNodes, ParseCore, ParseTarget, Script, Strategy};
 
@@ -213,7 +217,17 @@ fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), Error> {
             result.set_template(ast);
             Ok(())
         }
-        Err(e) => Err(e),
+        Err(_) => {
+            dbg!(input);
+            // if failed, try to parse ark template
+            match parse_ark_template(input) {
+                Ok(ast) => {
+                    result.set_template(ast);
+                    Ok(())
+                }
+                Err(e) => Err(Error::new(&format!("Parse Template Error - can not parse both Html like or ArkUI like: {}", e))),
+            }
+        }
     }
 }
 /// ## handle script
@@ -246,6 +260,28 @@ mod test_result {
     use std::time::Instant;
 
     use crate::ast::{ParseResult, ParseTarget};
+
+    #[test]
+    fn test_result_ark() {
+        let input = r#"
+        <template>
+            Row(){
+                Text("Hello world")
+                Column() {
+                    Text("Hello world1")
+                    Text("Hello world2")
+                }.width("80%").height(50)
+                Column() {
+                    Text("Hello world3")
+                }.width("80%").height(50)
+            }
+        </template>
+        "#;
+        let t = Instant::now();
+        let res = ParseResult::try_from(ParseTarget::try_from(input).unwrap()).unwrap();
+        dbg!(t.elapsed());
+        dbg!(res.script());
+    }
 
     #[test]
     fn test_result() {
