@@ -187,6 +187,16 @@ impl Tag {
     pub fn is_self_closed(&self) -> bool {
         self.ty.is_self_close()
     }
+    pub fn extend_props(&mut self, props: HashMap<PropsKey, Value>) {
+        match self.props {
+            Some(ref mut p) => {
+                p.extend(props);
+            }
+            None => {
+                self.props = Some(props);
+            }
+        }
+    }
     /// ## get script lang from Tag
     /// if tag is script tag(`<script lang="xxx">`), return script lang
     ///

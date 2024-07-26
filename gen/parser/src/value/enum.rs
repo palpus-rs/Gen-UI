@@ -15,7 +15,7 @@ pub struct Enum {
 impl From<(&str, Vec<&str>)> for Enum {
     fn from(value: (&str, Vec<&str>)) -> Self {
         let name = value.0.to_string();
-
+        
         if value.1.len() == 0 {
             panic!("Enum must have at least one level field");
         } else {
