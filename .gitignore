@@ -4,4 +4,9 @@
 /**/*.zip
 /**/node_modules/*
 /tests
-/**/target
+/gen/target
+/gen/components/target/**
+/examples/.vscode
+/examples/**/target/**
+/gen-ui/target
+/wiki/**/target
