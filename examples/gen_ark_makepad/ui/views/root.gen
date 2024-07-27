@@ -1,0 +1,13 @@
+<template>
+Root(){
+    Window(){
+        View(){
+            Label(){
+
+            }.text("Gen + Makepad + Ark")
+            Label().text("Hello!!!")
+            Button().text("test!!!")
+        }.flow("Down")
+    }.id("main_window")
+}.id("ui")
+</template>

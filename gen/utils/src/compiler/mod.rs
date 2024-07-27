@@ -2,7 +2,6 @@ mod check;
 mod config;
 mod version;
 mod builder;
-pub mod fs;
 mod execute;
 mod model_node;
 

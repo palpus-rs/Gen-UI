@@ -218,7 +218,6 @@ fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), Error> {
             Ok(())
         }
         Err(_) => {
-            dbg!(input);
             // if failed, try to parse ark template
             match parse_ark_template(input) {
                 Ok(ast) => {

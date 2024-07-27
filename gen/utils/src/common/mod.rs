@@ -7,6 +7,7 @@ mod os;
 mod source;
 pub mod string;
 pub mod traits;
+pub mod fs;
 
 pub use alphabetic::*;
 pub use ast::*;

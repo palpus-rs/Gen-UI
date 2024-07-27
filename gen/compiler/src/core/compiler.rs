@@ -226,9 +226,19 @@ impl Compiler {
                     Compiler::loop_compile(compiler, visited);
                 }
                 (true, true) => {
-                    let model =
-                        Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
-                    let _ = compiler.insert(Box::new(model));
+                    compiler
+                        .cache
+                        .exists_or_insert(source_path)
+                        .unwrap()
+                        .then(|_| {
+                            let model = Model::new(&source_path.to_path_buf(), &target_path, false)
+                                .unwrap();
+                            let _ = compiler.insert(Box::new(model));
+                        });
+
+                    // let model =
+                    //     Model::new(&source_path.to_path_buf(), &target_path, false).unwrap();
+                    // let _ = compiler.insert(Box::new(model));
                 }
                 (true, false) => {
                     // is file but not gen file, directly copy to the compiled project

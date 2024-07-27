@@ -6,7 +6,7 @@ use std::{
 
 use gen_converter::model::{file_data, Model};
 use gen_parser::ParseTarget;
-use gen_utils::{common::{token_tree_ident, Source}, compiler::fs::create_file, error::Errors, wasm::WasmImpl};
+use gen_utils::{common::{fs::create_file, token_tree_ident, Source}, error::Errors, wasm::WasmImpl};
 use quote::quote;
 
 use crate::{

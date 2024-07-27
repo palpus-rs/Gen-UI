@@ -100,6 +100,14 @@ impl Style {
     pub fn set_props(&mut self, props: Props) {
         self.props = props;
     }
+    pub fn extend_props(&mut self, props: HashMap<super::PropsKey, crate::Value>) {
+        match self.props {
+            Some(ref mut p) => {
+                p.extend(props);
+            }
+            None => self.props = Some(props),
+        }
+    }
     pub fn set_children(&mut self, children: Vec<ASTNodes>) {
         match self.children {
             Some(_) => {
@@ -134,7 +142,7 @@ impl Style {
     pub fn get_props(&self) -> Option<&HashMap<crate::PropsKey, crate::Value>> {
         self.props.as_ref()
     }
-    pub fn get_parent(&self) -> Option<&ASTNodes>{
+    pub fn get_parent(&self) -> Option<&ASTNodes> {
         self.parent.as_ref()
     }
 }

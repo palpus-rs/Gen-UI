@@ -1,7 +1,7 @@
 use std::{hash::Hash, io::Write};
 
 use gen_converter::model::{script::ScriptModel, Model};
-use gen_utils::{common::Source, compiler::fs::create_file};
+use gen_utils::common::{Source, fs::create_file};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse2;

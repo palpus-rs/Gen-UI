@@ -1,6 +1,8 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
-use super::{comment::Comments, tag::CloseType, Props, Style, Tag};
+use crate::Value;
+
+use super::{comment::Comments, tag::CloseType, Props, PropsKey, Style, Tag};
 
 #[derive(Debug, Clone, PartialEq)]
 #[allow(dead_code)]
@@ -60,6 +62,13 @@ impl ASTNodes {
             ASTNodes::Tag(t) => t.set_props(props),
             ASTNodes::Comment(_) => {}
             ASTNodes::Style(s) => s.set_props(props),
+        }
+    }
+    pub fn extend_properties(&mut self, props: HashMap<PropsKey, Value>) {
+        match self {
+            ASTNodes::Tag(t) => t.extend_props(props),
+            ASTNodes::Comment(_) => {}
+            ASTNodes::Style(s) => s.extend_props(props),
         }
     }
     pub fn get_tag_name(&self) -> &str {

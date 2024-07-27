@@ -178,9 +178,10 @@ where
 /// Such cases are considered to be successful. That is, calling `create_dir_all`
 /// concurrently from multiple threads or processes is guaranteed not to fail
 /// due to a race condition with itself.
-pub fn create_file(path: &Path) -> Result<File, Errors> {
-    if let Some(parent_dir) = path.parent() {
-        if try_exists(path)? {
+pub fn create_file<P>(path: P) -> Result<File, Errors> where P: AsRef<Path> {
+    if let Some(parent_dir) = path.as_ref().parent() {
+        
+        if !try_exists(parent_dir)? {
             match create_dir_all(parent_dir) {
                 Ok(_) => {}
                 Err(e) => {
@@ -197,9 +198,9 @@ pub fn create_file(path: &Path) -> Result<File, Errors> {
         )));
     }
 
-    File::create(path).map_err(|e| {
+    File::create(path.as_ref()).map_err(|e| {
         Errors::FsError(FsError::Create {
-            path: path.to_path_buf(),
+            path: path.as_ref().to_path_buf(),
             reason: e.to_string(),
         })
     })
@@ -211,6 +212,12 @@ mod test_fs {
     use std::path::PathBuf;
 
     use super::*;
+    #[test]
+    fn test_create_file() {
+        let res = create_file("E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/src_gen/src/views/root.rs");
+        dbg!(res);
+    }
+
     #[test]
     fn test_exists() {
         let res = exists(PathBuf::new());

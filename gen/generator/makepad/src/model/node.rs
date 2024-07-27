@@ -1,7 +1,7 @@
 use std::{hash::Hash, io::Write, path::PathBuf};
 
 use gen_converter::model::Model;
-use gen_utils::compiler::{fs::create_file, ModelNodeImpl};
+use gen_utils::{common::fs::create_file, compiler::ModelNodeImpl};
 use proc_macro2::TokenStream;
 
 use crate::{

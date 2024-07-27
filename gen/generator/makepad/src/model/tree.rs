@@ -205,6 +205,17 @@ impl ModelTree {
         // self.node.source().unwrap().source_name_lower()
         self.node.super_ui_root()
     }
+    #[allow(dead_code)]
+    fn lib_debug(&self)-> HashSet<String>{
+        let mut mods = HashSet::new();
+        mods.insert(self.node.source().unwrap().to_lib());
+        if self.children.as_ref().is_some(){
+            self.children.as_ref().unwrap().iter().for_each(|child| {
+                mods.extend(child.lib_debug());
+            });
+        }
+        mods
+    }
     /// convert model tree to lib.rs mod
     pub fn to_lib(&self) -> TokenStream {
         // get node model source
