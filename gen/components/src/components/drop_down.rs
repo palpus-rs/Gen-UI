@@ -1,5 +1,7 @@
+use std::rc::Rc;
+
 use icon_atlas::RefCell;
-use live_eval::Rc;
+
 use makepad_widgets::*;
 
 use super::{card::Card, popup::GPopup};
@@ -105,7 +107,7 @@ impl Widget for GDropDown {
                         x: 0.0,
                         y: area.size.y,
                     };
-                    popup_menu.draw_items(cx, scope);
+                    popup_menu.draw_container(cx, scope);
                     popup_menu.end(cx, scope,self.draw_card.area(), shift);
                 }
             }
@@ -122,6 +124,7 @@ impl Widget for GDropDown {
             let global = cx.global::<PopupMenuGlobal>().clone();
             let mut map = global.map.borrow_mut();
             let popup_menu = map.get_mut(&self.popup.unwrap()).unwrap();
+            popup_menu.handle_event_with(cx, event, scope, self.draw_card.area());
             if let Event::MouseDown(e) = event {
                 if !popup_menu.menu_contains_pos(cx, e.abs) {
                     self.close(cx);

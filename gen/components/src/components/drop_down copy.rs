@@ -1,5 +1,7 @@
+use std::rc::Rc;
+
 use icon_atlas::RefCell;
-use live_eval::Rc;
+
 use makepad_widgets::*;
 
 use super::{card::Card, popup::GPopup};
@@ -19,10 +21,7 @@ pub struct GDropDown {
     position: PopupPosition,
     #[rust]
     opened: bool,
-    #[live]
-    #[find]
-    #[redraw]
-    trigger: WidgetRef
+   
 }
 
 #[derive(Copy, Clone, Debug, Live, LiveHook)]
@@ -49,6 +48,7 @@ struct PopupMenuGlobal {
 
 impl LiveHook for GDropDown {
     fn after_apply(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) {
+        self.card.after_apply(cx, apply, index, nodes);
         if self.popup.is_none() || !apply.from.is_from_doc() {
             return;
         }
@@ -85,12 +85,10 @@ impl GDropDown {
 
 impl Widget for GDropDown {
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        // let layout = self.layout;
         // self.draw_card.begin(cx, walk, layout);
         // self.draw_card.end(cx);
         let _ = self.card.draw_walk(cx, scope, walk);
-        let _ = self.trigger.draw_walk(cx, scope, walk);
-
+        
         cx.add_nav_stop(self.draw_card.area(), NavRole::DropDown, Margin::default());
 
         if self.opened && self.popup.is_some() {
@@ -109,12 +107,12 @@ impl Widget for GDropDown {
                         x: 0.0,
                         y: area.size.y,
                     };
-
-                    popup_menu.end(cx, self.draw_card.area(), shift);
+                    popup_menu.draw_items(cx, scope);
+                    popup_menu.end(cx, scope,self.draw_card.area(), shift);
                 }
             }
         }
-
+        
         DrawStep::done()
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
@@ -167,6 +165,6 @@ impl Widget for GDropDown {
             }
             _ => {}
         }
-        let _ = self.trigger.handle_event(cx, event, scope);
+        // let _ = self.trigger.handle_event(cx, event, scope);
     }
 }

@@ -14,6 +14,7 @@ pub mod divider;
 pub mod shader;
 pub mod popup;
 pub mod drop_down;
+pub mod tabs;
 
 live_design!{
     // imports -----------------------------------------------------
@@ -29,6 +30,7 @@ live_design!{
     import crate::components::divider::GDividerBase;
     import crate::components::shader::GShaderBase;
     import crate::components::popup::GPopupBase;
+    import crate::components::popup::GPopupContainerBase;
     import crate::components::drop_down::GDropDownBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
@@ -309,10 +311,14 @@ live_design!{
         margin: 0,
         align: <ALIGN_CENTER_WALK>{},
     }
+    GPopupContainer = <GPopupContainerBase>{
+        height: Fill,
+        width: Fill,
+    }
     GPopup = <GPopupBase>{
         height: Fill,
         width: Fill,
-        
+        container: <GPopupContainer>{}
     }
     GDropDown = <GDropDownBase>{
         height: Fit,

@@ -136,13 +136,33 @@ pub enum GButtonEvent {
 }
 
 impl Widget for GButton {
+    fn handle_event_with(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope, sweep_area: Area) {
+        let uid = self.widget_uid();
+
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.draw_button.redraw(cx);
+        }
+        match event.hits_with_options(cx, self.draw_button.area(), HitOptions::new().with_sweep_area(sweep_area) ) {
+            Hit::FingerDown(f_down) => {
+                dbg!("button handle_event2");
+                // if self.grab_key_focus {
+                //     cx.set_key_focus(self.sweep_area);
+                // }
+                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.modifiers));
+                self.animator_play(cx, id!(hover.pressed));
+            }
+            _ =>()
+        }
+    }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+        
         let uid = self.widget_uid();
         if self.animator_handle_event(cx, event).must_redraw() {
             self.draw_button.redraw(cx);
         }
         match event.hits(cx, self.draw_button.area()) {
             Hit::FingerDown(f_down) => {
+                dbg!("button handle_event");
                 if self.grab_key_focus {
                     cx.set_key_focus(self.draw_button.area());
                 }

@@ -36,23 +36,27 @@ live_design! {
                     spacing: 10.0,
                     padding: 10.0,
                     
+
                     <GDropDown>{
                         
                         height: Fit,
                         width: Fit,
                         trigger = <GButton>{text:"open"},
-                        popup: <GPopup>{
+                        popup :<GPopup> {
                             height: 100.0,
                             width: 200.0,
-                            
-                            theme: Dark,
-                            <GButton>{
-                                text: "Hello"
+                            container: <GPopupContainer> {
+                                height: Fill,
+                                width: Fill,
+                                <GButton>{
+                                    theme: Dark,
+                                    text: "Options"
+                                }
                             }
                         }
                     }
                     <DropDown>{
-                        
+                        popup_menu_position: BelowInput,
                         width: 200
                         labels: ["ValueOne", "ValueTwo","Thrice","FourthValue","OptionE","Hexagons"],
                         values: [ ValueOne,ValueTwo,Thrice,FourthValue,OptionE,Hexagons],

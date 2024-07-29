@@ -7,6 +7,8 @@ Root(){
             }.text("Gen + Makepad + Ark")
             Label().text("Hello!!!")
             Button().text("test!!!")
+            Button().text("hello world!")
+            RadioButton().text("radio")
         }.flow("Down")
     }.id("main_window")
 }.id("ui")
