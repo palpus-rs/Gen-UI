@@ -1,6 +1,6 @@
+use crate::utils::get_font_family;
 use makepad_widgets::*;
 use shader::draw_text::TextWrap;
-use crate::utils::get_font_family;
 
 live_design! {
     GLabelBase = {{GLabel}}{}
@@ -58,7 +58,7 @@ impl Widget for GLabel {
         let font = get_font_family(&self.font_family, cx);
 
         self.draw_text.text_style.font = font;
-        
+
         self.draw_text.draw_walk(
             cx,
             walk.with_add_padding(self.padding),
@@ -68,24 +68,24 @@ impl Widget for GLabel {
 
         DrawStep::done()
     }
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let hit = event.hits(cx, self.area());
-        self.handle_widget_event(cx, event, scope, hit)
-    }
-    fn handle_event_with(
-        &mut self,
-        cx: &mut Cx,
-        event: &Event,
-        scope: &mut Scope,
-        sweep_area: Area,
-    ) {
-        let hit = event.hits_with_options(
-            cx,
-            self.area(),
-            HitOptions::new().with_sweep_area(sweep_area),
-        );
-        self.handle_widget_event(cx, event, scope, hit)
-    }
+    // fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
+    //     let hit = event.hits(cx, self.area());
+    //     self.handle_widget_event(cx, event, scope, hit)
+    // }
+    // fn handle_event_with(
+    //     &mut self,
+    //     cx: &mut Cx,
+    //     event: &Event,
+    //     scope: &mut Scope,
+    //     sweep_area: Area,
+    // ) {
+    //     let hit = event.hits_with_options(
+    //         cx,
+    //         self.area(),
+    //         HitOptions::new().with_sweep_area(sweep_area),
+    //     );
+    //     self.handle_widget_event(cx, event, scope, hit)
+    // }
     /// copy label text
     fn text(&self) -> String {
         self.text.as_ref().to_string()
@@ -120,7 +120,6 @@ impl LiveHook for GLabel {
         );
         self.draw_text.wrap = self.wrap.clone();
         self.draw_text.redraw(cx);
-
     }
 }
 
@@ -134,8 +133,7 @@ impl GLabel {
         _event: &Event,
         scope: &mut Scope,
         hit: Hit,
-        
-    ){
+    ) {
         let uid = self.widget_uid();
 
         match hit {

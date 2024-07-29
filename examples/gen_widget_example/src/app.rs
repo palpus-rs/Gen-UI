@@ -43,11 +43,17 @@ live_design! {
                         width: Fit,
                         trigger = <GButton>{text:"open"},
                         popup :<GPopup> {
-                            height: 100.0,
+                            height: 150.0,
                             width: 200.0,
                             container: <GPopupContainer> {
                                 height: Fill,
                                 width: Fill,
+                                flow: Down,
+                                spacing: 10.0,
+                                padding: 10.0,
+                                <GLabel>{
+                                    text:"This is a popup",
+                                }
                                 <GButton>{
                                     theme: Dark,
                                     text: "Options"

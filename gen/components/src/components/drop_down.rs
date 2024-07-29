@@ -144,7 +144,6 @@ impl Widget for GDropDown {
                 self.draw_card.redraw(cx);
             }
             Hit::FingerDown(_) => {
-                dbg!("fig");
                 cx.set_key_focus(self.draw_card.area());
                 self.open(cx);
             }

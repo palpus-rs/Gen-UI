@@ -233,7 +233,7 @@ impl Widget for Card {
                     if let Some(child) = self.children.get_mut(id) {
                         if child.is_visible() || !event.requires_visibility() {
                             scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
+                                child.handle_event_with(cx, event, scope, sweep_area);
                             })
                         }
                     }
@@ -256,7 +256,7 @@ impl Widget for Card {
                     if let Some(child) = self.children.get_mut(id) {
                         if child.is_visible() || !event.requires_visibility() {
                             scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
+                                child.handle_event_with(cx, event, scope, sweep_area);
                             })
                         }
                     }
