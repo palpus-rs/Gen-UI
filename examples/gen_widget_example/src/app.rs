@@ -52,6 +52,12 @@ live_design! {
                                     theme: Dark,
                                     text: "Options"
                                 }
+                                <View>{
+                                    show_bg: true,
+                                    draw_bg: {color: #f00},
+                                    height: 40.0,
+                                    width: 40.0,
+                                }
                             }
                         }
                     }

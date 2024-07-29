@@ -136,63 +136,25 @@ pub enum GButtonEvent {
 }
 
 impl Widget for GButton {
-    fn handle_event_with(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope, sweep_area: Area) {
-        let uid = self.widget_uid();
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let hit = event.hits_with_options(
+            cx,
+            self.draw_button.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        );
 
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.draw_button.redraw(cx);
-        }
-        match event.hits_with_options(cx, self.draw_button.area(), HitOptions::new().with_sweep_area(sweep_area) ) {
-            Hit::FingerDown(f_down) => {
-                dbg!("button handle_event2");
-                // if self.grab_key_focus {
-                //     cx.set_key_focus(self.sweep_area);
-                // }
-                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.modifiers));
-                self.animator_play(cx, id!(hover.pressed));
-            }
-            _ =>()
-        }
+        self.handle_widget_event(cx, event, scope, hit, sweep_area)
     }
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        
-        let uid = self.widget_uid();
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.draw_button.redraw(cx);
-        }
-        match event.hits(cx, self.draw_button.area()) {
-            Hit::FingerDown(f_down) => {
-                dbg!("button handle_event");
-                if self.grab_key_focus {
-                    cx.set_key_focus(self.draw_button.area());
-                }
-                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.modifiers));
-                self.animator_play(cx, id!(hover.pressed));
-            }
-            Hit::FingerHoverIn(h) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                self.animator_play(cx, id!(hover.on));
-                cx.widget_action(uid, &scope.path, GButtonEvent::Hovered(h.modifiers));
-            }
-            Hit::FingerHoverOut(_) => {
-                self.animator_play(cx, id!(hover.off));
-            }
-            Hit::FingerUp(f_up) => {
-                if f_up.is_over {
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Clicked(f_up.modifiers));
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.modifiers));
-                    if f_up.device.has_hovers() {
-                        self.animator_play(cx, id!(hover.on));
-                    } else {
-                        self.animator_play(cx, id!(hover.off));
-                    }
-                } else {
-                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.modifiers));
-                    self.animator_play(cx, id!(hover.off));
-                }
-            }
-            _ => (),
-        }
+        let focus_area = self.draw_button.area();
+        let hit = event.hits(cx, self.draw_button.area());
+        self.handle_widget_event(cx, event, scope, hit, focus_area)
     }
     fn draw_walk(&mut self, cx: &mut Cx2d, _scope: &mut Scope, walk: Walk) -> DrawStep {
         if !self.visible {
@@ -320,6 +282,52 @@ impl GButton {
             false
         }
     }
+    pub fn handle_widget_event(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        hit: Hit,
+        focus_area: Area,
+    ) {
+        let uid = self.widget_uid();
+
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.draw_button.redraw(cx);
+        }
+        match hit {
+            Hit::FingerDown(f_down) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(focus_area);
+                }
+                cx.widget_action(uid, &scope.path, GButtonEvent::Pressed(f_down.modifiers));
+                self.animator_play(cx, id!(hover.pressed));
+            }
+            Hit::FingerHoverIn(h) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                self.animator_play(cx, id!(hover.on));
+                cx.widget_action(uid, &scope.path, GButtonEvent::Hovered(h.modifiers));
+            }
+            Hit::FingerHoverOut(_) => {
+                self.animator_play(cx, id!(hover.off));
+            }
+            Hit::FingerUp(f_up) => {
+                if f_up.is_over {
+                    cx.widget_action(uid, &scope.path, GButtonEvent::Clicked(f_up.modifiers));
+                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.modifiers));
+                    if f_up.device.has_hovers() {
+                        self.animator_play(cx, id!(hover.on));
+                    } else {
+                        self.animator_play(cx, id!(hover.off));
+                    }
+                } else {
+                    cx.widget_action(uid, &scope.path, GButtonEvent::Released(f_up.modifiers));
+                    self.animator_play(cx, id!(hover.off));
+                }
+            }
+            _ => (),
+        }
+    }
 }
 
 impl GButtonRef {
@@ -347,7 +355,7 @@ impl GButtonRef {
         }
         false
     }
-    pub fn area(&self) -> Area{
+    pub fn area(&self) -> Area {
         if let Some(btn_ref) = self.borrow() {
             return btn_ref.draw_button.area();
         }

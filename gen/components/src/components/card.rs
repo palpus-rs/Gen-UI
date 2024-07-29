@@ -2,7 +2,12 @@ use std::{cell::RefCell, collections::HashMap};
 
 use makepad_widgets::*;
 
-use crate::{components::button::GButtonWidgetRefExt, shader::draw_card::DrawCard, themes::{get_color, Themes}, utils::set_cursor};
+use crate::{
+    components::button::GButtonWidgetRefExt,
+    shader::draw_card::DrawCard,
+    themes::{get_color, Themes},
+    utils::set_cursor,
+};
 
 live_design! {
     import makepad_draw::shader::std::*;
@@ -117,46 +122,58 @@ pub enum CardEvent {
 }
 
 impl LiveHook for Card {
-    fn before_apply(&mut self, _cx: &mut Cx, apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+    fn before_apply(
+        &mut self,
+        _cx: &mut Cx,
+        apply: &mut Apply,
+        _index: usize,
+        _nodes: &[LiveNode],
+    ) {
         if let ApplyFrom::UpdateFromDoc { .. } = apply.from {
             self.draw_order.clear();
             self.find_cache.get_mut().clear();
         }
     }
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-         // ----------------- background color -------------------------------------------
-         let bg_color = get_color(self.theme, self.background_color, 500);
-         // ------------------ hover color -----------------------------------------------
-         let hover_color = get_color(self.theme, self.hover_color, 400);
-         // ------------------ pressed color ---------------------------------------------
-         let pressed_color = get_color(self.theme, self.pressed_color, 600);
-         // ------------------ border color ----------------------------------------------
-         let border_color = get_color(self.theme, self.border_color, 800);
-         // ------------------ is transparent --------------------------------------------
-         let transparent = (self.transparent) as u8 as f32;
-         // ------------------ check scroll bar -------------------------------------------
-         if self.scroll_bars.is_some() {
-             if self.scroll_bars_obj.is_none() {
-                 self.scroll_bars_obj =
-                     Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
-             }
-         }
-         // ------------------ apply draw_card --------------------------------------------
-         self.draw_card.apply_over(
-             cx,
-             live! {
-                 background_color: (bg_color),
-                 border_color: (border_color),
-                 border_width: (self.border_width),
-                 border_radius: (self.border_radius),
-                 pressed_color: (pressed_color),
-                 hover_color: (hover_color),
-                 transparent: (transparent),
-             },
-         );
-         self.draw_card.redraw(cx);
+        // ----------------- background color -------------------------------------------
+        let bg_color = get_color(self.theme, self.background_color, 500);
+        // ------------------ hover color -----------------------------------------------
+        let hover_color = get_color(self.theme, self.hover_color, 400);
+        // ------------------ pressed color ---------------------------------------------
+        let pressed_color = get_color(self.theme, self.pressed_color, 600);
+        // ------------------ border color ----------------------------------------------
+        let border_color = get_color(self.theme, self.border_color, 800);
+        // ------------------ is transparent --------------------------------------------
+        let transparent = (self.transparent) as u8 as f32;
+        // ------------------ check scroll bar -------------------------------------------
+        if self.scroll_bars.is_some() {
+            if self.scroll_bars_obj.is_none() {
+                self.scroll_bars_obj =
+                    Some(Box::new(ScrollBars::new_from_ptr(cx, self.scroll_bars)));
+            }
+        }
+        // ------------------ apply draw_card --------------------------------------------
+        self.draw_card.apply_over(
+            cx,
+            live! {
+                background_color: (bg_color),
+                border_color: (border_color),
+                border_width: (self.border_width),
+                border_radius: (self.border_radius),
+                pressed_color: (pressed_color),
+                hover_color: (hover_color),
+                transparent: (transparent),
+            },
+        );
+        self.draw_card.redraw(cx);
     }
-    fn apply_value_instance(&mut self, cx: &mut Cx, apply: &mut Apply, index: usize, nodes: &[LiveNode]) -> usize {
+    fn apply_value_instance(
+        &mut self,
+        cx: &mut Cx,
+        apply: &mut Apply,
+        index: usize,
+        nodes: &[LiveNode],
+    ) -> usize {
         let id = nodes[index].id;
         match apply.from {
             ApplyFrom::Animate | ApplyFrom::Over => {
@@ -184,9 +201,121 @@ impl LiveHook for Card {
 }
 
 impl Widget for Card {
+    fn handle_event_with(
+        &mut self,
+        cx: &mut Cx,
+        event: &Event,
+        scope: &mut Scope,
+        sweep_area: Area,
+    ) {
+        let uid = self.widget_uid();
+        if self.animator_handle_event(cx, event).must_redraw() {
+            self.redraw(cx);
+        }
+
+        if self.block_signal_event {
+            if let Event::Signal = event {
+                return;
+            }
+        }
+
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            let mut actions = Vec::new();
+            scroll_bars.handle_main_event(cx, event, &mut actions);
+            if actions.len().gt(&0) {
+                cx.redraw_area_and_children(self.area());
+            }
+        }
+
+        match &self.event_order {
+            EventOrder::Down => {
+                for id in self.draw_order.iter() {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            })
+                        }
+                    }
+                }
+            }
+            EventOrder::Up => {
+                // the default event order is Up
+                for id in self.draw_order.iter().rev() {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event_with(cx, event, scope, sweep_area);
+                            });
+                        }
+                    }
+                }
+            }
+            EventOrder::List(list) => {
+                for id in list {
+                    if let Some(child) = self.children.get_mut(id) {
+                        if child.is_visible() || !event.requires_visibility() {
+                            scope.with_id(*id, |scope| {
+                                child.handle_event(cx, event, scope);
+                            })
+                        }
+                    }
+                }
+            }
+        }
+
+        // handle event and set cursor to control
+        match event.hits_with_options(
+            cx,
+            self.area(),
+            HitOptions::new().with_sweep_area(sweep_area),
+        ) {
+            Hit::KeyDown(e) => {
+                if self.grab_key_focus {
+                    cx.widget_action(uid, &scope.path, CardEvent::KeyDown(e))
+                }
+            }
+            Hit::KeyUp(e) => {
+                if self.grab_key_focus {
+                    cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e))
+                }
+            }
+            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
+            Hit::FingerDown(e) => {
+                if self.grab_key_focus {
+                    cx.set_key_focus(sweep_area);
+                }
+                cx.widget_action(uid, &scope.path, CardEvent::FingerDown(e));
+            }
+            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerMove(e)),
+            Hit::FingerHoverIn(e) => {
+                let _ = set_cursor(cx, self.cursor.as_ref());
+                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverIn(e));
+                if self.animator.live_ptr.is_some() && self.animator_key {
+                    self.animator_play(cx, id!(hover.on))
+                }
+            }
+            Hit::FingerHoverOver(e) => {
+                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOver(e));
+            }
+            Hit::FingerHoverOut(e) => {
+                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOut(e));
+                if self.animator.live_ptr.is_some() && self.animator_key {
+                    self.animator_play(cx, id!(hover.off))
+                }
+            }
+            Hit::FingerUp(e) => {
+                cx.widget_action(uid, &scope.path, CardEvent::FingerUp(e));
+            }
+            _ => (),
+        }
+        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
+            scroll_bars.handle_scroll_event(cx, event, &mut Vec::new());
+        }
+    }
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-         // begin the draw state
-         if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
+        // begin the draw state
+        if self.draw_state.begin(cx, DrawState::Drawing(0, false)) {
             if !self.visible {
                 // visible is false, so we are done
                 self.draw_state.end();
@@ -370,9 +499,8 @@ impl Widget for Card {
     }
 }
 
-
 impl WidgetNode for Card {
-    fn uid_to_widget(&self, uid:WidgetUid)->WidgetRef {
+    fn uid_to_widget(&self, uid: WidgetUid) -> WidgetRef {
         for child in self.children.values() {
             let x = child.uid_to_widget(uid);
             if !x.is_empty() {
@@ -427,8 +555,8 @@ impl WidgetNode for Card {
         }
     }
 
-    fn walk(&mut self, _cx:&mut Cx) -> Walk {
-       self.walk
+    fn walk(&mut self, _cx: &mut Cx) -> Walk {
+        self.walk
     }
 
     fn redraw(&mut self, cx: &mut Cx) {
@@ -439,7 +567,7 @@ impl WidgetNode for Card {
     }
 }
 
-impl Card{
+impl Card {
     pub fn area(&self) -> Area {
         self.draw_card.area()
     }
@@ -452,109 +580,6 @@ impl Card{
     }
     pub fn child_count(&self) -> usize {
         self.draw_order.len()
-    }
-    pub fn handle_event_with(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope, sweep_area: Area) {
-        let uid = self.widget_uid();
-        if self.animator_handle_event(cx, event).must_redraw() {
-            self.redraw(cx);
-        }
-
-        if self.block_signal_event {
-            if let Event::Signal = event {
-                return;
-            }
-        }
-
-        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-            let mut actions = Vec::new();
-            scroll_bars.handle_main_event(cx, event, &mut actions);
-            if actions.len().gt(&0) {
-                cx.redraw_area_and_children(self.area());
-            }
-        }
-
-        match &self.event_order {
-            EventOrder::Down => {
-                for id in self.draw_order.iter() {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
-                            })
-                        }
-                    }
-                }
-            }
-            EventOrder::Up => {
-                // the default event order is Up
-                for id in self.draw_order.iter().rev() {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event_with(cx, event, scope, sweep_area);
-                            });
-                        }
-                    }
-                }
-            }
-            EventOrder::List(list) => {
-                for id in list {
-                    if let Some(child) = self.children.get_mut(id) {
-                        if child.is_visible() || !event.requires_visibility() {
-                            scope.with_id(*id, |scope| {
-                                child.handle_event(cx, event, scope);
-                            })
-                        }
-                    }
-                }
-            }
-        }
-
-        // handle event and set cursor to control
-        match event.hits_with_options(cx, self.area(), HitOptions::new().with_sweep_area(sweep_area)) {
-            Hit::KeyDown(e) => {
-                if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, CardEvent::KeyDown(e))
-                }
-            }
-            Hit::KeyUp(e) => {
-                if self.grab_key_focus {
-                    cx.widget_action(uid, &scope.path, CardEvent::KeyUp(e))
-                }
-            }
-            // Hit::FingerScroll(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerScroll(e)),
-            Hit::FingerDown(e) => {
-                
-                if self.grab_key_focus {
-                    cx.set_key_focus(sweep_area);
-                }
-                cx.widget_action(uid, &scope.path, CardEvent::FingerDown(e));
-            }
-            Hit::FingerMove(e) => cx.widget_action(uid, &scope.path, CardEvent::FingerMove(e)),
-            Hit::FingerHoverIn(e) => {
-                let _ = set_cursor(cx, self.cursor.as_ref());
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverIn(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
-                    self.animator_play(cx, id!(hover.on))
-                }
-            }
-            Hit::FingerHoverOver(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOver(e));
-            }
-            Hit::FingerHoverOut(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerHoverOut(e));
-                if self.animator.live_ptr.is_some() && self.animator_key {
-                    self.animator_play(cx, id!(hover.off))
-                }
-            }
-            Hit::FingerUp(e) => {
-                cx.widget_action(uid, &scope.path, CardEvent::FingerUp(e));
-            }
-            _ => (),
-        }
-        if let Some(scroll_bars) = &mut self.scroll_bars_obj {
-            scroll_bars.handle_scroll_event(cx, event, &mut Vec::new());
-        }
     }
 }
 

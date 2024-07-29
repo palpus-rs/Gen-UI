@@ -1,12 +1,11 @@
-use icon_atlas::HashMap;
 use makepad_widgets::*;
 
 use crate::{
     shader::draw_card::DrawCard,
-    themes::{get_color, Themes}, utils::set_cursor,
+    themes::{get_color, Themes},
 };
 
-use super::card::{Card, CardEvent, DrawState};
+use super::card::Card;
 
 live_design! {
     GPopupContainerBase = {{GPopupContainer}} {}
@@ -16,26 +15,21 @@ live_design! {
 pub struct GPopupContainer {
     #[live]
     #[deref]
-    pub super_widget: Card
+    pub super_widget: Card,
 }
 
 pub enum PopupMenuItemAction {
     WasSweeped,
     WasSelected,
     MightBeSelected,
-    None
+    None,
 }
 
 impl GPopupContainer {
-    
-    pub fn draw_item(
-        &mut self,
-        cx: &mut Cx2d,
-        scope: &mut Scope,
-    ) {
+    pub fn draw_item(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
         let _ = self.super_widget.draw_walk(cx, scope, self.walk);
     }
-    
+
     pub fn handle_event_with(
         &mut self,
         cx: &mut Cx,
@@ -43,38 +37,9 @@ impl GPopupContainer {
         sweep_area: Area,
         scope: &mut Scope,
     ) {
-
-        let _ = self.super_widget.handle_event_with(cx, event, scope, sweep_area);
-        // if self.animator_handle_event(cx, event).must_redraw() {
-        //     self.draw_card.area().redraw(cx);
-        // }
-        // match event.hits_with_options(
-        //     cx,
-        //     self.draw_card.area(),
-        //     HitOptions::new().with_sweep_area(sweep_area)
-        // ) {
-        //     Hit::FingerHoverIn(_) => {
-        //         self.animator_play(cx, id!(hover.on));
-        //     }
-        //     Hit::FingerHoverOut(_) => {
-        //         self.animator_play(cx, id!(hover.off));
-        //     }
-        //     Hit::FingerDown(_) => {
-        //        dbg!("down");
-        //         self.animator_play(cx, id!(hover.on));
-        //         self.animator_play(cx, id!(select.on));
-        //     }
-        //     Hit::FingerUp(se) => {
-        //         if !se.is_sweep {
-
-        //         }
-        //         else {
-        //             self.animator_play(cx, id!(hover.off));
-        //             self.animator_play(cx, id!(select.off));
-        //         }
-        //     }
-        //     _ => {}
-        // }
+        let _ = self
+            .super_widget
+            .handle_event_with(cx, event, scope, sweep_area);
     }
 }
 
@@ -116,12 +81,12 @@ pub struct GPopup {
     /// draw list is necessary!!!
     /// because we need to draw the popup on top of everything
     /// although the name of DrawList2d may let you think it's only for 2d list drawing
-    /// actually it's for all the drawing that needs to be on top of everything!!! 
-    #[live] draw_list: DrawList2d,
+    /// actually it's for all the drawing that needs to be on top of everything!!!
+    #[live]
+    draw_list: DrawList2d,
 }
 
 impl LiveHook for GPopup {
-    
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
         let bg_color = get_color(self.theme, self.background_color, 500);
@@ -151,7 +116,7 @@ impl LiveHook for GPopup {
 }
 
 impl GPopup {
-    pub fn area(&self) -> Area{
+    pub fn area(&self) -> Area {
         self.draw_card.area()
     }
     /// ## Get the popup container position
@@ -181,12 +146,12 @@ impl GPopup {
         self.draw_card.begin(cx, self.walk, self.layout);
     }
     /// ## End to draw popup
-    pub fn end(&mut self, cx: &mut Cx2d, scope: &mut Scope, shift_area: Area, shift: DVec2) {
+    pub fn end(&mut self, cx: &mut Cx2d, _scope: &mut Scope, shift_area: Area, shift: DVec2) {
         self.draw_card.end(cx);
         cx.end_pass_sized_turtle_with_shift(shift_area, shift);
         self.draw_list.end(cx);
     }
-    pub fn redraw(&mut self, cx: &mut Cx){
+    pub fn redraw(&mut self, cx: &mut Cx) {
         self.draw_list.redraw(cx);
         // self.draw_card.redraw(cx);
     }
@@ -201,6 +166,7 @@ impl GPopup {
         scope: &mut Scope,
         sweep_area: Area,
     ) {
-       self.container.handle_event_with(cx, event, sweep_area, scope)
+        self.container
+            .handle_event_with(cx, event, sweep_area, scope)
     }
 }
