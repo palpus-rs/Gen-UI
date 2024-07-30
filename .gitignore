@@ -10,3 +10,4 @@
 /examples/**/target/**
 /gen-ui/target
 /wiki/**/target
+/gen/middleware/
