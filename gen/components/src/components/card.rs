@@ -3,7 +3,6 @@ use std::{cell::RefCell, collections::HashMap};
 use makepad_widgets::*;
 
 use crate::{
-    components::button::GButtonWidgetRefExt,
     shader::draw_card::DrawCard,
     themes::{get_color, Themes},
     utils::set_cursor,
@@ -584,7 +583,7 @@ impl Card {
 }
 
 impl CardRef {
-    pub fn set_abs_pos(&self, cx: &mut Cx, abs_pos: DVec2) {
+    pub fn set_abs_pos(&self, _cx: &mut Cx, abs_pos: DVec2) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.walk.abs_pos.replace(abs_pos);
         }

@@ -1,6 +1,6 @@
 mod event;
 mod widget;
-mod traits;
+pub mod svg;
 
 pub use event::*;
 pub use widget::*;
