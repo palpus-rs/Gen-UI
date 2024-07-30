@@ -1,7 +1,6 @@
 use std::{fmt::Display, sync::mpsc, thread};
 
 use gen_utils::error::{Error, Errors};
-use nom::branch::alt;
 
 use crate::target::{
     parse_script, parse_style,
@@ -83,15 +82,23 @@ impl TryFrom<ParseCore> for ParseResult {
                 let (sender, receiver) = mpsc::channel();
                 let t_input = value.template().unwrap().clone();
                 let s_input = value.style().unwrap().clone();
-                // let sc_input = value.script().unwrap();
                 result.script = value.script;
-                // if let Err(e) = handle_script(&mut result, sc_input) {
-                //     return Err(e);
-                // }
                 let sender_t = sender.clone();
                 // new thread to handle template
                 thread::spawn(move || {
-                    let res_t = parse_template(&t_input);
+                    // let res_t = parse_template(&t_input);
+                    let res_t = match parse_template(&t_input) {
+                        Ok(ast) => Ok(ast),
+                        Err(_) => {
+                            // if failed, try to parse ark template
+                            match parse_ark_template(&t_input) {
+                                Ok(ast) => {
+                                    Ok(ast)
+                                }
+                                Err(e) => Err(Error::new(&format!("Parse Template Error - can not parse both Html like or ArkUI like: {}", e))),
+                            }
+                        }
+                    };
                     sender_t
                         .send((res_t, true))
                         .expect("failed to send template");
@@ -99,6 +106,7 @@ impl TryFrom<ParseCore> for ParseResult {
 
                 thread::spawn(move || {
                     let res_s = parse_style(&s_input);
+                    // dbg!(&res_s);
                     sender.send((res_s, false)).expect("failed to send style");
                 });
                 for _ in 0..2 {
@@ -116,16 +124,23 @@ impl TryFrom<ParseCore> for ParseResult {
                 // channel
                 let (sender, receiver) = mpsc::channel();
                 let t_input = value.template().unwrap().clone();
-                // let sc_input = value.script().unwrap();
 
-                // if let Err(e) = handle_script(&mut result, sc_input) {
-                //     return Err(e);
-                // }
                 result.script = value.script;
 
                 // new thread to handle template
                 thread::spawn(move || {
-                    let res_t = parse_template(&t_input);
+                    let res_t = match parse_template(&t_input) {
+                        Ok(ast) => Ok(ast),
+                        Err(_) => {
+                            // if failed, try to parse ark template
+                            match parse_ark_template(&t_input) {
+                                Ok(ast) => {
+                                    Ok(ast)
+                                }
+                                Err(e) => Err(Error::new(&format!("Parse Template Error - can not parse both Html like or ArkUI like: {}", e))),
+                            }
+                        }
+                    };
                     sender.send(res_t).expect("failed to send template");
                 });
                 match receiver.recv().expect("failed to receive template") {
@@ -224,7 +239,10 @@ fn handle_template(result: &mut ParseResult, input: &str) -> Result<(), Error> {
                     result.set_template(ast);
                     Ok(())
                 }
-                Err(e) => Err(Error::new(&format!("Parse Template Error - can not parse both Html like or ArkUI like: {}", e))),
+                Err(e) => Err(Error::new(&format!(
+                    "Parse Template Error - can not parse both Html like or ArkUI like: {}",
+                    e
+                ))),
             }
         }
     }
@@ -259,7 +277,6 @@ mod test_result {
     use std::time::Instant;
 
     use crate::ast::{ParseResult, ParseTarget};
-
     #[test]
     fn test_result_ark() {
         let input = r#"

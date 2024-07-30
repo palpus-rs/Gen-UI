@@ -41,7 +41,7 @@ impl FromStr for Hex {
 
 impl From<&Rgb> for Hex {
     fn from(value: &Rgb) -> Self {
-        Hex(format!("#{:02x}{:02x}{:02x}", value.r, value.g, value.b))
+        Hex(format!("#{:02x}{:02x}{:02x}FF", value.r, value.g, value.b))
     }
 }
 

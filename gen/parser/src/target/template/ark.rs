@@ -22,7 +22,7 @@ use nom::{
 /// format: `TagName`
 #[allow(dead_code)]
 fn name(input: &str) -> IResult<&str, &str> {
-    trim(alphanumeric1)(input)
+   parse_key(input)
 }
 /// ## Tag Args single
 /// format: `(xxx)`
@@ -348,15 +348,12 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
 
     // parse tag start and get the ast tag
     let (input, mut node) = parse_tag_start(input)?;
-    let mut no_children = false;
+    
     let mut input = input.trim();
-
-
-
 
     if input.starts_with('.') {
         // direct follow `.` means no children should parse fn
-        no_children = true;
+        
         // parse property key value ----------------------------------------------
         let (remain, kvs) = many0(chain_fn)(input)?;
         // convert key value to Gen Value ----------------------------------------
@@ -372,7 +369,6 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
         // means no children
         input = holder(input).unwrap().0;
 
-        no_children = true;
         if input.starts_with('.') {
             // parse property key value ----------------------------------------------
             let (remain, kvs) = many0(chain_fn)(input)?;
@@ -469,7 +465,7 @@ mod test_ark {
         "#;
         let result = super::parse_ark_template(input);
         // assert!(result.is_ok());
-        dbg!(result);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -484,7 +480,7 @@ mod test_ark {
         "#;
         let result = super::parse_ark_template(input);
         // assert!(result.is_ok());
-        dbg!(result);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -497,7 +493,7 @@ mod test_ark {
         "#;
         let result = super::parse_ark_template(input);
         // assert!(result.is_ok());
-        dbg!(result);
+        assert!(result.is_ok());
     }
 
     #[test]
@@ -510,7 +506,7 @@ mod test_ark {
         "#;
 
         let result = super::parse_ark_template(input);
-        dbg!(result);
+        assert!(result.is_ok());
         // assert!(result.is_ok());
     }
 
@@ -524,7 +520,7 @@ mod test_ark {
         "#;
 
         let result = super::parse_ark_template(input);
-        dbg!(result);
+        assert!(result.is_ok());
         // assert!(result.is_ok());
     }
 
@@ -538,7 +534,7 @@ mod test_ark {
         "#;
 
         let result = super::parse_ark_template(input);
-        dbg!(result);
+        assert!(result.is_ok());
         
         // assert!(result.is_ok());
     }
@@ -555,7 +551,7 @@ mod test_ark {
         "#;
 
         let result = super::parse_ark_template(input);
-        dbg!(result);
+        assert!(result.is_ok());
         // assert!(result.is_ok());
     }
 
@@ -570,8 +566,8 @@ mod test_ark {
 
         let result = super::parse_ark_template(input);
         let result2 = super::parse_ark_template(input2);
-        dbg!(result);
-        dbg!(result2);
+        assert!(result.is_ok());
+        assert!(result2.is_ok());
         // assert!(result.is_ok());
     }
 

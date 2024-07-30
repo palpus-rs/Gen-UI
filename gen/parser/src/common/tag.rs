@@ -155,7 +155,51 @@ mod tag_parser {
     };
 
     use super::parse_template_tag;
+    #[test]
+    fn test_template3() {
+        let input = r#"
+        <template>
+        Root(){
+            Window(){
+                ScrollYView(){
+                Header()
+                }.id("main_view")
+            }.id("main_window")
+        }.id("ui")
+        </template>
 
+        <script>
+        import!{
+        crate::views::components::header::*;
+        }
+        </script>
+
+        <style>
+        #ui{
+            #main_window{
+                width: Fill;
+                height: Fill;
+                flow: Down;
+                window_size: 1024.0 820.0;
+                window_title: "GenUI";
+                #main_view{
+                    height: All;
+                    width: All;
+                    flow: Down;
+                    background_visible: true;
+                    background_color: shader(|self|{
+                        fn pixel(self) -> vec4{
+                            return vec4(1.0, 1.0, 1.0, 1.0)
+                        }
+                    });
+                }
+            }
+        }
+        </style>
+        "#;
+        let (s, res) = parse_all(input).unwrap();
+        dbg!(s, res);
+    }
     #[test]
     fn test_template2() {
         let input = r#"

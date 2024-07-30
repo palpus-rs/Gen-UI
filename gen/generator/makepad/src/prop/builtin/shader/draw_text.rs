@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use gen_parser::{
-    common::{BuiltinColor, Hex},
+    common::{hex_to_vec4, BuiltinColor, Hex},
     Value,
 };
 use gen_utils::error::Errors;
@@ -145,7 +145,7 @@ impl Display for DrawText {
             draw_text.push_str(&format!("{}: {},", DRAW_DEPTH, draw_depth));
         }
         if let Some(color) = &self.color {
-            draw_text.push_str(&format!("{}: {},", COLOR, color));
+            draw_text.push_str(&format!("{}: {},", COLOR, hex_to_vec4(color)));
         } else {
             if !self.get_color.is_empty() {
                 draw_text.push_str(self.get_color.to_string().as_str());
