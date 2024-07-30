@@ -5,7 +5,7 @@ use crate::utils::svg::value::Auto;
 use super::CommonKVs;
 /// The <ellipse> element is an SVG basic shape,
 /// used to create ellipses based on a center coordinate, and both their x and y radius.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Ellipse {
     pub common: CommonKVs,
     /// The x position of the center of the ellipse. Value type: <length>|<percentage> ; Default value: 0;

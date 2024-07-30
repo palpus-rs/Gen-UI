@@ -4,7 +4,7 @@ use nom::IResult;
 
 use super::CommonKVs;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Path {
     common: CommonKVs,
     d: Option<String>,

@@ -20,6 +20,8 @@ use crate::utils::svg::parser::parse_properties;
 /// Common key-value pairs for SVG elements.
 #[derive(Debug, Default, Clone)]
 pub struct CommonKVs {
+    pub x: Option<f32>,
+    pub y: Option<f32>,
     pub fill: Option<String>,
     pub stroke: Option<String>,
     pub stroke_width: Option<f32>,
@@ -44,9 +46,17 @@ impl CommonKVs {
         let mut stroke_dashoffset = None;
         let mut stroke_opacity = None;
         let mut stroke_miterlimit = None;
+        let mut x = None;
+        let mut y = None;
 
         for (k, v) in kvs.into_iter() {
             match k {
+                "x" => {
+                    let _ = x.replace(v.parse().unwrap());
+                }
+                "y" => {
+                    let _ = y.replace(v.parse().unwrap());
+                }
                 "fill" => {
                     let _ = fill.replace(v.to_string());
                 }
@@ -84,6 +94,8 @@ impl CommonKVs {
             s,
             (
                 CommonKVs {
+                    x,
+                    y,
                     fill,
                     stroke,
                     stroke_width,
@@ -103,6 +115,12 @@ impl CommonKVs {
 impl Display for CommonKVs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut s = String::new();
+        if let Some(x) = &self.x {
+            s.push_str(&format!("x=\"{}\" ", x));
+        }
+        if let Some(y) = &self.y {
+            s.push_str(&format!("y=\"{}\" ", y));
+        }
         if let Some(fill) = &self.fill {
             s.push_str(&format!("fill=\"{}\" ", fill));
         }

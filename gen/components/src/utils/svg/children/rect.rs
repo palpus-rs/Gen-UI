@@ -4,7 +4,7 @@ use super::CommonKVs;
 
 /// The <rect> element is a basic SVG shape that draws rectangles,
 /// defined by their position, width, and height. The rectangles may have their corners rounded.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Rect {
     pub common: CommonKVs,
     pub x: Option<f32>,

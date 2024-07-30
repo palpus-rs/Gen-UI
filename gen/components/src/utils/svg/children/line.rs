@@ -5,7 +5,7 @@ use nom::IResult;
 use super::CommonKVs;
 
 /// The <line> element is an SVG basic shape used to create a line connecting two points.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Line{
     pub common: CommonKVs,
     /// Defines the x-axis coordinate of the line starting point. Value type: <length>|<percentage>|<number> ; Default value: 0; 
