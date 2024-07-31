@@ -4,14 +4,17 @@
 
 ## Features
 
-### Makepad (see branch main)
+### Makepad
 
 - [x] Makepad Compiler
 - [x] static page
+- [x] ArkUI Template
 - [ ] dyn widget (half support, now working...)
 - [x] wasm
 - [ ] GenUI Builtin-Widget (working...)
 - [x] rust lang support (use in .gen file, hold in `<script lang="rust">` or `<script>`)
+- [x] Shader
+- [ ] Toml Config
 
 #### Widgets
 - [x] Window
@@ -69,48 +72,3 @@
 - [ ] for
 - [ ] if_else
 
----
-
-### HarmonyOs Ark (Empty Ability)
-
-- [ ] Ark Compiler (working...)
-- [ ] static page
-- [ ] dyn widget
-- [ ] GenUI Builtin-Widget
-- [x] ets support (use in .gen file, hold in `<script lang="ets">`)
-
-#### Widget
-- [ ] Layout
-  - [ ] Row
-  - [ ] Column
-  - [ ] Stack
-  - [ ] RelativeContainer
-  - [ ] GridRow
-  - [ ] GridCol
-  - [ ] List
-  - [ ] Grid
-  - [ ] GridItem
-  - [ ] Swiper
-  - [ ] Tabs
-- [ ] Button
-- [ ] Radio
-- [ ] Toggle
-- [ ] Progress
-- [ ] Text
-- [ ] Span
-- [ ] TextInput
-- [ ] TextArea
-- [ ] Image
-- [ ] CustomDialog
-- [ ] Video
-- [ ] XComponent
-- [ ] Popup
-- [ ] Menu
-
-#### Others
-
-- [ ] animation
-- [ ] Navigation
-- [ ] Shape
-- [ ] Canvas
-- [ ] Theme
