@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use gen_utils::error::Error;
+use gen_utils::{error::Error, parser::{parse_value, trim}};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until, take_until1},
@@ -10,20 +10,14 @@ use nom::{
     IResult,
 };
 
-//问题1: function字段分割(开始前去除()) (solve)
-// params: Some(
-//     [
-//         "(180deg",
-//         "#7",
-//         "#3)",
-//     ],
-// ),
-// 问题2: 对于 xxx xxx xx 的属性值
-
 use crate::{
     ast::{ASTNodes, PropertyKeyType, PropsKey, Style},
-    common::{parse_comment as parse_common_comment, parse_value, trim, Special},
-    Value, HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
+    common::{parse_comment as parse_common_comment, Special},
+    Value, 
+};
+
+use gen_utils::common::tokenizer::{
+    HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_END, STYLE_ID, STYLE_PESUDO, STYLE_START,
 };
 
 #[allow(dead_code)]

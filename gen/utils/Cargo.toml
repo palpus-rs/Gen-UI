@@ -14,6 +14,7 @@ full = ["parser", "wasm", "generator", "msg"]
 
 
 [dependencies]
+nom = "7.1.3"
 proc-macro2 = "1.0.78"
 quote = "1.0.35"
 syn = { version = "2.0.52", features = ["full", "extra-traits"] }

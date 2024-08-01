@@ -1,9 +1,10 @@
-use crate::PROPERTY_VALUE_CONTAIN_SIGN;
 use nom::{
     bytes::complete::{tag, take_until},
     sequence::delimited,
     IResult,
 };
+
+use crate::common::tokenizer::PROPERTY_VALUE_CONTAIN_SIGN;
 /// ## parse string sign single ("\"") 🆗
 /// when parse string sign aside
 pub fn parse_string_sign_single(input: &str) -> IResult<&str, &str> {
@@ -27,7 +28,7 @@ pub fn parse_string(input: &str) -> IResult<&str, &str> {
 
 #[cfg(test)]
 mod test_string {
-    use crate::common::string::{parse_string, parse_string_sign_single};
+    use crate::parser::{parse_string, parse_string_sign_single};
 
     #[test]
     fn string() {

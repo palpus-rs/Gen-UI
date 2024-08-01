@@ -20,11 +20,9 @@ pub use tag::{CloseType, Tag};
 
 use self::nodes::asts_to_string;
 use crate::{
-    ast::comment::position::OfflinePosition,
-    common::{parse_all, trim},
-    target::parse_imports_to_token,
+    ast::comment::position::OfflinePosition, common::parse_all, target::parse_imports_to_token,
 };
-use gen_utils::error::Error;
+use gen_utils::{error::Error, parser::trim};
 
 /// Parse Strategy
 /// Convert ParseTarget To AST

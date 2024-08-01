@@ -8,6 +8,7 @@ mod source;
 pub mod string;
 pub mod traits;
 pub mod fs;
+pub mod tokenizer;
 
 pub use alphabetic::*;
 pub use ast::*;

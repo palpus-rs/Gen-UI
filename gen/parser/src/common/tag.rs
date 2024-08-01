@@ -11,12 +11,12 @@ use nom::{
     IResult,
 };
 
-use crate::{
-    ast::Targets, target::template::html::parse_tag_start, END_SIGN, END_START_SIGN, SCRIPT, STYLE,
-    TAG_START, TEMPLATE,
+use super::comment::parse_offline_comment;
+use crate::{ast::Targets, target::template::html::parse_tag_start};
+use gen_utils::{
+    common::tokenizer::{END_SIGN, END_START_SIGN, SCRIPT, STYLE, TAG_START, TEMPLATE},
+    parser::trim,
 };
-
-use super::{comment::parse_offline_comment, trim};
 
 fn delimited_tag<'a>(
     input: &'a str,
@@ -145,13 +145,11 @@ pub fn parse_all(input: &str) -> IResult<&str, Vec<Targets>> {
 
 #[cfg(test)]
 mod tag_parser {
+    use gen_utils::{common::tokenizer::TEMPLATE, parser::trim};
+
     use crate::{
         ast::Targets,
-        common::{
-            tag::{parse_all, parse_script_tag, parse_tag},
-            trim,
-        },
-        TEMPLATE,
+        common::tag::{parse_all, parse_script_tag, parse_tag},
     };
 
     use super::parse_template_tag;

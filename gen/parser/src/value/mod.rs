@@ -5,11 +5,11 @@ mod r#enum;
 use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 pub use function::Function;
-use gen_utils::error::Errors;
+use gen_utils::{error::Errors, from_i_number, from_u_number};
 pub use r#struct::Struct;
 pub use r#enum::Enum;
 
-use crate::{common::BuiltinColor, from_i_number, from_u_number, target::function, PropsKey};
+use crate::{common::BuiltinColor, target::function, PropsKey};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Value {

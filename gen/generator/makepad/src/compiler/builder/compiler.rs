@@ -1,9 +1,13 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use gen_utils::{
     common::{RustDependence, Source},
-    compiler::Builder,
+    compiler::{Builder, FromConfig},
 };
+use toml_edit::Item;
 
 use crate::compiler::{target::Makepad, wasm::Wasm, Compiler};
 
@@ -176,6 +180,46 @@ impl Builder for CompilerBuilder {
             wasm: self.wasm,
             wasm_process: None,
             target,
+        }
+    }
+}
+
+impl FromConfig for CompilerBuilder {
+    type From = Item;
+
+    fn from_config(from: &Self::From) -> Self {
+        let origin_path = std::env::current_dir().unwrap();
+        let entry = from["entry"].as_str().unwrap_or("app").to_string();
+        let root = from["root"].as_str().map(|p| PathBuf::from(p));
+        let wasm_item = from.get("wasm");
+
+        let (wasm, wasm_check, wasm_fresh, wasm_port) = match wasm_item {
+            Some(items) => {
+                let wasm = wasm_item.is_some();
+
+                let wasm_check = items["check"].as_bool().unwrap_or(false);
+                let wasm_fresh = items["fresh"].as_bool().unwrap_or(true);
+                let wasm_port: Option<u16> = items["port"].as_integer().map(|p| p as u16);
+                (wasm, wasm_check, wasm_fresh, wasm_port)
+            }
+            None => (false, false, true, None),
+        };
+        let dependencies = from["dependencies"]
+            .as_table()
+            .unwrap()
+            .iter()
+            .map(|(k, v)| RustDependence::from_str(&format!("{} = {}", k, v.to_string())).unwrap())
+            .collect();
+
+        Self {
+            origin_path,
+            entry,
+            root,
+            dependencies,
+            wasm,
+            wasm_check,
+            wasm_fresh,
+            wasm_port,
         }
     }
 }

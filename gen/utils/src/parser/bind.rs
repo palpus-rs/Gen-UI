@@ -1,7 +1,7 @@
 use super::parse_sign_key;
 use nom::IResult;
 
-use crate::BIND_SIGN;
+use crate::common::tokenizer::BIND_SIGN;
 
 /// ## parse property bind key 🆗
 /// - `:xxx`

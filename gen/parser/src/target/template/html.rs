@@ -1,16 +1,13 @@
-
 //! 🆗 : 测试完成
 //! ⚡️ : faster
 use std::collections::HashMap;
 
 use crate::{
     ast::{ASTNodes, PropertyKeyType, PropsKey, Tag},
-    common::{
-        parse_bind_key, parse_comment as parse_common_comment, parse_function_key, parse_string,
-        trim,
-    },
-    CloseType, Value, END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN,
+    common::parse_comment as parse_common_comment,
+    CloseType, Value,
 };
+use gen_utils::{common::tokenizer::{END_SIGN, END_START_SIGN, EQUAL_SIGN, SELF_END_SIGN}, parser::{parse_bind_key, parse_function_key, parse_normal, parse_string, trim}};
 use gen_utils::error::Error;
 use nom::{
     branch::alt,
@@ -21,8 +18,6 @@ use nom::{
     sequence::{delimited, pair, preceded, tuple},
     IResult,
 };
-
-use crate::common::parse_normal;
 
 /// ## ⚡️ parse normal label 🆗
 /// use in tag_start | tag_end to parse the tag_name
@@ -35,7 +30,6 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
     parse_normal(input, '_')
 }
 
-
 /// ## parse tag start (<tag_name key="value">) 🆗
 /// format : `<tag_name key="value">`
 /// ### return
@@ -46,9 +40,10 @@ fn parse_tag_name(input: &str) -> IResult<&str, &str> {
 /// let res = parse_tag_start(input).unwrap();
 /// ```
 pub fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
-    
-    let (remain, (name, props)) =
-        trim(preceded(char('<'), tuple((parse_tag_name, parse_properties))))(input)?;
+    let (remain, (name, props)) = trim(preceded(
+        char('<'),
+        tuple((parse_tag_name, parse_properties)),
+    ))(input)?;
     let props = if props.is_empty() {
         None
     } else {
@@ -212,7 +207,6 @@ pub fn parse_tag<'a>(
                 return Ok((input, ast_node));
             }
             Err(_) => {
-                
                 // has children, parse children
                 let (input, mut children) = many0(parse_tag)(input)?;
 
@@ -220,7 +214,6 @@ pub fn parse_tag<'a>(
                     Ok((remain, _)) => remain,
                     Err(_) => input,
                 };
-
 
                 if !children.is_empty() {
                     children
@@ -283,19 +276,18 @@ mod template_parsers {
     };
 
     #[test]
-    fn test_tag_start(){
+    fn test_tag_start() {
         let input = r#"<button value="Hello world" class="button1" @clicked="handle_actions"/>"#;
         let res = parse_tag_start(input).unwrap();
         dbg!(res);
     }
 
     #[test]
-    fn test_script_tag(){
+    fn test_script_tag() {
         let input = r#"<script lang="ets">"#;
         let res = parse_tag_start(input).unwrap();
         dbg!(res);
     }
-
 
     #[test]
     fn test_template_nested_same() {

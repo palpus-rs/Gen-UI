@@ -4,10 +4,9 @@
 use std::collections::HashMap;
 
 use crate::{
-    common::{parse_normal, trim},
     ASTNodes, Enum, Function, PropertyKeyType, PropsKey, Struct, Tag, Value,
 };
-use gen_utils::{common::string::FixedString, error::Error};
+use gen_utils::{common::string::FixedString, error::Error, parser::{parse_normal, trim}};
 use nom::{
     branch::alt,
     bytes::{complete::tag, streaming::take_till},

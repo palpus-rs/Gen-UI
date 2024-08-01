@@ -214,8 +214,7 @@ mod test_fs {
     use super::*;
     #[test]
     fn test_create_file() {
-        let res = create_file("E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/src_gen/src/views/root.rs");
-        dbg!(res);
+        let _res = create_file("E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/src_gen/src/views/root.rs");
     }
 
     #[test]

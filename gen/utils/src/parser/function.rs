@@ -1,5 +1,5 @@
 use super::parse_sign_key;
-use crate::FUNCTION_SIGN;
+use crate::common::tokenizer::FUNCTION_SIGN;
 use nom::{
     bytes::complete::{tag, take_until1},
     sequence::delimited,

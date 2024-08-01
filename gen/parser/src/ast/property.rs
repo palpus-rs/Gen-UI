@@ -1,6 +1,8 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{Value, SPACE};
+use gen_utils::common::tokenizer::SPACE;
+
+use crate::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum PropertyKeyType {
@@ -80,13 +82,17 @@ impl PropsKey {
     }
     /// ## new props key
     /// new a props key in template or script tag which is type normal
-    pub fn new_tag_normal(name: &str) -> Self{
-        Self { name: name.to_string(), is_style: false, ty: PropertyKeyType::Normal }
+    pub fn new_tag_normal(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            is_style: false,
+            ty: PropertyKeyType::Normal,
+        }
     }
     pub fn name(&self) -> &str {
         &self.name
     }
-    pub fn ty(&self)->&PropertyKeyType{
+    pub fn ty(&self) -> &PropertyKeyType {
         &self.ty
     }
     pub fn is_bind(&self) -> bool {
@@ -95,7 +101,7 @@ impl PropsKey {
     pub fn is_normal(&self) -> bool {
         self.ty.is_normal()
     }
-    pub fn is_fn(&self)->bool{
+    pub fn is_fn(&self) -> bool {
         self.ty.is_function()
     }
 }

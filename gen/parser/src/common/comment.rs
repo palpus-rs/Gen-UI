@@ -1,8 +1,9 @@
 use crate::ast::comment::position::OfflinePosition;
 use crate::ast::comment::Comments;
 use crate::ast::Targets;
-use crate::{COMMENT_DOCUMENT, COMMENT_FILE, COMMENT_NROMAL};
+use gen_utils::common::tokenizer::{COMMENT_DOCUMENT, COMMENT_FILE, COMMENT_NROMAL};
 
+use gen_utils::parser::trim;
 use nom::branch::alt;
 use nom::bytes::complete::take_while;
 use nom::combinator::peek;
@@ -11,7 +12,7 @@ use nom::multi::many1;
 use nom::{bytes::complete::tag, IResult};
 
 use super::tag::parse_tag_check;
-use super::trim;
+
 
 // pub fn parse_comment(input: &str) -> IResult<&str, TemplateASTNode> {
 //     // let (input,value) = recognize(preceded(

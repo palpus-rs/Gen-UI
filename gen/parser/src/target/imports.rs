@@ -1,3 +1,4 @@
+use gen_utils::parser::trim;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while},
@@ -9,7 +10,6 @@ use nom::{
 use proc_macro2::TokenStream;
 use syn::{parse2, parse_str, Stmt};
 
-use crate::common::trim;
 
 /// Parse braces: `import!{}`
 /// return `(remain, content)`

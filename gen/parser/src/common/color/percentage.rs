@@ -1,11 +1,9 @@
 use std::{fmt::Display, str::FromStr};
 
-use gen_utils::error::Errors;
+use gen_utils::{common::traits::float_to_str, error::Errors};
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse_str;
-
-use crate::common::utils::float_to_str;
 
 /// 百分比
 /// 语法: `percentage(%)`

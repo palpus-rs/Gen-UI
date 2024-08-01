@@ -2,9 +2,7 @@ use std::str::FromStr;
 
 use nom::{bytes::complete::tag, sequence::preceded, IResult};
 
-use gen_utils::error::Errors;
-
-use super::parse_closure_body;
+use gen_utils::{error::Errors, parser::parse_closure_body};
 
 pub enum Special {
     MakepadShader,

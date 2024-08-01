@@ -38,3 +38,11 @@ pub trait Configer: FromStr {
     /// get the config struct from the path
     fn from_path<P>(path: P) -> Result<Self, Errors> where P: AsRef<std::path::Path>;
 }
+
+/// # FromConfig trait
+/// FromConfig trait is used to parse the config file content to the config struct
+pub trait FromConfig {
+    type From;
+
+    fn from_config(from: &Self::From) -> Self;
+}

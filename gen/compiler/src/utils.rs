@@ -5,6 +5,11 @@ use std::{
     time::Duration,
 };
 
+use gen_utils::{common::msg::COMPILER_SERVICE, error::Errors};
+use toml_edit::DocumentMut;
+
+use crate::error_and_exit;
+
 /// copy file from source_path to compiled_path
 pub fn copy_file<P, Q>(from: P, to: Q) -> ()
 where
@@ -82,5 +87,52 @@ where
         (true, true) => p1.as_ref().canonicalize().unwrap() == p2.as_ref().canonicalize().unwrap(),
         (true, false) | (false, false) => false,
         (false, true) => true,
+    }
+}
+
+/// get gen.toml content and parse to DocumentMut
+pub fn gen_conf_toml() -> Result<DocumentMut, Errors> {
+    let conf_path = std::env::current_dir().unwrap().join("gen.toml");
+
+    match gen_utils::common::fs::try_exists(conf_path.as_path()) {
+        Ok(exist) => {
+            if !exist {
+                error_and_exit(&format!(
+                    "⛔ {} {}",
+                    COMPILER_SERVICE, "can not find gen.toml! "
+                ))
+            }
+            // read gen.toml
+            return gen_utils::common::fs::read(conf_path.as_path())
+                .unwrap()
+                .parse::<DocumentMut>()
+                .map_err(|e| Errors::ParseError(format!("⛔ {} {:?}", COMPILER_SERVICE, e)));
+        }
+        Err(e) => error_and_exit(&format!("⛔ {} {:?}", COMPILER_SERVICE, e)),
+    }
+}
+
+pub fn gen_conf_toml_no_exit() -> Result<DocumentMut, Errors> {
+    let conf_path = std::env::current_dir().unwrap().join("gen.toml");
+    match gen_utils::common::fs::try_exists(conf_path.as_path()) {
+        Ok(exist) => {
+            if !exist {
+                return Err(Errors::ParseError(format!(
+                    "⛔ {} {}",
+                    COMPILER_SERVICE, "can not find gen.toml! "
+                )));
+            }
+            // read gen.toml
+            return gen_utils::common::fs::read(conf_path.as_path())
+                .unwrap()
+                .parse::<DocumentMut>()
+                .map_err(|e| Errors::ParseError(format!("⛔ {} {:?}", COMPILER_SERVICE, e)));
+        }
+        Err(e) => {
+            return Err(Errors::ParseError(format!(
+                "⛔ {} {:?}",
+                COMPILER_SERVICE, e
+            )))
+        }
     }
 }

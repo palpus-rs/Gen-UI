@@ -1,6 +1,6 @@
+use crate::{PropsKey, Value};
+use gen_utils::common::tokenizer::{END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
 use std::{collections::HashMap, fmt::Display};
-
-use crate::{PropsKey, Value, END_SIGN, END_START_SIGN, SELF_END_SIGN, TAG_START};
 
 use super::{props_to_template_string, ASTNodes, Props};
 

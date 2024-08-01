@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
-use crate::{HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
+use gen_utils::common::tokenizer::{HOLDER_END, HOLDER_START, STYLE_CLASS, STYLE_ID, STYLE_PESUDO};
 
 use super::{props_to_style_string, ASTNodes, Props};
 

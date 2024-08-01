@@ -13,17 +13,21 @@ mod core;
 mod utils;
 
 use builder::CompilerBuilder as UnifiedBuilder;
-use lazy_static::lazy_static;
 pub use core::*;
+use lazy_static::lazy_static;
 use std::sync::Mutex;
+use toml_edit::DocumentMut;
 pub use utils::*;
 
 pub type MakepadBuilder = makepad_gen_plugin::compiler::builder::CompilerBuilder;
 pub use gen_utils::compiler::Builder;
-use gen_utils::compiler::CompilerImpl;
+use gen_utils::{compiler::CompilerImpl, error::Errors};
 
-lazy_static!{
+lazy_static! {
     static ref TARGET: Mutex<TargetCompiler> = Mutex::new(TargetCompiler::Makepad);
+    static ref CONF: Mutex<Result<DocumentMut, Errors>> = Mutex::new(Err(Errors::ParseError(
+        "gen.toml file not found!".to_string()
+    )));
 }
 
 /// ## compiler app
@@ -52,9 +56,33 @@ lazy_static!{
 /// }
 ///
 /// ```
-pub fn app(compiler: Box<dyn CompilerImpl>) -> UnifiedBuilder {
+pub fn app(compiler: Option<Box<dyn CompilerImpl>>) -> UnifiedBuilder {
+    // [init conf] ---------------------------------------------------------------------------------
+    if compiler.is_none(){
+        let mut conf = CONF.lock().unwrap();
+  
+        match gen_conf_toml_no_exit(){
+            Ok(doc) => {
+                *conf = Ok(doc);
+            },
+            Err(e) => {
+                error_and_exit(e.to_string().as_str());
+            },
+        }
+    }
+
     // [init log service] --------------------------------------------------------------------------
     let _ = init_log();
+
+    let compiler = if let Some(compiler) = compiler {
+        compiler
+    } else {
+        if let Some(compiler) = Target::conf() {
+            compiler
+        } else {
+            std::process::exit(1)
+        }
+    };
 
     UnifiedBuilder::new(compiler)
 }
@@ -63,6 +91,11 @@ pub fn app(compiler: Box<dyn CompilerImpl>) -> UnifiedBuilder {
 mod test_compiler {
     use gen_utils::compiler::Builder;
     use std::path::PathBuf;
+
+    #[test]
+    fn app_conf() {
+        let _app = super::app(None);
+    }
 
     #[test]
     fn app_build_test() {
@@ -78,7 +111,7 @@ mod test_compiler {
             .build()
             .build();
 
-        let _app = super::app(Box::new(compiler));
+        let _app = super::app(Some(Box::new(compiler)));
     }
 
     #[test]

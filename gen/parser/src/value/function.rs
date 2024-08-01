@@ -1,5 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
+use gen_utils::parser::parse_value;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -8,7 +9,7 @@ use nom::{
 };
 use proc_macro2::TokenStream;
 
-use crate::{common::{parse_value, Special}, target::function};
+use crate::{common::Special, target::function};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
@@ -111,7 +112,7 @@ impl From<(&str, &str, bool)> for Function {
     fn from(value: (&str, &str, bool)) -> Self {
         // try split &str
         // remove `()`
-        if let Ok(_) = Special::from_str(value.0){
+        if let Ok(_) = Special::from_str(value.0) {
             return (value.0, Some(vec![value.1]), value.2).into();
         }
         let (_, params) = remove_holder(value.1).unwrap();

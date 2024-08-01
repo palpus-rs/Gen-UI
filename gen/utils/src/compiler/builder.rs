@@ -14,6 +14,6 @@ pub trait Builder: Any {
     /// - if the builder has a parent, you need to implement the method to create a new builder
     fn new(value: Self::From) -> Self;
     /// ## Build the target
-    /// cusume the builder and return the target
+    /// consume the builder and return the target
     fn build(self) -> Self::To;   
 }
