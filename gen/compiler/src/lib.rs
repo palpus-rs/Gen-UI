@@ -34,7 +34,7 @@ lazy_static! {
 /// create an app compiler and specify the target
 /// ### Attention
 /// you should write from project root path as relative path
-/// ### Example
+/// ### Example No `gen.toml`
 /// ```rust
 /// use gen_compiler::{app, Target, Builder};
 ///
@@ -50,11 +50,35 @@ lazy_static! {
 ///         .build();
 ///
 ///     // set app and specify target
-///     let mut app = app(Box::new(compiler)).build();
+///     let mut app = app(Some(Box::new(compiler))).build();
 ///
 ///     let _ = app.run();
 /// }
 ///
+/// ```
+/// ---
+/// ### Example With `gen.toml`
+/// #### gen.toml
+/// ```toml
+/// [compiler]
+/// target = "makepad"
+/// log_level = "info"
+/// logo = true
+///
+/// [makepad]
+/// entry = "app"
+/// root = "E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/ui/views/root.gen"
+/// [makepad.dependencies] 
+/// makepad-widgets = { path = "E:/Rust/try/makepad/makepad/rik/makepad/widgets" }
+/// ```
+/// #### main.rs
+/// ```rust
+/// use gen_compiler::{app, Builder};
+///
+/// fn main() {
+///     let mut app = app(None).build();
+///     let _ = app.run();
+/// }
 /// ```
 pub fn app(compiler: Option<Box<dyn CompilerImpl>>) -> UnifiedBuilder {
     // [init conf] ---------------------------------------------------------------------------------

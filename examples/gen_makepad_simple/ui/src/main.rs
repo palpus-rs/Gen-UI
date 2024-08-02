@@ -1,16 +1,6 @@
-use gen_compiler::{app, Target, Builder};
+use gen_compiler::{app, Builder};
 
 fn main() {
-    // let compiler = Target::makepad()
-    //     .entry("app")
-    //     .root("E:/Rust/try/makepad/Gen-UI/examples/gen_makepad_simple/ui/views/root.gen")
-    //     .add_dep("makepad-widgets")
-    //     .local("E:/Rust/try/makepad/makepad/rik/makepad/widgets")
-    //     .build()
-    //     .build();
-
-    // // set app and specify target
-    // let mut app = app(Some(Box::new(compiler))).build();
     let mut app = app(None).build();
     let _ = app.run();
 }
