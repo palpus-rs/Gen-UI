@@ -2,7 +2,7 @@
 //! Gen Compiler is a tool to compile gen-ui project to target project.
 //! ## Features
 //! - [x] support Makepad
-//! - [ ] support ArkUI
+//! - [x] support ArkUI
 //! - [x] gen cache
 //! - [x] gen ignore
 //! - [x] gen logger
@@ -35,6 +35,10 @@ lazy_static! {
 /// ### Attention
 /// you should write from project root path as relative path
 /// ### Example No `gen.toml`
+/// we can create a compiler without `gen.toml` file, but we need to specify the target and other configurations
+/// 
+/// compiler use `builder` pattern, so you can chain the method to build the compiler, 
+/// and finally call `build` method to get the compiler.
 /// ```rust
 /// use gen_compiler::{app, Target, Builder};
 ///
@@ -58,6 +62,16 @@ lazy_static! {
 /// ```
 /// ---
 /// ### Example With `gen.toml`
+/// if you have a `gen.toml` file, you can create a compiler without specifying the target and other configurations
+/// the `gen.toml` file should be in the project root path, such as:
+/// ```text
+/// hello
+/// ├── src_gen
+/// ├────── // ....
+/// ├── ui
+/// ├────── src
+/// ├────── gen.toml
+/// ```
 /// #### gen.toml
 /// ```toml
 /// [compiler]
@@ -72,6 +86,9 @@ lazy_static! {
 /// makepad-widgets = { path = "E:/Rust/try/makepad/makepad/rik/makepad/widgets" }
 /// ```
 /// #### main.rs
+/// gen compiler will read the `gen.toml` file and create, so you do not need to pass the compiler
+/// 
+/// If you pass the compiler, the compiler will be used instead of the `gen.toml` file
 /// ```rust
 /// use gen_compiler::{app, Builder};
 ///

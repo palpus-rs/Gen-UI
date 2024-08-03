@@ -6,6 +6,7 @@ mod log;
 mod state;
 mod target;
 mod watcher;
+mod env;
 
 pub use cache::Cache;
 pub use compiler::Compiler;

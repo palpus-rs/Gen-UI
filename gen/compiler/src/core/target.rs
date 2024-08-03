@@ -12,7 +12,7 @@ use gen_utils::{
 use crate::{error, MakepadBuilder, CONF, TARGET};
 use serde::{Deserialize, Serialize};
 
-use super::error_and_exit;
+use super::{env::GENUI_TARGET, error_and_exit};
 
 // use makepad_gen_plugin::compiler::builder::CompilerBuilder as MakepadBuilder;
 
@@ -31,7 +31,7 @@ impl Target {
     /// 1. get the environment variable `GENUI_TARGET` if not exist, use makepad as default
     /// 2. get the config file `gen.toml`
     pub fn conf() -> Option<Box<dyn CompilerImpl>> {
-        let mut target = std::env::var("GENUI_TARGET").unwrap_or("makepad".to_string());
+        let mut target = std::env::var(GENUI_TARGET).unwrap_or("makepad".to_string());
 
         match CONF.lock().unwrap().as_ref() {
             Ok(conf) => {
