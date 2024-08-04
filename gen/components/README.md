@@ -11,7 +11,7 @@
 - [x] Icon
 - [x] Image
 - [x] Input
-- [ ] Popup
+- [x] Popup
 - [ ] Badge
 - [ ] DropDown
 - [ ] Toggle

@@ -14,7 +14,8 @@ pub mod divider;
 pub mod shader;
 pub mod popup;
 pub mod drop_down;
-pub mod tabs;
+pub mod toggle;
+// pub mod tabs;
 
 live_design!{
     // imports -----------------------------------------------------
@@ -32,6 +33,7 @@ live_design!{
     import crate::components::popup::GPopupBase;
     import crate::components::popup::GPopupContainerBase;
     import crate::components::drop_down::GDropDownBase;
+    import crate::components::toggle::GToggleBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -281,6 +283,11 @@ live_design!{
     }
     GCheckBox = <GCheckBoxBase>{
         width: 19.0, 
+        height: 19.0,
+        align: { x: 0.0, y: 0.0 }
+    }
+    GToggle = <GToggleBase>{
+        width: 36.0, 
         height: 19.0,
         align: { x: 0.0, y: 0.0 }
     }

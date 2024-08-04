@@ -18,13 +18,6 @@ pub struct GPopupContainer {
     pub super_widget: Card,
 }
 
-pub enum PopupMenuItemAction {
-    WasSweeped,
-    WasSelected,
-    MightBeSelected,
-    None,
-}
-
 impl GPopupContainer {
     pub fn draw_item(&mut self, cx: &mut Cx2d, scope: &mut Scope) {
         let _ = self.super_widget.draw_walk(cx, scope, self.walk);

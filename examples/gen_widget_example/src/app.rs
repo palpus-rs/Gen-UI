@@ -35,7 +35,7 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    
+                    <GToggle>{}
 
                     <GDropDown>{
                         
@@ -67,36 +67,7 @@ live_design! {
                             }
                         }
                     }
-                    <DropDown>{
-                        popup_menu_position: BelowInput,
-                        width: 200
-                        labels: ["ValueOne", "ValueTwo","Thrice","FourthValue","OptionE","Hexagons"],
-                        values: [ ValueOne,ValueTwo,Thrice,FourthValue,OptionE,Hexagons],
-                        
-                    }
                     
-                      
-                    
-                    // <Pop>{
-                    //     theme: Dark,
-                    //     height: Fit,
-                    //     width: Fill,
-                    //     trigger = <GButton>{text:"open"},
-
-                    //     popup = <GCard>{
-                    //         height: 100.0,
-                    //         width: 200.0,
-                    //         visible: false,
-                    //     }
-                    // }
-                    
-                    
-                    
-                    // <GCard>{
-                    //     height: 100.0,
-                    //     width: 200.0,
-                    //     abs_pos: vec2(100.0, 100.0),
-                    // }
                     // <GShaderExample>{}
                     // <GPopupExample>{}
                     // <GSelectExample>{}

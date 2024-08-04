@@ -409,7 +409,6 @@ name = "gen_components"
 version = "0.1.0"
 dependencies = [
  "makepad-widgets",
- "nom",
 ]
 
 [[package]]
