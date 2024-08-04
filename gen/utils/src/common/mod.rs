@@ -1,7 +1,6 @@
 mod alphabetic;
 mod ast;
 mod dep;
-#[cfg(feature = "msg")]
 pub mod msg;
 mod os;
 mod source;
@@ -9,6 +8,7 @@ pub mod string;
 pub mod traits;
 pub mod fs;
 pub mod tokenizer;
+pub mod time;
 
 pub use alphabetic::*;
 pub use ast::*;

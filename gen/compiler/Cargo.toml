@@ -4,15 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[features]
-default = ["makepad"]
-makepad = []
-ark = []
-full = ["ark", "makepad"]
 
 [dependencies]
 gen_converter = { path = "../converter" }
-gen_utils = { path = "../utils", features = ["wasm"] }
+gen_utils = { path = "../utils", default-features = false, features = ["compiler"] }
 makepad_gen_plugin = { path = "../generator/makepad" }
 # ark_gen_plugin = { path = "../generator/ark" }
 walkdir = "2.5.0"

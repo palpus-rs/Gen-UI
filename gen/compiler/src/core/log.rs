@@ -44,12 +44,10 @@
 
 use ansi_term::Color;
 use env_logger::{Builder, Env};
-use gen_utils::common::msg::{LOGO, LOG_INIT};
+use gen_utils::common::{msg::{LOGO, LOG_INIT}, time::local_time_default};
 use log::{error, info, warn};
 use std::io::Write;
-
 use crate::CONF;
-
 use super::env::{GENUI_LOGO, GENUI_LOG_LEVEL, GENUI_LOG_STYLE};
 
 /// # Init Log
@@ -110,7 +108,7 @@ pub fn init_log() -> () {
     Builder::from_env(env)
         .format(|buf, record| {
             let title = Color::RGB(255, 112, 67).paint("GenUI-Compiler");
-            let timestamp = buf.timestamp();
+            let timestamp = local_time_default();
             let timestamp = Color::Blue.paint(timestamp.to_string());
 
             writeln!(
