@@ -20,6 +20,7 @@ live_design! {
     import crate::components::shaders::*;
     import crate::components::select::*;
     import crate::components::popups::*;
+    import crate::components::toggles::*;
 
     App = {{App}}{
         root: <Root>{
@@ -35,7 +36,17 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GToggle>{}
+                    <GProgress>{
+                        value: 0.5,
+                    }
+                    <GProgress>{
+                        theme: Dark,
+                        height: 20.0,
+                        border_radius: 2.0,
+                        value: 0.36,
+                        read_only: false,
+                    }
+                    <GToggleExample>{}
 
                     <GDropDown>{
                         
@@ -116,7 +127,7 @@ impl LiveRegister for App {
         crate::components::shaders::live_design(cx);
         crate::components::select::live_design(cx);
         crate::components::popups::live_design(cx);
-
+        crate::components::toggles::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

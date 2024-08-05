@@ -14,7 +14,7 @@
 - [x] Popup
 - [ ] Badge
 - [ ] DropDown
-- [ ] Toggle
+- [x] Toggle
 - [ ] Avatar
 - [ ] ToolTip
 - [ ] Progress

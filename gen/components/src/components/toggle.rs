@@ -134,15 +134,15 @@ impl Widget for GToggle {
 impl LiveHook for GToggle {
     fn after_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
         // ----------------- background color -------------------------------------------
-        let bg_color = get_color(self.theme, self.background_color, 50);
+        let bg_color = get_color(self.theme, self.background_color, 500);
         // ------------------ hover color -----------------------------------------------
-        let hover_color = get_color(self.theme, self.hover_color, 100);
+        let hover_color = get_color(self.theme, self.hover_color, 400);
         // ------------------ selected color ---------------------------------------------
-        let selected_color = get_color(self.theme, self.selected_color, 50);
+        let selected_color = get_color(self.theme, self.selected_color, 500);
         // ------------------ border color ----------------------------------------------
         let border_color = get_color(self.theme, self.border_color, 600);
         // ------------------ stroke color ---------------------------------------------
-        let stroke_color = get_color(self.theme, self.stroke_color, 600);
+        let stroke_color = get_color(self.theme, self.stroke_color, 50);
         // ------------------ stroke hover color ---------------------------------------
         let stroke_hover_color = get_color(self.theme, self.stroke_hover_color, 600);
         // ------------------ apply to draw_toggle ----------------------------------------

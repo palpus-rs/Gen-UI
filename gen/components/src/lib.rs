@@ -22,6 +22,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::components::popup::live_design(cx);
     crate::components::drop_down::live_design(cx);
     crate::components::toggle::live_design(cx);
+    crate::components::progress::live_design(cx);
     // shader -------------------------------------------------
     crate::shader::draw_button::live_design(cx);
     crate::shader::draw_card::live_design(cx);
@@ -32,6 +33,7 @@ pub fn live_design(cx: &mut Cx) {
     crate::shader::draw_icon::live_design(cx);
     crate::shader::draw_divider::live_design(cx);
     crate::shader::draw_toggle::live_design(cx);
+    crate::shader::draw_progress::live_design(cx);
     // export all the components
     crate::components::live_design(cx);
 }

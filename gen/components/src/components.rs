@@ -15,6 +15,8 @@ pub mod shader;
 pub mod popup;
 pub mod drop_down;
 pub mod toggle;
+pub mod progress;
+pub mod loading;
 // pub mod tabs;
 
 live_design!{
@@ -34,6 +36,7 @@ live_design!{
     import crate::components::popup::GPopupContainerBase;
     import crate::components::drop_down::GDropDownBase;
     import crate::components::toggle::GToggleBase;
+    import crate::components::progress::GProgressBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -340,6 +343,10 @@ live_design!{
             height: 160.0,
             width: 200.0,
         },
-        // popup: <PopupMenu>{}
+    }
+    GProgress = <GProgressBase>{
+        height: 16.0,
+        width: 300.0,
+        border_radius: 4.0,
     }
 }

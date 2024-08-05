@@ -7,3 +7,5 @@ pub mod draw_check_box;
 pub mod draw_icon;
 pub mod draw_divider;
 pub mod draw_toggle;
+pub mod draw_progress;
+pub mod manual;
