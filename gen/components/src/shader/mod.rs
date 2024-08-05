@@ -8,4 +8,5 @@ pub mod draw_icon;
 pub mod draw_divider;
 pub mod draw_toggle;
 pub mod draw_progress;
+pub mod draw_loading;
 pub mod manual;

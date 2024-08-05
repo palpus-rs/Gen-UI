@@ -14,3 +14,4 @@ pub mod shaders;
 pub mod select;
 pub mod popups;
 pub mod toggles;
+pub mod progresss;

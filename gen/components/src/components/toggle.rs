@@ -157,7 +157,6 @@ impl LiveHook for GToggle {
                 border_color: (border_color),
                 border_width: (self.border_width),
                 scale: (self.scale),
-                scale: (self.scale),
             },
         );
         // self.draw_toggle.apply_check_type(self.check_type.clone());

@@ -37,6 +37,7 @@ live_design!{
     import crate::components::drop_down::GDropDownBase;
     import crate::components::toggle::GToggleBase;
     import crate::components::progress::GProgressBase;
+    import crate::components::loading::GLoadingBase;
     import makepad_widgets::base::*;
     import makepad_widgets::theme_desktop_dark::*;
     import makepad_draw::shader::std::*;
@@ -349,4 +350,9 @@ live_design!{
         width: 300.0,
         border_radius: 4.0,
     }
+    GLoading = <GLoadingBase>{
+        height: Fill,
+        width: Fill,
+    }
+
 }

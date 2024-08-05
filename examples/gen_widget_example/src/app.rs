@@ -21,6 +21,7 @@ live_design! {
     import crate::components::select::*;
     import crate::components::popups::*;
     import crate::components::toggles::*;
+    import crate::components::progresss::*;
 
     App = {{App}}{
         root: <Root>{
@@ -36,18 +37,21 @@ live_design! {
                     flow: Down,
                     spacing: 10.0,
                     padding: 10.0,
-                    <GProgress>{
-                        value: 0.5,
+                    <View>{
+                        height: 100.0,
+                        width: Fill,
+                        flow: Down,
+                        align: {x: 0.5, y: 0.5},
+                        <GLoading>{
+                            theme: Dark,
+                        }
+                        <GLabel>{
+                            text: "Loading ...",
+                        }
                     }
-                    <GProgress>{
-                        theme: Dark,
-                        height: 20.0,
-                        border_radius: 2.0,
-                        value: 0.36,
-                        read_only: false,
-                    }
-                    <GToggleExample>{}
 
+                    <GProgressExample>{}
+                    <GToggleExample>{}
                     <GDropDown>{
                         
                         height: Fit,
@@ -128,6 +132,7 @@ impl LiveRegister for App {
         crate::components::select::live_design(cx);
         crate::components::popups::live_design(cx);
         crate::components::toggles::live_design(cx);
+        crate::components::progresss::live_design(cx);
         // crate::gen_components::live_design!(cx);
     }
 }

@@ -12,6 +12,8 @@
 - [x] Image
 - [x] Input
 - [x] Popup
+- [x] Progress
+- [ ] Loading
 - [ ] Badge
 - [ ] DropDown
 - [x] Toggle
