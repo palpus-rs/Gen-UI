@@ -43,7 +43,7 @@ live_design! {
                         flow: Down,
                         align: {x: 0.5, y: 0.5},
                         <GLoading>{
-                            theme: Dark,
+                            theme: Error,
                         }
                         <GLabel>{
                             text: "Loading ...",

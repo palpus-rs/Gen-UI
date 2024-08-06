@@ -1,7 +1,7 @@
 use makepad_widgets::*;
 
 use crate::{
-    shader::draw_progress::DrawGProgress,
+    shader::draw_progress::{DrawGProgress, GProgressType},
     themes::{get_color, Themes},
     utils::set_cursor,
 };
@@ -53,6 +53,8 @@ pub struct GProgress {
     pub stroke_hover_color: Option<Vec4>,
     #[live(MouseCursor::Hand)]
     pub cursor: Option<MouseCursor>,
+    #[live]
+    pub progress_type: GProgressType,
     // deref -------------------
     #[redraw]
     #[live]
@@ -103,7 +105,7 @@ impl Widget for GProgress {
 
         match event.hits(cx, self.draw_progress.area()) {
             Hit::FingerHoverIn(_) => {
-                if !self.read_only{
+                if !self.read_only {
                     let _ = set_cursor(cx, self.cursor.as_ref());
                 }
                 self.animator_play(cx, id!(hover.on));
@@ -131,17 +133,34 @@ impl Widget for GProgress {
             }
             Hit::FingerMove(fe) => {
                 if !self.read_only {
-                    let rel = fe.abs - fe.abs_start;
-                    if let Some(start_pos) = self.dragging {
-                        self.value = (start_pos + rel.x / fe.rect.size.x).max(0.0).min(1.0);
-                        self.set_internal(self.to_external());
-                        self.draw_progress.redraw(cx);
-                        // self.update_text_input_and_redraw(cx);
-                        cx.widget_action(
-                            uid,
-                            &scope.path,
-                            ProgressAction::Slide(self.to_external()),
-                        );
+                    match self.progress_type {
+                        GProgressType::Horizontal => {
+                            let rel = fe.abs - fe.abs_start;
+                            if let Some(start_pos) = self.dragging {
+                                self.value = (start_pos + rel.x / fe.rect.size.x).max(0.0).min(1.0);
+                                self.set_internal(self.to_external());
+                                self.draw_progress.redraw(cx);
+                                cx.widget_action(
+                                    uid,
+                                    &scope.path,
+                                    ProgressAction::Slide(self.to_external()),
+                                );
+                            }
+                        }
+                        GProgressType::Vertical => {
+                            let rel = fe.abs - fe.abs_start;
+                            if let Some(start_pos) = self.dragging {
+                                // here we need to rev the y
+                                self.value = (start_pos - rel.y / fe.rect.size.y).max(0.0).min(1.0);
+                                self.set_internal(self.to_external());
+                                self.draw_progress.redraw(cx);
+                                cx.widget_action(
+                                    uid,
+                                    &scope.path,
+                                    ProgressAction::Slide(self.to_external()),
+                                );
+                            }
+                        },
                     }
                 }
             }
@@ -201,7 +220,7 @@ impl LiveHook for GProgress {
                 stroke_hover_color: (stroke_hover_color),
             },
         );
-        // self.draw_progress.apply_check_type(self.check_type.clone());
+        self.draw_progress.apply_type(self.progress_type.clone());
 
         self.draw_progress.redraw(cx);
     }

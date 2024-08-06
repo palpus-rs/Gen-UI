@@ -1,7 +1,5 @@
 use makepad_widgets::*;
 
-use super::manual::Direction;
-
 live_design!{
     import makepad_draw::shader::std::*;
     DrawGProgress = {{DrawGProgress}}{
@@ -27,13 +25,11 @@ live_design!{
             let progress_width = self.rect_size.x - 2.0 * self.border_width;
             let progress_bg = self.get_background_color();
             let progress_in_bg = self.get_stroke_color();
-
-            match self.direction {
-                Direction::Horizontal => {
-                    sdf.box(self.border_width, self.border_width, progress_width, progress_height, self.border_radius);
-                    sdf.fill(progress_bg);
-                    sdf.stroke(self.border_color, self.border_width);
-   
+            sdf.box(self.border_width, self.border_width, progress_width, progress_height, self.border_radius);
+            sdf.fill(progress_bg);
+            sdf.stroke(self.border_color, self.border_width);
+            match self.progress_type {
+                GProgressType::Horizontal => {
                     sdf.box(
                             self.border_width,
                             self.border_width,
@@ -43,8 +39,17 @@ live_design!{
                     )
                     sdf.fill(progress_in_bg);
                 }
-                Direction::Vertical => {
-
+                GProgressType::Vertical => {
+                    let box_radius = self.border_radius - self.border_width * 0.5;
+                    // pos should be end of progress
+                    sdf.box(
+                        self.border_width,
+                        self.rect_size.y - self.rect_size.y * self.position,
+                        self.rect_size.x - self.border_width * 2.0,
+                        self.rect_size.y * self.position,
+                        box_radius
+                    )
+                    sdf.fill(progress_in_bg);
                 }
             }
             return sdf.result
@@ -62,7 +67,7 @@ pub struct  DrawGProgress{
     #[live]
     pub position: f32,
     #[live]
-    pub direction: Direction,
+    pub progress_type: GProgressType,
     #[live]
     pub background_color: Vec4, // 盒子的背景色
     #[live]
@@ -81,8 +86,17 @@ pub struct  DrawGProgress{
     pub hover: f32, // 盒子的hover状态
 }
 
+#[derive(Live, LiveHook, Clone)]
+#[live_ignore]
+#[repr(u32)]
+pub enum GProgressType {
+    #[pick] Horizontal = shader_enum(1),
+    Vertical = shader_enum(2),
+
+}
+
 impl DrawGProgress {
-    pub fn apply_progress_type(&mut self, direction: Direction) {
-        self.direction = direction;
+    pub fn apply_type(&mut self, progress_type: GProgressType) {
+        self.progress_type = progress_type;
     }
 }

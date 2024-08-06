@@ -23,5 +23,12 @@ live_design! {
             value: 0.36,
             read_only: false,
         }
+        <GProgress>{
+            progress_type: Vertical,
+            height: 200.0,
+            width: 16.0,
+            value: 0.8,
+            read_only: false,
+        }
     }
 }
