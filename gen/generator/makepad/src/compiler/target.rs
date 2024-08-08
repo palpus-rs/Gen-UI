@@ -109,7 +109,11 @@ impl Makepad {
         //     .write_all(main_content.to_string().as_bytes())
         //     .unwrap();
     }
-    pub fn compile_app_main(&mut self, gen_files: Option<&Vec<&PathBuf>>, other_registers: Option<Vec<String>>) -> () {
+    pub fn compile_app_main(
+        &mut self,
+        gen_files: Option<&Vec<&PathBuf>>,
+        other_registers: Option<Vec<String>>,
+    ) -> () {
         // get imports from gen_files(widget tree just to handle compiled file, if file is in cache, it will not be compiled)
         // get file path and use ParseTarget to compile and get script part
         if let Some(files) = gen_files {
@@ -123,15 +127,13 @@ impl Makepad {
                     }
                 }
             }
-            
-          
-            if !other_registers.is_some() {
+
+            if other_registers.is_some() {
                 live_registers.extend(other_registers.unwrap().into_iter());
             }
 
             // add root gen as live register
             live_registers.insert(self.tree.as_ref().unwrap().root_live_register());
-
             // in widget imports are imports
             // but in here, imports are app main live register, so called set_live_register
             let content = self
@@ -189,7 +191,7 @@ impl Makepad {
         // compile auto widgets
         let auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
         let mut auto_flag = false;
-        if !auto_widgets.is_empty() {
+        let auto_live_registers = if !auto_widgets.is_empty() {
             auto_flag = true;
             // before compile auto widgets, create auto dir
             let auto_path = self
@@ -202,11 +204,13 @@ impl Makepad {
                 .join("mod.rs");
             let _ = fs::create_file(auto_path.as_path())
                 .expect("create auto dir or auto mod.rs failed");
-            auto_widgets.compile(auto_path.as_path());
-        }
+            auto_widgets.compile(auto_path.as_path())
+        } else {
+            None
+        };
         // create app main and compile app.rs
         // get auto widgets live register
-        self.compile_app_main(gen_files, Some(auto_widgets.to_live_registers()));
+        self.compile_app_main(gen_files, auto_live_registers);
         // compile lib.rs
         self.compile_lib_rs(auto_flag);
     }

@@ -101,7 +101,6 @@ impl Source {
         let without_ext = path
             .file_stem()
             .expect("can not get file name, expect a gen file");
-
         let path = path.with_file_name(without_ext);
         path.components()
             .map(|item| item.as_os_str().to_string_lossy())

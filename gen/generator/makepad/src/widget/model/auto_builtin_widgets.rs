@@ -12,21 +12,20 @@ use super::{live_design::LiveDesign, role::Role, safe_widget::SafeWidget};
 
 pub trait AutoBuiltinCompile {
     /// widget -> safe_widget (if role is for or if_else) -> insert into AUTO_BUILTIN_WIDGETS -> AutoBuiltinWidgets -> compile
-    fn compile<P>(&self, path: P) -> ()
+    fn compile<P>(&self, path: P) -> Option<Vec<String>>
     where
         P: AsRef<std::path::Path>;
-
-    fn to_live_registers(&self) -> Vec<String>;
 }
 
 impl AutoBuiltinCompile for Vec<SafeWidget> {
-    fn compile<P>(&self, path: P) -> ()
+    fn compile<P>(&self, path: P) -> Option<Vec<String>>
     where
         P: AsRef<std::path::Path>,
     {
         if self.is_empty() {
-            return;
+            return None;
         }
+        let mut registers = vec![];
         for widget in self {
             match &widget.role {
                 Role::For {
@@ -47,7 +46,10 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
                         ),
                     )
                     .expect("insert auto builtin widget mod failed");
-
+                    registers.push(format!(
+                        "crate::{}::live_design(cx);",
+                        source.to_live_register()
+                    ));
                     // now should compile to source file
                     let _ = fs::write(
                         source.compiled_file.as_path(),
@@ -61,12 +63,7 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
                 _ => {}
             }
         }
-    }
-
-    fn to_live_registers(&self) -> Vec<String> {
-        self.iter()
-            .map(|x| x.source.as_ref().unwrap().to_live_register())
-            .collect()
+        Some(registers)
     }
 }
 
