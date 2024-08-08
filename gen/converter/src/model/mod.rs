@@ -18,11 +18,7 @@ use gen_parser::{ParseResult, ParseTarget, Strategy};
 use gen_utils::common::Source;
 pub use template::{PropTree, TemplateModel};
 
-use self::{
-    prop::ConvertStyle,
-    script::{GenScriptModel, ScriptModel},
-    style::handle_styles,
-};
+use self::{prop::ConvertStyle, script::ScriptModel, style::handle_styles};
 
 #[derive(Debug, Clone)]
 pub enum ConvertResult {

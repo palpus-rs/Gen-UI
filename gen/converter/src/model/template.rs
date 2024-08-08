@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use gen_parser::{ASTNodes, PropertyKeyType, Props, PropsKey, Tag, Value};
 
-use ulid::Ulid;
+use gen_utils::common::ulid;
 
 use super::event::Callbacks;
 
@@ -417,7 +417,7 @@ impl TemplateModel {
 /// - 设置children
 fn convert_template(tag: &Tag, model: &mut TemplateModel, is_root: bool) -> () {
     // [生成ulid作为模型的唯一标识符]------------------------------------------------------
-    let special = Ulid::new().to_string();
+    let special = ulid();
     model.set_special(&special);
     model.set_root(is_root);
     // [获取Tag的名称作为TemplateModel的名称]------------------------------------------------

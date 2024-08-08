@@ -218,7 +218,7 @@ impl GenScriptModel {
             bind_tree,
             ident,
             code,
-            |v| v.is_bind_and_get().unwrap(),
+            |v| v.is_bind_and_get().unwrap().get_normal().unwrap(),
             |target, item| {
                 if target.sub_prop_binds.is_none() {
                     let _ = target.sub_prop_binds.replace(vec![]);

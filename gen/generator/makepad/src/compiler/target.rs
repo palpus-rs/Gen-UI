@@ -6,20 +6,25 @@ use std::{
 
 use gen_converter::model::{file_data, Model};
 use gen_parser::ParseTarget;
-use gen_utils::{common::{fs::create_file, token_tree_ident, Source}, error::Errors, wasm::WasmImpl};
+use gen_utils::common::{
+    fs::{self, create_file},
+    token_tree_ident, Source,
+};
 use quote::quote;
 
 use crate::{
     model::{ModelNode, ModelTree, RsFile},
-    
     widget::{
-        model::{app_main::AppMain, widget::Widget, ToLiveDesign},
+        model::{
+            app_main::AppMain, auto_builtin_widgets::AutoBuiltinCompile, widget::Widget,
+            ToLiveDesign,
+        },
         utils::imports_to_live_registers,
     },
     ToToken,
 };
 
-use super::wasm::Wasm;
+use super::AUTO_BUILTIN_WIDGETS;
 
 /// # Makepad Core
 /// Makepad is a core struct to handle makepad project
@@ -31,49 +36,9 @@ pub struct Makepad {
     pub tree: Option<ModelTree>,
     /// main.rs file
     pub main_rs: RsFile,
-    /// makepad wasm
-    pub wasm: Option<Wasm>,
 }
 
 impl Makepad {
-    /// init makepad project
-    /// - create main.rs
-    /// - create app entry rs file (eg: app.rs)
-    /// - create lib.rs (depend on root)
-    pub fn new<P>(entry: &str, path: P, root: Option<&PathBuf>) -> Self
-    where
-        P: AsRef<Path>,
-    {
-        let main_rs = Makepad::create_main_rs(entry, path.as_ref());
-        let widget_tree = Makepad::create_widget_tree(path.as_ref(), root);
-        let app_main = Makepad::create_app_main(entry, path, &widget_tree);
-        Makepad {
-            app_main,
-            tree: Some(widget_tree),
-            main_rs,
-            wasm: None,
-        }
-    }
-    pub fn set_wasm<W>(&mut self, wasm: Box<W>) -> ()
-    where
-        W: WasmImpl,
-    {
-        if let Some(wasm) = wasm.as_any().downcast_ref::<Wasm>() {
-            self.wasm.replace(wasm.clone());
-        };
-    }
-    /// only wasm is Some, this function can work
-    ///
-    /// then check makepad wasm
-    /// - return `Ok(true)` if makepad wasm is installed
-    /// - return `Ok(false)` if makepad wasm not need to check
-    /// - return `Err` if makepad wasm is not installed
-    pub fn check_wasm(&self) -> Result<bool, Errors> {
-        self.wasm.as_ref().unwrap().check_wasm()
-    }
-    pub fn fresh_wasm<P>(&self, path: P) -> Result<std::process::Child, Errors> where P: AsRef<Path>{
-        self.wasm.as_ref().unwrap().run(path)
-    }
     /// get node from tree
     pub fn get(&self, key: &Source) -> Option<ModelNode> {
         match self.tree.as_ref() {
@@ -81,22 +46,30 @@ impl Makepad {
             None => None,
         }
     }
-    fn create_widget_tree<P>(path: P, root: Option<&PathBuf>) -> ModelTree
+    pub fn create_widget_tree<P>(path: P, root: Option<&PathBuf>) -> ModelTree
     where
         P: AsRef<Path>,
     {
-        match root {
-            Some(root) => {
-                let gen_model: Widget =
-                    gen_converter::model::Model::new(root, &path.as_ref().to_path_buf(), false)
-                        .unwrap()
-                        .into();
-                ModelTree::new(gen_model.into())
-            }
-            None => ModelTree::default_root(),
+        // match root {
+        //     Some(root) => {
+        //         let gen_model: Widget =
+        //             gen_converter::model::Model::new(root, &path.as_ref().to_path_buf(), false)
+        //                 .unwrap()
+        //                 .into();
+        //         ModelTree::new(gen_model.into())
+        //     }
+        //     None => ModelTree::default_root(),
+        // }
+
+        let mut widget = Widget::default_ui_root();
+
+        widget.source.replace((root.unwrap(), path.as_ref()).into());
+        ModelTree {
+            node: widget.into(),
+            children: None,
         }
     }
-    fn create_app_main<P>(entry: &str, path: P, widget_tree: &ModelTree) -> AppMain
+    pub fn create_app_main<P>(entry: &str, path: P, widget_tree: &ModelTree) -> AppMain
     where
         P: AsRef<Path>,
     {
@@ -118,7 +91,7 @@ impl Makepad {
         app
     }
     /// makepad main rs is easy, which just need to use app_main fn to run app
-    fn create_main_rs<P>(entry: &str, path: P) -> RsFile
+    pub fn create_main_rs<P>(entry: &str, path: P) -> RsFile
     where
         P: AsRef<Path>,
     {
@@ -165,13 +138,21 @@ impl Makepad {
             file.write_all(content.as_bytes()).unwrap();
         }
     }
-    pub fn compile_lib_rs(&self) -> () {
+    pub fn compile_lib_rs(&self, auto: bool) -> () {
         let lib_mods = self.tree.as_ref().unwrap().to_lib();
+        let auto_mod = if auto {
+            Some(quote! {
+                pub mod auto;
+            })
+        } else {
+            None
+        };
         let content = quote! {
             pub use makepad_widgets;
             pub use makepad_widgets::makepad_draw;
             pub mod app;
             #lib_mods
+            #auto_mod
         }
         .to_string();
 
@@ -199,9 +180,27 @@ impl Makepad {
         self.main_rs.compile();
         // create app main and compile app.rs
         self.compile_app_main(gen_files);
-        // compile lib.rs
-        self.compile_lib_rs();
         // compile other widget.rs
         self.tree.as_ref().unwrap().compile();
+        // compile auto widgets
+        let auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
+        let mut auto_flag = false;
+        if !auto_widgets.is_empty() {
+            auto_flag = true;
+            // before compile auto widgets, create auto dir
+            let auto_path = self
+                .main_rs
+                .source
+                .compiled_dir
+                .as_path()
+                .join("src")
+                .join("auto")
+                .join("mod.rs");
+            let _ = fs::create_file(auto_path.as_path())
+                .expect("create auto dir or auto mod.rs failed");
+            auto_widgets.compile(auto_path.as_path());
+        }
+        // compile lib.rs
+        self.compile_lib_rs(auto_flag);
     }
 }

@@ -2,7 +2,7 @@ use std::{collections::HashMap, fmt::Display};
 
 use gen_utils::common::tokenizer::SPACE;
 
-use crate::Value;
+use crate::{Bind, Value};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum PropertyKeyType {
@@ -19,7 +19,7 @@ impl PropertyKeyType {
         let value = value.to_string();
         match self {
             PropertyKeyType::Normal => Value::UnKnown(value),
-            PropertyKeyType::Bind => Value::Bind(value),
+            PropertyKeyType::Bind => Value::Bind(value.parse::<Bind>().unwrap()),
             PropertyKeyType::Function => Value::Function(value.into()),
         }
     }
@@ -104,6 +104,7 @@ impl PropsKey {
     pub fn is_fn(&self) -> bool {
         self.ty.is_function()
     }
+   
 }
 
 impl Display for PropsKey {

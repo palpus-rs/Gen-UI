@@ -11,9 +11,7 @@ use nom::{
 };
 
 use crate::{
-    ast::{ASTNodes, PropertyKeyType, PropsKey, Style},
-    common::{parse_comment as parse_common_comment, Special},
-    Value, 
+    ast::{ASTNodes, PropertyKeyType, PropsKey, Style}, common::{parse_comment as parse_common_comment, Special}, Bind, Value 
 };
 
 use gen_utils::common::tokenizer::{
@@ -98,7 +96,7 @@ fn parse_property(input: &str) -> IResult<&str, (PropsKey, Value)> {
             ), //do not afraid to panic cause only function has is_style
             "$" => (
                 PropsKey::new(key, true, PropertyKeyType::Bind),
-                Value::Bind(name.to_string()),
+                Value::Bind(Bind::Normal(name.to_string())),
             ),
             _ => panic!("Invalid Value:{}", sign),
         };

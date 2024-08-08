@@ -1,9 +1,11 @@
 mod function;
 mod r#struct;
 mod r#enum;
+mod bind;
 
 use std::{collections::HashMap, fmt::Display, str::FromStr};
 
+pub use bind::*;
 pub use function::Function;
 use gen_utils::{error::Errors, from_i_number, from_u_number};
 pub use r#struct::Struct;
@@ -37,7 +39,7 @@ pub enum Value {
     /// <xxx :value="xValue" />
     /// <script> let xValue:&str = "hello!";</script>
     /// <script> let xValue:Vec<&str> = vec!["a","b"];</script>
-    Bind(String),
+    Bind(Bind),
     /// function inject
     /// <xxx @click="doClick" />
     Function(Function),
@@ -61,9 +63,7 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn bind(variable: &str) -> Self {
-        Self::Bind(variable.to_string())
-    }
+    
     pub fn void() -> Self {
         Self::Void
     }
@@ -100,7 +100,7 @@ impl Value {
             _ => None,
         }
     }
-    pub fn is_bind_and_get(&self) -> Option<&String> {
+    pub fn is_bind_and_get(&self) -> Option<&Bind> {
         match self {
             Value::Bind(b) => Some(b),
             _ => None,

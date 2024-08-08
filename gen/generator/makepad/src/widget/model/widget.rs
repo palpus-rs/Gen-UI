@@ -5,9 +5,9 @@ use gen_converter::model::{
     script::{CurrentInstance, GenScriptModel, PropFn, ScriptModel, UseMod},
     TemplateModel,
 };
-use gen_parser::{PropsKey, Value};
+use gen_parser::{Bind, For, PropsKey, Value};
 
-use gen_utils::common::{ident, snake_to_camel, Source};
+use gen_utils::common::{ident, snake_to_camel, syn_ext::TypeGetter, Source};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
@@ -21,7 +21,8 @@ use crate::{
 };
 
 use super::{
-    handler::WidgetHandler, live_hook::LiveHookTrait, role::Role, traits::WidgetTrait, ToLiveDesign,
+    handler::WidgetHandler, live_hook::LiveHookTrait, role::Role, safe_widget::SafeWidget,
+    traits::WidgetTrait, ToLiveDesign,
 };
 
 /// ## 当生成 live_design! 中的节点时
@@ -85,11 +86,11 @@ impl Widget {
 
         widget
     }
-    pub fn new(special: Option<Source>, name: &str, inherits: Option<&String>) -> Self {
+    pub fn new(special: Option<&Source>, name: &str, inherits: Option<&String>) -> Self {
         let mut widget = Widget::default();
         match special {
             Some(special) => {
-                widget.source.replace(special);
+                widget.source.replace(special.clone());
                 let inherits_widget = BuiltIn::try_from(inherits).unwrap();
                 // 获取文件名且改为首字母大写的camel
                 match inherits {
@@ -351,9 +352,151 @@ impl Widget {
         self.traits.replace(traits);
         self
     }
-    pub fn set_role(&mut self, role: Role) -> &mut Self {
-        self.role = role;
+    /// ## Set role
+    /// if widget bind props has `for` or `if`
+    pub fn set_role(
+        &mut self,
+        bind_props: Option<HashMap<&PropsKey, &Value>>,
+        script: Option<&ScriptModel>,
+    ) -> &mut Self {
+        self.role = Role::Normal;
+        if let Some(bind_props) = bind_props {
+            // find `for` or `if` in bind props
+            let mut for_flag = 0;
+            let mut if_flag = 0;
+
+            let (mut for_ident, mut for_index, mut for_item): (
+                Option<String>,
+                Option<String>,
+                Option<String>,
+            ) = (None, None, None);
+            let mut if_ident: Option<String> = None;
+
+            for (k, v) in &bind_props {
+                // check for or if flag
+                if (for_flag > 1 || if_flag > 1) && (for_flag + if_flag) >= 2 {
+                    panic!("for or if flag must be one, and can not be both");
+                }
+                // set for or if flag and get for or if props to handle
+                if k.name() == "for" {
+                    for_flag += 1;
+                    if let Value::Bind(Bind::For(For {
+                        iter_ident,
+                        index,
+                        item,
+                    })) = v
+                    {
+                        for_ident = Some(iter_ident.to_string());
+                        for_index = index.as_ref().map(|v| v.to_string());
+                        for_item = item.as_ref().map(|v| v.to_string());
+                    }
+                } else if k.name() == "if" {
+                    if_flag += 1;
+                    if_ident = Some(v.to_string());
+                }
+            }
+            // now check for or if flag and handle wait_checks
+            match (for_flag, if_flag) {
+                (0_i32, 1_i32) => {
+                    // filter bind props value and check if has if_ident
+                    let props = bind_props
+                        .into_iter()
+                        .filter(|(_, v)| v.to_string().contains(if_ident.as_ref().unwrap()))
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+
+                    self.role = Role::new_if(props);
+                } // if
+                (1_i32, 0_i32) => {
+                    let props = bind_props
+                        .into_iter()
+                        .filter(|(_, v)| {
+                            // in here Value mut be Bind and should be contain any of for_ident(maybe someone want to use), for_index, for_item
+                            if let Value::Bind(Bind::Normal(n)) = v {
+                                n.contains(for_ident.as_ref().unwrap())
+                                    || n.contains(for_index.as_ref().unwrap())
+                                    || n.contains(for_item.as_ref().unwrap())
+                            } else {
+                                false
+                            }
+                        })
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+
+                    // try to find loop_type from script by for_ident
+                    let loop_type = if let Some(ScriptModel::Gen(gen)) = script {
+                        gen.get_other()
+                            .ty(for_ident.as_ref().unwrap())
+                            .expect("for_ident must be a type")
+                            .to_string()
+                    } else {
+                        String::new()
+                    };
+
+                    self.role = Role::new_for(
+                        (for_ident.unwrap(), for_index, for_item).into(),
+                        loop_type,
+                        props,
+                    );
+                } // for
+                _ => (),
+            }
+        }
         self
+    }
+    pub fn clear(&mut self) -> () {
+        self.is_built_in = false;
+        self.is_static = true;
+        self.uses = None;
+        self.id = None;
+        self.as_prop = false;
+        self.source = None;
+        self.imports = None;
+        self.props = None;
+        self.events = None;
+        self.prop_ptr = None;
+        self.event_ptr = None;
+        self.event_ref = None;
+        self.event_set = None;
+        self.children = None;
+        self.inherits = Some(BuiltIn::Area);
+        self.traits = None;
+        self.live_hook = None;
+    }
+    /// ## Handle role
+    /// if widget's role is for or if, it will be special widget which need to handle builtin_widget
+    /// if is special, the current widget will be replaced
+    /// 1. replace widget name to `${widget_name}${ulid}`
+    /// 2. directly remove props and children (these will be handled in for or if)
+    pub fn handle_role(&mut self) -> &mut Self {
+        let ulid = match &self.role {
+            Role::If { id, .. } | Role::For { id, .. } => id,
+            Role::Normal => {
+                return self;
+            }
+        };
+        let name = format!("{}{}", self.name, ulid);
+        // copy current widget and empty all
+        let mut safety = SafeWidget::from(&*self);
+        safety.tree = Some(self.to_tree().to_string());
+        safety.insert_to_auto();
+        self.clear();
+        self.name = name;
+        self
+    }
+    /// convert part or all of widget to live_design tree code, similar to `widget_children_tree`, but it start from self
+    pub fn to_tree(&self) -> TokenStream {
+        let mut tk = TokenStream::new();
+        tk.extend(component_render(
+            self.id.as_ref(),
+            self.is_root,
+            self.is_prop,
+            self.as_prop,
+            &self.name,
+            self.props.clone(),
+            self.widget_children_tree(),
+        ));
+        tk
     }
     pub fn widget_children_tree(&self) -> Option<TokenStream> {
         let mut tk = TokenStream::new();
@@ -500,12 +643,12 @@ impl From<gen_converter::model::Model> for Widget {
         } = value;
 
         let template = template.unwrap();
-        build_widget(Some(special), &template, style.as_ref(), script.as_ref())
+        build_widget(Some(&special), &template, style.as_ref(), script.as_ref())
     }
 }
 
 fn build_widget(
-    special: Option<Source>,
+    special: Option<&Source>,
     template: &TemplateModel,
     style: Option<&ConvertStyle>,
     script: Option<&ScriptModel>,
@@ -514,22 +657,30 @@ fn build_widget(
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), template.get_class(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
+
+    // before all, check widget role from template  bind props
     widget
+        .set_role(template.get_bind_props(), script)
         .set_is_root(template.is_root())
         .set_id(template.get_id())
         .set_as_prop(template.as_prop)
         .set_props(widget_styles)
         .set_script(script)
-        .set_is_static(template.is_static());
+        .set_is_static(template.is_static())
+        .handle_role();
+
     if template.has_children() {
         widget.set_children(
             template
                 .get_children()
                 .unwrap()
                 .iter()
-                .map(|item| build_widget(None, item, style, None))
+                .map(|item| build_widget(special, item, style, script))
                 .collect(),
         );
+    }
+    if widget.name.eq("button") {
+        dbg!(&widget);
     }
     return widget;
 }

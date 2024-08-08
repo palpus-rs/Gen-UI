@@ -268,7 +268,7 @@ mod template_parsers {
 
     use std::time::Instant;
 
-    use crate::{ast::PropertyKeyType, target::template::html::parse_tag_name, Value};
+    use crate::{ast::PropertyKeyType, target::template::html::parse_tag_name, Bind, Value};
 
     use super::{
         parse_bind_key, parse_function_key, parse_property, parse_property_key, parse_tag_end,
@@ -470,7 +470,7 @@ mod template_parsers {
                 (
                     PropertyKeyType::Bind,
                     "value",
-                    Value::Bind("hello".to_string())
+                    Value::Bind(Bind::Normal("hello".to_string()))
                 ),
             )
         );
@@ -481,7 +481,7 @@ mod template_parsers {
                 (
                     PropertyKeyType::Bind,
                     "value_bind",
-                    Value::Bind("hello_key".to_string())
+                    Value::Bind(Bind::Normal("hello_key".to_string()))
                 ),
             )
         );

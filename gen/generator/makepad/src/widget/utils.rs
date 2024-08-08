@@ -281,7 +281,7 @@ where
 }
 
 pub fn bind_prop_value(value: &Value, is_prop: bool, ident: &str) -> String {
-    return if let Some(v) = value.is_bind_and_get() {
+    return if let Some(v) = value.is_bind_and_get().unwrap().get_normal() {
         if is_prop && ident.starts_with(ident) {
             // 说明这个绑定的属性是从外部传入的，需要将定义的首个prefix转为self
             v.replacen(ident, "self", 1)
@@ -289,7 +289,7 @@ pub fn bind_prop_value(value: &Value, is_prop: bool, ident: &str) -> String {
             v.to_string()
         }
     } else {
-        panic!("prop value is not bind")
+        panic!("prop value is not bind: {}", value)
     };
 }
 

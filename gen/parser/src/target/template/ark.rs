@@ -3,10 +3,12 @@
 
 use std::collections::HashMap;
 
-use crate::{
-    ASTNodes, Enum, Function, PropertyKeyType, PropsKey, Struct, Tag, Value,
+use crate::{ASTNodes, Bind, Enum, Function, PropertyKeyType, PropsKey, Struct, Tag, Value};
+use gen_utils::{
+    common::string::FixedString,
+    error::Error,
+    parser::{parse_normal, trim},
 };
-use gen_utils::{common::string::FixedString, error::Error, parser::{parse_normal, trim}};
 use nom::{
     branch::alt,
     bytes::{complete::tag, streaming::take_till},
@@ -21,7 +23,7 @@ use nom::{
 /// format: `TagName`
 #[allow(dead_code)]
 fn name(input: &str) -> IResult<&str, &str> {
-   parse_key(input)
+    parse_key(input)
 }
 /// ## Tag Args single
 /// format: `(xxx)`
@@ -60,7 +62,13 @@ fn parse_this(input: &str) -> IResult<&str, (Value, PropertyKeyType)> {
             nom::error::ErrorKind::Tag,
         )));
     }
-    Ok((input, (Value::bind(value_bind), PropertyKeyType::Bind)))
+    Ok((
+        input,
+        (
+            Value::Bind(Bind::Normal(value_bind.to_string())),
+            PropertyKeyType::Bind,
+        ),
+    ))
 }
 
 /// is value function
@@ -325,7 +333,6 @@ fn arg_to_value(input: &str) -> IResult<&str, Vec<(PropsKey, Value)>> {
     }
 }
 
-
 fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
     let (input, tag_name) = name(input)?;
     let (input, arg) = arg(input)?;
@@ -340,19 +347,18 @@ fn parse_tag_start(input: &str) -> IResult<&str, ASTNodes> {
 }
 
 pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
-
-    fn holder(input: &str) -> IResult<&str, (&str, &str)>{
+    fn holder(input: &str) -> IResult<&str, (&str, &str)> {
         pair(trim(tag("{")), trim(tag("}")))(input)
     }
 
     // parse tag start and get the ast tag
     let (input, mut node) = parse_tag_start(input)?;
-    
+
     let mut input = input.trim();
 
     if input.starts_with('.') {
         // direct follow `.` means no children should parse fn
-        
+
         // parse property key value ----------------------------------------------
         let (remain, kvs) = many0(chain_fn)(input)?;
         // convert key value to Gen Value ----------------------------------------
@@ -364,7 +370,7 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
         node.extend_properties(props);
 
         input = remain;
-    }else if holder(input).is_ok(){
+    } else if holder(input).is_ok() {
         // means no children
         input = holder(input).unwrap().0;
 
@@ -376,20 +382,19 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
                 .into_iter()
                 .map(|kv| to_value(kv).unwrap().1)
                 .collect::<HashMap<PropsKey, Value>>();
-    
+
             node.extend_properties(props);
-    
+
             input = remain;
-        }else if input.starts_with('}'){
+        } else if input.starts_with('}') {
             // means no children, no props, no same level tag, should return
             return Ok((input, node));
-        }else{
+        } else {
             // means no children, no props, but still have same level tag
             dbg!(input);
         }
-
-    }else {
-        if input.starts_with("{"){
+    } else {
+        if input.starts_with("{") {
             input = input.trim_start_matches("{").trim();
             let (input, mut children) = many0(parse_tag)(input)?;
             if !children.is_empty() {
@@ -397,12 +402,12 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
                     .iter_mut()
                     .for_each(|child| child.set_parent(node.clone()));
             }
-            node.set_children(children); 
-            // if everything is ok, should trim } and return 
+            node.set_children(children);
+            // if everything is ok, should trim } and return
             let mut input = trim(tag("}"))(input).unwrap().0;
-            if input.is_empty(){
+            if input.is_empty() {
                 return Ok((input, node));
-            }else{
+            } else {
                 // means have props
                 if input.starts_with('.') {
                     let (remain, kvs) = many0(chain_fn)(input)?;
@@ -411,17 +416,17 @@ pub fn parse_tag(input: &str) -> IResult<&str, ASTNodes> {
                         .into_iter()
                         .map(|kv| to_value(kv).unwrap().1)
                         .collect::<HashMap<PropsKey, Value>>();
-            
+
                     node.extend_properties(props);
                     input = remain;
-                    
+
                     return Ok((input, node));
-                }else{
+                } else {
                     //no props return
                     return Ok((input, node));
                 }
             }
-        }else{
+        } else {
             return Ok((input, node));
         }
     }
@@ -452,7 +457,7 @@ mod test_ark {
     use super::{brace_content, enum_content};
 
     #[test]
-    fn test7(){
+    fn test7() {
         let input = r#"
         Root(){
             Window(){
@@ -534,7 +539,7 @@ mod test_ark {
 
         let result = super::parse_ark_template(input);
         assert!(result.is_ok());
-        
+
         // assert!(result.is_ok());
     }
 

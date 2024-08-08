@@ -6,6 +6,7 @@ use std::{
     fs, mem,
     path::PathBuf,
     process::{Child, Command},
+    sync::Mutex,
 };
 
 use gen_converter::model::Model;
@@ -15,8 +16,40 @@ use gen_utils::{
     error::Errors,
     wasm::WasmImpl,
 };
+use lazy_static::lazy_static;
 use target::Makepad;
 use toml_edit::DocumentMut;
+use wasm::Wasm;
+
+use crate::widget::model::safe_widget::SafeWidget;
+
+lazy_static! {
+    /// built-in widgets, if a widget's role is for or if_else, it should be in this list
+    ///
+    /// after all, depend on this list, generate a `auto/lib.rs` and builtin widgets rs files, and add them to the `src_gen` project
+    /// then insert into live_registers and compiler tree
+    ///
+    /// in gen: `<button :for="item in list" :text="item"></button>`
+    ///
+    /// in makepad: generate a for loop widget
+    /// ```rust
+    /// live_design! {
+    ///    LoopButton_${sha_value} = {{LoopButton_${sha_value}}}{
+    ///         item: <Button>{}
+    ///    }
+    /// }
+    ///
+    /// pub struct LoopButton_${sha_value} {
+    ///     #[live]
+    ///     item: Option<LivePtr>,
+    ///     #[rust]
+    ///     children: ComponentMap<LiveId, ButtonRef>,
+    ///     // ...
+    /// }
+    /// ```
+    pub static ref AUTO_BUILTIN_WIDGETS: Mutex<Vec<SafeWidget>> = Mutex::new(Vec::new());
+    pub static ref ROOT_COMPILED: bool = false;
+}
 
 /// # Makepad Compiler
 #[derive(Debug)]
@@ -34,11 +67,12 @@ pub struct Compiler {
     /// > **you can add more other dependencies which you need**
     pub dependencies: Vec<RustDependence>,
     /// use wasm to run ?
-    pub wasm: bool,
+    /// makepad wasm
+    pub wasm: Option<Wasm>,
     /// child wasm process
     pub wasm_process: Option<Child>,
     /// makepad target
-    pub target: Makepad,
+    pub target: Option<Makepad>,
 }
 
 impl CompilerImpl for Compiler {
@@ -162,19 +196,37 @@ impl CompilerImpl for Compiler {
         fs::write(compiled_toml_path.as_path(), compiled_toml.to_string())
             .expect("failed to write src_gen project's Cargo.toml");
     }
-
+    fn before_compile(&mut self) -> () {
+        let main_rs = Makepad::create_main_rs(&self.entry, self.origin_path.as_path());
+        let widget_tree =
+            Makepad::create_widget_tree(self.origin_path.as_path(), self.root.as_ref());
+        let app_main =
+            Makepad::create_app_main(&self.entry, self.origin_path.as_path(), &widget_tree);
+        self.target.replace(Makepad {
+            app_main,
+            tree: Some(widget_tree),
+            main_rs,
+        });
+    }
+    
+    /// init makepad project
+    /// - create main.rs
+    /// - create app entry rs file (eg: app.rs)
+    /// - create lib.rs (depend on root)
     fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> () {
-        let _ = self.target.compile(gen_files);
+        let _ = self.target.as_mut().unwrap().compile(gen_files);
     }
 
     fn insert(&mut self, node: Box<dyn std::any::Any>) -> () {
         let node = node.downcast::<Model>().unwrap();
 
-        let _ = self.target.insert(*node);
+        let _ = self.target.as_mut().unwrap().insert(*node);
     }
 
     fn get(&self, key: &gen_utils::common::Source) -> Option<Box<dyn ModelNodeImpl>> {
         self.target
+            .as_ref()
+            .unwrap()
             .get(key)
             .map(|node| Box::new(node) as Box<dyn ModelNodeImpl>)
     }
@@ -186,7 +238,9 @@ impl Compiler {
     where
         W: WasmImpl,
     {
-        self.target.set_wasm(wasm);
+        if let Some(wasm) = wasm.as_any().downcast_ref::<Wasm>() {
+            self.wasm.replace(wasm.clone());
+        };
         self
     }
     /// ## Fresh Wasm
@@ -195,14 +249,19 @@ impl Compiler {
     /// - else return `Err(msg)`
     /// - if wasm is not enabled, return `Ok(false)`
     pub fn fresh_wasm(&mut self) -> Result<bool, Errors> {
-        if self.wasm {
+        if self.wasm.is_some() {
             // close last wasm process if exist
             if let Some(process) = self.wasm_process.as_mut() {
                 let _ = process.kill();
             }
             let mut super_workspace_path = self.origin_path.clone();
             super_workspace_path.pop();
-            match self.target.fresh_wasm(super_workspace_path.as_path()) {
+            match self
+                .wasm
+                .as_ref()
+                .unwrap()
+                .run(super_workspace_path.as_path())
+            {
                 Ok(cmd) => {
                     self.wasm_process.replace(cmd);
                     return Ok(true);
@@ -211,5 +270,14 @@ impl Compiler {
             }
         }
         Ok(false)
+    }
+    /// only wasm is Some, this function can work
+    ///
+    /// then check makepad wasm
+    /// - return `Ok(true)` if makepad wasm is installed
+    /// - return `Ok(false)` if makepad wasm not need to check
+    /// - return `Err` if makepad wasm is not installed
+    pub fn check_wasm(&self) -> Result<bool, Errors> {
+        self.wasm.as_ref().unwrap().check_wasm()
     }
 }

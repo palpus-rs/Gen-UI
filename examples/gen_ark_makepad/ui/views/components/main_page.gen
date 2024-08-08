@@ -12,7 +12,7 @@
                 Label().class("common_txt").font_size(16.0).text("Easy Example")
                 Label().class("common_txt").font_size(10.0).text("This case will demonstrate how to use GenUI syntax to build Makepad widgets")
                 LinkLabel().class("common_link").text("https://github.com/palpus-rs/GenUI/tree/ark/examples/gen_makepad_simple")
-            }.flow("Down").width(400.0).spacing(12.0)
+            }.flow("Down").width(400.0).spacing(12.0).onClick(()=>clickView())
         }.class("common_item")
     }.id("MainPage")
 </template>

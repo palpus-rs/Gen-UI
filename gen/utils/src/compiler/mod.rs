@@ -30,6 +30,7 @@ pub trait CompilerImpl {
     /// ### more details
     /// see `generator/makepad/src/compiler/mod.rs` to know what we do in this function
     fn exist_or_create(&self) -> ();
+    fn before_compile(&mut self) -> ();
     /// ## compile
     /// compile the project
     /// ### more details

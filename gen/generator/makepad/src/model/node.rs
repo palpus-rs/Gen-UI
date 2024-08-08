@@ -113,7 +113,7 @@ mod test_node {
             "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
         ));
         let node1 = ModelNode::Widget(Widget::new(
-            Some(source.clone()),
+            Some(&source),
             "hello",
             Some(&"view".to_string()),
         ));
@@ -128,7 +128,7 @@ mod test_node {
             "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
         ));
         let node1 = ModelNode::Widget(Widget::new(
-            Some(source.clone()),
+            Some(&source),
             "hello",
             Some(&"view".to_string()),
         ));

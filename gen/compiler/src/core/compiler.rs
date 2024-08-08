@@ -101,6 +101,7 @@ impl Compiler {
         let _ = self.exist_or_create();
         info(SRC_GEN_INIT);
         // let _ = self.init_compile_target();
+        let _ = self.before_compile();
         let mut visited = HashSet::new();
         // after src_gen project created, get compile target and then use plugin logic to rewrite
         Compiler::loop_compile(self, &mut visited);
@@ -275,6 +276,10 @@ impl CompilerImpl for Compiler {
 
     fn exist_or_create(&self) -> () {
         let _ = self.target.exist_or_create();
+    }
+
+    fn before_compile(&mut self) -> () {
+        let _ = self.target.before_compile();
     }
 
     fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> () {
