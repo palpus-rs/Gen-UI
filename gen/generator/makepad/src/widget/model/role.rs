@@ -36,6 +36,7 @@ impl Role {
             loop_type,
         }
     }
+    // is for or if
     pub fn is_special(&self) -> bool {
         !matches!(self, Role::Normal)
     }

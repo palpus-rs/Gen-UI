@@ -1,4 +1,8 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{
+    collections::{HashMap, HashSet},
+    hash::Hash,
+    iter::once,
+};
 
 use gen_converter::model::{
     prop::ConvertStyle,
@@ -7,7 +11,11 @@ use gen_converter::model::{
 };
 use gen_parser::{Bind, For, PropsKey, Value};
 
-use gen_utils::common::{ident, snake_to_camel, syn_ext::TypeGetter, Source};
+use gen_utils::common::{
+    ident, snake_to_camel,
+    syn_ext::{let_to_self, TypeGetter},
+    Source,
+};
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
@@ -182,48 +190,89 @@ impl Widget {
     /// - set draw_walk
     /// - set handle_event
     pub fn set_script(&mut self, script: Option<&ScriptModel>) -> &mut Self {
-        if let Some(sc) = script {
-            if let ScriptModel::Gen(sc) = sc {
-                let GenScriptModel {
-                    uses,
-                    prop_ptr,
-                    event_ptr,
-                    sub_prop_binds,
-                    sub_event_binds,
-                    // other,
-                    imports,
-                    current_instance,
-                    instance_opt,
-                    ..
-                } = sc;
-                // 在这里从prop_ptr中获取结构体所有的field作为后续代码中需要转换的列表
-                // 例如在handle_event中就需要
-                let prop_fields = get_props_fields(prop_ptr.as_ref());
-                // dbg!(prop_fields);
-
-                self.set_uses(uses)
-                    .set_imports(imports)
-                    .set_prop_ptr(prop_ptr)
-                    .set_event_ptr(event_ptr)
-                    .after_apply(
-                        sub_prop_binds,
-                        current_instance.as_ref(),
-                        instance_opt.as_ref(),
-                    )
-                    .draw_walk(None) // 暂时先写个None
-                    .handle_event(
+        if self.is_root || self.role.is_special() {
+            if let Some(sc) = script {
+                if let ScriptModel::Gen(sc) = sc {
+                    let GenScriptModel {
+                        uses,
+                        prop_ptr,
+                        event_ptr,
                         sub_prop_binds,
                         sub_event_binds,
-                        current_instance.as_ref(),
-                        prop_fields.as_ref(),
-                    );
+                        // other,
+                        imports,
+                        current_instance,
+                        instance_opt,
+                        other,
+                        ..
+                    } = sc;
+                    // 在这里从prop_ptr中获取结构体所有的field作为后续代码中需要转换的列表
+                    // 例如在handle_event中就需要
+                    let prop_fields = get_props_fields(prop_ptr.as_ref());
+                    // dbg!(prop_fields);
+
+                    self.set_uses(uses)
+                        .set_imports(imports)
+                        .set_prop_ptr(prop_ptr)
+                        .set_event_ptr(event_ptr)
+                        .after_apply(
+                            sub_prop_binds,
+                            current_instance.as_ref(),
+                            instance_opt.as_ref(),
+                        )
+                        .draw_walk(None) // 暂时先写个None
+                        .handle_event(
+                            sub_prop_binds,
+                            sub_event_binds,
+                            current_instance.as_ref(),
+                            prop_fields.as_ref(),
+                        )
+                        .live_hook(other.as_ref(), prop_fields.as_ref());
+                }
+            } else {
+                self.is_static = true;
             }
-        } else {
-            self.is_static = true;
         }
+
         self
     }
+    pub fn live_hook(
+        &mut self,
+        code: Option<&Vec<Stmt>>,
+        fields: Option<&Vec<Ident>>,
+    ) -> &mut Self {
+        if code.is_none() {
+            return self;
+        }
+        // get check_list --------------------------------------------------------------------------------------
+        let check_list = if self.is_root {
+            // if is root widget, it should check if it is_static
+            if self.is_static {
+                None
+            } else {
+                // means current root widget is define widget, get widget define struct
+                fields.map(|x| x.iter().map(|field| field.to_string()).collect())
+            }
+        } else {
+            // if is not, check self.role is special or not, if is special, get for_ident or if_ident
+            match &self.role {
+                Role::Normal => None,
+                Role::If { .. } => todo!("wait to impl"),
+                Role::For { credential, .. } => {
+                    Some(once(credential.iter_ident.to_string()).collect())
+                }
+            }
+        };
+        // handle before_apply ----------------------------------------------------------------------------------
+        if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
+            self.live_hook
+                .as_mut()
+                .unwrap()
+                .before_apply(before_apply);
+        }
 
+        self
+    }
     /// - prop_binds: 模板中绑定的props，用于对模板中的props进行更新，它能够跟踪到底prop应该如何更新
     /// - events: 模板中绑定的events
     /// - current_instance: 当前实例(属性实例)，用于获取实例名，它需要和prop_fields一起使用，来找到原Gen代码中需要被替换的部分(`current_instance.prop_field`)
@@ -433,7 +482,6 @@ impl Widget {
                     } else {
                         String::new()
                     };
-
                     self.role = Role::new_for(
                         (for_ident.unwrap(), for_index, for_item).into(),
                         loop_type,

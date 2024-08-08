@@ -87,7 +87,7 @@ fn for_widget_to_live_design(
     // check current widget is define or is static ---------------------------------------------------------------------------------------------------
     if widget.is_static {
         let widget_name = parse_str::<TokenStream>(&format!("{}{}", &widget.name, ulid)).unwrap();
-        let inner_tree = widget.tree.as_ref();
+        let inner_tree = parse_str::<TokenStream>(widget.tree.as_ref().unwrap()).unwrap();
         // generate widget tree code -----------------------------------------------------------------------------------------------------------------
         let tree = quote! {
             #widget_name = {{#widget_name}}{
@@ -100,6 +100,11 @@ fn for_widget_to_live_design(
         let loop_type = parse_str::<TokenStream>(&loop_type).unwrap();
         let widget_ref = parse_str::<TokenStream>(&format!("{}{}Ref", &widget.name, ulid)).unwrap();
         let origin_ref = parse_str::<TokenStream>(&format!("{}Ref", &widget.name)).unwrap();
+        
+        // dbg!(wid)
+        todo!();
+
+
         let set_loop =
             parse_str::<TokenStream>(&format!("set_{}", &loop_ident.to_string())).unwrap();
         let set_widget_props = if props.is_empty() {
@@ -125,7 +130,7 @@ fn for_widget_to_live_design(
         let enumerate = parse_str::<TokenStream>(&credential.fmt_enumerate()).unwrap();
 
         let logic = quote! {
-            #[derive(Live, Widget, LiveHook)]
+            #[derive(Live, Widget)]
             pub struct #widget_name {
                 #[redraw] #[rust] area: Area,
                 #[live] item: Option<LivePtr>,
@@ -154,6 +159,12 @@ fn for_widget_to_live_design(
                     self.children.iter().enumerate().for_each(|(_index, (_id, widget_ref))|{
                         widget_ref.handle_event(cx, event, scope);
                     });
+                }
+            }
+
+            impl LiveHook for #widget_name {
+                fn before_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
+                    
                 }
             }
 
