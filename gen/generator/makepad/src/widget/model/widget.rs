@@ -733,7 +733,6 @@ fn build_widget(
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), template.get_class(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
-
     // before all, check widget role from template  bind props
     widget
         .set_role(template.get_bind_props(), script)

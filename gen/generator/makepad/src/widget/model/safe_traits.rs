@@ -1,3 +1,7 @@
+use proc_macro2::TokenStream;
+use quote::quote;
+use syn::{parse_str, Ident};
+
 use super::{live_hook::LiveHookTrait, traits::WidgetTrait};
 
 #[derive(Debug, Default, Clone)]
@@ -102,6 +106,42 @@ impl From<&LiveHookTrait> for SafeLiveHookTrait {
             after_update_from_doc: after_update_from_doc.as_ref().map(|x| x.to_string()),
             after_apply_from_doc: after_apply_from_doc.as_ref().map(|x| x.to_string()),
             after_new_before_apply: after_new_before_apply.as_ref().map(|x| x.to_string()),
+        }
+    }
+}
+
+impl SafeLiveHookTrait {
+    pub fn to_token_stream(&self, target: Ident) -> TokenStream{
+        fn handle(item: Option<&String>) -> Option<TokenStream>{
+            item.map(|x| parse_str::<TokenStream>(x).unwrap())
+        }
+
+        let before_live_design = handle(self.before_live_design.as_ref());
+        let apply_value_unknown = handle(self.apply_value_unknown.as_ref());
+        let apply_value_instance = handle(self.apply_value_instance.as_ref());
+        let skip_apply = handle(self.skip_apply.as_ref());
+        let before_apply = handle(self.before_apply.as_ref());
+        let after_apply = handle(self.after_apply.as_ref());
+        let after_apply_from = handle(self.after_apply_from.as_ref());
+        let after_new_from_doc = handle(self.after_new_from_doc.as_ref());
+        let after_update_from_doc = handle(self.after_update_from_doc.as_ref());
+        let after_apply_from_doc = handle(self.after_apply_from_doc.as_ref());
+        let after_new_before_apply = handle(self.after_new_before_apply.as_ref());
+
+        quote! {
+            impl LiveHook for #target{
+                #before_live_design
+                #apply_value_unknown
+                #apply_value_instance
+                #skip_apply
+                #before_apply
+                #after_apply
+                #after_apply_from
+                #after_new_from_doc
+                #after_update_from_doc
+                #after_apply_from_doc
+                #after_new_before_apply
+            }
         }
     }
 }

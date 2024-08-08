@@ -4,7 +4,7 @@ use gen_parser::{For, PropsKey, Value};
 use gen_utils::common::{fs, Source, Ulid};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::parse_str;
+use syn::{parse2, parse_str, Ident};
 
 use crate::ToToken;
 
@@ -100,10 +100,11 @@ fn for_widget_to_live_design(
         let loop_type = parse_str::<TokenStream>(&loop_type).unwrap();
         let widget_ref = parse_str::<TokenStream>(&format!("{}{}Ref", &widget.name, ulid)).unwrap();
         let origin_ref = parse_str::<TokenStream>(&format!("{}Ref", &widget.name)).unwrap();
-        
-        // dbg!(wid)
-        todo!();
 
+        let live_hook = widget
+            .live_hook
+            .as_ref()
+            .map(|x| x.to_token_stream(parse2::<Ident>(widget_name.clone()).unwrap()));
 
         let set_loop =
             parse_str::<TokenStream>(&format!("set_{}", &loop_ident.to_string())).unwrap();
@@ -162,11 +163,7 @@ fn for_widget_to_live_design(
                 }
             }
 
-            impl LiveHook for #widget_name {
-                fn before_apply(&mut self, cx: &mut Cx, _apply: &mut Apply, _index: usize, _nodes: &[LiveNode]) {
-                    
-                }
-            }
+            #live_hook
 
             impl #widget_ref {
                 pub fn #set_loop(&mut self, looper: #loop_type) {
