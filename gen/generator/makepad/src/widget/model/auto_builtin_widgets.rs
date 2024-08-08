@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
 use gen_utils::common::{fs, Source, Ulid};
@@ -12,6 +12,7 @@ use super::{live_design::LiveDesign, role::Role, safe_widget::SafeWidget};
 
 pub trait AutoBuiltinCompile {
     /// widget -> safe_widget (if role is for or if_else) -> insert into AUTO_BUILTIN_WIDGETS -> AutoBuiltinWidgets -> compile
+    /// this fn will return a vec of live_register!
     fn compile<P>(&self, path: P) -> Option<Vec<String>>
     where
         P: AsRef<std::path::Path>;

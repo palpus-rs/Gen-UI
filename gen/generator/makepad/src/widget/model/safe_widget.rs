@@ -48,13 +48,21 @@ pub struct SafeWidget {
     pub tree: Option<String>,
 }
 
-impl SafeWidget{
-    pub fn insert_to_auto(self) -> (){
+impl SafeWidget {
+    pub fn insert_to_auto(self) -> () {
         let mut auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
         auto_widgets.push(self);
     }
-}
+    pub fn to_live_import(&self) -> String {
+        let id = match &self.role {
+            Role::If { id, .. } => id,
+            Role::For { id, .. } => id,
+            Role::Normal => panic!("normal widget not need to transform to safe widget!"),
+        };
 
+        format!("import crate::auto::{}_{}::*;", self.name, id)
+    }
+}
 
 impl From<&Widget> for SafeWidget {
     fn from(value: &Widget) -> Self {

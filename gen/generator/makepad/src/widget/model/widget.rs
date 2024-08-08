@@ -13,6 +13,7 @@ use quote::{quote, ToTokens};
 use syn::{parse_str, Ident, ItemEnum, ItemStruct, Stmt, StmtMacro};
 
 use crate::{
+    compiler::AUTO_BUILTIN_WIDGETS,
     utils::{component_render, special_struct},
     widget::{
         utils::{combine_option, quote_draw_widget},
@@ -608,7 +609,7 @@ impl ToLiveDesign for Widget {
         }
     }
     fn widget_imports(&self) -> Option<TokenStream> {
-        if let Some(imports) = self.imports.as_ref() {
+        let mut tk = if let Some(imports) = self.imports.as_ref() {
             let imports = imports.to_string();
             let imports = imports
                 .split(";")
@@ -620,9 +621,36 @@ impl ToLiveDesign for Widget {
                 acc.extend(quote! {import #item;});
                 acc
             });
+
             Some(tk)
         } else {
             None
+        };
+
+        // get auto widget import from AUTO_BUILTIN_WIDGETS
+        let auto_widgets = AUTO_BUILTIN_WIDGETS.lock().unwrap();
+        if auto_widgets.is_empty() {
+            return tk;
+        } else {
+            let auto_widgets = auto_widgets
+                .iter()
+                .filter(|widget| {
+                    widget.source.as_ref().unwrap().compiled_file
+                        == self.source.as_ref().unwrap().compiled_file
+                })
+                .fold(TokenStream::new(), |mut acc, widget| {
+                    let item = parse_str::<TokenStream>(&widget.to_live_import()).unwrap();
+                    acc.extend(item);
+                    acc
+                });
+
+            if tk.is_none() {
+                tk.replace(auto_widgets);
+            } else {
+                tk.as_mut().unwrap().extend(auto_widgets);
+            }
+
+            tk
         }
     }
     fn to_live_design(&self) -> super::live_design::LiveDesign {

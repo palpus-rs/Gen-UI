@@ -7,15 +7,14 @@ use std::{
 
 use super::snake_to_camel;
 
-
 /// # Source
-/// The Source struct is designed to manage and transform paths related to source and compiled files within a project. 
-/// It primarily deals with tracking the origin (source) directories and files and their corresponding compiled directories and files. 
-/// 
+/// The Source struct is designed to manage and transform paths related to source and compiled files within a project.
+/// It primarily deals with tracking the origin (source) directories and files and their corresponding compiled directories and files.
+///
 /// This struct provides utility methods to extract information and perform conversions
 /// that are essential in build processes, such as determining module names, handling directory structures,
 /// and ensuring proper compilation outputs.
-/// 
+///
 /// Source结构体旨在管理和转换与项目中的源文件和编译文件相关的路径。
 /// 它主要处理跟踪源目录和文件及其相应的编译目录和文件。
 /// 此结构提供了提取信息和执行构建过程中必不可少的转换的实用方法，例如确定模块名称、处理目录结构和确保正确的编译输出。
@@ -31,6 +30,13 @@ pub struct Source {
 }
 
 impl Source {
+    pub fn to_auto(&self, widget_name: &str, ulid: &str) -> PathBuf {
+        self.compiled_dir
+            .as_path()
+            .join("src")
+            .join("auto")
+            .join(&format!("{}_{}.rs", widget_name, ulid))
+    }
     /// get name from source origin file
     /// eg: src_gen/widget/hello.gen -> Hello
     pub fn source_name(&self) -> String {
@@ -287,8 +293,9 @@ mod test_source {
             "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
             "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui\\views\\a",
         );
-        let compiled1 =
-            PathBuf::from_str("E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\src_gen\\src\\views\\a");
+        let compiled1 = PathBuf::from_str(
+            "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\src_gen\\src\\views\\a",
+        );
 
         let path2 = Source::origin_dir_to_compiled(
             "E:\\Rust\\try\\makepad\\Gen-UI\\examples\\simple1\\ui",
