@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use gen_parser::{For, PropsKey, Value};
 use gen_utils::common::{fs, Source, Ulid};
@@ -15,6 +15,8 @@ pub trait AutoBuiltinCompile {
     fn compile<P>(&self, path: P) -> ()
     where
         P: AsRef<std::path::Path>;
+
+    fn to_live_registers(&self) -> Vec<String>;
 }
 
 impl AutoBuiltinCompile for Vec<SafeWidget> {
@@ -60,6 +62,12 @@ impl AutoBuiltinCompile for Vec<SafeWidget> {
             }
         }
     }
+
+    fn to_live_registers(&self) -> Vec<String> {
+        self.iter()
+            .map(|x| x.source.as_ref().unwrap().to_live_register())
+            .collect()
+    }
 }
 
 fn for_widget_to_live_design(
@@ -93,6 +101,7 @@ fn for_widget_to_live_design(
         let loop_ident = parse_str::<TokenStream>(&credential.iter_ident).unwrap();
         let loop_type = parse_str::<TokenStream>(&loop_type).unwrap();
         let widget_ref = parse_str::<TokenStream>(&format!("{}{}Ref", &widget.name, ulid)).unwrap();
+        let origin_ref = parse_str::<TokenStream>(&format!("{}Ref", &widget.name)).unwrap();
         let set_loop =
             parse_str::<TokenStream>(&format!("set_{}", &loop_ident.to_string())).unwrap();
         let set_widget_props = if props.is_empty() {
@@ -109,7 +118,7 @@ fn for_widget_to_live_design(
                 .unwrap();
 
                 set_props.extend(quote! {
-                    target.#set_key
+                    target.#set_key;
                 });
             }
             Some(set_props)
@@ -122,7 +131,7 @@ fn for_widget_to_live_design(
             pub struct #widget_name {
                 #[redraw] #[rust] area: Area,
                 #[live] item: Option<LivePtr>,
-                #[rust] children: ComponentMap<LiveId, #widget_ref>,
+                #[rust] children: ComponentMap<LiveId, #origin_ref>,
                 #[layout] layout: Layout,
                 #[walk] walk: Walk,
                 #[rust] pub #loop_ident: #loop_type,

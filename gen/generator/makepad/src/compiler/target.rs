@@ -109,7 +109,7 @@ impl Makepad {
         //     .write_all(main_content.to_string().as_bytes())
         //     .unwrap();
     }
-    pub fn compile_app_main(&mut self, gen_files: Option<&Vec<&PathBuf>>) -> () {
+    pub fn compile_app_main(&mut self, gen_files: Option<&Vec<&PathBuf>>, other_registers: Option<Vec<String>>) -> () {
         // get imports from gen_files(widget tree just to handle compiled file, if file is in cache, it will not be compiled)
         // get file path and use ParseTarget to compile and get script part
         if let Some(files) = gen_files {
@@ -123,6 +123,12 @@ impl Makepad {
                     }
                 }
             }
+            
+          
+            if !other_registers.is_some() {
+                live_registers.extend(other_registers.unwrap().into_iter());
+            }
+
             // add root gen as live register
             live_registers.insert(self.tree.as_ref().unwrap().root_live_register());
 
@@ -178,8 +184,6 @@ impl Makepad {
     pub fn compile(&mut self, gen_files: Option<&Vec<&PathBuf>>) {
         // compile main.rs
         self.main_rs.compile();
-        // create app main and compile app.rs
-        self.compile_app_main(gen_files);
         // compile other widget.rs
         self.tree.as_ref().unwrap().compile();
         // compile auto widgets
@@ -200,6 +204,9 @@ impl Makepad {
                 .expect("create auto dir or auto mod.rs failed");
             auto_widgets.compile(auto_path.as_path());
         }
+        // create app main and compile app.rs
+        // get auto widgets live register
+        self.compile_app_main(gen_files, Some(auto_widgets.to_live_registers()));
         // compile lib.rs
         self.compile_lib_rs(auto_flag);
     }

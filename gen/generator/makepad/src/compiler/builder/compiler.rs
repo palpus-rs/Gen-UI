@@ -9,7 +9,7 @@ use gen_utils::{
 };
 use toml_edit::Item;
 
-use crate::compiler::{target::Makepad, wasm::Wasm, Compiler, AUTO_BUILTIN_WIDGETS};
+use crate::compiler::{wasm::Wasm, Compiler};
 
 use super::{dep::RustDependenceBuilder, wasm::WasmBuilder};
 
@@ -168,7 +168,6 @@ impl Builder for CompilerBuilder {
             fresh: self.wasm_fresh,
             port: self.wasm_port,
         };
-        
 
         Compiler {
             origin_path: self.origin_path,

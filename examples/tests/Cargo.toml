@@ -1,2 +1,2 @@
 [workspace]
-members = ["ui"]
+members = ["ui", "src_gen"]
