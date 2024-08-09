@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use gen_utils::common::Source;
+use gen_utils::common::{snake_to_camel, Source};
 
 use crate::{compiler::AUTO_BUILTIN_WIDGETS, widget::BuiltIn};
 
@@ -60,7 +60,7 @@ impl SafeWidget {
             Role::Normal => panic!("normal widget not need to transform to safe widget!"),
         };
 
-        format!("import crate::auto::{}_{}::*;", self.name, id)
+        format!("import crate::auto::{}_{}::*;", snake_to_camel(&self.name).unwrap(), id)
     }
 }
 

@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    hash::Hash,
-    iter::once,
-};
+use std::{collections::HashMap, hash::Hash, iter::once};
 
 use gen_converter::model::{
     prop::ConvertStyle,
@@ -95,28 +91,41 @@ impl Widget {
 
         widget
     }
-    pub fn new(special: Option<&Source>, name: &str, inherits: Option<&String>) -> Self {
+    pub fn new(
+        special: Option<&Source>,
+        name: &str,
+        inherits: Option<&String>,
+        is_root: bool,
+    ) -> Self {
         let mut widget = Widget::default();
+        
         match special {
             Some(special) => {
                 widget.source.replace(special.clone());
-                let inherits_widget = BuiltIn::try_from(inherits).unwrap();
-                // 获取文件名且改为首字母大写的camel
-                match inherits {
-                    Some(_) => {
-                        widget.name = widget.source.as_ref().unwrap().source_name();
-                    }
-                    None => {
-                        // 首个节点没有inherits且name不是`component`
-                        if name.eq("component") {
-                            widget.name = inherits_widget.to_string();
-                        } else {
-                            widget.name = BuiltIn::try_from(name).unwrap().to_string();
-                            widget.set_is_built_in(true);
+                if is_root {
+                    let inherits_widget = BuiltIn::try_from(inherits).unwrap();
+                    // 获取文件名且改为首字母大写的camel
+                    match inherits {
+                        Some(_) => {
+                            widget.name = widget.source.as_ref().unwrap().source_name();
+                        }
+                        None => {
+                            // 首个节点没有inherits且name不是`component`
+                            if name.eq("component") {
+                                widget.name = inherits_widget.to_string();
+                            } else {
+                                widget.name = BuiltIn::try_from(name).unwrap().to_string();
+                                widget.set_is_built_in(true);
+                            }
                         }
                     }
+                    widget.set_inherits(inherits_widget);
+                } else {
+                    widget.name = name.to_string();
+                    if let Ok(inherits) = BuiltIn::try_from(name) {
+                        widget.set_is_built_in(true).set_inherits(inherits);
+                    }
                 }
-                widget.set_inherits(inherits_widget);
             }
             None => {
                 widget.name = name.to_string();
@@ -265,10 +274,7 @@ impl Widget {
         };
         // handle before_apply ----------------------------------------------------------------------------------
         if let Some(before_apply) = let_to_self(code.unwrap(), check_list) {
-            self.live_hook
-                .as_mut()
-                .unwrap()
-                .before_apply(before_apply);
+            self.live_hook.as_mut().unwrap().before_apply(before_apply);
         }
 
         self
@@ -284,7 +290,10 @@ impl Widget {
         current_instance: Option<&CurrentInstance>,
         prop_fields: Option<&Vec<Ident>>,
     ) -> &mut Self {
-        // dbg!(prop_fields);
+        if !self.is_root{
+            return self;
+        }
+
         let instance_name = if let Some(instance) = current_instance {
             instance.name()
         } else {
@@ -331,12 +340,14 @@ impl Widget {
     }
     pub fn draw_walk(&mut self, draw_walk_tk: Option<TokenStream>) -> &mut Self {
         // 由BuiltIn确定如何draw_walk
-        let builtin = self.inherits.as_ref().unwrap();
-        let _ = self
-            .traits
-            .as_mut()
-            .unwrap()
-            .draw_walk(builtin.draw_walk(&draw_walk_tk));
+        if self.is_root{
+            let builtin = self.inherits.as_ref().unwrap();
+            let _ = self
+                .traits
+                .as_mut()
+                .unwrap()
+                .draw_walk(builtin.draw_walk(&draw_walk_tk));
+        }
         self
     }
     pub fn set_uses(&mut self, uses: &Option<UseMod>) -> &mut Self {
@@ -524,7 +535,7 @@ impl Widget {
                 return self;
             }
         };
-        let name = format!("{}{}", self.name, ulid);
+        let name = format!("{}{}", snake_to_camel(&self.name).unwrap(), ulid);
         // copy current widget and empty all
         let mut safety = SafeWidget::from(&*self);
         safety.tree = Some(self.to_tree().to_string());
@@ -541,7 +552,7 @@ impl Widget {
             self.is_root,
             self.is_prop,
             self.as_prop,
-            &self.name,
+            &snake_to_camel(&self.name).unwrap(),
             self.props.clone(),
             self.widget_children_tree(),
         ));
@@ -719,7 +730,13 @@ impl From<gen_converter::model::Model> for Widget {
         } = value;
 
         let template = template.unwrap();
-        build_widget(Some(&special), &template, style.as_ref(), script.as_ref())
+        build_widget(
+            Some(&special),
+            &template,
+            style.as_ref(),
+            script.as_ref(),
+            true,
+        )
     }
 }
 
@@ -728,8 +745,14 @@ fn build_widget(
     template: &TemplateModel,
     style: Option<&ConvertStyle>,
     script: Option<&ScriptModel>,
+    is_root: bool,
 ) -> Widget {
-    let mut widget = Widget::new(special, template.get_name(), template.get_inherits());
+    let mut widget = Widget::new(
+        special,
+        template.get_name(),
+        template.get_inherits(),
+        is_root,
+    );
     // get styles from style by id
     let widget_styles = get_widget_styles(template.get_id(), template.get_class(), style);
     let widget_styles = combine_styles(widget_styles, template.get_unbind_props());
@@ -750,13 +773,11 @@ fn build_widget(
                 .get_children()
                 .unwrap()
                 .iter()
-                .map(|item| build_widget(special, item, style, script))
+                .map(|item| build_widget(special, item, style, script, false))
                 .collect(),
         );
     }
-    if widget.name.eq("button") {
-        dbg!(&widget);
-    }
+    
     return widget;
 }
 

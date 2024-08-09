@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use gen_parser::{For, PropsKey, Value};
-use gen_utils::common::{fs, Source, Ulid};
+use gen_utils::common::{fs, snake_to_camel, Source, Ulid};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse2, parse_str, Ident};
@@ -75,6 +75,7 @@ fn for_widget_to_live_design(
     loop_type: &str,
     props: &HashMap<PropsKey, Value>,
 ) -> (Source, LiveDesign) {
+    let origin_widget_name = snake_to_camel(&widget.name).unwrap();
     let mut live_design = LiveDesign::default();
     // get widget source and change compiled_file to xxx/src_gen/src/auto/${source}.rs ---------------------------------------------------------------
     let mut source = widget.source.as_ref().unwrap().clone();
@@ -83,10 +84,10 @@ fn for_widget_to_live_design(
         .as_path()
         .join("src")
         .join("auto")
-        .join(&format!("{}_{}.rs", &widget.name, ulid));
+        .join(&format!("{}_{}.rs", &origin_widget_name, ulid));
     // check current widget is define or is static ---------------------------------------------------------------------------------------------------
     if widget.is_static {
-        let widget_name = parse_str::<TokenStream>(&format!("{}{}", &widget.name, ulid)).unwrap();
+        let widget_name = parse_str::<TokenStream>(&format!("{}{}", &origin_widget_name, ulid)).unwrap();
         let inner_tree = parse_str::<TokenStream>(widget.tree.as_ref().unwrap()).unwrap();
         // generate widget tree code -----------------------------------------------------------------------------------------------------------------
         let tree = quote! {
@@ -98,9 +99,8 @@ fn for_widget_to_live_design(
         // generate widget logic ---------------------------------------------------------------------------------------------------------------------
         let loop_ident = parse_str::<TokenStream>(&credential.iter_ident).unwrap();
         let loop_type = parse_str::<TokenStream>(&loop_type).unwrap();
-        let widget_ref = parse_str::<TokenStream>(&format!("{}{}Ref", &widget.name, ulid)).unwrap();
-        let origin_ref = parse_str::<TokenStream>(&format!("{}Ref", &widget.name)).unwrap();
-
+        let origin_ref = parse_str::<TokenStream>(&format!("{}Ref", &origin_widget_name)).unwrap();
+        let widget_ref = parse_str::<TokenStream>(&format!("{}{}Ref", &origin_widget_name, ulid)).unwrap();
         let live_hook = widget
             .live_hook
             .as_ref()
